@@ -5,6 +5,7 @@ use crate::nutrition::{
     catalogue::{Catalogue, Ingredient},
     nutrients::{Nutrient, NutrientInfo},
 };
+use crate::quantities::{Quantity, Unit};
 use axum::{
     Json, Router,
     extract::{DefaultBodyLimit, Path, Query, State, rejection::JsonRejection},
@@ -80,6 +81,7 @@ pub(crate) fn router(catalogue: Catalogue) -> Router {
             "/locales/de.mjs",
             get(|| async { javascript(include_str!("web/locales/de.mjs")) }),
         )
+        .route("/api/quantities/convert", post(convert_quantity))
         .route("/api/ingredients", get(list))
         .route("/api/ingredients/{id}", get(detail))
         .route("/api/nutrition/calculate", post(estimate))
@@ -150,4 +152,35 @@ async fn estimate(
     nutrition::calculate(&catalogue, &recipe)
         .map(Json)
         .map_err(|message| ApiError(StatusCode::UNPROCESSABLE_ENTITY, message))
+}
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ConversionRequest {
+    quantity: Quantity,
+    target: Unit,
+}
+async fn convert_quantity(
+    body: Result<Json<ConversionRequest>, JsonRejection>,
+) -> impl IntoResponse {
+    let Ok(Json(request)) = body else {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({"code":"invalid_quantity"})),
+        );
+    };
+    match request.quantity.convert(request.target) {
+        Ok(converted) => (
+            StatusCode::OK,
+            Json(
+                json!({"original":request.quantity,"dimension":request.quantity.unit.dimension(),"converted":converted}),
+            ),
+        ),
+        Err(code) => (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(
+                json!({"code":code,"original":request.quantity,"dimension":request.quantity.unit.dimension()}),
+            ),
+        ),
+    }
 }

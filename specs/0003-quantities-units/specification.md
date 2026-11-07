@@ -1,6 +1,6 @@
 # Precise quantities and configurable units
 
-Status: Draft
+Status: In progress
 Priority: Must
 Origin: Customer
 Milestone: M1
@@ -14,6 +14,13 @@ Enter recipes naturally while viewing quantities in personally useful units.
 3. Given a volume-to-mass conversion, it uses a sourced ingredient/state-specific density; piece conversions use a declared piece mass and spoon measures use a named regional standard.
 4. Given scaling by servings, calculations preserve precision until presentation and record estimated conversions; mass never silently equals volume.
 5. Given users with different unit preferences, one user’s display configuration does not rewrite another user’s recipe input.
+
+## First slice
+A typed quantity conversion endpoint retains the submitted decimal string and unit, identifies
+mass/volume/count, and converts exactly between g/kg and ml/l. Piece identity is retained.
+Cross-dimension conversion requires ingredient data; spoon conversions require an explicit
+standard. Results beyond six fractional digits or supported bounds are rejected, never rounded.
+Recipe persistence, conversion sources and user preferences remain unimplemented.
 
 ## Out of scope
 A universal density or undocumented spoon/piece constants.
