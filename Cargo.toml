@@ -1,0 +1,25 @@
+[package]
+name = "mealshop-server"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "AGPL-3.0-only"
+description = "Mealshop recipe, shopping and family meal planning server"
+repository = "https://github.com/Th3Link/mealshop"
+publish = false
+
+[dependencies]
+axum = "0.8"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"

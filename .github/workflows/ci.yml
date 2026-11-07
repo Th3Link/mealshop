@@ -1,0 +1,119 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  quality:
+    name: fmt, clippy, nextest and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy, llvm-tools-preview
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov
+      - run: python3 scripts/generate_docs.py --check
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo llvm-cov nextest --workspace --locked --no-report
+      - run: cargo llvm-cov report --lcov --output-path lcov.info
+      - name: Coverage summary
+        run: cargo llvm-cov report --summary-only >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: lcov.info
+          if-no-files-found: error
+  msrv:
+    name: declared MSRV
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-msrv
+      - run: cargo msrv verify -- cargo check --all-targets --locked
+  build:
+    name: build / ${{ matrix.profile }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        profile: [debug, release]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --locked ${{ matrix.profile == 'release' && '--release' || '' }}
+      - name: Measure server binary
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: python3 scripts/binary_metrics.py "$PROFILE"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mealshop-server-${{ matrix.profile }}-linux-x86_64
+          path: target/${{ matrix.profile }}/mealshop-server
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: metrics-${{ matrix.profile }}
+          path: metrics/*.json
+          if-no-files-found: error
+  metrics:
+    name: binary metrics report
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: metrics-*
+          merge-multiple: true
+          path: metrics
+      - name: Report measured sizes
+        run: |
+          python3 - <<'PYCODE' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          print("### Server binary size\n\n| Profile | Bytes | Commit |\n|---|---:|---|")
+          for path in sorted(Path("metrics").glob("*.json")):
+              data = json.loads(path.read_text())
+              print(f"| {data['profile']} | {data['bytes']} | {data['sha']} |")
+          PYCODE
+      - uses: actions/upload-artifact@v7
+        with:
+          name: server-metrics
+          path: metrics/
+          if-no-files-found: error
+  sbom:
+    name: SPDX SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-sbom
+      - run: cargo sbom --output-format=spdx_json_2_3 --cargo-package mealshop-server > mealshop-server.spdx.json
+      - name: Verify nonempty package graph
+        run: |
+          python3 - <<'PYCODE'
+          import json
+          data = json.load(open("mealshop-server.spdx.json"))
+          assert len(data["packages"]) > 1, "SBOM must contain the dependency graph"
+          assert any(p["name"] == "mealshop-server" for p in data["packages"])
+          PYCODE
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mealshop-server-sbom
+          path: mealshop-server.spdx.json
+          if-no-files-found: error

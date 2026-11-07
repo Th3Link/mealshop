@@ -1,0 +1,47 @@
+name: Docs
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - run: python3 scripts/generate_docs.py --check
+      - run: cargo doc --workspace --no-deps --locked
+      - name: Add landing page
+        run: |
+          cat > target/doc/index.html <<'HTML'
+          <!doctype html><html lang="en"><meta charset="utf-8"><title>Mealshop documentation</title>
+          <h1>Mealshop</h1><p>Early bootstrap: recipes, shopping and family meal planning.</p>
+          <ul><li><a href="mealshop_server/docs/page_readme_md/index.html">Start here</a></li>
+          <li><a href="mealshop_server/docs/page_specs_readme_md/index.html">Feature specifications</a></li>
+          <li><a href="mealshop_server/docs/page_docs_requirements_md/index.html">Requirements</a></li>
+          <li><a href="mealshop_server/docs/page_docs_adr_index_md/index.html">Architecture decisions</a></li>
+          <li><a href="mealshop_server/index.html">Rust API reference</a></li></ul></html>
+          HTML
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: target/doc
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
