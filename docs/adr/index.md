@@ -12,3 +12,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [ADR 0006: durable process schedules](0006-durable-process-schedules.md) — Proposed shared process model.
 - [ADR 0007: localization and web clients](0007-localization-and-web-clients.md) — Customer direction accepted; product integration proposed.
 - [ADR 0008: curated ingredient sources](0008-curated-ingredient-sources.md) — Customer scope accepted; import/model details proposed.
+
+- [ADR 0009: local recipe revisions](0009-local-recipe-revisions.md) — Local authoring slice; review pending.

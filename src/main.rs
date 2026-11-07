@@ -7,19 +7,29 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let address: SocketAddr = std::env::var("MEALSHOP_LISTEN_ADDR")
         .unwrap_or_else(|_| "127.0.0.1:3000".to_owned())
         .parse()?;
-    let app = match std::env::var("MEALSHOP_CATALOGUE_PATH") {
+    if !address.ip().is_loopback() {
+        return Err("Recipe storage currently requires a loopback listen address; authentication is not implemented".into());
+    }
+    let json = match std::env::var("MEALSHOP_CATALOGUE_PATH") {
         Ok(path) => {
             use std::io::Read;
             let mut json = String::new();
             std::fs::File::open(path)?
                 .take(1_048_577)
                 .read_to_string(&mut json)?;
-            mealshop_server::router_from_catalogue_json(&json)?
+            json
         }
-        Err(std::env::VarError::NotPresent) => mealshop_server::router()?,
+        Err(std::env::VarError::NotPresent) => include_str!("../data/catalogue.json").to_owned(),
+        Err(error) => return Err(error.into()),
+    };
+    let directory = match std::env::var("MEALSHOP_RECIPE_DIR") {
+        Ok(path) if !path.is_empty() => path,
+        Ok(_) => return Err("MEALSHOP_RECIPE_DIR must not be empty".into()),
+        Err(std::env::VarError::NotPresent) => "var/recipes".to_owned(),
         Err(error) => return Err(error.into()),
     };
     let listener = tokio::net::TcpListener::bind(address).await?;
+    let app = mealshop_server::router_with_recipe_directory(&json, directory)?;
     eprintln!("Mealshop listening on {}", listener.local_addr()?);
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown())

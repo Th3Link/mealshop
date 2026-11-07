@@ -6,7 +6,7 @@
 - [x] Add English-base/translations model, multilingual search and exact demo locale presentation (AC 1, 7).
 - [x] Add separate available-carbohydrate/food-folate IDs and mixed-definition warnings (AC 5).
 - [x] Complete focused tests, browser exercise and repository quality gate; prepare review PR.
-- [ ] Customer review/acceptance; then mark Done.
+- [x] Customer review/acceptance: PR #5 merged.
 
 ## Validation
 Source verifier checks every mapped value against frozen primary data within the documented
@@ -16,4 +16,4 @@ translation identity/fallback, multilingual search and split carbohydrate defini
 Locale tests cover resource IDs/placeholders, regional fallbacks, exact big-number display and
 comma/point input. Reuse F02 arithmetic/provenance regressions. Record results at delivery.
 
-Results: [delivery validation](validation.md). Customer acceptance remains pending.
+Results: [delivery validation](validation.md). Customer accepted via PR #5.

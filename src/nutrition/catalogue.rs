@@ -70,7 +70,7 @@ pub(crate) struct Ingredient {
     pub(crate) translations: BTreeMap<String, IngredientText>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Catalogue {
     pub(crate) schema_version: u32,

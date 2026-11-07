@@ -32,3 +32,7 @@ N09 → F21 (all client features); N10 → F22/F18. F02 is Done following custom
 
 F23 expands the kitchen reference catalogue from the customer ingredient list with exact BLS/USDA
 source mappings; unresolved product profiles remain explicitly unknown.
+
+F23 is accepted through PR #5. F04/F18 now starts local recipe authoring and immutable file
+revisions with pinned nutrition inputs; authenticated ownership, scaling and other adapters
+remain future work. See [recipe guide](guides/recipes.md).

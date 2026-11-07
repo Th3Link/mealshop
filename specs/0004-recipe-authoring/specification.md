@@ -1,6 +1,6 @@
 # Recipe authoring and scaling
 
-Status: Draft
+Status: In progress
 Priority: Must
 Origin: Customer
 Milestone: M1
@@ -14,11 +14,26 @@ Create structured recipes that remain useful when portions change.
 3. Given ingredient substitutions or unknown ingredients, identity and nutrition gaps are visible instead of silently matched.
 4. Given a saved revision, its ingredients, steps, source, author and calculation inputs can be retrieved consistently.
 
+## Current slice (2026-11-07)
+Customer-authorized local authoring/persistence with catalogue ingredients and per-serving nutrition:
+- Create, list, retrieve and edit immutable revisions via API and a pragmatic de/en demo (AC 1, 4).
+- Preserve exact gram inputs, title/author attribution, en/de content language, ordered instructions,
+  active/passive seconds and batch servings. Empty steps are allowed for drafts.
+- Pin the referenced catalogue subset and source metadata per revision. Reopening after restart or
+  changing the current catalogue must not change old estimates (AC 3–4).
+- Reject unknown IDs, zero/invalid servings and stale revisions. Known identities without verified
+  composition retain unknown/partial nutrient totals (AC 2 validation, AC 3).
+- Changing servings repartitions the same batch; original revisions remain retrievable. Proportional
+  ingredient scaling with an original-yield model remains future AC 2 work, not implemented here.
+- File storage is local/single-household, loopback-only in the executable, with exclusive locking,
+  bounded versioned records, durable publication, fail-closed recovery and documented backup (F18 slice).
+  No authenticated author/household identity is claimed; shared/hosted access is out of scope.
+
 ## Out of scope
 Paid content delivery and external imports.
 
 ## UX notes
-UI flows, accessibility, empty/error states and user review points must be specified before Ready.
+See [demo UX notes](ux-notes.md); product UI remains F22.
 
 ## Links
 Requirement: [F04](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).

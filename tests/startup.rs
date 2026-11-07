@@ -41,3 +41,13 @@ fn invalid_or_missing_catalogue_prevents_startup() {
         assert!(output.stderr.starts_with(b"Error: "));
     }
 }
+
+#[test]
+fn recipe_server_rejects_non_loopback_exposure_without_authentication() {
+    let output = Command::new(env!("CARGO_BIN_EXE_mealshop-server"))
+        .env("MEALSHOP_LISTEN_ADDR", "0.0.0.0:3000")
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("requires a loopback"));
+}
