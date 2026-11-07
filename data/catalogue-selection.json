@@ -1,0 +1,2309 @@
+{
+  "description": "Reviewed ingredient identities and exact source-record selections; no nearest-food nutrient substitution.",
+  "entries": [
+    {
+      "id": "wheat-grain-raw",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C111000"
+    },
+    {
+      "id": "rye-grain-raw",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C121000"
+    },
+    {
+      "id": "spelt-grain-raw",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C236000"
+    },
+    {
+      "id": "wheat-wholemeal-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C211000"
+    },
+    {
+      "id": "wheat-flour-type-812",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C213100"
+    },
+    {
+      "id": "wheat-flour-type-1050",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C213200"
+    },
+    {
+      "id": "wheat-flour-type-1600",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C213500"
+    },
+    {
+      "id": "wheat-flour-type-405",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C214100"
+    },
+    {
+      "id": "wheat-flour-type-550",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C214200"
+    },
+    {
+      "id": "rye-wholemeal-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C221000"
+    },
+    {
+      "id": "rye-flour-type-815",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C223100"
+    },
+    {
+      "id": "rye-flour-type-997",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C223200"
+    },
+    {
+      "id": "rye-flour-type-1150",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C223300"
+    },
+    {
+      "id": "rye-flour-type-1370",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C223400"
+    },
+    {
+      "id": "rye-flour-type-1740",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C223600"
+    },
+    {
+      "id": "spelt-wholemeal-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C235000"
+    },
+    {
+      "id": "spelt-flour-type-630",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C234000"
+    },
+    {
+      "id": "spelt-flour-type-812",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C234100"
+    },
+    {
+      "id": "spelt-flour-type-1050",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C234200"
+    },
+    {
+      "id": "durum-wholemeal-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C219000"
+    },
+    {
+      "id": "einkorn-wholemeal-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C241000"
+    },
+    {
+      "id": "emmer-wholemeal-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C240000"
+    },
+    {
+      "id": "oat-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C233000"
+    },
+    {
+      "id": "oat-flakes",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C133000"
+    },
+    {
+      "id": "barley-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C243000"
+    },
+    {
+      "id": "maize-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C443000"
+    },
+    {
+      "id": "rice-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C453000"
+    },
+    {
+      "id": "buckwheat-wholemeal-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C421000"
+    },
+    {
+      "id": "buckwheat-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C424000"
+    },
+    {
+      "id": "millet-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C433000"
+    },
+    {
+      "id": "chickpea-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "H720400"
+    },
+    {
+      "id": "pea-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "H710400"
+    },
+    {
+      "id": "lentil-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "H730400"
+    },
+    {
+      "id": "lupin-flour",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "H731400"
+    },
+    {
+      "id": "soy-flour-full-fat",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "H764400"
+    },
+    {
+      "id": "durum-semolina",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C219300"
+    },
+    {
+      "id": "durum-wholemeal-semolina",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C219100"
+    },
+    {
+      "id": "soft-wheat-semolina",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C218000"
+    },
+    {
+      "id": "rye-semolina",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C126000"
+    },
+    {
+      "id": "spelt-semolina",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C238000"
+    },
+    {
+      "id": "maize-semolina",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C346000"
+    },
+    {
+      "id": "rice-semolina",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C356000"
+    },
+    {
+      "id": "rice-white-dry",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C352000"
+    },
+    {
+      "id": "rice-brown-dry",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C351000"
+    },
+    {
+      "id": "rice-parboiled-dry",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C359000"
+    },
+    {
+      "id": "rice-white-cooked",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C352032"
+    },
+    {
+      "id": "rice-brown-cooked",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C351032"
+    },
+    {
+      "id": "bulgur-dry",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C119100"
+    },
+    {
+      "id": "couscous-dry",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C119200"
+    },
+    {
+      "id": "bulgur-cooked",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C119132"
+    },
+    {
+      "id": "couscous-cooked",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C119232"
+    },
+    {
+      "id": "quinoa-white-dry",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C118000"
+    },
+    {
+      "id": "quinoa-tricolour-dry",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C118100"
+    },
+    {
+      "id": "quinoa-white-cooked",
+      "category": "grains_flour",
+      "provider": "bls",
+      "record_id": "C118032"
+    },
+    {
+      "id": "milk-skimmed-pasteurised",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M111100"
+    },
+    {
+      "id": "milk-1-5-pasteurised",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M111200"
+    },
+    {
+      "id": "milk-3-5-pasteurised",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M111300"
+    },
+    {
+      "id": "milk-skimmed-uht",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M113100"
+    },
+    {
+      "id": "milk-1-5-uht",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M113200"
+    },
+    {
+      "id": "milk-3-5-uht",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M113300"
+    },
+    {
+      "id": "milk-skimmed-lactose-free-pasteurised",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M114100"
+    },
+    {
+      "id": "milk-1-5-lactose-free-pasteurised",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M114200"
+    },
+    {
+      "id": "milk-3-5-lactose-free-pasteurised",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M114300"
+    },
+    {
+      "id": "milk-skimmed-lactose-free-uht",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M1A3100"
+    },
+    {
+      "id": "milk-1-5-lactose-free-uht",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M1A5200"
+    },
+    {
+      "id": "milk-3-5-lactose-free-uht",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M1A7300"
+    },
+    {
+      "id": "quark-low-fat",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M713100"
+    },
+    {
+      "id": "quark-10-fat-dry-matter",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M713200"
+    },
+    {
+      "id": "quark-20-fat-dry-matter",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M713300"
+    },
+    {
+      "id": "quark-40-fat-dry-matter",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M713500"
+    },
+    {
+      "id": "quark-50-fat-dry-matter",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M713700"
+    },
+    {
+      "id": "skyr-plain",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M710100"
+    },
+    {
+      "id": "whipping-cream-30",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M173800"
+    },
+    {
+      "id": "whipping-cream-36",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M173900"
+    },
+    {
+      "id": "sour-cream-10",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M172500"
+    },
+    {
+      "id": "sour-cream-20",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M172700"
+    },
+    {
+      "id": "creme-fraiche-30",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M176800"
+    },
+    {
+      "id": "creme-fraiche-40",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M172900"
+    },
+    {
+      "id": "buttermilk",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M150000"
+    },
+    {
+      "id": "yogurt-skimmed-plain",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M141100"
+    },
+    {
+      "id": "yogurt-low-fat-plain",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M141200"
+    },
+    {
+      "id": "yogurt-whole-milk-plain",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M141300"
+    },
+    {
+      "id": "yogurt-whole-milk-lactose-free",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M1E3300"
+    },
+    {
+      "id": "yogurt-low-fat-lactose-free",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M1B2200"
+    },
+    {
+      "id": "whole-milk-powder",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M882000"
+    },
+    {
+      "id": "sweet-whey-powder",
+      "category": "dairy",
+      "provider": "bls",
+      "record_id": "M887000"
+    },
+    {
+      "id": "oat-drink-unsweetened",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "C660000"
+    },
+    {
+      "id": "oat-drink-unsweetened-fortified",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "C660200"
+    },
+    {
+      "id": "oat-drink-sweetened-flavoured-fortified",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "C660500"
+    },
+    {
+      "id": "almond-drink-unsweetened",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "H800000"
+    },
+    {
+      "id": "almond-drink-unsweetened-fortified",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "H800100"
+    },
+    {
+      "id": "almond-drink-sweetened-flavoured-fortified",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "H800400"
+    },
+    {
+      "id": "soy-drink-unsweetened",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "H841100"
+    },
+    {
+      "id": "soy-drink-unsweetened-fortified",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "H841400"
+    },
+    {
+      "id": "soy-drink-sweetened-flavoured",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "H842400"
+    },
+    {
+      "id": "rice-drink-unsweetened",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "C650000"
+    },
+    {
+      "id": "rice-drink-unsweetened-fortified",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "C650200"
+    },
+    {
+      "id": "coconut-milk",
+      "category": "plant_drinks",
+      "provider": "bls",
+      "record_id": "H154000"
+    },
+    {
+      "id": "gouda-48-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M402600"
+    },
+    {
+      "id": "gouda-30-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M402400"
+    },
+    {
+      "id": "gouda-40-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M402500"
+    },
+    {
+      "id": "edam-30-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M401400"
+    },
+    {
+      "id": "edam-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M401600"
+    },
+    {
+      "id": "emmental-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M304600"
+    },
+    {
+      "id": "mountain-cheese-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M302600"
+    },
+    {
+      "id": "mountain-cheese-50-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M302700"
+    },
+    {
+      "id": "cheddar-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M303600"
+    },
+    {
+      "id": "cheddar-50-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M303700"
+    },
+    {
+      "id": "parmesan-30-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M306400"
+    },
+    {
+      "id": "feta-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M012200"
+    },
+    {
+      "id": "mozzarella-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M032100"
+    },
+    {
+      "id": "mozzarella-20-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M0A1000"
+    },
+    {
+      "id": "brie-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M601600"
+    },
+    {
+      "id": "brie-60-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M601800"
+    },
+    {
+      "id": "camembert-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M602600"
+    },
+    {
+      "id": "camembert-60-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M602800"
+    },
+    {
+      "id": "gorgonzola-48-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M5B1600"
+    },
+    {
+      "id": "halloumi",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M524500"
+    },
+    {
+      "id": "ricotta-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M741600"
+    },
+    {
+      "id": "cottage-cheese-low-fat",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M711100"
+    },
+    {
+      "id": "cottage-cheese-20-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M711300"
+    },
+    {
+      "id": "sour-milk-cheese-low-fat",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M730100"
+    },
+    {
+      "id": "cream-cheese-low-fat",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M820100"
+    },
+    {
+      "id": "cream-cheese-40-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M820500"
+    },
+    {
+      "id": "cream-cheese-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M820600"
+    },
+    {
+      "id": "cream-cheese-50-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M710700"
+    },
+    {
+      "id": "cream-cheese-60-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M710800"
+    },
+    {
+      "id": "goat-cream-cheese-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M7A1600"
+    },
+    {
+      "id": "sheep-cream-cheese-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M7B1600"
+    },
+    {
+      "id": "butter-cheese-45-fat-dry-matter",
+      "category": "cheese",
+      "provider": "bls",
+      "record_id": "M501600"
+    },
+    {
+      "id": "tofu",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "H861000"
+    },
+    {
+      "id": "seitan",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "C558000"
+    },
+    {
+      "id": "soy-protein-isolate",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "H011000"
+    },
+    {
+      "id": "lentils-dry",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "H725100"
+    },
+    {
+      "id": "red-lentils-dry",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "H730000"
+    },
+    {
+      "id": "lentils-cooked",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "H730132"
+    },
+    {
+      "id": "red-lentils-cooked",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "H730032"
+    },
+    {
+      "id": "peas-green-raw",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G760100"
+    },
+    {
+      "id": "peas-green-frozen",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G760200"
+    },
+    {
+      "id": "peas-green-cooked",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G760132"
+    },
+    {
+      "id": "peas-mature-dry",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G760400"
+    },
+    {
+      "id": "peas-mature-cooked",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G760432"
+    },
+    {
+      "id": "edamame-raw",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G750100"
+    },
+    {
+      "id": "soybeans-dry",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G750400"
+    },
+    {
+      "id": "soybeans-cooked",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G750432"
+    },
+    {
+      "id": "chickpeas-dry",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G770400"
+    },
+    {
+      "id": "chickpeas-cooked",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G770432"
+    },
+    {
+      "id": "green-beans-raw",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G710100"
+    },
+    {
+      "id": "green-beans-frozen",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G710200"
+    },
+    {
+      "id": "green-beans-cooked",
+      "category": "legumes_protein",
+      "provider": "bls",
+      "record_id": "G710132"
+    },
+    {
+      "id": "pepper-green-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G541100"
+    },
+    {
+      "id": "pepper-red-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G543100"
+    },
+    {
+      "id": "pepper-yellow-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G542100"
+    },
+    {
+      "id": "zucchini-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G582100"
+    },
+    {
+      "id": "spring-onion-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G482100"
+    },
+    {
+      "id": "tomato-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G561100"
+    },
+    {
+      "id": "cucumber-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G520100"
+    },
+    {
+      "id": "onion-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G480100"
+    },
+    {
+      "id": "shallot-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G485100"
+    },
+    {
+      "id": "garlic-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G490100"
+    },
+    {
+      "id": "tomato-passata",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "R161200"
+    },
+    {
+      "id": "tomatoes-peeled-canned",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G568900"
+    },
+    {
+      "id": "tomato-paste",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "R160000"
+    },
+    {
+      "id": "potato-peeled-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "K110100"
+    },
+    {
+      "id": "potato-unpeeled-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "K120100"
+    },
+    {
+      "id": "potato-peeled-cooked",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "K110132"
+    },
+    {
+      "id": "potato-unpeeled-cooked",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "K120134"
+    },
+    {
+      "id": "potato-unpeeled-baked",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "K120164"
+    },
+    {
+      "id": "beetroot-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G613100"
+    },
+    {
+      "id": "beetroot-cooked",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G613132"
+    },
+    {
+      "id": "spinach-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G211100"
+    },
+    {
+      "id": "broccoli-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G312100"
+    },
+    {
+      "id": "aubergine-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G510100"
+    },
+    {
+      "id": "carrot-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G620100"
+    },
+    {
+      "id": "sugar-snap-peas-raw",
+      "category": "vegetables",
+      "provider": "bls",
+      "record_id": "G761100"
+    },
+    {
+      "id": "drinking-water",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "N110000"
+    },
+    {
+      "id": "cocoa-powder-partly-defatted",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "S711000"
+    },
+    {
+      "id": "cocoa-powder-strongly-defatted",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "S713000"
+    },
+    {
+      "id": "sugar-white",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "S111000"
+    },
+    {
+      "id": "sugar-brown",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "S112000"
+    },
+    {
+      "id": "xylitol-powder",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "S163000"
+    },
+    {
+      "id": "butter-mildly-soured",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q611000"
+    },
+    {
+      "id": "butter-sweet-cream",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q630000"
+    },
+    {
+      "id": "butter-sour-cream",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q620000"
+    },
+    {
+      "id": "butter-salted",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q6A4000"
+    },
+    {
+      "id": "clarified-butter",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q683000"
+    },
+    {
+      "id": "margarine-full-fat-fortified",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q400000"
+    },
+    {
+      "id": "margarine-half-fat-fortified",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q440000"
+    },
+    {
+      "id": "margarine-three-quarter-fat-fortified",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q4A1000"
+    },
+    {
+      "id": "sunflower-margarine-full-fat",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q4A4000"
+    },
+    {
+      "id": "olive-oil",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q120000"
+    },
+    {
+      "id": "rapeseed-oil",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q180000"
+    },
+    {
+      "id": "sunflower-oil",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q320000"
+    },
+    {
+      "id": "coconut-oil",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q550000"
+    },
+    {
+      "id": "sesame-oil",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "Q230000"
+    },
+    {
+      "id": "potato-starch",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "K230000"
+    },
+    {
+      "id": "rice-starch",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "C456000"
+    },
+    {
+      "id": "table-salt",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "R111000"
+    },
+    {
+      "id": "table-salt-iodised",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "R114000"
+    },
+    {
+      "id": "baking-powder",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "R421100"
+    },
+    {
+      "id": "apple-cider-vinegar",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "R123100"
+    },
+    {
+      "id": "spirit-vinegar",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "R122000"
+    },
+    {
+      "id": "balsamic-vinegar",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "R125000"
+    },
+    {
+      "id": "nutritional-yeast-flakes",
+      "category": "pantry",
+      "provider": "bls",
+      "record_id": "K762400"
+    },
+    {
+      "id": "flaxseed",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H410100"
+    },
+    {
+      "id": "sesame-seed",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H420100"
+    },
+    {
+      "id": "sunflower-seed",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H430100"
+    },
+    {
+      "id": "pumpkin-seed",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H310100"
+    },
+    {
+      "id": "almonds",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H210100"
+    },
+    {
+      "id": "almonds-blanched",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H210200"
+    },
+    {
+      "id": "almond-butter",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H212800"
+    },
+    {
+      "id": "walnuts",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H120100"
+    },
+    {
+      "id": "hazelnuts",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H130100"
+    },
+    {
+      "id": "cashews",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H170100"
+    },
+    {
+      "id": "peanuts-roasted",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H110600"
+    },
+    {
+      "id": "peanut-butter-pure",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H110800"
+    },
+    {
+      "id": "peanut-butter-spread",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H880200"
+    },
+    {
+      "id": "coconut-desiccated",
+      "category": "nuts_seeds",
+      "provider": "bls",
+      "record_id": "H150400"
+    },
+    {
+      "id": "egg-whole-raw",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "E111100"
+    },
+    {
+      "id": "egg-yolk-raw",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "E112100"
+    },
+    {
+      "id": "egg-white-raw",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "E113100"
+    },
+    {
+      "id": "egg-whole-boiled",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "E111132"
+    },
+    {
+      "id": "egg-white-dried",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "E113400"
+    },
+    {
+      "id": "chicken-breast-fillet-raw",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "V416100"
+    },
+    {
+      "id": "chicken-meat-skinless-raw",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "V413000"
+    },
+    {
+      "id": "chicken-thigh-with-skin-raw",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "V4A5100"
+    },
+    {
+      "id": "chicken-drumstick-with-skin-raw",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "V4B5100"
+    },
+    {
+      "id": "chicken-wings-with-skin-raw",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "V417100"
+    },
+    {
+      "id": "chicken-breast-fillet-roasted",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "V416162"
+    },
+    {
+      "id": "chicken-breast-fillet-boiled",
+      "category": "eggs_meat",
+      "provider": "bls",
+      "record_id": "V416132"
+    },
+    {
+      "id": "pasta-egg-free-dry",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "E401000"
+    },
+    {
+      "id": "pasta-wholemeal-egg-free-dry",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "E510000"
+    },
+    {
+      "id": "pasta-gluten-free-egg-free-dry",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "E612000"
+    },
+    {
+      "id": "pasta-egg-free-cooked",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "E401032"
+    },
+    {
+      "id": "pasta-wholemeal-egg-free-cooked",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "E500032"
+    },
+    {
+      "id": "pasta-gluten-free-egg-free-cooked",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "E612032"
+    },
+    {
+      "id": "rice-noodles-dry",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "C559000"
+    },
+    {
+      "id": "rice-noodles-cooked",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "C559032"
+    },
+    {
+      "id": "mung-bean-starch-glass-noodles-dry",
+      "category": "pasta",
+      "provider": "bls",
+      "record_id": "H030400"
+    },
+    {
+      "id": "basil-fresh",
+      "category": "herbs_spices",
+      "provider": "bls",
+      "record_id": "G061000"
+    },
+    {
+      "id": "basil-dried",
+      "category": "herbs_spices",
+      "provider": "bls",
+      "record_id": "R231000"
+    },
+    {
+      "id": "parsley-fresh",
+      "category": "herbs_spices",
+      "provider": "bls",
+      "record_id": "G250100"
+    },
+    {
+      "id": "parsley-dried",
+      "category": "herbs_spices",
+      "provider": "bls",
+      "record_id": "G250400"
+    },
+    {
+      "id": "chives-fresh",
+      "category": "herbs_spices",
+      "provider": "bls",
+      "record_id": "G081100"
+    },
+    {
+      "id": "chives-dried",
+      "category": "herbs_spices",
+      "provider": "bls",
+      "record_id": "G081400"
+    },
+    {
+      "id": "apple-raw",
+      "category": "fruit",
+      "provider": "bls",
+      "record_id": "F110100"
+    },
+    {
+      "id": "banana-raw",
+      "category": "fruit",
+      "provider": "bls",
+      "record_id": "F503100"
+    },
+    {
+      "id": "lemon-raw",
+      "category": "fruit",
+      "provider": "bls",
+      "record_id": "F601100"
+    },
+    {
+      "id": "coriander-leaf-fresh",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "169997",
+      "de": {
+        "name": "Korianderblätter frisch",
+        "aliases": [
+          "Koriander",
+          "Cilantro"
+        ]
+      }
+    },
+    {
+      "id": "dill-fresh",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "172233",
+      "de": {
+        "name": "Dill frisch",
+        "aliases": [
+          "Dill"
+        ]
+      }
+    },
+    {
+      "id": "thyme-fresh",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "173470",
+      "de": {
+        "name": "Thymian frisch",
+        "aliases": [
+          "Thymian"
+        ]
+      }
+    },
+    {
+      "id": "rosemary-fresh",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "173473",
+      "de": {
+        "name": "Rosmarin frisch",
+        "aliases": [
+          "Rosmarin"
+        ]
+      }
+    },
+    {
+      "id": "peppermint-fresh",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "173474",
+      "de": {
+        "name": "Pfefferminze frisch",
+        "aliases": [
+          "Minze",
+          "Pfefferminze"
+        ]
+      }
+    },
+    {
+      "id": "spearmint-fresh",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "173475",
+      "de": {
+        "name": "Grüne Minze frisch",
+        "aliases": [
+          "Minze",
+          "Spearmint"
+        ]
+      }
+    },
+    {
+      "id": "bay-leaf-dried",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170917",
+      "de": {
+        "name": "Lorbeerblätter getrocknet",
+        "aliases": [
+          "Lorbeer"
+        ]
+      }
+    },
+    {
+      "id": "caraway-seed",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170918",
+      "de": {
+        "name": "Kümmel Samen",
+        "aliases": [
+          "Kümmel"
+        ]
+      }
+    },
+    {
+      "id": "coriander-seed",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170922",
+      "de": {
+        "name": "Koriandersamen",
+        "aliases": [
+          "Koriander"
+        ]
+      }
+    },
+    {
+      "id": "cumin-seed",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170923",
+      "de": {
+        "name": "Kreuzkümmel Samen",
+        "aliases": [
+          "Kreuzkümmel",
+          "Cumin"
+        ]
+      }
+    },
+    {
+      "id": "marjoram-dried",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170928",
+      "de": {
+        "name": "Majoran getrocknet",
+        "aliases": [
+          "Majoran"
+        ]
+      }
+    },
+    {
+      "id": "sage-ground",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170935",
+      "de": {
+        "name": "Salbei gemahlen",
+        "aliases": [
+          "Salbei"
+        ]
+      }
+    },
+    {
+      "id": "savory-ground",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170936",
+      "de": {
+        "name": "Bohnenkraut gemahlen",
+        "aliases": [
+          "Bohnenkraut"
+        ]
+      }
+    },
+    {
+      "id": "tarragon-dried",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170937",
+      "de": {
+        "name": "Estragon getrocknet",
+        "aliases": [
+          "Estragon"
+        ]
+      }
+    },
+    {
+      "id": "thyme-dried",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170938",
+      "de": {
+        "name": "Thymian getrocknet",
+        "aliases": [
+          "Thymian"
+        ]
+      }
+    },
+    {
+      "id": "chervil-dried",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "171318",
+      "de": {
+        "name": "Kerbel getrocknet",
+        "aliases": [
+          "Kerbel"
+        ]
+      }
+    },
+    {
+      "id": "dill-dried",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "171322",
+      "de": {
+        "name": "Dill getrocknet",
+        "aliases": [
+          "Dill"
+        ]
+      }
+    },
+    {
+      "id": "oregano-dried",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "171328",
+      "de": {
+        "name": "Oregano getrocknet",
+        "aliases": [
+          "Oregano"
+        ]
+      }
+    },
+    {
+      "id": "rosemary-dried",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "171333",
+      "de": {
+        "name": "Rosmarin getrocknet",
+        "aliases": [
+          "Rosmarin"
+        ]
+      }
+    },
+    {
+      "id": "cinnamon-ground",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "171320",
+      "de": {
+        "name": "Zimt gemahlen",
+        "aliases": [
+          "Zimt"
+        ]
+      }
+    },
+    {
+      "id": "nutmeg-ground",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "171326",
+      "de": {
+        "name": "Muskatnuss gemahlen",
+        "aliases": [
+          "Muskat"
+        ]
+      }
+    },
+    {
+      "id": "paprika-ground",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "171329",
+      "de": {
+        "name": "Paprikapulver",
+        "aliases": [
+          "Paprika",
+          "Paprika edelsüß"
+        ]
+      }
+    },
+    {
+      "id": "black-pepper",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170931",
+      "de": {
+        "name": "Schwarzer Pfeffer",
+        "aliases": [
+          "Pfeffer"
+        ]
+      }
+    },
+    {
+      "id": "cayenne-pepper",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "170932",
+      "de": {
+        "name": "Cayennepfeffer",
+        "aliases": [
+          "Chili"
+        ]
+      }
+    },
+    {
+      "id": "turmeric-ground",
+      "category": "herbs_spices",
+      "provider": "usda",
+      "record_id": "172231",
+      "de": {
+        "name": "Kurkuma gemahlen",
+        "aliases": [
+          "Kurkuma",
+          "Gelbwurz"
+        ]
+      }
+    },
+    {
+      "id": "whey-protein-powder-usda-reference",
+      "category": "legumes_protein",
+      "provider": "usda",
+      "record_id": "173180",
+      "de": {
+        "name": "Molkenproteinpulver (USDA-Referenzrezeptur)",
+        "aliases": [
+          "Whey",
+          "Molkenprotein",
+          "Proteinpulver"
+        ]
+      }
+    },
+    {
+      "id": "whey-protein-isolate-usda-reference",
+      "category": "legumes_protein",
+      "provider": "usda",
+      "record_id": "173177",
+      "de": {
+        "name": "Molkenprotein-Isolatpulver (USDA-Referenzrezeptur)",
+        "aliases": [
+          "Whey Isolat",
+          "Proteinpulver"
+        ]
+      }
+    },
+    {
+      "id": "soy-protein-concentrate-alcohol-extracted",
+      "category": "legumes_protein",
+      "provider": "usda",
+      "record_id": "172447",
+      "de": {
+        "name": "Sojaproteinkonzentrat (Alkoholextraktion)",
+        "aliases": [
+          "Sojaprotein",
+          "Proteinpulver"
+        ]
+      }
+    },
+    {
+      "id": "tofu-firm-calcium-magnesium",
+      "category": "legumes_protein",
+      "provider": "usda",
+      "record_id": "172448",
+      "de": {
+        "name": "Tofu fest, mit Calcium- und Magnesiumsalzen",
+        "aliases": [
+          "Tofu fest"
+        ]
+      }
+    },
+    {
+      "id": "tofu-soft-calcium-magnesium",
+      "category": "legumes_protein",
+      "provider": "usda",
+      "record_id": "172449",
+      "de": {
+        "name": "Tofu weich, mit Calcium- und Magnesiumsalzen",
+        "aliases": [
+          "Tofu weich"
+        ]
+      }
+    },
+    {
+      "id": "tofu-extra-firm-nigari",
+      "category": "legumes_protein",
+      "provider": "usda",
+      "record_id": "174290",
+      "de": {
+        "name": "Tofu extra fest, mit Nigari",
+        "aliases": [
+          "Tofu extra fest"
+        ]
+      }
+    },
+    {
+      "id": "erythritol",
+      "name": "Erythritol, unspecified product",
+      "category": "pantry",
+      "provider": "identity",
+      "record_id": "erythritol",
+      "de": {
+        "name": "Erythrit, Produkt nicht spezifiziert",
+        "aliases": [
+          "Erythrit",
+          "Erythritol",
+          "E968",
+          "Erytrit",
+          "Ehrytrit"
+        ]
+      }
+    },
+    {
+      "id": "quark-double-cream-unspecified",
+      "name": "Quark, double-cream grade, unspecified product",
+      "category": "dairy",
+      "provider": "identity",
+      "record_id": "quark-double-cream-unspecified",
+      "de": {
+        "name": "Quark Doppelrahmstufe, Produkt nicht spezifiziert",
+        "aliases": [
+          "Doppelrahmquark",
+          "Sahnequark Doppelrahmstufe"
+        ]
+      }
+    },
+    {
+      "id": "tomatoes-chopped-canned-unspecified",
+      "name": "Tomatoes, chopped, canned, unspecified product",
+      "category": "vegetables",
+      "provider": "identity",
+      "record_id": "tomatoes-chopped-canned-unspecified",
+      "de": {
+        "name": "Tomaten gehackt, Konserve, Produkt nicht spezifiziert",
+        "aliases": [
+          "Gehackte Tomaten",
+          "Tomatenstücke"
+        ]
+      }
+    },
+    {
+      "id": "pasta-durum-wheat-unspecified",
+      "name": "Pasta, durum wheat, dry, unspecified product",
+      "category": "pasta",
+      "provider": "identity",
+      "record_id": "pasta-durum-wheat-unspecified",
+      "de": {
+        "name": "Nudeln aus Hartweizen, trocken, Produkt nicht spezifiziert",
+        "aliases": [
+          "Hartweizennudeln",
+          "Pasta Hartweizen"
+        ]
+      }
+    },
+    {
+      "id": "pasta-lentil-dry-unspecified",
+      "name": "Pasta, lentil, dry, unspecified product",
+      "category": "pasta",
+      "provider": "identity",
+      "record_id": "pasta-lentil-dry-unspecified",
+      "de": {
+        "name": "Linsennudeln, trocken, Produkt nicht spezifiziert",
+        "aliases": [
+          "Nudeln Linsen",
+          "Linsenpasta",
+          "Rote Linsen Nudeln"
+        ]
+      }
+    },
+    {
+      "id": "pasta-chickpea-dry-unspecified",
+      "name": "Pasta, chickpea, dry, unspecified product",
+      "category": "pasta",
+      "provider": "identity",
+      "record_id": "pasta-chickpea-dry-unspecified",
+      "de": {
+        "name": "Kichererbsennudeln, trocken, Produkt nicht spezifiziert",
+        "aliases": [
+          "Nudeln Kichererbsen",
+          "Kichererbsenpasta"
+        ]
+      }
+    },
+    {
+      "id": "pasta-pea-dry-unspecified",
+      "name": "Pasta, pea, dry, unspecified product",
+      "category": "pasta",
+      "provider": "identity",
+      "record_id": "pasta-pea-dry-unspecified",
+      "de": {
+        "name": "Erbsennudeln, trocken, Produkt nicht spezifiziert",
+        "aliases": [
+          "Nudeln Erbsen",
+          "Erbsenpasta"
+        ]
+      }
+    },
+    {
+      "id": "pasta-spelt-dry-unspecified",
+      "name": "Pasta, spelt, dry, unspecified product",
+      "category": "pasta",
+      "provider": "identity",
+      "record_id": "pasta-spelt-dry-unspecified",
+      "de": {
+        "name": "Dinkelnudeln, trocken, Produkt nicht spezifiziert",
+        "aliases": [
+          "Nudeln Dinkel",
+          "Dinkelpasta"
+        ]
+      }
+    },
+    {
+      "id": "pasta-wholemeal-spelt-dry-unspecified",
+      "name": "Pasta, wholemeal spelt, dry, unspecified product",
+      "category": "pasta",
+      "provider": "identity",
+      "record_id": "pasta-wholemeal-spelt-dry-unspecified",
+      "de": {
+        "name": "Dinkelvollkornnudeln, trocken, Produkt nicht spezifiziert",
+        "aliases": [
+          "Dinkel Vollkorn Nudeln"
+        ]
+      }
+    },
+    {
+      "id": "pasta-rice-maize-dry-unspecified",
+      "name": "Pasta, rice and maize, dry, unspecified product",
+      "category": "pasta",
+      "provider": "identity",
+      "record_id": "pasta-rice-maize-dry-unspecified",
+      "de": {
+        "name": "Reis-Mais-Nudeln, trocken, Produkt nicht spezifiziert",
+        "aliases": [
+          "Reis Mais Nudeln",
+          "Glutenfreie Pasta Reis Mais"
+        ]
+      }
+    },
+    {
+      "id": "rice-paper-unspecified",
+      "name": "Rice paper wrappers, dry, unspecified product",
+      "category": "pasta",
+      "provider": "identity",
+      "record_id": "rice-paper-unspecified",
+      "de": {
+        "name": "Reispapier, trocken, Produkt nicht spezifiziert",
+        "aliases": [
+          "Reisblätter",
+          "Reispapierblätter",
+          "Sommerrollenblätter"
+        ]
+      }
+    },
+    {
+      "id": "pea-protein-isolate-unspecified",
+      "name": "Pea protein isolate, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "pea-protein-isolate-unspecified",
+      "de": {
+        "name": "Erbsenproteinisolat, Produkt nicht spezifiziert",
+        "aliases": [
+          "Erbsenprotein",
+          "Erbsen Protein",
+          "Proteinpulver Erbse"
+        ]
+      }
+    },
+    {
+      "id": "pea-protein-concentrate-unspecified",
+      "name": "Pea protein concentrate, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "pea-protein-concentrate-unspecified",
+      "de": {
+        "name": "Erbsenproteinkonzentrat, Produkt nicht spezifiziert",
+        "aliases": [
+          "Erbsenprotein Konzentrat"
+        ]
+      }
+    },
+    {
+      "id": "whey-protein-concentrate-unspecified",
+      "name": "Whey protein concentrate, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "whey-protein-concentrate-unspecified",
+      "de": {
+        "name": "Molkenproteinkonzentrat, Produkt nicht spezifiziert",
+        "aliases": [
+          "Whey Konzentrat",
+          "Whey Protein",
+          "Molkenprotein"
+        ]
+      }
+    },
+    {
+      "id": "whey-protein-isolate-unspecified",
+      "name": "Whey protein isolate, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "whey-protein-isolate-unspecified",
+      "de": {
+        "name": "Molkenproteinisolat, Produkt nicht spezifiziert",
+        "aliases": [
+          "Whey Isolat",
+          "Molkenprotein Isolat"
+        ]
+      }
+    },
+    {
+      "id": "casein-protein-unspecified",
+      "name": "Casein protein powder, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "casein-protein-unspecified",
+      "de": {
+        "name": "Casein-Proteinpulver, Produkt nicht spezifiziert",
+        "aliases": [
+          "Casein",
+          "Kasein",
+          "Milchprotein"
+        ]
+      }
+    },
+    {
+      "id": "rice-protein-unspecified",
+      "name": "Rice protein powder, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "rice-protein-unspecified",
+      "de": {
+        "name": "Reisproteinpulver, Produkt nicht spezifiziert",
+        "aliases": [
+          "Reisprotein",
+          "Reis Protein"
+        ]
+      }
+    },
+    {
+      "id": "hemp-protein-unspecified",
+      "name": "Hemp protein powder, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "hemp-protein-unspecified",
+      "de": {
+        "name": "Hanfproteinpulver, Produkt nicht spezifiziert",
+        "aliases": [
+          "Hanfprotein",
+          "Hanf Protein"
+        ]
+      }
+    },
+    {
+      "id": "vegan-protein-blend-unspecified",
+      "name": "Plant protein powder blend, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "vegan-protein-blend-unspecified",
+      "de": {
+        "name": "Pflanzliche Proteinpulver-Mischung, Produkt nicht spezifiziert",
+        "aliases": [
+          "Veganes Protein",
+          "Vegan Protein Blend",
+          "Mehrkomponentenprotein vegan"
+        ]
+      }
+    },
+    {
+      "id": "protein-pudding-unspecified",
+      "name": "Protein pudding, unspecified product",
+      "category": "dairy",
+      "provider": "identity",
+      "record_id": "protein-pudding-unspecified",
+      "de": {
+        "name": "Proteinpudding, Produkt nicht spezifiziert",
+        "aliases": [
+          "High Protein Pudding",
+          "Protein Pudding"
+        ]
+      }
+    },
+    {
+      "id": "protein-yogurt-unspecified",
+      "name": "Protein yogurt, unspecified product",
+      "category": "dairy",
+      "provider": "identity",
+      "record_id": "protein-yogurt-unspecified",
+      "de": {
+        "name": "Proteinjoghurt, Produkt nicht spezifiziert",
+        "aliases": [
+          "High Protein Joghurt"
+        ]
+      }
+    },
+    {
+      "id": "protein-bar-unspecified",
+      "name": "Protein bar, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "protein-bar-unspecified",
+      "de": {
+        "name": "Proteinriegel, Produkt nicht spezifiziert",
+        "aliases": [
+          "Eiweißriegel",
+          "Protein Bar"
+        ]
+      }
+    },
+    {
+      "id": "tofu-smoked-unspecified",
+      "name": "Tofu, smoked, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "tofu-smoked-unspecified",
+      "de": {
+        "name": "Räuchertofu, Produkt nicht spezifiziert",
+        "aliases": [
+          "Tofu geräuchert"
+        ]
+      }
+    },
+    {
+      "id": "tofu-silken-unspecified",
+      "name": "Tofu, silken, unspecified product",
+      "category": "legumes_protein",
+      "provider": "identity",
+      "record_id": "tofu-silken-unspecified",
+      "de": {
+        "name": "Seidentofu, Produkt nicht spezifiziert",
+        "aliases": [
+          "Silken Tofu"
+        ]
+      }
+    },
+    {
+      "id": "parsley-root-unspecified",
+      "name": "Parsley root, raw, unspecified source",
+      "category": "vegetables",
+      "provider": "identity",
+      "record_id": "parsley-root-unspecified",
+      "de": {
+        "name": "Petersilienwurzel roh, Quelle nicht spezifiziert",
+        "aliases": [
+          "Wurzelpetersilie"
+        ]
+      }
+    },
+    {
+      "id": "lovage-fresh-unspecified",
+      "name": "Lovage, fresh, unspecified source",
+      "category": "herbs_spices",
+      "provider": "identity",
+      "record_id": "lovage-fresh-unspecified",
+      "de": {
+        "name": "Liebstöckel frisch, Quelle nicht spezifiziert",
+        "aliases": [
+          "Maggikraut",
+          "Liebstöckel"
+        ]
+      }
+    },
+    {
+      "id": "oregano-fresh-unspecified",
+      "name": "Oregano, fresh, unspecified source",
+      "category": "herbs_spices",
+      "provider": "identity",
+      "record_id": "oregano-fresh-unspecified",
+      "de": {
+        "name": "Oregano frisch, Quelle nicht spezifiziert",
+        "aliases": [
+          "Frischer Oregano"
+        ]
+      }
+    },
+    {
+      "id": "sage-fresh-unspecified",
+      "name": "Sage, fresh, unspecified source",
+      "category": "herbs_spices",
+      "provider": "identity",
+      "record_id": "sage-fresh-unspecified",
+      "de": {
+        "name": "Salbei frisch, Quelle nicht spezifiziert",
+        "aliases": [
+          "Frischer Salbei"
+        ]
+      }
+    },
+    {
+      "id": "baking-soda",
+      "category": "pantry",
+      "provider": "usda",
+      "record_id": "175040",
+      "de": {
+        "name": "Natron",
+        "aliases": [
+          "Speisenatron",
+          "Backsoda",
+          "Natriumhydrogencarbonat"
+        ]
+      }
+    },
+    {
+      "id": "bakers-yeast-fresh",
+      "category": "pantry",
+      "provider": "usda",
+      "record_id": "175042",
+      "de": {
+        "name": "Backhefe frisch, gepresst",
+        "aliases": [
+          "Frische Hefe",
+          "Hefewürfel",
+          "Bäckerhefe"
+        ]
+      }
+    },
+    {
+      "id": "bakers-yeast-active-dry",
+      "category": "pantry",
+      "provider": "usda",
+      "record_id": "175043",
+      "de": {
+        "name": "Backhefe aktiv, trocken",
+        "aliases": [
+          "Trockenhefe",
+          "Backhefe trocken"
+        ]
+      }
+    }
+  ]
+}

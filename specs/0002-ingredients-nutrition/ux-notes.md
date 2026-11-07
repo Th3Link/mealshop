@@ -1,6 +1,7 @@
 # Nutrition workbench UX
 
-Scope: a small responsive browser review surface; the planned Flutter app remains F18.
+Scope: disposable, pragmatic test demo only. This is not the Nextcloud or standalone product
+web UI (F22); do not invest in a design system here. Flutter remains F18.
 
 - Header identifies Mealshop and the ingredient/nutrition workbench, with a short limits notice.
 - Ingredient search filters by canonical name and aliases. Detail shows form, basis, source,

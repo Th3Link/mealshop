@@ -1,41 +1,91 @@
-# Starter ingredient catalogue
+# English-base kitchen ingredient catalogue
 
-`catalogue.json` is the reviewed, read-only starter dataset, schema version 1. It is loaded
-once at startup and can be replaced with `MEALSHOP_CATALOGUE_PATH`. It is not a household
-database, an allergen database or a complete food composition database.
+`catalogue.json` contains 313 curated ingredient identities: 284 source-backed profiles and
+29 identity-only records. It is immutable reference data loaded at startup, not a household
+database or an allergen-safety database. All base names/aliases/forms are English; German
+names/aliases/forms live under `translations.de`. Stable ingredient IDs plus field names form
+the content-translation identifiers. Unit/quantity meanings never depend on display language.
 
-## Provenance and licensing
-- `sources/usda-oats.json`: original USDA API response for FDC 169705, retrieved 2026-11-07.
-- `sources/usda-chia.json`: original USDA API response for FDC 170554, retrieved 2026-11-07.
-- Both are SR Legacy records, published 2019-04-01. Oats refers to dry uncooked grain, not
-  every branded rolled-oat product; chia refers to dried seeds. Select matching forms.
-- [USDA API guide](https://fdc.nal.usda.gov/api-guide/): data are public domain/CC0-1.0.
-  Original numerical facts remain CC0; the software licence does not change those rights.
-  Recipe calculations run locally against these frozen records, with no USDA API call/key.
-- The catalogue retains 13 supported nutrient amounts per source in their original units.
-  Decimal spelling is normalized by removing insignificant zeros; no value is rounded or inferred.
-  `python3 scripts/verify_catalogue.py` checks the 26 values against the frozen responses.
-- Psyllium husks is an identity-only project record. No verified product-specific nutrient
-  source was selected, so every amount remains null. Its note cites a guideline, not composition.
-- Project-authored identity metadata, educational summaries and code are AGPL-3.0-only.
-  External publications are linked, not redistributed as full text.
+## Sources, attribution and licences
 
-## Interpretation
-Every value is per 100 g edible portion of the stated form. Source uncertainty includes
-reported sample counts/ranges where available; a sample range is not a confidence interval.
-USDA carbohydrate here is calculated by difference and includes dietary fibre. This must
-not be mixed with EU-style available-carbohydrate values under the same nutrient ID.
+### BLS 4.0
+Max Rubner-Institut (2025): Bundeslebensmittelschlüssel (BLS), Version 4.0 — Deutsche
+Nährstoffdatenbank. Karlsruhe. DOI: [10.25826/Data20251217-134202-0](https://doi.org/10.25826/Data20251217-134202-0).
+Source: [official download](https://blsdb.de/download), retrieved 2026-11-07.
+Original BLS data are licensed [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
+No endorsement by the publisher is implied.
 
-Beta-glucan and soluble fibre are not measured in the selected nutrient records. Their
-amounts stay unknown, even though related educational notes exist. No ingredient serving
-is declared to satisfy a health-claim condition. The oats note links Health Canada's claim
-assessment; the chia note links EFSA's composition/safety opinion; the psyllium note links
-the AGA/ACG guideline. Conditions and limitations remain visible with each summary.
+`data/sources/bls-4.0-selected.json` retains 248 selected source rows with original German/English
+names, numeric cell strings, units, acquisition methods, references and workbook sheet/row.
+Archive/workbook SHA-256 hashes identify the exact downloaded source. Adaptations: reviewed
+food selection, English-base structure, German translation fields/aliases, a subset of nutrient
+components and documented six-decimal normalization. Source numeric values are not universal
+brand/package values. The provider's source-data licence remains intact in API provenance.
 
-## Editing a local catalogue
-Copy `catalogue.json` and edit whole ingredient records with reviewed sources. Keep stable
-IDs and source record/version/licence/retrieval fields. Decimal amounts must be JSON strings;
-null/omitted nutrients mean unknown. A source zero is a real zero. The nutrient vocabulary,
-units, input limits and API examples are documented in [the nutrition guide](../docs/guides/nutrition.md).
-No metadata or quantities are rewritten during calculations. Restart to load a changed file;
-invalid catalogues fail startup instead of silently falling back to the bundled data.
+### USDA
+[USDA FoodData Central](https://fdc.nal.usda.gov/api-guide/) data are public domain/CC0-1.0.
+The original oats/chia API responses remain in `sources/usda-oats.json`/`usda-chia.json`.
+`sources/usda-selected.json` holds 34 more reviewed SR Legacy records from the official April
+2018 archive (records published 2019-04-01), with archive hash and original numeric token spellings
+preserved as strings in the extracted snapshot. Source units, versions and record IDs are retained.
+Herb states and formulated reference protein powders are named explicitly; a USDA reference
+whey formulation is not treated as a universal pure-isolate or manufacturer specification.
+
+### Project records
+Psyllium husks and 28 further product/source-specific identities have no verified matching
+composition selected. Their numeric values remain absent/null. This includes particular pulse
+pastas, rice paper, erythritol, double-cream quark and various protein products. They are searchable
+and selectable, but do not inherit nutrients from flour, a nearby fat grade or another product.
+Project software and project-authored curation/evidence text remain AGPL-3.0-only. External data
+retain their stated licences; third-party publications are linked, not redistributed as full text.
+
+## Nutrient definitions and precision
+All amounts refer to 100 g edible portion of the named state. Raw/cooked, fresh/dried,
+fortified/unfortified, lactose-free and fat-in-dry-matter variants retain separate identities.
+A cheese/quark fat-in-dry-matter grade does not mean that many grams of fat per 100 g food.
+Milk is still measured in grams; no ml-to-g conversion or density assumption is introduced.
+
+The registry has 17 definitions. BLS available carbohydrate (`CHO`) excludes fibre and includes
+polyols; USDA by-difference carbohydrate includes fibre. They remain separate IDs, not summed or
+converted. BLS `FOLFD` and USDA 1187 are food folate, not total folate or DFE. Soluble fibre is used
+only where reported; beta-glucan is never extrapolated from total/soluble fibre. Source-specific
+energy is retained, not recomputed from macros. Mixed definitions may yield partial totals,
+explained by a stable warning code. Source uncertainty/acquisition notes remain visible.
+
+The runtime amount format supports six fractional places. Import normalizes raw numeric
+representations (including XLSX binary-decimal artifacts) to that scale using half-up rounding.
+Original strings remain in the frozen snapshot; verification checks a maximum 0.0000005 difference
+in the nutrient's unit. Missing/unusable and below-resolution positive amounts stay unknown;
+they never become an asserted zero. This is an import representation policy, not source accuracy.
+Recipe/portion aggregation still uses exact checked integers through final two-place display.
+
+## Reproduce or extend the catalogue
+`catalogue-base.json` preserves the three initially reviewed records; `catalogue-selection.json`
+is the explicit identity/source manifest. The generated runtime file must not be hand-edited.
+All normal generation/verification is offline:
+
+```sh
+python3 scripts/import_catalogue.py
+python3 scripts/import_catalogue.py --check
+python3 scripts/verify_catalogue.py
+```
+
+To refresh selected snapshots after reviewing source/version/licence and adding exact manifest
+mappings, download the named archives from their official pages, then run:
+
+```sh
+python3 scripts/extract_bls_snapshot.py /absolute/path/BLS_4_0_2025_DE.zip
+python3 scripts/extract_usda_snapshot.py /absolute/path/FoodData_Central_sr_legacy_food_json_2018-04.zip
+python3 scripts/import_catalogue.py
+python3 scripts/verify_catalogue.py
+```
+
+The extractors use Python's standard ZIP/XML/JSON readers and preserve original source tokens;
+they do not modify the source workbooks or fetch the network. Check the source hashes, exact
+identity/state, component definitions and aliases in the diff. Source verification and generated
+catalogue checks run in CI. There are 3,778 mapped nutrient values in the current snapshot.
+
+An operator's custom JSON file may still replace the catalogue via `MEALSHOP_CATALOGUE_PATH`.
+The pre-existing 1 MiB/1000-record loader bound remains an input-validation constraint of this
+small demo; wider persistent catalogues require F18 loading/storage work. See the
+[nutrition demo guide](../docs/guides/nutrition.md) and [F23](../specs/0023-kitchen-ingredient-catalogue/specification.md).

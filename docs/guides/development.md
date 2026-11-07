@@ -7,8 +7,10 @@ not a reason to erase source quantities. Keep core calculations independent of H
 ## Local gate
 ```sh
 python3 scripts/generate_docs.py --check
+python3 scripts/import_catalogue.py --check
 python3 scripts/verify_catalogue.py
-node --check src/web/app.js
+node --check src/web/demo.mjs
+node --test tests/i18n.test.mjs
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo nextest run --workspace --locked

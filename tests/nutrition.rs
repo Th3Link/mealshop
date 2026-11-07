@@ -55,7 +55,7 @@ fn nutrient<'a>(body: &'a Value, id: &str) -> &'a Value {
 
 #[tokio::test]
 async fn catalogue_search_and_detail_retain_provenance_and_evidence() {
-    let (status, search) = request("GET", "/api/ingredients?q=hafer", Value::Null).await;
+    let (status, search) = request("GET", "/api/ingredients?q=haferkorn", Value::Null).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(search["ingredients"].as_array().unwrap().len(), 1);
     assert_eq!(search["ingredients"][0]["id"], "oats");
@@ -163,6 +163,7 @@ async fn invalid_requests_fail_without_silent_coercion() {
         json!("0"),
         json!("-1"),
         json!("NaN"),
+        json!("1,5"),
         json!("1e2"),
         json!("0.0000001"),
         json!("1000000001"),
@@ -320,4 +321,158 @@ fn duplicate_nutrient_keys_cannot_silently_replace_source_values() {
         1,
     );
     assert!(mealshop_server::router_from_catalogue_json(&fixture).is_err());
+}
+
+#[tokio::test]
+async fn expanded_catalogue_has_english_base_names_and_searchable_german_labels() {
+    let (status, body) = request("GET", "/api/ingredients?q=Weizen%20405", Value::Null).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["language"], "en");
+    assert_eq!(body["ingredients"].as_array().unwrap().len(), 1);
+    let flour = &body["ingredients"][0];
+    assert_eq!(flour["id"], "wheat-flour-type-405");
+    assert_eq!(flour["name"], "Wheat flour, Type 405");
+    assert_eq!(flour["translations"]["de"]["name"], "Weizen Mehl, Type 405");
+    assert_eq!(flour["source"]["record_id"], "C214100");
+    assert_eq!(flour["source"]["license"], "CC-BY-4.0");
+    assert!(flour["nutrients"]["available_carbohydrate"]["amount"].is_string());
+    assert!(flour["nutrients"].get("carbohydrate").is_none());
+    let (_, english) = request("GET", "/api/ingredients?q=wheat%20405", Value::Null).await;
+    assert_eq!(body, english);
+    for (query, id) in [
+        ("Hafermilch", "oat-drink-unsweetened"),
+        ("Magerquark", "quark-low-fat"),
+        ("Erbsenprotein", "pea-protein-isolate-unspecified"),
+        ("Reisbl%C3%A4tter", "rice-paper-unspecified"),
+        ("Zucchine", "zucchini-raw"),
+    ] {
+        let (_, matches) =
+            request("GET", &format!("/api/ingredients?q={query}"), Value::Null).await;
+        assert!(
+            matches["ingredients"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|i| i["id"] == id),
+            "missing {id}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn requested_variants_keep_exact_source_identity_and_do_not_reuse_neighbouring_products() {
+    for (id, source) in [
+        ("rye-flour-type-997", "C223200"),
+        ("spelt-flour-type-630", "C234000"),
+        ("wheat-wholemeal-flour", "C211000"),
+        ("milk-1-5-pasteurised", "M111200"),
+        ("milk-1-5-lactose-free-pasteurised", "M114200"),
+        ("quark-20-fat-dry-matter", "M713300"),
+        ("skyr-plain", "M710100"),
+        ("edamame-raw", "G750100"),
+        ("lentil-flour", "H730400"),
+        ("whey-protein-powder-usda-reference", "173180"),
+    ] {
+        let (status, ingredient) =
+            request("GET", &format!("/api/ingredients/{id}"), Value::Null).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(ingredient["source"]["record_id"], source);
+    }
+    let (_, quark) = request(
+        "GET",
+        "/api/ingredients/quark-20-fat-dry-matter",
+        Value::Null,
+    )
+    .await;
+    assert_ne!(quark["nutrients"]["fat"]["amount"], "20"); // Dry-matter grade is not composition per 100 g.
+    for id in [
+        "pasta-lentil-dry-unspecified",
+        "pea-protein-isolate-unspecified",
+        "erythritol",
+        "quark-double-cream-unspecified",
+        "whey-protein-isolate-unspecified",
+    ] {
+        let (_, ingredient) = request("GET", &format!("/api/ingredients/{id}"), Value::Null).await;
+        assert_eq!(
+            ingredient["source"]["name"],
+            "Mealshop identity-only record"
+        );
+        assert!(
+            ingredient["nutrients"]
+                .as_object()
+                .unwrap()
+                .values()
+                .all(|v| v["amount"].is_null())
+        );
+        let (_, result) = request(
+            "POST",
+            "/api/nutrition/calculate",
+            recipe(id, json!("100"), 1),
+        )
+        .await;
+        assert_eq!(nutrient(&result, "energy_kcal")["status"], "unknown");
+        assert_eq!(nutrient(&result, "energy_kcal")["total"], Value::Null);
+    }
+}
+
+#[tokio::test]
+async fn source_specific_carbohydrate_definitions_and_warning_codes_remain_separate() {
+    let (_, result) = request("POST", "/api/nutrition/calculate", json!({
+        "lines":[{"ingredient_id":"oats","grams":"100"},{"ingredient_id":"milk-1-5-pasteurised","grams":"100"}],
+        "servings":2,"preparation":"cooking_unmodelled"
+    })).await;
+    assert_eq!(nutrient(&result, "carbohydrate")["status"], "partial");
+    assert_eq!(
+        nutrient(&result, "available_carbohydrate")["status"],
+        "partial"
+    );
+    assert_eq!(nutrient(&result, "protein")["status"], "complete");
+    assert_eq!(
+        result["warning_codes"],
+        json!([
+            "composition_estimate",
+            "cooking_unmodelled",
+            "carbohydrate_definitions"
+        ])
+    );
+    assert_eq!(
+        result["warnings"].as_array().unwrap().len(),
+        result["warning_codes"].as_array().unwrap().len()
+    );
+    assert_eq!(result["ingredients"][0]["name"], "Oats");
+    assert_eq!(
+        result["ingredients"][0]["translations"]["de"]["name"],
+        "Haferkorn"
+    );
+    let (status, error) = request(
+        "POST",
+        "/api/nutrition/calculate",
+        recipe("unknown", json!("1"), 1),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(error["code"], "invalid_recipe");
+    assert!(error["error"].is_string());
+}
+
+#[test]
+fn translations_are_optional_but_cannot_override_the_english_base_or_use_invalid_keys() {
+    let original: Value = serde_json::from_str(include_str!("fixtures/catalogue.json")).unwrap();
+    assert!(mealshop_server::router_from_catalogue_json(&original.to_string()).is_ok());
+    for mutate in 0..4 {
+        let mut fixture = original.clone();
+        match mutate {
+            0 => fixture["language"] = json!("de"),
+            1 => {
+                fixture["ingredients"][0]["translations"] =
+                    json!({"en":{"name":"Override","aliases":[]}});
+            }
+            2 => fixture["ingredients"][0]["translations"] = json!({"de":{"name":"","aliases":[]}}),
+            _ => {
+                fixture["ingredients"][0]["translations"] =
+                    json!({"../de":{"name":"Fixture","aliases":[]}});
+            }
+        }
+        assert!(mealshop_server::router_from_catalogue_json(&fixture.to_string()).is_err());
+    }
 }

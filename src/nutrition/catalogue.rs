@@ -44,8 +44,19 @@ pub(crate) enum Basis {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
+pub(crate) struct IngredientText {
+    pub(crate) name: String,
+    #[serde(default)]
+    pub(crate) aliases: Vec<String>,
+    pub(crate) form: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct Ingredient {
     pub(crate) id: String,
+    #[serde(default = "other_category")]
+    pub(crate) category: String,
     pub(crate) name: String,
     pub(crate) aliases: Vec<String>,
     pub(crate) form: String,
@@ -55,14 +66,26 @@ pub(crate) struct Ingredient {
     #[serde(deserialize_with = "unique_readings")]
     pub(crate) nutrients: BTreeMap<Nutrient, Reading>,
     pub(crate) education: Vec<Education>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub(crate) translations: BTreeMap<String, IngredientText>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Catalogue {
     pub(crate) schema_version: u32,
+    #[serde(default = "english")]
+    pub(crate) language: String,
     pub(crate) version: String,
     pub(crate) ingredients: Vec<Ingredient>,
+}
+
+fn other_category() -> String {
+    "other".to_owned()
+}
+
+fn english() -> String {
+    "en".to_owned()
 }
 
 fn text(value: &str) -> Result<(), String> {
@@ -89,8 +112,11 @@ impl Catalogue {
         }
         let result: Self =
             serde_json::from_str(json).map_err(|e| format!("Invalid catalogue JSON: {e}"))?;
-        if result.schema_version != 1 || result.ingredients.len() > 1000 {
-            return Err("Expected catalogue schema 1 with at most 1000 records".to_owned());
+        if result.schema_version != 1 || result.language != "en" || result.ingredients.len() > 1000
+        {
+            return Err(
+                "Expected English-base catalogue schema 1 with at most 1000 records".to_owned(),
+            );
         }
         text(&result.version)?;
         let mut ids = BTreeSet::new();
@@ -109,6 +135,19 @@ impl Catalogue {
 }
 
 impl Ingredient {
+    pub(crate) fn matches(&self, query: &str) -> bool {
+        let mut labels = vec![self.name.as_str()];
+        labels.extend(self.aliases.iter().map(String::as_str));
+        for translated in self.translations.values() {
+            labels.push(&translated.name);
+            labels.extend(translated.aliases.iter().map(String::as_str));
+        }
+        let searchable = labels.join(" ").to_lowercase();
+        query
+            .split_whitespace()
+            .all(|term| searchable.contains(&term.to_lowercase()))
+    }
+
     fn validate(&self) -> Result<(), String> {
         if self.id.is_empty()
             || self.id.len() > 100
@@ -133,6 +172,32 @@ impl Ingredient {
             &self.source.license,
         ] {
             text(field)?;
+        }
+        if self.category.is_empty()
+            || self.category.len() > 40
+            || !self
+                .category
+                .bytes()
+                .all(|b| b.is_ascii_lowercase() || b == b'_')
+        {
+            return Err("Ingredient categories must be lowercase English identifiers".to_owned());
+        }
+        for (locale, translated) in &self.translations {
+            if locale == "en"
+                || locale.len() > 35
+                || !locale
+                    .split('-')
+                    .all(|part| !part.is_empty() && part.bytes().all(|b| b.is_ascii_alphanumeric()))
+            {
+                return Err("Translation language tags must be valid identifiers; English belongs in the base fields".to_owned());
+            }
+            text(&translated.name)?;
+            for alias in &translated.aliases {
+                text(alias)?;
+            }
+            if let Some(form) = &translated.form {
+                text(form)?;
+            }
         }
         https(&self.source.url)?;
         for alias in &self.aliases {

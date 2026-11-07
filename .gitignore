@@ -2,3 +2,5 @@
 /dist/
 .env
 *.profraw
+
+__pycache__/

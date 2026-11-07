@@ -1,7 +1,7 @@
 # Mealshop
 
 Recipes, informed nutrition, shopping and family meal planning. **Early development:** a
-Rust HTTP server now includes an ingredient catalogue and nutrition workbench (F02, under review).
+Rust HTTP server now includes an ingredient catalogue and nutrition demo (F02, accepted in PR #4).
 The broader product features below remain planned.
 
 [![CI](https://github.com/Th3Link/mealshop/actions/workflows/ci.yml/badge.svg)](https://github.com/Th3Link/mealshop/actions/workflows/ci.yml)
@@ -18,18 +18,24 @@ The broader product features below remain planned.
 - Guided cooking with preset timers, multi-day bread/pizza schedules, and later brewing/fermentation.
 - Inventory, offers, customer-operated link imports and MCP recipe tools.
 
-## Run the ingredient and nutrition workbench
+## Run the ingredient and nutrition demo
 Install stable Rust (declared minimum: 1.85), then:
 ```sh
 cargo run --locked
 curl --fail http://127.0.0.1:3000/health
 ```
 The response is `ok` plus a newline. `MEALSHOP_LISTEN_ADDR` overrides `127.0.0.1:3000`.
-Open [the workbench](http://127.0.0.1:3000/) to calculate recipe/serving nutrients and inspect
-sources, unknowns and component evidence. The starter catalogue includes USDA oats/chia data
-and an identity-only psyllium record. [Demo, API and custom catalogue guide](docs/guides/nutrition.md).
+Open [the demo](http://127.0.0.1:3000/) to calculate recipe/serving nutrients and inspect
+sources, unknowns and component evidence. The English-base catalogue contains 313 ingredients
+with German names: 284 source-backed BLS/USDA profiles and 29 explicitly unknown product identities.
+[Data and licences](data/README.md) · [Demo, API and custom catalogue guide](docs/guides/nutrition.md).
 Use Ctrl-C for graceful shutdown. There is no household authentication or saved recipe data
 yet. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
+
+The current browser surface is a pragmatic test demo, not the product UI. It supports German
+and English interface/quantity presentation; untranslated source content stays explicitly original.
+Product web clients are planned in Vue 3 for Nextcloud and standalone hosting ([F22](specs/0022-product-web-clients/specification.md));
+full cross-client localization is tracked in [F21](specs/0021-internationalization/specification.md).
 
 ## Deployment and business model (planned)
 Rust/Tokio/Axum server, standalone or as a Nextcloud `ExApp`; Flutter client connecting to an

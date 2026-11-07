@@ -20,6 +20,7 @@ type SharedCatalogue = Arc<Catalogue>;
 
 #[derive(Serialize)]
 struct ErrorBody {
+    code: &'static str,
     error: String,
 }
 
@@ -27,7 +28,21 @@ struct ApiError(StatusCode, String);
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
-        (self.0, Json(ErrorBody { error: self.1 })).into_response()
+        let code = match self.0 {
+            StatusCode::NOT_FOUND => "ingredient_not_found",
+            StatusCode::BAD_REQUEST | StatusCode::UNPROCESSABLE_ENTITY => "invalid_recipe",
+            StatusCode::PAYLOAD_TOO_LARGE => "request_too_large",
+            StatusCode::UNSUPPORTED_MEDIA_TYPE => "json_required",
+            _ => "request_failed",
+        };
+        (
+            self.0,
+            Json(ErrorBody {
+                code,
+                error: self.1,
+            }),
+        )
+            .into_response()
     }
 }
 
@@ -40,7 +55,7 @@ pub(crate) fn router(catalogue: Catalogue) -> Router {
             get(|| async {
                 (
                     [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-                    include_str!("web/app.js"),
+                    include_str!("web/demo.mjs"),
                 )
             }),
         )
@@ -53,6 +68,18 @@ pub(crate) fn router(catalogue: Catalogue) -> Router {
                 )
             }),
         )
+        .route(
+            "/i18n.mjs",
+            get(|| async { javascript(include_str!("web/i18n.mjs")) }),
+        )
+        .route(
+            "/locales/en.mjs",
+            get(|| async { javascript(include_str!("web/locales/en.mjs")) }),
+        )
+        .route(
+            "/locales/de.mjs",
+            get(|| async { javascript(include_str!("web/locales/de.mjs")) }),
+        )
         .route("/api/ingredients", get(list))
         .route("/api/ingredients/{id}", get(detail))
         .route("/api/nutrition/calculate", post(estimate))
@@ -63,8 +90,16 @@ pub(crate) fn router(catalogue: Catalogue) -> Router {
 #[derive(Serialize)]
 struct IngredientList<'a> {
     catalogue_version: &'a str,
+    language: &'a str,
     ingredients: Vec<&'a Ingredient>,
     nutrient_definitions: Vec<NutrientInfo>,
+}
+
+fn javascript(source: &'static str) -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        source,
+    )
 }
 
 async fn list(
@@ -77,16 +112,11 @@ async fn list(
     let ingredients = catalogue
         .ingredients
         .iter()
-        .filter(|i| {
-            search.is_empty()
-                || i.name.to_lowercase().contains(&search)
-                || i.aliases
-                    .iter()
-                    .any(|alias| alias.to_lowercase().contains(&search))
-        })
+        .filter(|i| i.matches(&search))
         .collect();
     Json(json!(IngredientList {
         catalogue_version: &catalogue.version,
+        language: &catalogue.language,
         ingredients,
         nutrient_definitions: Nutrient::ALL.iter().map(|n| n.info()).collect()
     }))

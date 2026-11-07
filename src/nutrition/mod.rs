@@ -4,9 +4,10 @@ pub(crate) mod catalogue;
 pub(crate) mod nutrients;
 
 use crate::quantities::{Grams, SCALE, rounded};
-use catalogue::{Basis, Catalogue, Education, Source};
+use catalogue::{Basis, Catalogue, Education, IngredientText, Source};
 use nutrients::{Nutrient, NutrientInfo};
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -40,6 +41,7 @@ pub(crate) struct Contribution {
     source: Source,
     uncertainty: String,
     education: Vec<Education>,
+    translations: BTreeMap<String, IngredientText>,
 }
 
 #[derive(Serialize)]
@@ -64,6 +66,7 @@ pub(crate) struct Estimate {
     nutrients: Vec<NutrientResult>,
     ingredients: Vec<Contribution>,
     warnings: Vec<&'static str>,
+    warning_codes: Vec<&'static str>,
 }
 
 pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<Estimate, String> {
@@ -99,13 +102,24 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
             source: i.source.clone(),
             uncertainty: i.uncertainty.clone(),
             education: i.education.clone(),
+            translations: i.translations.clone(),
         })
         .collect();
+    let mut warning_codes = vec!["composition_estimate"];
     let mut warnings = vec![
         "Composition is a source-based estimate; missing values are unknown, not zero. No individual benefit or allergen safety is established.",
     ];
     if matches!(recipe.preparation, Preparation::CookingUnmodelled) {
+        warning_codes.push("cooking_unmodelled");
         warnings.push("Cooking is unmodelled: no nutrient retention, cooking-loss or water/yield correction has been applied. These are input-composition estimates, not measured cooked-food values.");
+    }
+    if ["carbohydrate", "available_carbohydrate"].iter().all(|id| {
+        nutrients
+            .iter()
+            .any(|n| n.info.id == *id && n.status == "partial")
+    }) {
+        warning_codes.push("carbohydrate_definitions");
+        warnings.push("Sources use different carbohydrate definitions. By-difference and available carbohydrate totals stay separate and may be partial; no inferred conversion is applied.");
     }
     Ok(Estimate {
         catalogue_version: catalogue.version.clone(),
@@ -115,6 +129,7 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         nutrients,
         ingredients: contributions,
         warnings,
+        warning_codes,
     })
 }
 
