@@ -23,8 +23,8 @@ Customer-authorized local authoring/persistence with catalogue ingredients and p
   changing the current catalogue must not change old estimates (AC 3–4).
 - Reject unknown IDs, zero/invalid servings and stale revisions. Known identities without verified
   composition retain unknown/partial nutrient totals (AC 2 validation, AC 3).
-- Changing servings repartitions the same batch; original revisions remain retrievable. Proportional
-  ingredient scaling with an original-yield model remains future AC 2 work, not implemented here.
+- Changing servings repartitions the same batch; original revisions remain retrievable. A read-only scaling preview uses the saved revision as its original yield; scaled quantities
+  are rounded half up to 0.000001 g and nutrition is calculated from those rounded amounts.
 - File storage is local/single-household, loopback-only in the executable, with exclusive locking,
   bounded versioned records, durable publication, fail-closed recovery and documented backup (F18 slice).
   No authenticated author/household identity is claimed; shared/hosted access is out of scope.

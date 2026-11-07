@@ -124,5 +124,10 @@ export default {
   "active_seconds": "Aktive Zeit (Sekunden)",
   "passive_seconds": "Passive Zeit (Sekunden)",
   "remove_step": "Schritt entfernen",
-  "missing_catalogue_ingredient": "Katalogzutat fehlt: {id}"
+  "missing_catalogue_ingredient": "Katalogzutat fehlt: {id}",
+  "target_servings": "Gespeichertes Rezept auf Portionen skalieren",
+  "scale_recipe": "Skalierte Zutaten anzeigen",
+  "scale_load_first": "Zuerst ein Rezept laden oder speichern.",
+  "scale_summary": "Original: {original} Portionen · Vorschau: {target} Portionen. Auf 0,000001 g gerundet.",
+  "scale_error": "Skalierung nicht möglich: Portionen und unterstützten Mengenbereich prüfen."
 };
