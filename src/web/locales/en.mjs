@@ -100,7 +100,7 @@ export default {
   "recipe_steps": "Instructions",
   "save_recipe": "Save recipe / new revision",
   "new_recipe": "Start new recipe",
-  "save_limits": "Local single-household storage. Author is self-reported. A new revision uses the current catalogue. Changing servings divides the same batch; ingredient scaling is not implemented.",
+  "save_limits": "Local single-household storage. Author is self-reported. New revisions use the current catalogue. The batch serving count divides the same quantities; use the separate scaling preview for proportional ingredient quantities.",
   "saved_recipes": "Saved recipes",
   "refresh_recipes": "Refresh list",
   "load_recipe": "Load selected recipe (replaces inputs)",

@@ -100,7 +100,7 @@ export default {
   "recipe_steps": "Anleitung",
   "save_recipe": "Rezept / neue Revision speichern",
   "new_recipe": "Neues Rezept beginnen",
-  "save_limits": "Lokale Ablage für einen Haushalt. Autor ist selbst angegeben. Neue Revisionen nutzen den aktuellen Katalog. Die Portionszahl teilt dieselbe Gesamtmenge; Zutaten werden noch nicht skaliert.",
+  "save_limits": "Lokale Ablage für einen Haushalt. Autor ist selbst angegeben. Neue Revisionen nutzen den aktuellen Katalog. Die Portionszahl teilt dieselbe Gesamtmenge; die separate Skalierungsvorschau passt Zutaten proportional an.",
   "saved_recipes": "Gespeicherte Rezepte",
   "refresh_recipes": "Liste aktualisieren",
   "load_recipe": "Ausgewähltes Rezept laden (ersetzt Eingaben)",

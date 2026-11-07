@@ -15,3 +15,7 @@ audit, strict rustdoc and MSRV. Final outcomes and CI links are recorded in the 
 
 Final local gate passed: 33 nextest tests, six locale tests, catalogue and conversion verifiers,
 fmt, clippy, licenses, audit, strict rustdoc and MSRV 1.85.0.
+
+Browser completion check passed: missing ml evidence produces an actionable hint; g/kg
+automatic display shows 1500 g as 1.500000000 kg and 25 g as 25.000000 g without changing
+stored input. The batch-serving editor and proportional preview are explicitly distinguished.
