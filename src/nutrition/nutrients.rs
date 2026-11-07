@@ -30,6 +30,7 @@ nutrients! {
     Protein => ("protein", "Protein", "g", "macro"),
     Fat => ("fat", "Fat", "g", "macro"),
     Carbohydrate => ("carbohydrate", "Carbohydrate (by difference, includes fibre)", "g", "macro"),
+    AvailableCarbohydrate => ("available_carbohydrate", "Available carbohydrate (includes polyols, excludes fibre)", "g", "macro"),
     Fibre => ("fibre", "Dietary fibre", "g", "macro"),
     Calcium => ("calcium", "Calcium", "mg", "micro"),
     Iron => ("iron", "Iron", "mg", "micro"),
@@ -38,6 +39,7 @@ nutrients! {
     Sodium => ("sodium", "Sodium", "mg", "micro"),
     VitaminC => ("vitamin_c", "Vitamin C", "mg", "micro"),
     Folate => ("folate", "Folate (total)", "µg", "micro"),
+    FoodFolate => ("food_folate", "Food folate (not total folate or DFE)", "µg", "micro"),
     BetaGlucan => ("beta_glucan", "Beta-glucan", "g", "component"),
     SolubleFibre => ("soluble_fibre", "Soluble fibre", "g", "component"),
 }

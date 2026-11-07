@@ -25,6 +25,16 @@ decision, consequences and status. Distinguish customer requirements from propos
 Ask only for unresolved product decisions that block the current slice; record safe proposals.
 Do not introduce agents, extra crates, abstractions or features just to fill the architecture.
 
+## UI and localization
+- `src/web/` is a disposable test demo. Keep it pragmatic; do not expand product design there.
+- Product web clients target Vue 3: a Nextcloud-integrated shell and a standalone server shell
+  (F22 / ADR 0007). Flutter remains the app target. Do not start those clients without their slice.
+- English is the base for coded messages and canonical content, with stable translation identifiers.
+- Use keyed UI messages and language-independent ingredient IDs; keep localized names/aliases
+  in translation fields. Localized display/input must preserve exact quantities. Do not silently replace original source content with unreviewed translations.
+- Significant product UX/UI work needs its own specification/review; involve a dedicated agent
+  when the customer requests it, rather than proactively spawning one for demo polish.
+
 ## Engineering
 - Add crates/adapters only when an accepted feature needs them, with an ADR.
 - Forbid unsafe code. No unwrap/expect outside tests. Return actionable errors.
@@ -34,8 +44,14 @@ Do not introduce agents, extra crates, abstractions or features just to fill the
 - Never log secrets or household health data. Imported content keeps its source and sharing rules.
 - No invented nutrition/health claims; evidence and uncertainty belong in the model and UI.
 
+- Curate ingredients from exact primary records with retained source/version/licence. Never populate
+  unresolved product profiles from a nearby food. Run the offline catalogue import/verifier checks.
+
 ## Gate before push
 ```sh
+python3 scripts/import_catalogue.py --check
+python3 scripts/verify_catalogue.py
+node --test tests/i18n.test.mjs
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo nextest run --workspace --locked

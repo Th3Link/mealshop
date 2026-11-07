@@ -10,3 +10,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [ADR 0004: licensing hosting and sharing](0004-licensing-hosting-and-sharing.md) — AGPL and business goals accepted; admission/commerce/federation proposed.
 - [ADR 0005: privacy and learning](0005-privacy-and-learning.md) — Proposed safeguards for customer-requested learning.
 - [ADR 0006: durable process schedules](0006-durable-process-schedules.md) — Proposed shared process model.
+- [ADR 0007: localization and web clients](0007-localization-and-web-clients.md) — Customer direction accepted; product integration proposed.
+- [ADR 0008: curated ingredient sources](0008-curated-ingredient-sources.md) — Customer scope accepted; import/model details proposed.

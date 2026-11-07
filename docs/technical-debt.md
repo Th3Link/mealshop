@@ -2,10 +2,17 @@
 
 - No persistent data, auth, rate limiting or domain API in the bootstrap (F18/F09).
 - Validate actual Nextcloud `AppAPI` support and Flutter offline/notification behaviour (F18/F12).
-- F02 supplies frozen CC0 USDA oats/chia values with explicit unknowns and evidence limits.
+- F02 originally supplied frozen CC0 USDA oats/chia values. F23 adds the curated BLS/USDA kitchen catalogue.
   Broader coverage, provider refresh, density, cooking yield/retention and component measurements
   remain future work (F02/F03); psyllium composition is deliberately unknown.
 - Validate official-app service admission without weakening AGPL rights (F19 / ADR 0004).
 - Binary-size metrics initially have no previous baseline. No performance budget is invented.
 
 These are explicit future work, not completed features or ignored CI findings.
+
+- F23 catalogue generation is offline; 29 identities still lack exact composition. The current
+  file is near the pre-existing 1 MiB demo loader bound; wider loading belongs with F18.
+- BLS available carbohydrate and food folate stay separate from other definitions; complete
+  product coverage and additional micronutrients need reviewed mappings, never inferred conversion.
+- F21 first slice covers de/en demo messages, names and decimals. Reviewed source/evidence prose
+  translations, date/plural/error parameters across all clients and production locale negotiation remain open.

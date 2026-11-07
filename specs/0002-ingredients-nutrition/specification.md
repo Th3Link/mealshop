@@ -1,6 +1,6 @@
 # Ingredient catalogue and nutrition
 
-Status: In progress
+Status: Done (PR #4 merged; customer confirmed 2026-11-07)
 Priority: Must
 Origin: Customer
 Milestone: M1
@@ -13,6 +13,11 @@ Understand the ingredients used in recipes, with trustworthy nutritional context
 2. Given known composition and quantities, energy, macros and micronutrients are calculated per recipe and per serving with explicit units and rounding.
 3. Given missing nutrient values or cooking/yield uncertainty, the UI distinguishes unknown values from zero and explains the calculation limits.
 4. Given beta-glucan in oats or soluble fibre in psyllium husks/chia, educational notes reference evidence, applicable quantities and limitations without promising health outcomes.
+
+## Demo classification (customer clarification, 2026-11-07)
+The browser surface is a pure pragmatic demo for testing, not the Nextcloud or standalone
+product UI. See F21/F22 and ADR 0007. Significant product design work belongs in the
+product-client workflow, with a dedicated UX/UI agent when the customer requests one.
 
 ## Delivery contract (2026-11-07)
 The customer authorized F02 implementation. The first slice provides a read-only ingredient

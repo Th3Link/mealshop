@@ -1,0 +1,315 @@
+{
+  "schema_version": 1,
+  "version": "mealshop-starter-2026-11-07",
+  "ingredients": [
+    {
+      "id": "oats",
+      "name": "Oats",
+      "aliases": [
+        "Oat grain",
+        "Whole oats"
+      ],
+      "form": "dry, uncooked edible grain",
+      "basis": "per_100g_edible_portion",
+      "source": {
+        "name": "USDA FoodData Central",
+        "url": "https://fdc.nal.usda.gov/food-details/169705/nutrients",
+        "record_id": "169705",
+        "version": "SR Legacy / 2019-04-01",
+        "retrieved_on": "2026-11-07",
+        "license": "CC0-1.0"
+      },
+      "uncertainty": "Generic SR Legacy composition, not a measurement of your product. Values vary with sample and preparation. Carbohydrate is by difference (includes fibre); it is not interchangeable with EU available-carbohydrate labelling.",
+      "nutrients": {
+        "energy_kcal": {
+          "amount": "389",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "energy_kj": {
+          "amount": "1628",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "protein": {
+          "amount": "16.89",
+          "uncertainty": "Source reports 50 data points; no confidence interval is supplied."
+        },
+        "fat": {
+          "amount": "6.9",
+          "uncertainty": "Source reports 14 data points; no confidence interval is supplied."
+        },
+        "carbohydrate": {
+          "amount": "66.27",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "fibre": {
+          "amount": "10.6",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "calcium": {
+          "amount": "54",
+          "uncertainty": "Source reports 8 data points; no confidence interval is supplied."
+        },
+        "iron": {
+          "amount": "4.72",
+          "uncertainty": "Source reports 37 data points; no confidence interval is supplied."
+        },
+        "magnesium": {
+          "amount": "177",
+          "uncertainty": "Source reports 14 data points; no confidence interval is supplied."
+        },
+        "potassium": {
+          "amount": "429",
+          "uncertainty": "Source reports 14 data points; no confidence interval is supplied."
+        },
+        "sodium": {
+          "amount": "2",
+          "uncertainty": "Source reports 2 data points; no confidence interval is supplied."
+        },
+        "vitamin_c": {
+          "amount": "0",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "folate": {
+          "amount": "56",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "beta_glucan": {
+          "amount": null,
+          "uncertainty": "Not reported by this source; no amount inferred from total fibre."
+        },
+        "soluble_fibre": {
+          "amount": null,
+          "uncertainty": "Not reported by this source; no amount inferred from total fibre."
+        }
+      },
+      "education": [
+        {
+          "component": "beta_glucan",
+          "title": "Oat beta-glucan",
+          "summary": "Oat beta-glucan has evidence for lowering blood cholesterol under specific intake conditions.",
+          "source_url": "https://www.canada.ca/en/health-canada/services/food-nutrition/food-labelling/health-claims/assessments/products-blood-cholesterol-lowering-summary-assessment-health-claim-about-products-blood-cholesterol-lowering.html",
+          "evidence_reference": "Health Canada, Oat Products and Blood Cholesterol Lowering (2010)",
+          "conditions": "The reviewed claim concerns 3 g of oat beta-glucan per day from eligible oat products; product and serving conditions also apply.",
+          "limitations": "Beta-glucan is not measured in this catalogue record. Total fibre cannot establish that dose; processing and product form matter. This is context, not a personal outcome prediction."
+        }
+      ],
+      "category": "grains_flour",
+      "translations": {
+        "de": {
+          "name": "Haferkorn",
+          "aliases": [
+            "Hafer",
+            "Haferkorn"
+          ],
+          "form": "trockenes, ungekochtes Korn; essbarer Anteil"
+        }
+      }
+    },
+    {
+      "id": "chia",
+      "name": "Chia seeds",
+      "aliases": [
+        "Chia",
+        "Dried chia seeds"
+      ],
+      "form": "dried edible seeds",
+      "basis": "per_100g_edible_portion",
+      "source": {
+        "name": "USDA FoodData Central",
+        "url": "https://fdc.nal.usda.gov/food-details/170554/nutrients",
+        "record_id": "170554",
+        "version": "SR Legacy / 2019-04-01",
+        "retrieved_on": "2026-11-07",
+        "license": "CC0-1.0"
+      },
+      "uncertainty": "Generic SR Legacy composition, not a measurement of your product. Values vary with sample and preparation. Carbohydrate is by difference (includes fibre); it is not interchangeable with EU available-carbohydrate labelling.",
+      "nutrients": {
+        "energy_kcal": {
+          "amount": "486",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "energy_kj": {
+          "amount": "2034",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "protein": {
+          "amount": "16.54",
+          "uncertainty": "Source reports 21 data points; no confidence interval is supplied. Reported sample range: 11.42000000–22.68000000 g; not a confidence interval."
+        },
+        "fat": {
+          "amount": "30.74",
+          "uncertainty": "Source reports 24 data points; no confidence interval is supplied. Reported sample range: 25.80000000–33.20000000 g; not a confidence interval."
+        },
+        "carbohydrate": {
+          "amount": "42.12",
+          "uncertainty": "Source reports 0 data points; no confidence interval is supplied."
+        },
+        "fibre": {
+          "amount": "34.4",
+          "uncertainty": "Source reports 2 data points; no confidence interval is supplied."
+        },
+        "calcium": {
+          "amount": "631",
+          "uncertainty": "Source reports 2 data points; no confidence interval is supplied. Reported sample range: 590.00000000–673.00000000 mg; not a confidence interval."
+        },
+        "iron": {
+          "amount": "7.72",
+          "uncertainty": "Source reports 2 data points; no confidence interval is supplied."
+        },
+        "magnesium": {
+          "amount": "335",
+          "uncertainty": "Source reports 2 data points; no confidence interval is supplied."
+        },
+        "potassium": {
+          "amount": "407",
+          "uncertainty": "Source reports 3 data points; no confidence interval is supplied. Reported sample range: 160.00000000–653.00000000 mg; not a confidence interval."
+        },
+        "sodium": {
+          "amount": "16",
+          "uncertainty": "Source reports 3 data points; no confidence interval is supplied. Reported sample range: 13.00000000–19.00000000 mg; not a confidence interval."
+        },
+        "vitamin_c": {
+          "amount": "1.6",
+          "uncertainty": "Source reports 2 data points; no confidence interval is supplied."
+        },
+        "folate": {
+          "amount": "49",
+          "uncertainty": "Source reports 2 data points; no confidence interval is supplied."
+        },
+        "beta_glucan": {
+          "amount": null,
+          "uncertainty": "Not reported by this source; no amount inferred from total fibre."
+        },
+        "soluble_fibre": {
+          "amount": null,
+          "uncertainty": "Not reported by this source; no amount inferred from total fibre."
+        }
+      },
+      "education": [
+        {
+          "component": "soluble_fibre",
+          "title": "Chia mucilage and fibre",
+          "summary": "Chia contains mucilage-forming material. Total dietary fibre does not quantify the soluble fraction.",
+          "source_url": "https://www.bfr.bund.de/cm/343/efsa_opinion_on_the_safety_of_chia_seeds_salvia_hispania_l.pdf",
+          "evidence_reference": "EFSA Journal (2009) 996, composition and microscopic examination",
+          "conditions": "Applies to chia seed composition; no effective clinical dose is established by this safety/composition assessment.",
+          "limitations": "Soluble fibre is not measured in this record. A compositional property does not establish a specific health benefit or personal outcome."
+        }
+      ],
+      "category": "nuts_seeds",
+      "translations": {
+        "de": {
+          "name": "Chiasamen",
+          "aliases": [
+            "Chia",
+            "Chiasamen"
+          ],
+          "form": "getrocknete Samen; essbarer Anteil"
+        }
+      }
+    },
+    {
+      "id": "psyllium-husks",
+      "name": "Psyllium husks",
+      "aliases": [
+        "Psyllium",
+        "Ispaghula husks"
+      ],
+      "form": "dried husks; product unspecified",
+      "basis": "per_100g_edible_portion",
+      "source": {
+        "name": "Mealshop identity-only record",
+        "url": "https://github.com/Th3Link/mealshop/blob/main/data/README.md",
+        "record_id": "identity-psyllium-husks",
+        "version": "2026-11-07",
+        "retrieved_on": "2026-11-07",
+        "license": "AGPL-3.0-only"
+      },
+      "uncertainty": "No verified nutrient composition has been selected. All nutrient amounts are unknown; select a specific product/source before relying on totals.",
+      "nutrients": {
+        "energy_kcal": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "energy_kj": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "protein": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "fat": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "carbohydrate": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "fibre": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "calcium": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "iron": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "magnesium": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "potassium": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "sodium": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "vitamin_c": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "folate": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "beta_glucan": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        },
+        "soluble_fibre": {
+          "amount": null,
+          "uncertainty": "No verified composition source selected."
+        }
+      },
+      "education": [
+        {
+          "component": "soluble_fibre",
+          "title": "Psyllium as soluble fibre",
+          "summary": "The AGA/ACG guideline identifies psyllium as soluble fibre and reports evidence for fibre supplementation in chronic idiopathic constipation.",
+          "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10542656/",
+          "evidence_reference": "AGA/ACG clinical practice guideline (2023), fibre section",
+          "conditions": "The guideline concerns adults with chronic idiopathic constipation and specific supplements; hydration and tolerability matter. It is not a recipe dosing recommendation.",
+          "limitations": "Composition and effective dose for this ingredient are unknown here. Do not transfer trial supplement doses to a recipe or infer an individual treatment effect."
+        }
+      ],
+      "category": "pantry",
+      "translations": {
+        "de": {
+          "name": "Flohsamenschalen",
+          "aliases": [
+            "Flohsamenschalen",
+            "Psyllium"
+          ],
+          "form": "getrocknete Schalen; Produkt nicht spezifiziert"
+        }
+      }
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 # F02: ingredient catalogue and nutrition
 
-Status: implemented slice, awaiting customer review. This is a development workbench with
-three starter ingredients and 15 nutrient/component definitions, not a production family planner.
+Status: accepted through merged PR #4. This is a disposable test demo with
+313 ingredients and 17 nutrient/component definitions, not a production family planner.
 
-## Try the browser workbench
+## Try the browser demo
 ```sh
 cargo run --locked
 ```
@@ -93,3 +93,26 @@ Source dates, sample counts and educational references are snapshots, not live p
 
 See [starter data provenance](../../data/README.md) and
 [F02 acceptance criteria](../../specs/0002-ingredients-nutrition/specification.md).
+
+## Demo versus product UI
+The customer classified this surface as a pragmatic demo. Keep design effort minimal.
+Nextcloud/standalone product shells are F22 (Vue 3); Flutter is separate in F18.
+F21 starts with German/English demo messages, starter names and exact decimal presentation.
+Source uncertainty and educational text remain explicitly original-language until reviewed
+translations are available. UI language does not change nutrient IDs, units, source facts or
+canonical API decimals. German entry uses a comma; English uses a dot, without grouping.
+
+## English base and localized demo
+Canonical IDs/names remain English; German ingredient names/aliases/forms use `translations.de`.
+The language selector changes keyed interface messages and display, not nutrient values or stored
+API decimals. Enter e.g. `100,5` grams in German or `100.5` in English, without grouping separators.
+Valid inputs/results survive language changes exactly. Previously invalid inputs require an
+explicit edit before they can be reinterpreted in a new locale. Unsupported languages fall back to English.
+Search covers both languages and common aliases/plurals (e.g. Weizen 405, Hafermilch, Eier).
+
+The 313-item kitchen catalogue is generated offline from reviewed BLS/USDA selections; see
+[data provenance and rebuild instructions](../../data/README.md). Available carbohydrate and
+by-difference carbohydrate are separate definitions; food folate is separate from total folate.
+Mixed-source recipes may show partial values for these definitions, with an explanatory warning.
+Error responses add stable `code` alongside the English `error` text; calculation results add
+`warning_codes` parallel to the retained English `warnings`. The demo localizes these codes.

@@ -12,3 +12,5 @@ To be selected when the feature becomes Ready; no placeholder crates.
 
 ## Validation
 Before implementation, derive acceptance tests from each numbered criterion. Include failure cases, household authorization and quantity/provenance checks where applicable. Record commands and results here at delivery.
+
+Product web UI coordination: F22; cross-client localization: F21. The existing demo is not deployment UI.

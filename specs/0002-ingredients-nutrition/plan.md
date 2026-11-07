@@ -29,4 +29,4 @@ MSRV and CI; record exact outcomes before marking implementation review-ready.
 See [validation.md](validation.md) and [the demo guide](../../docs/guides/nutrition.md).
 
 ## Acceptance
-- [ ] Customer reviews and accepts the feature PR; only then mark the feature Done.
+- [x] Customer merged [PR #4](https://github.com/Th3Link/mealshop/pull/4) and confirmed acceptance (2026-11-07).
