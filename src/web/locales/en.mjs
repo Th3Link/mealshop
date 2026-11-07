@@ -145,5 +145,7 @@ export default {
   "unit_l": "l",
   "unit_tsp": "tsp",
   "unit_tbsp": "tbsp",
-  "unit_piece": "piece"
+  "unit_piece": "piece",
+  "curated_conversion": "Curated reference portion",
+  "manual_conversion": "Manual evidence"
 };

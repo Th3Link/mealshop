@@ -155,6 +155,10 @@ impl Quantity {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct ConversionEvidence {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) input_unit: Option<Unit>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) source_record_id: Option<String>,
     pub(crate) ingredient_id: String,
     pub(crate) form: String,
     pub(crate) source_url: String,
@@ -186,6 +190,17 @@ impl Quantity {
             || e.grams_per_base_unit.atoms() == 0
         {
             return Err("invalid_conversion_evidence".to_owned());
+        }
+        if let Some(unit) = e.input_unit {
+            if unit != self.unit {
+                return Err("portion_unit_mismatch".to_owned());
+            }
+            let numerator = self.amount.atoms() * e.grams_per_base_unit.atoms();
+            if numerator % SCALE != 0 {
+                return Err("precision_exceeded".to_owned());
+            }
+            let atoms = numerator / SCALE;
+            return Amount::try_from(format!("{}.{:06}", atoms / SCALE, atoms % SCALE)).map(Grams);
         }
         let base = match self.unit {
             Unit::Ml | Unit::Piece => self.amount.atoms(),

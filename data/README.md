@@ -89,3 +89,15 @@ An operator's custom JSON file may still replace the catalogue via `MEALSHOP_CAT
 The pre-existing 1 MiB/1000-record loader bound remains an input-validation constraint of this
 small demo; wider persistent catalogues require F18 loading/storage work. See the
 [nutrition demo guide](../docs/guides/nutrition.md) and [F23](../specs/0023-kitchen-ingredient-catalogue/specification.md).
+
+## Curated conversion reference portions
+`conversions.json` selects 43 source-specific USDA SR Legacy household portions (CC0-1.0)
+from the committed `usda-selected.json` snapshot. It retains portion IDs, original modifiers,
+amounts, gram weights and exact food/state identities. Spoon masses are direct USDA household
+portion estimates, not inferred g/ml densities or universal regional spoon volumes. Block,
+packet and cake sizes are explicit in the source label. No transfer to a nearby food is made.
+Run `python3 scripts/verify_conversions.py` to independently check every selected factor.
+USDA portion semantics: https://fdc.nal.usda.gov/portal-data/external/dataDictionary
+The API `/api/conversions` exposes the list; the demo offers explicit selection and saved
+revisions retain the full evidence even if the reference list later changes. Unknown densities
+remain unknown. Cross-device preference synchronization is deferred at customer request.

@@ -145,5 +145,7 @@ export default {
   "unit_l": "l",
   "unit_tsp": "TL",
   "unit_tbsp": "EL",
-  "unit_piece": "Stück"
+  "unit_piece": "Stück",
+  "curated_conversion": "Kuratierte Referenzportion",
+  "manual_conversion": "Eigener Beleg"
 };

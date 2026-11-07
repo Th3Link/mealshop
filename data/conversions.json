@@ -1,0 +1,1296 @@
+{
+  "version": "usda-sr-portions-1",
+  "license": "CC0-1.0",
+  "entries": [
+    {
+      "id": "usda-170918-87534",
+      "label": "Spices, caraway seed · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 87534,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "2.1",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "caraway-seed",
+        "form": "raw, edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170918/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87534",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "2.1",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "170918"
+      }
+    },
+    {
+      "id": "usda-170918-87535",
+      "label": "Spices, caraway seed · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 87535,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "6.7",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "caraway-seed",
+        "form": "raw, edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170918/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87535",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "6.7",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "170918"
+      }
+    },
+    {
+      "id": "usda-170922-87543",
+      "label": "Spices, coriander seed · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 87543,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "5.0",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "coriander-seed",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170922/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87543",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "5",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "170922"
+      }
+    },
+    {
+      "id": "usda-170922-87542",
+      "label": "Spices, coriander seed · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 87542,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "1.8",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "coriander-seed",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170922/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87542",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1.8",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "170922"
+      }
+    },
+    {
+      "id": "usda-170928-87555",
+      "label": "Spices, marjoram, dried · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 87555,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "1.7",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "marjoram-dried",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170928/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87555",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1.7",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "170928"
+      }
+    },
+    {
+      "id": "usda-170928-87554",
+      "label": "Spices, marjoram, dried · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 87554,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "0.6",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "marjoram-dried",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170928/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87554",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "0.6",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "170928"
+      }
+    },
+    {
+      "id": "usda-170932-87565",
+      "label": "Spices, pepper, red or cayenne · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 87565,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "5.3",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "cayenne-pepper",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170932/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87565",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "5.3",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "170932"
+      }
+    },
+    {
+      "id": "usda-170932-87564",
+      "label": "Spices, pepper, red or cayenne · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 87564,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "1.8",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "cayenne-pepper",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170932/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87564",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1.8",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "170932"
+      }
+    },
+    {
+      "id": "usda-170935-87570",
+      "label": "Spices, sage, ground · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 87570,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "0.7",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "sage-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170935/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87570",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "0.7",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "170935"
+      }
+    },
+    {
+      "id": "usda-170935-87571",
+      "label": "Spices, sage, ground · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 87571,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "2.0",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "sage-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170935/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87571",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "2",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "170935"
+      }
+    },
+    {
+      "id": "usda-170936-87573",
+      "label": "Spices, savory, ground · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 87573,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "4.4",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "savory-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170936/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87573",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "4.4",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "170936"
+      }
+    },
+    {
+      "id": "usda-170936-87572",
+      "label": "Spices, savory, ground · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 87572,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "1.4",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "savory-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/170936/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 87572",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1.4",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "170936"
+      }
+    },
+    {
+      "id": "usda-171318-88426",
+      "label": "Spices, chervil, dried · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 88426,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "1.9",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "chervil-dried",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171318/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88426",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1.9",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "171318"
+      }
+    },
+    {
+      "id": "usda-171318-88425",
+      "label": "Spices, chervil, dried · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 88425,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "0.6",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "chervil-dried",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171318/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88425",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "0.6",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "171318"
+      }
+    },
+    {
+      "id": "usda-171320-88429",
+      "label": "Spices, cinnamon, ground · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 88429,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "2.6",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "cinnamon-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171320/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88429",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "2.6",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "171320"
+      }
+    },
+    {
+      "id": "usda-171320-88430",
+      "label": "Spices, cinnamon, ground · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 88430,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "7.8",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "cinnamon-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171320/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88430",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "7.8",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "171320"
+      }
+    },
+    {
+      "id": "usda-171322-88433",
+      "label": "Spices, dill weed, dried · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 88433,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "1.0",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "dill-dried",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171322/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88433",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "171322"
+      }
+    },
+    {
+      "id": "usda-171322-88434",
+      "label": "Spices, dill weed, dried · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 88434,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "3.1",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "dill-dried",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171322/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88434",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "3.1",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "171322"
+      }
+    },
+    {
+      "id": "usda-171326-88442",
+      "label": "Spices, nutmeg, ground · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 88442,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "7.0",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "nutmeg-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171326/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88442",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "7",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "171326"
+      }
+    },
+    {
+      "id": "usda-171326-88441",
+      "label": "Spices, nutmeg, ground · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 88441,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "2.2",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "nutmeg-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171326/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88441",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "2.2",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "171326"
+      }
+    },
+    {
+      "id": "usda-171329-88448",
+      "label": "Spices, paprika · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 88448,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "6.8",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "paprika-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171329/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88448",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "6.8",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "171329"
+      }
+    },
+    {
+      "id": "usda-171329-88447",
+      "label": "Spices, paprika · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 88447,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "2.3",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "paprika-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171329/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88447",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "2.3",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "171329"
+      }
+    },
+    {
+      "id": "usda-171333-88455",
+      "label": "Spices, rosemary, dried · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 88455,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "1.2",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "rosemary-dried",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171333/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88455",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1.2",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "171333"
+      }
+    },
+    {
+      "id": "usda-171333-88456",
+      "label": "Spices, rosemary, dried · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 88456,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "3.3",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "rosemary-dried",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/171333/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 88456",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "3.3",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "171333"
+      }
+    },
+    {
+      "id": "usda-172231-90123",
+      "label": "Spices, turmeric, ground · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 90123,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "3.0",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "turmeric-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/172231/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 90123",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "3",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "172231"
+      }
+    },
+    {
+      "id": "usda-172231-90124",
+      "label": "Spices, turmeric, ground · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 90124,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "9.4",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "turmeric-ground",
+        "form": "dry/as sold unless another state is named by the source",
+        "source_url": "https://fdc.nal.usda.gov/food-details/172231/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 90124",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "9.4",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "172231"
+      }
+    },
+    {
+      "id": "usda-172448-90639",
+      "label": "Tofu, firm, prepared with calcium sulfate and magnesium chloride (nigari) · block",
+      "unit": "piece",
+      "portion": {
+        "id": 90639,
+        "value": "0.25",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "block",
+        "gramWeight": "81.0",
+        "sequenceNumber": 2,
+        "amount": "0.25"
+      },
+      "evidence": {
+        "ingredient_id": "tofu-firm-calcium-magnesium",
+        "form": "as sold, edible portion; preserve the source-specific variant",
+        "source_url": "https://fdc.nal.usda.gov/food-details/172448/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 90639",
+        "uncertainty": "USDA reference portion: block. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "324",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "piece",
+        "source_record_id": "172448"
+      }
+    },
+    {
+      "id": "usda-172448-90640",
+      "label": "Tofu, firm, prepared with calcium sulfate and magnesium chloride (nigari) · block",
+      "unit": "piece",
+      "portion": {
+        "id": 90640,
+        "value": "0.2",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "block",
+        "gramWeight": "91.0",
+        "sequenceNumber": 3,
+        "amount": "0.2"
+      },
+      "evidence": {
+        "ingredient_id": "tofu-firm-calcium-magnesium",
+        "form": "as sold, edible portion; preserve the source-specific variant",
+        "source_url": "https://fdc.nal.usda.gov/food-details/172448/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 90640",
+        "uncertainty": "USDA reference portion: block. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "455",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "piece",
+        "source_record_id": "172448"
+      }
+    },
+    {
+      "id": "usda-172449-90645",
+      "label": "Tofu, soft, prepared with calcium sulfate and magnesium chloride (nigari) · block",
+      "unit": "piece",
+      "portion": {
+        "id": 90645,
+        "value": "0.2",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "block",
+        "gramWeight": "90.0",
+        "sequenceNumber": 5,
+        "amount": "0.2"
+      },
+      "evidence": {
+        "ingredient_id": "tofu-soft-calcium-magnesium",
+        "form": "as sold, edible portion; preserve the source-specific variant",
+        "source_url": "https://fdc.nal.usda.gov/food-details/172449/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 90645",
+        "uncertainty": "USDA reference portion: block. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "450",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "piece",
+        "source_record_id": "172449"
+      }
+    },
+    {
+      "id": "usda-172449-90644",
+      "label": "Tofu, soft, prepared with calcium sulfate and magnesium chloride (nigari) · block",
+      "unit": "piece",
+      "portion": {
+        "id": 90644,
+        "value": "0.25",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "block",
+        "gramWeight": "116.0",
+        "sequenceNumber": 4,
+        "amount": "0.25"
+      },
+      "evidence": {
+        "ingredient_id": "tofu-soft-calcium-magnesium",
+        "form": "as sold, edible portion; preserve the source-specific variant",
+        "source_url": "https://fdc.nal.usda.gov/food-details/172449/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 90644",
+        "uncertainty": "USDA reference portion: block. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "464",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "piece",
+        "source_record_id": "172449"
+      }
+    },
+    {
+      "id": "usda-173470-92601",
+      "label": "Thyme, fresh · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 92601,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "0.8",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "thyme-fresh",
+        "form": "fresh, edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/173470/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 92601",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "0.8",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "173470"
+      }
+    },
+    {
+      "id": "usda-173470-92602",
+      "label": "Thyme, fresh · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 92602,
+        "value": "0.5",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "0.4",
+        "sequenceNumber": 2,
+        "amount": "0.5"
+      },
+      "evidence": {
+        "ingredient_id": "thyme-fresh",
+        "form": "fresh, edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/173470/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 92602",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "0.8",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "173470"
+      }
+    },
+    {
+      "id": "usda-173473-92609",
+      "label": "Rosemary, fresh · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 92609,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "1.7",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "rosemary-fresh",
+        "form": "fresh, edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/173473/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 92609",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1.7",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "173473"
+      }
+    },
+    {
+      "id": "usda-173473-92608",
+      "label": "Rosemary, fresh · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 92608,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "0.7",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "rosemary-fresh",
+        "form": "fresh, edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/173473/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 92608",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "0.7",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "173473"
+      }
+    },
+    {
+      "id": "usda-173474-92611",
+      "label": "Peppermint, fresh · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 92611,
+        "value": "2.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "3.2",
+        "sequenceNumber": 2,
+        "amount": "2.0"
+      },
+      "evidence": {
+        "ingredient_id": "peppermint-fresh",
+        "form": "fresh, edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/173474/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 92611",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "1.6",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "173474"
+      }
+    },
+    {
+      "id": "usda-173475-92613",
+      "label": "Spearmint, fresh · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 92613,
+        "value": "2.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "11.4",
+        "sequenceNumber": 2,
+        "amount": "2.0"
+      },
+      "evidence": {
+        "ingredient_id": "spearmint-fresh",
+        "form": "fresh, edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/173475/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 92613",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "5.7",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "173475"
+      }
+    },
+    {
+      "id": "usda-174290-94088",
+      "label": "Tofu, extra firm, prepared with nigari · block",
+      "unit": "piece",
+      "portion": {
+        "id": 94088,
+        "value": "0.2",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "block",
+        "gramWeight": "91.0",
+        "sequenceNumber": 1,
+        "amount": "0.2"
+      },
+      "evidence": {
+        "ingredient_id": "tofu-extra-firm-nigari",
+        "form": "as sold, edible portion; preserve the source-specific variant",
+        "source_url": "https://fdc.nal.usda.gov/food-details/174290/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 94088",
+        "uncertainty": "USDA reference portion: block. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "455",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "piece",
+        "source_record_id": "174290"
+      }
+    },
+    {
+      "id": "usda-175040-95485",
+      "label": "Leavening agents, baking soda · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 95485,
+        "value": "0.5",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "2.3",
+        "sequenceNumber": 2,
+        "amount": "0.5"
+      },
+      "evidence": {
+        "ingredient_id": "baking-soda",
+        "form": "as sold, edible portion; preserve the source-specific variant",
+        "source_url": "https://fdc.nal.usda.gov/food-details/175040/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 95485",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "4.6",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "175040"
+      }
+    },
+    {
+      "id": "usda-175040-95484",
+      "label": "Leavening agents, baking soda · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 95484,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "4.6",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "baking-soda",
+        "form": "as sold, edible portion; preserve the source-specific variant",
+        "source_url": "https://fdc.nal.usda.gov/food-details/175040/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 95484",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "4.6",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "175040"
+      }
+    },
+    {
+      "id": "usda-175042-95488",
+      "label": "Leavening agents, yeast, baker's, compressed · cake (0.6 oz)",
+      "unit": "piece",
+      "portion": {
+        "id": 95488,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "cake (0.6 oz)",
+        "gramWeight": "17.0",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "bakers-yeast-fresh",
+        "form": "as sold, edible portion; preserve the source-specific variant",
+        "source_url": "https://fdc.nal.usda.gov/food-details/175042/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 95488",
+        "uncertainty": "USDA reference portion: cake (0.6 oz). Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "17",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "piece",
+        "source_record_id": "175042"
+      }
+    },
+    {
+      "id": "usda-175043-95490",
+      "label": "Leavening agents, yeast, baker's, active dry · tbsp",
+      "unit": "tbsp",
+      "portion": {
+        "id": 95490,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tbsp",
+        "gramWeight": "12.0",
+        "sequenceNumber": 2,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "bakers-yeast-active-dry",
+        "form": "dry/uncooked, as sold; edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/175043/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 95490",
+        "uncertainty": "USDA reference portion: tbsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "12",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tbsp",
+        "source_record_id": "175043"
+      }
+    },
+    {
+      "id": "usda-175043-95489",
+      "label": "Leavening agents, yeast, baker's, active dry · tsp",
+      "unit": "tsp",
+      "portion": {
+        "id": 95489,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "tsp",
+        "gramWeight": "4.0",
+        "sequenceNumber": 1,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "bakers-yeast-active-dry",
+        "form": "dry/uncooked, as sold; edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/175043/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 95489",
+        "uncertainty": "USDA reference portion: tsp. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "4",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "tsp",
+        "source_record_id": "175043"
+      }
+    },
+    {
+      "id": "usda-175043-95491",
+      "label": "Leavening agents, yeast, baker's, active dry · packet",
+      "unit": "piece",
+      "portion": {
+        "id": 95491,
+        "value": "1.0",
+        "measureUnit": {
+          "id": 9999,
+          "name": "undetermined",
+          "abbreviation": "undetermined"
+        },
+        "modifier": "packet",
+        "gramWeight": "7.2",
+        "sequenceNumber": 3,
+        "amount": "1.0"
+      },
+      "evidence": {
+        "ingredient_id": "bakers-yeast-active-dry",
+        "form": "dry/uncooked, as sold; edible portion",
+        "source_url": "https://fdc.nal.usda.gov/food-details/175043/nutrients",
+        "version": "SR Legacy / 2019-04-01 / portion 95491",
+        "uncertainty": "USDA reference portion: packet. Estimated household weight, not a measured match for your product.",
+        "grams_per_base_unit": "7.2",
+        "spoon_standard": null,
+        "millilitres_per_spoon": null,
+        "input_unit": "piece",
+        "source_record_id": "175043"
+      }
+    }
+  ]
+}

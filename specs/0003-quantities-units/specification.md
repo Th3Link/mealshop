@@ -30,3 +30,10 @@ UI flows, accessibility, empty/error states and user review points must be speci
 
 ## Links
 Requirement: [F03](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
+
+## Curated reference portions
+43 exact USDA SR Legacy household portions are offered for explicit selection. Stored evidence
+records its input unit and source food record ID; applying it to another unit, state or food
+fails validation. Source modifiers distinguish packet/block/cake sizes. Spoon gram weights
+are direct source measures, not inferred ml densities. Cross-device preferences are deferred
+to the end of the backlog at customer request.
