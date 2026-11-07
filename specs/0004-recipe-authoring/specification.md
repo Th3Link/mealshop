@@ -1,6 +1,6 @@
 # Recipe authoring and scaling
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer
 Milestone: M1
@@ -24,7 +24,7 @@ Customer-authorized local authoring/persistence with catalogue ingredients and p
 - Reject unknown IDs, zero/invalid servings and stale revisions. Known identities without verified
   composition retain unknown/partial nutrient totals (AC 2 validation, AC 3).
 - Changing servings repartitions the same batch; original revisions remain retrievable. A read-only scaling preview uses the saved revision as its original yield; scaled quantities
-  are rounded half up to 0.000001 g and nutrition is calculated from those rounded amounts.
+  are rounded half up to 0.000001 g and nutrition uses the exact original serving ratio before display rounding.
 - File storage is local/single-household, loopback-only in the executable, with exclusive locking,
   bounded versioned records, durable publication, fail-closed recovery and documented backup (F18 slice).
   No authenticated author/household identity is claimed; shared/hosted access is out of scope.
@@ -37,3 +37,6 @@ See [demo UX notes](ux-notes.md); product UI remains F22.
 
 ## Links
 Requirement: [F04](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
+
+Completion scope: local single-household authoring, revision persistence and scaling.
+Authenticated ownership, alternate storage adapters and product clients remain separate features.

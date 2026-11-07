@@ -147,5 +147,9 @@ export default {
   "unit_tbsp": "tbsp",
   "unit_piece": "piece",
   "curated_conversion": "Curated reference portion",
-  "manual_conversion": "Manual evidence"
+  "manual_conversion": "Manual evidence",
+  "quantity_amount": "Amount",
+  "error_conversion_required": "Select a matching reference portion or enter ingredient-specific density/piece mass, source, version and uncertainty. No mass conversion is assumed.",
+  "error_spoon_required": "Enter the named regional spoon standard and its volume, or select a matching source portion.",
+  "warning_conversion_estimate": "Ingredient masses include estimated conversions. Original quantities and evidence remain in the saved recipe."
 };

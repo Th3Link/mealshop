@@ -139,7 +139,7 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
     }
     let nutrients = Nutrient::ALL
         .iter()
-        .map(|&nutrient| calculate_nutrient(nutrient, &ingredients, recipe.servings))
+        .map(|&nutrient| calculate_nutrient(nutrient, &ingredients, recipe.servings, 1, 1))
         .collect::<Result<Vec<_>, _>>()?;
     let contributions = ingredients
         .iter()
@@ -159,6 +159,10 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
     let mut warnings = vec![
         "Composition is a source-based estimate; missing values are unknown, not zero. No individual benefit or allergen safety is established.",
     ];
+    if recipe.lines.iter().any(|line| line.conversion.is_some()) {
+        warning_codes.push("conversion_estimate");
+        warnings.push("Ingredient masses include source-based or user-declared conversion estimates; original quantities and evidence remain in the saved recipe revision.");
+    }
     if matches!(recipe.preparation, Preparation::CookingUnmodelled) {
         warning_codes.push("cooking_unmodelled");
         warnings.push("Cooking is unmodelled: no nutrient retention, cooking-loss or water/yield correction has been applied. These are input-composition estimates, not measured cooked-food values.");
@@ -187,6 +191,8 @@ fn calculate_nutrient(
     nutrient: Nutrient,
     ingredients: &[(&catalogue::Ingredient, &Grams)],
     servings: u32,
+    factor_numerator: u32,
+    factor_denominator: u32,
 ) -> Result<NutrientResult, String> {
     // Each source value is per 100 grams. Keep the entire rational numerator until display.
     let denominator = 100 * SCALE * SCALE;
@@ -210,6 +216,10 @@ fn calculate_nutrient(
             uncertainty.push(format!("{}: {}", ingredient.id, reading.uncertainty));
         }
     }
+    let numerator = numerator
+        .checked_mul(u128::from(factor_numerator))
+        .ok_or("Quantity exceeds calculation precision")?;
+    let denominator = denominator * u128::from(factor_denominator);
     let total = rounded(numerator, denominator)?;
     let portion = rounded(numerator, denominator * u128::from(servings))?;
     let complete = missing.is_empty();
@@ -229,4 +239,35 @@ fn calculate_nutrient(
         missing_ingredients: missing,
         uncertainty,
     })
+}
+
+// Scale source composition rationally, before either gram or nutrient display rounding.
+pub(crate) fn scaled_nutrition(
+    catalogue: &Catalogue,
+    original: &Calculation,
+    target: u32,
+) -> Result<Estimate, String> {
+    let mut result = calculate(catalogue, original)?;
+    if target == 0 || target > 1_000_000 {
+        return Err("Invalid serving count".to_owned());
+    }
+    let ingredients = original
+        .lines
+        .iter()
+        .map(|line| {
+            catalogue
+                .find(&line.ingredient_id)
+                .map(|i| (i, &line.grams))
+                .ok_or_else(|| "Unknown ingredient".to_owned())
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    result.nutrients = Nutrient::ALL
+        .iter()
+        .map(|&n| calculate_nutrient(n, &ingredients, target, target, original.servings))
+        .collect::<Result<Vec<_>, _>>()?;
+    result.servings = target;
+    for ingredient in &mut result.ingredients {
+        ingredient.grams.0 = ingredient.grams.0.scaled(target, original.servings)?;
+    }
+    Ok(result)
 }

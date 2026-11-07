@@ -147,5 +147,9 @@ export default {
   "unit_tbsp": "EL",
   "unit_piece": "Stück",
   "curated_conversion": "Kuratierte Referenzportion",
-  "manual_conversion": "Eigener Beleg"
+  "manual_conversion": "Eigener Beleg",
+  "quantity_amount": "Menge",
+  "error_conversion_required": "Passende Referenzportion wählen oder zutatenbezogene Dichte/Stückmasse, Quelle, Stand und Unsicherheit angeben. Ohne Beleg ist keine Massenumrechnung möglich.",
+  "error_spoon_required": "Benannten regionalen Löffelstandard und Volumen angeben oder passende Referenzportion wählen.",
+  "warning_conversion_estimate": "Zutatenmassen enthalten geschätzte Umrechnungen. Originalmengen und Belege bleiben im gespeicherten Rezept erhalten."
 };
