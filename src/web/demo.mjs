@@ -53,7 +53,9 @@ function translateStatic() {
   renderStorageStatus();
   renderSavedChoices();
 }
+function clearScale() { $('scale-status').textContent = ''; $('scaled-lines').replaceChildren(); }
 function changed(event) {
+  clearScale();
   if (event?.target?.name?.startsWith('grams-')) delete event.target.dataset.invalidLocale;
   lastResult = undefined;
   $('results').hidden = true;
@@ -234,6 +236,7 @@ function filterNotebook() {
   showDetail();
 }
 function switchLanguage() {
+  clearScale();
   if ($('recipe-controls').disabled) return;
   const previous = locale;
   locale = resolveLocale($('language').value);
@@ -368,6 +371,7 @@ async function saveRecipe() {
   finally { $('recipe-controls').disabled = false; }
 }
 async function loadRecipe() {
+  clearScale();
   const id = $('saved-recipes').value;
   if (!savedRecipes.some(r => r.id === id)) return;
   $('recipe-controls').disabled = true;
@@ -401,6 +405,20 @@ function newRecipe() {
   storageStatus('recipe_new');
 }
 $('add-step').addEventListener('click',() => { addStep(); changed(); });
+$('scale-recipe').addEventListener('click', async () => {
+  clearScale();
+  if (!loadedRecipe) { $('scale-status').textContent = t('scale_load_first'); return; }
+  const count = $('target-servings').value;
+  try {
+    const result = await recipeRequest(`/api/recipes/${loadedRecipe.id}/scale?revision=${loadedRecipe.revision}&servings=${encodeURIComponent(count)}`);
+    $('scale-status').textContent = t('scale_summary', {original:number(result.original_servings),target:number(result.servings)});
+    $('scaled-lines').replaceChildren(...result.lines.map(line => {
+      const ingredient = catalogue.ingredients.find(i => i.id === line.ingredient_id);
+      return node('p', `${ingredient ? name(ingredient) : line.ingredient_id}: ${number(line.grams)} g`);
+    }));
+    lastResult = result.nutrition; renderResult(lastResult); status('estimate_ready');
+  } catch { $('scale-status').textContent = t('scale_error'); }
+});
 $('save-recipe').addEventListener('click', saveRecipe);
 $('load-recipe').addEventListener('click', loadRecipe);
 $('new-recipe').addEventListener('click', newRecipe);

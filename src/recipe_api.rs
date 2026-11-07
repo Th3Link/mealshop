@@ -25,6 +25,7 @@ pub(crate) fn router(catalogue: Catalogue, store: Store) -> Router {
     Router::new()
         .route("/api/recipes", get(list).post(create))
         .route("/api/recipes/{id}", get(detail).put(update))
+        .route("/api/recipes/{id}/scale", get(scale))
         .layer(DefaultBodyLimit::max(131_072))
         .with_state(Arc::new(RecipeState {
             catalogue,
@@ -173,4 +174,45 @@ async fn update(
     })
     .await?;
     response(&record, StatusCode::OK)
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ScaleQuery {
+    servings: u32,
+    revision: Option<u64>,
+}
+async fn scale(
+    State(state): State<Shared>,
+    Path(id): Path<String>,
+    query: Result<Query<ScaleQuery>, axum::extract::rejection::QueryRejection>,
+) -> Result<Response, ApiError> {
+    let Query(query) = query.map_err(|_| {
+        ApiError(
+            StatusCode::BAD_REQUEST,
+            "invalid_recipe",
+            "Provide integer servings and optional revision".to_owned(),
+        )
+    })?;
+    if query.servings == 0 || query.servings > 1_000_000 {
+        return Err(ApiError(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "invalid_recipe",
+            "Servings must be between 1 and 1000000".to_owned(),
+        ));
+    }
+    let record = blocking(state, move |store, _| store.get(&id, query.revision)).await?;
+    let original = record.recipe.servings;
+    let mut calculation = record.recipe.calculation();
+    for line in &mut calculation.lines {
+        line.grams.0 = line
+            .grams
+            .0
+            .scaled(query.servings, original)
+            .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
+    }
+    calculation.servings = query.servings;
+    let nutrition = nutrition::calculate(&record.catalogue, &calculation)
+        .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
+    Ok(([(header::CACHE_CONTROL,"no-store")], Json(json!({"id":record.id,"revision":record.revision,"original_servings":original,"servings":query.servings,"lines":calculation.lines,"nutrition":nutrition,"rounding":"nearest 0.000001 g, half up"}))).into_response())
 }

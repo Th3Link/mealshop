@@ -1,7 +1,7 @@
 # Technical debt and validation backlog
 
 - F04/F18 starts bounded local recipe file persistence. Auth, rate limiting, Git/SQL adapters,
-  proportional scaling and product-client integration remain open. No shared/hosted access is implemented.
+  product-client integration remain open. No shared/hosted access is implemented.
 - Validate actual Nextcloud `AppAPI` support and Flutter offline/notification behaviour (F18/F12).
 - F02 originally supplied frozen CC0 USDA oats/chia values. F23 adds the curated BLS/USDA kitchen catalogue.
   Broader coverage, provider refresh, density, cooking yield/retention and component measurements

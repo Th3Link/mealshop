@@ -12,6 +12,18 @@ pub(crate) struct Amount {
 }
 
 impl Amount {
+    pub(crate) fn scaled(&self, target: u32, original: u32) -> Result<Self, String> {
+        if target == 0 || target > 1_000_000 || original == 0 {
+            return Err("Invalid serving count".to_owned());
+        }
+        let atoms =
+            (self.atoms() * u128::from(target) + u128::from(original) / 2) / u128::from(original);
+        if atoms == 0 || atoms > 1_000_000_000_000_000 {
+            return Err("Scaled amount is outside supported precision".to_owned());
+        }
+        Self::try_from(format!("{}.{:06}", atoms / SCALE, atoms % SCALE))
+    }
+
     pub(crate) fn atoms(&self) -> u128 {
         u128::from(self.atoms)
     }

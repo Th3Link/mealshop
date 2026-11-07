@@ -353,3 +353,33 @@ async fn custom_catalogue_snapshot_must_fit_the_restart_loader_before_publicatio
     drop(app);
     let _reopened = dir.app();
 }
+
+#[tokio::test]
+async fn scaling_uses_original_revision_and_keeps_it_unchanged() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let created = request(&app, "POST", "/api/recipes", recipe()).await.1;
+    let path = format!("/api/recipes/{}", created["id"].as_str().unwrap());
+    let preview = request(
+        &app,
+        "GET",
+        &format!("{path}/scale?servings=3"),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(preview.0, StatusCode::OK);
+    assert_eq!(preview.1["original_servings"], 2);
+    assert_eq!(preview.1["lines"][0]["grams"], "150.750000");
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            &format!("{path}/scale?servings=0"),
+            Value::Null
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    assert_eq!(request(&app, "GET", &path, Value::Null).await.1, created);
+}

@@ -11,6 +11,15 @@ Status: In progress; first local authoring slice, customer acceptance pending.
 - [x] Complete browser exercise and full repository gate; prepare review PR.
 - [ ] Customer review and acceptance of this slice.
 
+## Scaling slice (customer request after PR #6)
+- [x] Define a scaling preview from the immutable original revision and its original servings.
+- [x] Scale each original gram quantity by target servings / original servings using exact
+  integer arithmetic; document precision and rounding, and reject invalid or unrepresentable amounts.
+- [x] Return original and target servings and retain the pinned source snapshot for nutrition.
+- [x] Add localized demo controls without overwriting the saved revision.
+- [ ] Test non-terminating ratios, repeated changes, boundaries, unknown nutrients and restart.
+- [ ] Run the repository gate and prepare a reviewable PR.
+
 ## Remaining feature work
 - [ ] Proportional ingredient scaling, original-yield semantics and precision behaviour (AC 2).
 - [ ] Authenticated household/author ownership and product-client integration (F09/F18/F22).

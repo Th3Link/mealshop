@@ -124,5 +124,10 @@ export default {
   "active_seconds": "Active time (seconds)",
   "passive_seconds": "Passive time (seconds)",
   "remove_step": "Remove step",
-  "missing_catalogue_ingredient": "Missing catalogue ingredient: {id}"
+  "missing_catalogue_ingredient": "Missing catalogue ingredient: {id}",
+  "target_servings": "Scale saved recipe to servings",
+  "scale_recipe": "Preview scaled ingredients",
+  "scale_load_first": "Load or save a recipe first.",
+  "scale_summary": "Original: {original} servings · Preview: {target} servings. Rounded to 0.000001 g.",
+  "scale_error": "Cannot scale: check servings and supported quantity range."
 };

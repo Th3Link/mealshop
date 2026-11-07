@@ -17,7 +17,7 @@ The saved list and load button retrieve persisted recipes and their saved servin
 Load/new actions explicitly replace inputs. Failed saves keep all inputs. On a revision
 conflict, copy your edits before loading the latest revision and reconciling them manually.
 
-Changing servings divides the same batch; it does not scale the ingredient quantities. A
+Changing the authoring serving count divides the same batch. The separate scaling preview uses the saved original revision and rounds each ingredient half up to 0.000001 g. Nutrition is calculated from these rounded ingredient amounts. A
 saved recipe uses its own source snapshot, even after the catalogue changes. Saving a new
 revision uses the current catalogue and recalculates nutrition. Missing current ingredient
 IDs cannot be silently substituted: restore the catalogue or explicitly replace them.
@@ -80,3 +80,7 @@ visible after recovery, so inspect the latest revision before resubmitting edits
 `router_with_recipe_directory(json, directory)` explicitly enables durable recipes and holds
 its exclusive lock until every cloned router/request state is dropped. The caller must enforce
 the trusted local access boundary; the library does not provide authentication or listener policy.
+
+GET `/api/recipes/{id}/scale?servings=3&revision=1` previews a saved revision at another
+serving count without writing it. Omit revision for the latest. The response includes both
+serving counts, scaled gram strings and nutrition; unsupported or zero rounded amounts fail.
