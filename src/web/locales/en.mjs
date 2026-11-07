@@ -169,5 +169,7 @@ export default {
   "household_loaded": "Profiles loaded.",
   "household_saved": "Profiles saved.",
   "household_blocked": "Blocked by hard exclusions:",
-  "household_review_required": "Review required: allergen coverage and cross-contamination are unknown."
+  "household_review_required": "Review required: allergen coverage and cross-contamination are unknown.",
+  "household_allergen_ids": "Allergen groups (hard constraints)",
+  "household_intolerances": "Other intolerances (one per line; requires review)"
 };

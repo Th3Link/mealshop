@@ -1,6 +1,6 @@
 # Household members and dietary constraints
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer
 Milestone: M1
@@ -23,8 +23,14 @@ See ux-notes.md.
 ## Links
 Requirement: [F09](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
 
-## Current slice
-Protected local single-household profiles with operator-token access, revisioned snapshot
-correction/export/removal and group dietary review. Allergy/intolerance text requires human
-review; only explicit ingredient exclusions are automatically enforced. Missing allergen
-coverage always returns `review_required` rather than safe. Hosted identities are out of scope.
+## Completion scope
+Protected local single-household profiles with operator and optional read-only credentials,
+revision-aware correction/export/removal, structured hard allergen groups, separate intolerance
+and allergy notes, explicit ingredient exclusions and soft dislikes. Positive food-identity
+classifications apply only to matching catalogue records/states. Group evaluation unions all
+attendees' hard constraints and known ingredient aliases. Unknown or incomplete allergen data
+always requires review; no result establishes cross-contamination safety. Learning has no
+write path to profiles. Hosted accounts/roles remain a separate deployment feature.
+
+Completed evidence is recorded in validation.md. Data coverage can grow independently of this
+feature; absent classifications never mean allergen absence.

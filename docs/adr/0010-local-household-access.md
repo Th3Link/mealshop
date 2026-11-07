@@ -30,4 +30,9 @@ model; it does not implement multiple household roles or federated authorization
 The operator credential grants access to all members. Rotation requires restart; previously
 exported copies/backups cannot be revoked. Profile storage and recovery must remain separate
 from recipe storage. See the household operator guide. Hosted authentication and richer
-allergen data remain explicit future work; F09 is In progress pending review of this slice.
+allergen data remain explicit future work; F09 is complete for the documented local access contract.
+
+## Completion amendment
+Structured hard allergen groups and positive source-backed classifications now augment free-text
+notes; read-only credentials may export/evaluate but cannot modify/remove profiles. Unknown
+coverage still requires review. These changes complete the local F09 acceptance contract.

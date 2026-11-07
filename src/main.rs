@@ -33,7 +33,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Ok(token) = std::env::var("MEALSHOP_HOUSEHOLD_TOKEN") {
         let directory =
             std::env::var("MEALSHOP_HOUSEHOLD_DIR").unwrap_or_else(|_| "var/household".to_owned());
-        app = app.merge(mealshop_server::household_router(&json, directory, token)?);
+        app = app.merge(mealshop_server::household_router_with_reader(
+            &json,
+            directory,
+            token,
+            std::env::var("MEALSHOP_HOUSEHOLD_READ_TOKEN").ok(),
+        )?);
     }
     eprintln!("Mealshop listening on {}", listener.local_addr()?);
     axum::serve(listener, app)

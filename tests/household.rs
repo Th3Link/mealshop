@@ -186,3 +186,133 @@ async fn invalid_profiles_and_interrupted_writes_fail_without_exposing_or_replac
     assert!(mealshop_server::household_router(catalogue, &path, TOKEN.to_owned()).is_err());
     std::fs::remove_dir_all(path).unwrap();
 }
+
+#[tokio::test]
+#[allow(clippy::too_many_lines)]
+async fn structured_allergens_and_reader_permissions_apply_to_all_attendees() {
+    let path =
+        std::env::temp_dir().join(format!("mealshop-household-roles-{}", std::process::id()));
+    std::fs::create_dir(&path).unwrap();
+    let reader = "read_only_household_test_credential_12345";
+    let catalogue = include_str!("../data/catalogue.json");
+    let app = mealshop_server::household_router_with_reader(
+        catalogue,
+        &path,
+        TOKEN.to_owned(),
+        Some(reader.to_owned()),
+    )
+    .unwrap();
+    let members = json!([{"id":"one","name":"Demo one","allergies":[],"allergen_ids":["milk"],"intolerances":["unmapped personal condition"],"excluded_ingredients":[],"disliked_ingredients":["milk-1-5-pasteurised"]},{"id":"two","name":"Demo two","allergies":[],"allergen_ids":["soy"],"intolerances":[],"excluded_ingredients":[],"disliked_ingredients":[]}]);
+    let input = json!({"expected_revision":0,"members":members});
+    assert_eq!(
+        request(
+            &app,
+            "PUT",
+            "/api/household/profiles",
+            input.clone(),
+            Some(reader)
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    assert_eq!(
+        request(&app, "PUT", "/api/household/profiles", input, Some(TOKEN))
+            .await
+            .0,
+        StatusCode::OK
+    );
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/api/household/profiles",
+            Value::Null,
+            Some(reader)
+        )
+        .await
+        .1["members"],
+        members
+    );
+    let result=request(&app,"POST","/api/household/evaluate",json!({"member_ids":["one","two"],"ingredient_ids":["milk-1-5-pasteurised","tofu","milk-1-5-lactose-free-pasteurised"]}),Some(reader)).await;
+    assert_eq!(result.0, StatusCode::OK);
+    assert_eq!(result.1["status"], "blocked");
+    assert_eq!(result.1["allergen_matches"].as_array().unwrap().len(), 3);
+    let result = request(
+        &app,
+        "POST",
+        "/api/household/evaluate",
+        json!({"member_ids":["one"],"ingredient_ids":["drinking-water","unknown"]}),
+        Some(reader),
+    )
+    .await
+    .1;
+    assert_eq!(result["status"], "review_required");
+    assert_eq!(
+        request(&app, "GET", "/api/household/allergens", Value::Null, None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/api/household/allergens",
+            Value::Null,
+            Some(reader)
+        )
+        .await
+        .1["groups"]
+            .as_array()
+            .unwrap()
+            .len(),
+        14
+    );
+    assert_eq!(
+        request(
+            &app,
+            "PUT",
+            "/api/household/profiles",
+            json!({"expected_revision":1,"members":[]}),
+            Some(reader)
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/evaluate",
+            json!({"member_ids":["missing"],"ingredient_ids":["tofu"]}),
+            Some(reader)
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    drop(app);
+    let app = mealshop_server::household_router_with_reader(
+        catalogue,
+        &path,
+        TOKEN.to_owned(),
+        Some(reader.to_owned()),
+    )
+    .unwrap();
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/api/household/profiles",
+            Value::Null,
+            Some(reader)
+        )
+        .await
+        .1["members"],
+        members
+    );
+    drop(app);
+    std::fs::remove_dir_all(path).unwrap();
+}

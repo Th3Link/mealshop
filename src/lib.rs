@@ -55,5 +55,17 @@ pub fn household_router(
     directory: impl AsRef<std::path::Path>,
     token: String,
 ) -> Result<axum::Router, String> {
-    household::router(json, directory.as_ref(), token)
+    household::router(json, directory.as_ref(), token, None)
+}
+
+/// Builds household routes with operator and optional read-only credentials.
+/// # Errors
+/// Returns an error for invalid credentials, catalogue or household storage.
+pub fn household_router_with_reader(
+    json: &str,
+    directory: impl AsRef<std::path::Path>,
+    token: String,
+    reader: Option<String>,
+) -> Result<axum::Router, String> {
+    household::router(json, directory.as_ref(), token, reader)
 }

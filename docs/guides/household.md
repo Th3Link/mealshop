@@ -4,7 +4,7 @@ Enable the F09 slice by providing `MEALSHOP_HOUSEHOLD_TOKEN` (32–200 random AS
 digits, underscores or hyphens). Generate a strong operator secret with your normal secret
 manager; do not commit it or put it in URLs. Without this variable household routes are absent.
 The executable remains loopback-only. This is one household with one operator credential,
-not a hosted account/role system. Anyone holding that credential can read/export, correct
+not a hosted account system. An optional distinct `MEALSHOP_HOUSEHOLD_READ_TOKEN` grants profile export and dietary evaluation only; writes/removals require the operator token. Anyone holding that credential can read/export, correct
 and remove every profile in this household. Revocation/rotation means changing the configured
 token and restarting; no token is written into profile files or browser storage.
 
@@ -28,7 +28,7 @@ All endpoints require `Authorization: Bearer <operator token>` and return `Cache
 no-store`. GET `/api/household/profiles` exports the complete schema/revision/member JSON.
 PUT the same path with `{"expected_revision":0,"members":[...]}` creates/updates/removes
 members by replacement. A member has `id` (lowercase identifier), `name`, `allergies` (text
-notes), `excluded_ingredients` and `disliked_ingredients` (canonical catalogue ID arrays).
+notes), `allergen_ids` (structured hard groups), `intolerances` (separate review notes), `excluded_ingredients` and `disliked_ingredients` (canonical catalogue ID arrays).
 Removing a member means omitting it from the replacement array; an empty array removes all.
 No separate unauthenticated member lookup or profile route exists.
 
@@ -53,3 +53,21 @@ lock. Preserve only a validated current snapshot in the recovery directory; neve
 replace a good snapshot with an incomplete pending file. Restart and verify authorized export.
 No automatic Git history, cloud sync or external writers are supported. Linux local filesystems
 are the initial target; cross-platform crash durability has not been validated.
+
+## Structured allergen constraints
+GET `/api/household/allergens` returns the versioned reference registry to authorized readers.
+The demo offers 14 English-base allergen groups with German labels. Selected `allergen_ids`
+are hard constraints. 106 positive food-identity classifications retain exact source food IDs,
+forms and an FSA source reference. These are reference identity classifications, not laboratory
+measurements of retail products. Milk-group constraints also match explicitly named lactose-free
+milk; absence of lactose does not remove the milk identity. See the source selection documentation
+in data/README.md. Other allergy and intolerance notes remain review-required; exact legacy group
+IDs in those notes are also treated conservatively as hard constraints. No natural-language
+interpretation or personalised threshold is inferred.
+
+Results include `allergen_matches` with member/ingredient/group/source, the classification version,
+hard ingredient matches and separate dislikes. Every unblocked result requires review because
+allergen coverage is positive-only and cross-contact is unmodelled. Hosted user management and
+additional source coverage do not alter this rule. Read-only credentials cannot correct or
+remove members; attempts return 403. Unknown credentials return 401. Rotate either configured
+credential by restarting. Existing schema-1 profiles load with empty new fields.

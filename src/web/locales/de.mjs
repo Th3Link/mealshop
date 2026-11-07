@@ -169,5 +169,7 @@ export default {
   "household_loaded": "Profile geladen.",
   "household_saved": "Profile gespeichert.",
   "household_blocked": "Durch harte Ausschlüsse blockiert:",
-  "household_review_required": "Prüfung erforderlich: Allergenabdeckung und Kreuzkontamination sind unbekannt."
+  "household_review_required": "Prüfung erforderlich: Allergenabdeckung und Kreuzkontamination sind unbekannt.",
+  "household_allergen_ids": "Allergen-Gruppen (harte Ausschlüsse)",
+  "household_intolerances": "Weitere Unverträglichkeiten (eine pro Zeile; Prüfung nötig)"
 };

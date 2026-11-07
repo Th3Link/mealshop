@@ -1,0 +1,954 @@
+{
+  "version": "positive-food-identity-1",
+  "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+  "groups": [
+    {
+      "id": "milk",
+      "name": "Milk",
+      "translations": {
+        "de": "Milch"
+      }
+    },
+    {
+      "id": "egg",
+      "name": "Egg",
+      "translations": {
+        "de": "Ei"
+      }
+    },
+    {
+      "id": "soy",
+      "name": "Soybeans",
+      "translations": {
+        "de": "Soja"
+      }
+    },
+    {
+      "id": "gluten_cereals",
+      "name": "Gluten cereals",
+      "translations": {
+        "de": "Glutenhaltiges Getreide"
+      }
+    },
+    {
+      "id": "peanut",
+      "name": "Peanut",
+      "translations": {
+        "de": "Erdnuss"
+      }
+    },
+    {
+      "id": "tree_nuts",
+      "name": "Tree nuts",
+      "translations": {
+        "de": "Schalenfrüchte"
+      }
+    },
+    {
+      "id": "sesame",
+      "name": "Sesame",
+      "translations": {
+        "de": "Sesam"
+      }
+    },
+    {
+      "id": "lupin",
+      "name": "Lupin",
+      "translations": {
+        "de": "Lupine"
+      }
+    },
+    {
+      "id": "celery",
+      "name": "Celery",
+      "translations": {
+        "de": "Sellerie"
+      }
+    },
+    {
+      "id": "mustard",
+      "name": "Mustard",
+      "translations": {
+        "de": "Senf"
+      }
+    },
+    {
+      "id": "fish",
+      "name": "Fish",
+      "translations": {
+        "de": "Fisch"
+      }
+    },
+    {
+      "id": "crustacean",
+      "name": "Crustaceans",
+      "translations": {
+        "de": "Krebstiere"
+      }
+    },
+    {
+      "id": "mollusc",
+      "name": "Molluscs",
+      "translations": {
+        "de": "Weichtiere"
+      }
+    },
+    {
+      "id": "sulphites",
+      "name": "Sulphites",
+      "translations": {
+        "de": "Sulfite"
+      }
+    }
+  ],
+  "entries": [
+    {
+      "ingredient_id": "milk-skimmed-pasteurised",
+      "form": "fresh, edible portion",
+      "source_record_id": "M111100",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-1-5-pasteurised",
+      "form": "fresh, edible portion",
+      "source_record_id": "M111200",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-3-5-pasteurised",
+      "form": "fresh, edible portion",
+      "source_record_id": "M111300",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-skimmed-uht",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M113100",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-1-5-uht",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M113200",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-3-5-uht",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M113300",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-skimmed-lactose-free-pasteurised",
+      "form": "fresh, edible portion",
+      "source_record_id": "M114100",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-1-5-lactose-free-pasteurised",
+      "form": "fresh, edible portion",
+      "source_record_id": "M114200",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-3-5-lactose-free-pasteurised",
+      "form": "fresh, edible portion",
+      "source_record_id": "M114300",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-skimmed-lactose-free-uht",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M1A3100",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-1-5-lactose-free-uht",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M1A5200",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "milk-3-5-lactose-free-uht",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M1A7300",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "quark-low-fat",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M713100",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "quark-10-fat-dry-matter",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M713200",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "quark-20-fat-dry-matter",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M713300",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "quark-40-fat-dry-matter",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M713500",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "quark-50-fat-dry-matter",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M713700",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "skyr-plain",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M710100",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "whipping-cream-30",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M173800",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "whipping-cream-36",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M173900",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "sour-cream-10",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M172500",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "sour-cream-20",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M172700",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "creme-fraiche-30",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M176800",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "creme-fraiche-40",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M172900",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "buttermilk",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M150000",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "yogurt-skimmed-plain",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M141100",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "yogurt-low-fat-plain",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M141200",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "yogurt-whole-milk-plain",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M141300",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "yogurt-whole-milk-lactose-free",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M1E3300",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "yogurt-low-fat-lactose-free",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M1B2200",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "whole-milk-powder",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M882000",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "sweet-whey-powder",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "M887000",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "butter-mildly-soured",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "Q611000",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "butter-sweet-cream",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "Q630000",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "butter-sour-cream",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "Q620000",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "butter-salted",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "Q6A4000",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "whey-protein-powder-usda-reference",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "173180",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "whey-protein-isolate-usda-reference",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "173177",
+      "allergen_id": "milk",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "egg-whole-raw",
+      "form": "raw, edible portion",
+      "source_record_id": "E111100",
+      "allergen_id": "egg",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "egg-yolk-raw",
+      "form": "raw, edible portion",
+      "source_record_id": "E112100",
+      "allergen_id": "egg",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "egg-white-raw",
+      "form": "raw, edible portion",
+      "source_record_id": "E113100",
+      "allergen_id": "egg",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "egg-whole-boiled",
+      "form": "prepared state as named by the source, edible portion",
+      "source_record_id": "E111132",
+      "allergen_id": "egg",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "egg-white-dried",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "E113400",
+      "allergen_id": "egg",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "tofu",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H861000",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soy-flour-full-fat",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "H764400",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soy-protein-isolate",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H011000",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soybeans-dry",
+      "form": "dry/uncooked, as sold; edible portion",
+      "source_record_id": "G750400",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soybeans-cooked",
+      "form": "prepared state as named by the source, edible portion",
+      "source_record_id": "G750432",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "edamame-raw",
+      "form": "raw, edible portion",
+      "source_record_id": "G750100",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soy-drink-unsweetened",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H841100",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soy-drink-unsweetened-fortified",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H841400",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soy-drink-sweetened-flavoured",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H842400",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "tofu-firm-calcium-magnesium",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "172448",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "tofu-soft-calcium-magnesium",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "172449",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "tofu-extra-firm-nigari",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "174290",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soy-protein-concentrate-alcohol-extracted",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "172447",
+      "allergen_id": "soy",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "oats",
+      "form": "dry, uncooked edible grain",
+      "source_record_id": "169705",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "wheat-grain-raw",
+      "form": "raw, edible portion",
+      "source_record_id": "C111000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "rye-grain-raw",
+      "form": "raw, edible portion",
+      "source_record_id": "C121000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "spelt-grain-raw",
+      "form": "raw, edible portion",
+      "source_record_id": "C236000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "wheat-wholemeal-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C211000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "wheat-flour-type-812",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C213100",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "wheat-flour-type-1050",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C213200",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "wheat-flour-type-1600",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C213500",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "wheat-flour-type-405",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C214100",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "wheat-flour-type-550",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C214200",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "rye-wholemeal-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C221000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "rye-flour-type-815",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C223100",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "rye-flour-type-997",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C223200",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "rye-flour-type-1150",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C223300",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "rye-flour-type-1370",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C223400",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "rye-flour-type-1740",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C223600",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "spelt-wholemeal-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C235000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "spelt-flour-type-630",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C234000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "spelt-flour-type-812",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C234100",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "spelt-flour-type-1050",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C234200",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "durum-wholemeal-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C219000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "einkorn-wholemeal-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C241000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "emmer-wholemeal-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C240000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "oat-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C233000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "oat-flakes",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C133000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "barley-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C243000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "durum-semolina",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C219300",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "durum-wholemeal-semolina",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C219100",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "soft-wheat-semolina",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C218000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "rye-semolina",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C126000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "spelt-semolina",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "C238000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "bulgur-dry",
+      "form": "dry/uncooked, as sold; edible portion",
+      "source_record_id": "C119100",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "bulgur-cooked",
+      "form": "prepared state as named by the source, edible portion",
+      "source_record_id": "C119132",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "couscous-dry",
+      "form": "dry/uncooked, as sold; edible portion",
+      "source_record_id": "C119200",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "couscous-cooked",
+      "form": "prepared state as named by the source, edible portion",
+      "source_record_id": "C119232",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "seitan",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "C558000",
+      "allergen_id": "gluten_cereals",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "peanuts-roasted",
+      "form": "prepared state as named by the source, edible portion",
+      "source_record_id": "H110600",
+      "allergen_id": "peanut",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "peanut-butter-pure",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H110800",
+      "allergen_id": "peanut",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "peanut-butter-spread",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H880200",
+      "allergen_id": "peanut",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "almonds",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H210100",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "almonds-blanched",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H210200",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "almond-butter",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H212800",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "walnuts",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H120100",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "hazelnuts",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H130100",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "cashews",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H170100",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "almond-drink-unsweetened",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H800000",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "almond-drink-unsweetened-fortified",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H800100",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "almond-drink-sweetened-flavoured-fortified",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H800400",
+      "allergen_id": "tree_nuts",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "sesame-seed",
+      "form": "as sold, edible portion; preserve the source-specific variant",
+      "source_record_id": "H420100",
+      "allergen_id": "sesame",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    },
+    {
+      "ingredient_id": "lupin-flour",
+      "form": "dry/as sold unless another state is named by the source",
+      "source_record_id": "H731400",
+      "allergen_id": "lupin",
+      "source_url": "https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf",
+      "basis": "Positive food-identity classification; incomplete coverage, no absence or cross-contact claim"
+    }
+  ]
+}

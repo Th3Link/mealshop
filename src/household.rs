@@ -22,6 +22,10 @@ struct Member {
     id: String,
     name: String,
     allergies: Vec<String>,
+    #[serde(default)]
+    allergen_ids: Vec<String>,
+    #[serde(default)]
+    intolerances: Vec<String>,
     excluded_ingredients: Vec<String>,
     disliked_ingredients: Vec<String>,
 }
@@ -60,19 +64,30 @@ impl Drop for Store {
 }
 struct Household {
     token: String,
+    reader_token: Option<String>,
     store: Mutex<Store>,
     ingredients: BTreeSet<String>,
     aliases: BTreeMap<String, BTreeSet<String>>,
+    allergen_data: serde_json::Value,
 }
 type Shared = Arc<Household>;
 fn reply(status: StatusCode, body: serde_json::Value) -> Response {
     (status, [(header::CACHE_CONTROL, "no-store")], Json(body)).into_response()
 }
-fn authorized(state: &Household, headers: &HeaderMap) -> bool {
+fn can_write(state: &Household, headers: &HeaderMap) -> bool {
     headers
         .get(header::AUTHORIZATION)
         .and_then(|h| h.to_str().ok())
         .is_some_and(|h| h.strip_prefix("Bearer ") == Some(state.token.as_str()))
+}
+fn authorized(state: &Household, headers: &HeaderMap) -> bool {
+    can_write(state, headers)
+        || state.reader_token.as_ref().is_some_and(|token| {
+            headers
+                .get(header::AUTHORIZATION)
+                .and_then(|h| h.to_str().ok())
+                .is_some_and(|h| h.strip_prefix("Bearer ") == Some(token.as_str()))
+        })
 }
 fn denied() -> Response {
     reply(
@@ -81,7 +96,12 @@ fn denied() -> Response {
     )
 }
 
-pub(crate) fn router(json: &str, directory: &Path, token: String) -> Result<Router, String> {
+pub(crate) fn router(
+    json: &str,
+    directory: &Path,
+    token: String,
+    reader_token: Option<String>,
+) -> Result<Router, String> {
     if token.len() < 32
         || token.len() > 200
         || !token
@@ -93,6 +113,19 @@ pub(crate) fn router(json: &str, directory: &Path, token: String) -> Result<Rout
                 .to_owned(),
         );
     }
+    if reader_token.as_ref().is_some_and(|r| {
+        r == &token
+            || r.len() < 32
+            || r.len() > 200
+            || !r
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
+    }) {
+        return Err("Reader token must be distinct and use 32–200 supported characters".to_owned());
+    }
+    let mut allergen_data: serde_json::Value =
+        serde_json::from_str(include_str!("../data/allergens.json"))
+            .map_err(|_| "Invalid allergen registry")?;
     let catalogue = crate::nutrition::catalogue::Catalogue::from_json(json)?;
     let mut builder = fs::DirBuilder::new();
     builder.recursive(true);
@@ -138,24 +171,21 @@ pub(crate) fn router(json: &str, directory: &Path, token: String) -> Result<Rout
             return Err("Unsupported household schema".to_owned());
         }
     }
-    let mut aliases: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-    for ingredient in &catalogue.ingredients {
-        let mut labels = vec![ingredient.name.as_str()];
-        labels.extend(ingredient.aliases.iter().map(String::as_str));
-        for translated in ingredient.translations.values() {
-            labels.push(&translated.name);
-            labels.extend(translated.aliases.iter().map(String::as_str));
-        }
-        for label in labels {
-            aliases
-                .entry(label.to_lowercase())
-                .or_default()
-                .insert(ingredient.id.clone());
-        }
+    if let Some(entries) = allergen_data["entries"].as_array_mut() {
+        entries.retain(|e| {
+            catalogue.ingredients.iter().any(|i| {
+                e["ingredient_id"] == i.id
+                    && e["form"] == i.form
+                    && e["source_record_id"] == i.source.record_id
+            })
+        });
     }
+    let aliases = ingredient_aliases(&catalogue);
     let state = Household {
         aliases,
         token,
+        reader_token,
+        allergen_data,
         store: Mutex::new(store),
         ingredients: catalogue.ingredients.into_iter().map(|i| i.id).collect(),
     };
@@ -164,6 +194,7 @@ pub(crate) fn router(json: &str, directory: &Path, token: String) -> Result<Rout
         validate(&store.data.members, &state.ingredients)?;
     }
     Ok(Router::new()
+        .route("/api/household/allergens", get(allergens))
         .route("/api/household/profiles", get(read).put(write))
         .route("/api/household/evaluate", post(evaluate))
         .layer(DefaultBodyLimit::max(131_072))
@@ -185,6 +216,14 @@ fn validate(members: &[Member], ingredients: &BTreeSet<String>) -> Result<(), St
             || m.name.trim().is_empty()
             || m.name.len() > 200
             || m.name.chars().any(char::is_control)
+            || m.allergen_ids.len() > 14
+            || m.allergen_ids
+                .iter()
+                .any(|id| !allergen_ids().contains(&id.as_str()))
+            || m.intolerances.len() > 50
+            || m.intolerances
+                .iter()
+                .any(|s| s.trim().is_empty() || s.len() > 200 || s.chars().any(char::is_control))
             || m.allergies.len() > 50
             || m.allergies
                 .iter()
@@ -218,8 +257,15 @@ async fn write(
     headers: HeaderMap,
     body: Result<Json<Update>, axum::extract::rejection::JsonRejection>,
 ) -> Response {
-    if !authorized(&state, &headers) {
-        return denied();
+    if !can_write(&state, &headers) {
+        return if authorized(&state, &headers) {
+            reply(
+                StatusCode::FORBIDDEN,
+                json!({"code":"household_write_required"}),
+            )
+        } else {
+            denied()
+        };
     }
     let Ok(Json(update)) = body else {
         return reply(StatusCode::BAD_REQUEST, json!({"code":"invalid_household"}));
@@ -349,9 +395,27 @@ async fn evaluate(
     }
     let mut excluded = BTreeSet::new();
     let mut disliked = BTreeSet::new();
+    let mut allergen_matches = Vec::new();
     for id in &input.member_ids {
         if let Some(m) = members.get(id) {
             for ingredient in &resolved {
+                for entry in state.allergen_data["entries"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                {
+                    let allergen = entry["allergen_id"].as_str().unwrap_or("");
+                    if entry["ingredient_id"].as_str() == Some(ingredient.as_str())
+                        && (m.allergen_ids.iter().any(|a| a == allergen)
+                            || m.allergies
+                                .iter()
+                                .chain(&m.intolerances)
+                                .any(|a| a.to_lowercase() == allergen))
+                    {
+                        excluded.insert(ingredient);
+                        allergen_matches.push(json!({"member_id":m.id,"ingredient_id":ingredient,"allergen_id":allergen,"source_url":entry["source_url"]}));
+                    }
+                }
                 if m.excluded_ingredients.contains(ingredient) {
                     excluded.insert(ingredient);
                 }
@@ -363,6 +427,52 @@ async fn evaluate(
     }
     reply(
         StatusCode::OK,
-        json!({"status":if excluded.is_empty(){"review_required"}else{"blocked"},"excluded_ingredients":excluded,"disliked_ingredients":disliked,"unknown_ingredients":input.ingredient_ids.iter().filter(|id|!state.ingredients.contains(*id) && state.aliases.get(&id.to_lowercase()).is_none_or(|ids|ids.len()!=1)).collect::<Vec<_>>(),"warning_codes":["allergen_mapping_unavailable","cross_contamination_unmodelled"],"profile_revision":store.data.revision}),
+        json!({"status":if excluded.is_empty(){"review_required"}else{"blocked"},"excluded_ingredients":excluded,"allergen_matches":allergen_matches,"allergen_data_version":state.allergen_data["version"],"disliked_ingredients":disliked,"unknown_ingredients":input.ingredient_ids.iter().filter(|id|!state.ingredients.contains(*id) && state.aliases.get(&id.to_lowercase()).is_none_or(|ids|ids.len()!=1)).collect::<Vec<_>>(),"warning_codes":["allergen_coverage_incomplete","cross_contamination_unmodelled"],"profile_revision":store.data.revision}),
     )
+}
+
+fn allergen_ids() -> &'static [&'static str] {
+    &[
+        "milk",
+        "egg",
+        "soy",
+        "gluten_cereals",
+        "peanut",
+        "tree_nuts",
+        "sesame",
+        "lupin",
+        "celery",
+        "mustard",
+        "fish",
+        "crustacean",
+        "mollusc",
+        "sulphites",
+    ]
+}
+async fn allergens(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    if !authorized(&state, &headers) {
+        return denied();
+    }
+    reply(StatusCode::OK, state.allergen_data.clone())
+}
+
+fn ingredient_aliases(
+    catalogue: &crate::nutrition::catalogue::Catalogue,
+) -> BTreeMap<String, BTreeSet<String>> {
+    let mut aliases: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for ingredient in &catalogue.ingredients {
+        let mut labels = vec![ingredient.name.as_str()];
+        labels.extend(ingredient.aliases.iter().map(String::as_str));
+        for translated in ingredient.translations.values() {
+            labels.push(&translated.name);
+            labels.extend(translated.aliases.iter().map(String::as_str));
+        }
+        for label in labels {
+            aliases
+                .entry(label.to_lowercase())
+                .or_default()
+                .insert(ingredient.id.clone());
+        }
+    }
+    aliases
 }

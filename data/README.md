@@ -101,3 +101,13 @@ USDA portion semantics: https://fdc.nal.usda.gov/portal-data/external/dataDictio
 The API `/api/conversions` exposes the list; the demo offers explicit selection and saved
 revisions retain the full evidence even if the reference list later changes. Unknown densities
 remain unknown. Cross-device preference synchronization is deferred at customer request.
+
+## Positive allergen identity classifications
+`allergens.json` defines 14 stable group IDs and 106 explicitly selected positive food-identity
+classifications, tied to exact catalogue food records/forms. Groups and food examples are based
+on the [Food Standards Agency reference](https://www.food.gov.uk/sites/default/files/media/document/14-Allergens%2016Nov21.pdf).
+Selections are Mealshop curation, not FSA analysis of our catalogue or individual retail products.
+Only positive associations are recorded; omissions never assert absence. Cross-contact, refined
+product exceptions, thresholds and complete brand composition are not inferred. Source coverage
+can be expanded without relaxing the review-required behaviour. Run
+`python3 scripts/verify_allergens.py` to validate registry/selection identity and provenance fields.

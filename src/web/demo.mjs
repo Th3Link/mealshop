@@ -478,6 +478,7 @@ try { $('unit-preference').value=['g','kg','g_kg'].includes(localStorage.getItem
 $('unit-preference').addEventListener('change',()=>{ clearScale(); try {localStorage.setItem('mealshop.demo.massUnit',$('unit-preference').value);} catch {} });
 
 let household = {revision:0,members:[]};
+let householdAllergens=[];
 async function householdRequest(path,options={}) {
   const response=await fetch('/api/household/'+path,{...options,cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+$('household-token').value},signal:AbortSignal.timeout(10000)});
   if (!response.ok) throw new Error('household request failed');
@@ -487,6 +488,8 @@ function householdEditor() {
   const member=household.members.find(m=>m.id===$('household-member').value);
   $('household-name').value=member?.name ?? '';
   $('household-allergies').value=(member?.allergies ?? []).join('\n');
+  $('household-intolerances').value=(member?.intolerances ?? []).join('\n');
+  $('household-allergen-ids').replaceChildren(...householdAllergens.map(a=>{const option=node('option',locale==='de'?a.translations.de:a.name);option.value=a.id;option.selected=member?.allergen_ids?.includes(a.id) ?? false;return option;}));
   for (const [element,field] of [['household-excluded','excluded_ingredients'],['household-disliked','disliked_ingredients']]) {
     const select=$(element); select.replaceChildren(...catalogue.ingredients.map(i=>{const option=node('option',name(i));option.value=i.id;option.selected=member?.[field].includes(i.id) ?? false;return option;}));
   }
@@ -501,7 +504,7 @@ function householdRender() {
 async function householdAction(action) {
   try {await action();} catch {$('household-status').textContent=t('household_failed');}
 }
-$('household-load').addEventListener('click',()=>householdAction(async()=>{household=await householdRequest('profiles');householdRender();$('household-status').textContent=t('household_loaded');}));
+$('household-load').addEventListener('click',()=>householdAction(async()=>{householdAllergens=(await householdRequest('allergens')).groups;household=await householdRequest('profiles');householdRender();$('household-status').textContent=t('household_loaded');}));
 $('household-member').addEventListener('change',householdEditor);
 async function householdWrite(members) {
   household=await householdRequest('profiles',{method:'PUT',body:JSON.stringify({expected_revision:household.revision,members})});
@@ -509,7 +512,7 @@ async function householdWrite(members) {
 }
 $('household-save').addEventListener('click',()=>householdAction(async()=>{
   const id=$('household-member').value || 'member-'+crypto.randomUUID();
-  const member={id,name:$('household-name').value,allergies:$('household-allergies').value.split('\n').filter(s=>s.trim()),excluded_ingredients:[...$('household-excluded').selectedOptions].map(o=>o.value),disliked_ingredients:[...$('household-disliked').selectedOptions].map(o=>o.value)};
+  const member={id,name:$('household-name').value,allergen_ids:[...$('household-allergen-ids').selectedOptions].map(o=>o.value),intolerances:$('household-intolerances').value.split('\n').filter(s=>s.trim()),allergies:$('household-allergies').value.split('\n').filter(s=>s.trim()),excluded_ingredients:[...$('household-excluded').selectedOptions].map(o=>o.value),disliked_ingredients:[...$('household-disliked').selectedOptions].map(o=>o.value)};
   const members=household.members.filter(m=>m.id!==id);members.push(member);await householdWrite(members);
 }));
 $('household-remove').addEventListener('click',()=>householdAction(async()=>{const id=$('household-member').value;if(id)await householdWrite(household.members.filter(m=>m.id!==id));}));
