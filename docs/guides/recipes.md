@@ -84,3 +84,16 @@ the trusted local access boundary; the library does not provide authentication o
 GET `/api/recipes/{id}/scale?servings=3&revision=1` previews a saved revision at another
 serving count without writing it. Omit revision for the latest. The response includes both
 serving counts, scaled gram strings and nutrition; unsupported or zero rounded amounts fail.
+
+## Original quantity and conversion evidence
+A recipe line can supply `quantity: {"amount":"0.125","unit":"kg"}` instead of grams.
+The server normalizes to grams and stores both. If both are supplied they must agree exactly.
+Legacy gram-only lines remain valid. For ml/l/piece/tsp/tbsp input supply `conversion` with
+`ingredient_id`, exact catalogue `form`, `source_url` (HTTPS), `version`, `uncertainty`,
+`grams_per_base_unit` (g/ml or g/piece), and optional `spoon_standard` and
+`millilitres_per_spoon`. Spoon input requires both optional fields; name the selected spoon
+and regional standard. These are user-declared evidence, not independently verified sources.
+Cross-dimension arithmetic rejects unsupported precision; it never assumes water density.
+The immutable revision retains this context. Scaling previews normalize from saved grams,
+leaving original inputs/evidence in the source revision. Local demo g/kg preference affects
+mass display only; other users' saved recipes are not rewritten.

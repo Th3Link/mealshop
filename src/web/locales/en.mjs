@@ -129,5 +129,21 @@ export default {
   "scale_recipe": "Preview scaled ingredients",
   "scale_load_first": "Load or save a recipe first.",
   "scale_summary": "Original: {original} servings · Preview: {target} servings. Rounded to 0.000001 g.",
-  "scale_error": "Cannot scale: check servings and supported quantity range."
+  "scale_error": "Cannot scale: check servings and supported quantity range.",
+  "quantity_unit": "Input unit",
+  "conversion_evidence": "Conversion evidence (user-declared; numeric factors use decimal points)",
+  "mass_preference": "Mass display preference for scaling previews",
+  "conversion_grams_per_base_unit": "Grams per ml or piece",
+  "conversion_source_url": "Source URL (https)",
+  "conversion_version": "Source version / measurement date",
+  "conversion_uncertainty": "Uncertainty / measurement conditions",
+  "conversion_spoon_standard": "Named spoon standard (including tsp/tbsp)",
+  "conversion_millilitres_per_spoon": "Millilitres per selected spoon",
+  "unit_g": "g",
+  "unit_kg": "kg",
+  "unit_ml": "ml",
+  "unit_l": "l",
+  "unit_tsp": "tsp",
+  "unit_tbsp": "tbsp",
+  "unit_piece": "piece"
 };

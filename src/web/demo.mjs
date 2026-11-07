@@ -75,7 +75,7 @@ function missingOption(select,id) {
   const option = node('option',t('missing_catalogue_ingredient',{id})); option.value = id;
   select.append(option); select.value = id;
 }
-function addLine(id = catalogue.ingredients[0]?.id, grams = '100') {
+function addLine(id = catalogue.ingredients[0]?.id, grams = '100', original = null, evidence = null) {
   const row = node('div', undefined, 'line');
   const ingredientLabel = node('label');
   const label = node('span', t('ingredient'));
@@ -97,14 +97,23 @@ function addLine(id = catalogue.ingredients[0]?.id, grams = '100') {
   input.type = 'text';
   input.inputMode = 'decimal';
   input.required = true;
-  input.value = inputForLocale(grams, locale);
+  input.value = inputForLocale(original?.amount ?? grams, locale);
   input.maxLength = 32;
   massLabel.append(massText, input);
   const remove = node('button', '×', 'remove');
   remove.type = 'button';
   remove.setAttribute('aria-label', t('remove_ingredient'));
   remove.addEventListener('click', () => { row.remove(); changed(); });
-  row.append(ingredientLabel, massLabel, remove);
+  const unit = node('select'); unit.dataset.unit = 'true'; unit.setAttribute('aria-label',t('quantity_unit'));
+  for (const value of ['g','kg','ml','l','tsp','tbsp','piece']) { const option=node('option',t('unit_'+value)); option.dataset.i18n='unit_'+value; option.value=value; unit.append(option); }
+  unit.value=original?.unit ?? 'g'; massLabel.append(unit);
+  const context=node('details'); context.append(node('summary',t('conversion_evidence')));
+  for (const key of ['grams_per_base_unit','source_url','version','uncertainty','spoon_standard','millilitres_per_spoon']) {
+    const label=node('label'); const caption=node('span',t('conversion_'+key)); caption.dataset.i18n='conversion_'+key;
+    const field=node('input'); field.dataset.conversion=key;
+    field.value=evidence?.[key] ?? ''; label.append(caption,field); context.append(label);
+  }
+  row.append(ingredientLabel, massLabel, remove, context);
   $('lines').append(row);
 }
 function education(note, ingredient) {
@@ -190,7 +199,7 @@ function renderResult(result) {
   const seen = new Set();
   for (const ingredient of result.ingredients) {
     const article = node('article');
-    article.append(node('h4', `${name(ingredient)} · ${number(ingredient.grams)} g`),
+    article.append(node('h4', `${name(ingredient)} · ${displayMass(ingredient.grams)}`),
       node('p', `${ingredientForm(ingredient, locale)} · ${t('basis')}`),
       link(ingredient.source.name, ingredient.source.url),
       node('p', `${ingredient.source.record_id} · ${ingredient.source.version} · ${t('retrieved', {date:ingredient.source.retrieved_on})} · ${ingredient.source.license}`, 'source'),
@@ -210,11 +219,7 @@ async function calculate(event) {
   $('results').hidden = true;
   lastResult = undefined;
   try {
-    const lines = [...$('lines').children].map(row => {
-      const input = row.querySelector('input');
-      if (input.dataset.invalidLocale) throw Object.assign(new RangeError('Invalid localized gram amount'), {code:'invalid_amount'});
-      return {ingredient_id:row.querySelector('select').value, grams:normalizeAmount(input.value, locale)};
-    });
+    const lines = recipeLines();
     const request = {lines, servings:Number($('servings').value), preparation:$('preparation').value};
     $('recipe-controls').disabled = true;
     status('calculating');
@@ -334,7 +339,15 @@ function recipeLines() {
   return [...$('lines').children].map(row => {
     const input = row.querySelector('input');
     if (input.dataset.invalidLocale) throw Object.assign(new Error('Invalid amount'), {code:'invalid_amount'});
-    return {ingredient_id:row.querySelector('select').value,grams:normalizeAmount(input.value,locale)};
+    const id=row.querySelector('select').value;
+    const quantity={amount:normalizeAmount(input.value,locale),unit:row.querySelector('[data-unit]').value};
+    const result={ingredient_id:id,quantity};
+    if (!['g','kg'].includes(quantity.unit)) {
+      const conversion={ingredient_id:id,form:catalogue.ingredients.find(i=>i.id===id)?.form};
+      for (const field of row.querySelectorAll('[data-conversion]')) conversion[field.dataset.conversion]=field.value || null;
+      result.conversion=conversion;
+    }
+    return result;
   });
 }
 function draft() {
@@ -388,7 +401,7 @@ async function loadRecipe() {
     $('preparation').value = recipe.preparation;
     $('lines').replaceChildren(); nextLine = 0;
     const missing = recipe.lines.some(line => !catalogue.ingredients.some(i => i.id === line.ingredient_id));
-    for (const line of recipe.lines) addLine(line.ingredient_id,line.grams);
+    for (const line of recipe.lines) addLine(line.ingredient_id,line.grams,line.quantity,line.conversion);
     lastResult = result.nutrition;
     renderResult(lastResult);
     status('estimate_ready');
@@ -414,7 +427,7 @@ $('scale-recipe').addEventListener('click', async () => {
     $('scale-status').textContent = t('scale_summary', {original:number(result.original_servings),target:number(result.servings)});
     $('scaled-lines').replaceChildren(...result.lines.map(line => {
       const ingredient = catalogue.ingredients.find(i => i.id === line.ingredient_id);
-      return node('p', `${ingredient ? name(ingredient) : line.ingredient_id}: ${number(line.grams)} g`);
+      return node('p', `${ingredient ? name(ingredient) : line.ingredient_id}: ${displayMass(line.grams)}`);
     }));
     lastResult = result.nutrition; renderResult(lastResult); status('estimate_ready');
   } catch { $('scale-status').textContent = t('scale_error'); }
@@ -433,3 +446,14 @@ $('language').addEventListener('change', switchLanguage);
 $('retry').addEventListener('click', initialize);
 translateStatic();
 initialize();
+
+function displayMass(grams) {
+  if ($('unit-preference').value === 'kg') {
+    const [whole,fraction='']=grams.split('.');
+    const digits=(BigInt(whole)*1000000n+BigInt(fraction.padEnd(6,'0'))).toString().padStart(10,'0');
+    return number(digits.slice(0,-9)+'.'+digits.slice(-9))+' kg';
+  }
+  return number(grams)+' g';
+}
+try { $('unit-preference').value=localStorage.getItem('mealshop.demo.massUnit')==='kg'?'kg':'g'; } catch {}
+$('unit-preference').addEventListener('change',()=>{ clearScale(); try {localStorage.setItem('mealshop.demo.massUnit',$('unit-preference').value);} catch {} });

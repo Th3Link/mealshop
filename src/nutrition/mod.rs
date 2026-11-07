@@ -9,11 +9,53 @@ use nutrients::{Nutrient, NutrientInfo};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-#[derive(Clone, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Clone, Serialize)]
 pub(crate) struct RecipeLine {
     pub(crate) ingredient_id: String,
     pub(crate) grams: Grams,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) quantity: Option<crate::quantities::Quantity>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) conversion: Option<crate::quantities::ConversionEvidence>,
+}
+impl<'de> Deserialize<'de> for RecipeLine {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Input {
+            ingredient_id: String,
+            grams: Option<Grams>,
+            quantity: Option<crate::quantities::Quantity>,
+            conversion: Option<crate::quantities::ConversionEvidence>,
+        }
+        let input = Input::deserialize(deserializer)?;
+        let grams = if let Some(q) = &input.quantity {
+            let result = q
+                .grams(&input.ingredient_id, input.conversion.as_ref())
+                .map_err(serde::de::Error::custom)?;
+            if input
+                .grams
+                .as_ref()
+                .is_some_and(|g| g.0.atoms() != result.0.atoms())
+            {
+                return Err(serde::de::Error::custom("quantity_grams_mismatch"));
+            }
+            result
+        } else {
+            if input.conversion.is_some() {
+                return Err(serde::de::Error::custom("conversion_without_quantity"));
+            }
+            input
+                .grams
+                .ok_or_else(|| serde::de::Error::custom("quantity_required"))?
+        };
+        Ok(Self {
+            ingredient_id: input.ingredient_id,
+            grams,
+            quantity: input.quantity,
+            conversion: input.conversion,
+        })
+    }
 }
 
 #[derive(Clone, Copy, Deserialize, Serialize)]
@@ -85,6 +127,13 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         let ingredient = catalogue
             .find(&line.ingredient_id)
             .ok_or_else(|| format!("Unknown ingredient: {}", line.ingredient_id))?;
+        if line
+            .conversion
+            .as_ref()
+            .is_some_and(|e| e.form != ingredient.form)
+        {
+            return Err("conversion_state_mismatch".to_owned());
+        }
         ingredients.push((ingredient, &line.grams));
     }
     let nutrients = Nutrient::ALL
