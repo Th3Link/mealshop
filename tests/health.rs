@@ -10,6 +10,7 @@ use tower::ServiceExt;
 #[tokio::test]
 async fn health_is_ok_without_storage() {
     let response = mealshop_server::router()
+        .unwrap()
         .oneshot(
             Request::builder()
                 .uri("/health")
@@ -25,6 +26,7 @@ async fn health_is_ok_without_storage() {
 #[tokio::test]
 async fn unknown_routes_are_not_found() {
     let response = mealshop_server::router()
+        .unwrap()
         .oneshot(
             Request::builder()
                 .uri("/recipes")

@@ -1,7 +1,8 @@
 # Mealshop
 
-Recipes, informed nutrition, shopping and family meal planning. **Early bootstrap:** only a
-Rust HTTP server with `GET /health` exists. All product features below are planned.
+Recipes, informed nutrition, shopping and family meal planning. **Early development:** a
+Rust HTTP server now includes an ingredient catalogue and nutrition workbench (F02, under review).
+The broader product features below remain planned.
 
 [![CI](https://github.com/Th3Link/mealshop/actions/workflows/ci.yml/badge.svg)](https://github.com/Th3Link/mealshop/actions/workflows/ci.yml)
 [![Audit](https://github.com/Th3Link/mealshop/actions/workflows/audit.yml/badge.svg)](https://github.com/Th3Link/mealshop/actions/workflows/audit.yml)
@@ -17,15 +18,18 @@ Rust HTTP server with `GET /health` exists. All product features below are plann
 - Guided cooking with preset timers, multi-day bread/pizza schedules, and later brewing/fermentation.
 - Inventory, offers, customer-operated link imports and MCP recipe tools.
 
-## Run the bootstrap
+## Run the ingredient and nutrition workbench
 Install stable Rust (declared minimum: 1.85), then:
 ```sh
 cargo run --locked
 curl --fail http://127.0.0.1:3000/health
 ```
 The response is `ok` plus a newline. `MEALSHOP_LISTEN_ADDR` overrides `127.0.0.1:3000`.
-Use Ctrl-C for graceful shutdown. No authentication, storage or recipe endpoints exist yet;
-this is a development stub. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
+Open [the workbench](http://127.0.0.1:3000/) to calculate recipe/serving nutrients and inspect
+sources, unknowns and component evidence. The starter catalogue includes USDA oats/chia data
+and an identity-only psyllium record. [Demo, API and custom catalogue guide](docs/guides/nutrition.md).
+Use Ctrl-C for graceful shutdown. There is no household authentication or saved recipe data
+yet. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
 
 ## Deployment and business model (planned)
 Rust/Tokio/Axum server, standalone or as a Nextcloud `ExApp`; Flutter client connecting to an
