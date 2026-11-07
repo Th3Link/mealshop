@@ -1,6 +1,6 @@
 # Household members and dietary constraints
 
-Status: Draft
+Status: In progress
 Priority: Must
 Origin: Customer
 Milestone: M1
@@ -18,7 +18,13 @@ Plan meals safely for everyone eating.
 Diagnosis or guaranteed absence of cross-contamination.
 
 ## UX notes
-UI flows, accessibility, empty/error states and user review points must be specified before Ready.
+See ux-notes.md.
 
 ## Links
 Requirement: [F09](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
+
+## Current slice
+Protected local single-household profiles with operator-token access, revisioned snapshot
+correction/export/removal and group dietary review. Allergy/intolerance text requires human
+review; only explicit ingredient exclusions are automatically enforced. Missing allergen
+coverage always returns `review_required` rather than safe. Hosted identities are out of scope.

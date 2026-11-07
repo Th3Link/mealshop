@@ -34,7 +34,7 @@ Recipes can be created, saved, loaded and revised using catalogue ingredients; p
 estimates retain their saved source snapshots. The executable stores data in `var/recipes`
 (or `MEALSHOP_RECIPE_DIR`) and requires loopback access until authentication exists.
 [Recipe API, storage and recovery guide](docs/guides/recipes.md).
-Use Ctrl-C for graceful shutdown. A saved recipe can be previewed at another serving count. There is no household authentication yet. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
+Use Ctrl-C for graceful shutdown. A saved recipe can be previewed at another serving count. Optional protected local household profiles use an operator token; see [household setup and limits](docs/guides/household.md). Hosted authentication remains future work. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
 
 The current browser surface is a pragmatic test demo, not the product UI. It supports German
 and English interface/quantity presentation; untranslated source content stays explicitly original.

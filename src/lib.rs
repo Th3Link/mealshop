@@ -1,6 +1,7 @@
 //! Mealshop ingredient catalogue and nutrition HTTP application.
 
 mod api;
+mod household;
 mod nutrition;
 mod quantities;
 mod recipe_api;
@@ -44,3 +45,15 @@ pub fn router_with_recipe_directory(
 
 /// Project documentation published together with the API reference.
 pub mod docs;
+
+/// Builds the protected local household-profile API in a dedicated directory.
+/// The operator token authorizes all household profile reads, exports, edits and removals.
+/// # Errors
+/// Returns an error for invalid token, catalogue, persisted data or unavailable storage.
+pub fn household_router(
+    json: &str,
+    directory: impl AsRef<std::path::Path>,
+    token: String,
+) -> Result<axum::Router, String> {
+    household::router(json, directory.as_ref(), token)
+}
