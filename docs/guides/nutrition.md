@@ -117,3 +117,6 @@ by-difference carbohydrate are separate definitions; food folate is separate fro
 Mixed-source recipes may show partial values for these definitions, with an explanatory warning.
 Error responses add stable `code` alongside the English `error` text; calculation results add
 `warning_codes` parallel to the retained English `warnings`. The demo localizes these codes.
+
+## Typed quantity conversion (F03 initial slice)
+`POST /api/quantities/convert` accepts `{"quantity":{"amount":"1.250000","unit":"kg"},"target":"g"}` and returns the original input, its dimension and an exact converted quantity. Supported unit identifiers are `g`, `kg`, `ml`, `l`, `tsp`, `tbsp` and `piece`. Cross-dimension and spoon conversions require ingredient data or a named standard and return stable error codes. Conversion rejects values outside the six-decimal precision bound rather than rounding. This endpoint is not yet connected to recipes or user preferences.

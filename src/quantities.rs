@@ -80,3 +80,74 @@ pub(crate) fn rounded(numerator: u128, denominator: u128) -> Result<String, Stri
         .ok_or_else(|| "Quantity exceeds calculation precision".to_owned())?;
     Ok(format!("{}.{:02}", cents / 100, cents % 100))
 }
+
+/// A source quantity retains its original decimal spelling and unit.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Quantity {
+    pub(crate) amount: Amount,
+    pub(crate) unit: Unit,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum Unit {
+    G,
+    Kg,
+    Ml,
+    L,
+    Tsp,
+    Tbsp,
+    Piece,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum Dimension {
+    Mass,
+    Volume,
+    Count,
+}
+
+impl Unit {
+    pub(crate) fn dimension(self) -> Dimension {
+        match self {
+            Self::G | Self::Kg => Dimension::Mass,
+            Self::Ml | Self::L | Self::Tsp | Self::Tbsp => Dimension::Volume,
+            Self::Piece => Dimension::Count,
+        }
+    }
+    fn factor(self) -> Option<u128> {
+        match self {
+            Self::G | Self::Ml | Self::Piece => Some(1),
+            Self::Kg | Self::L => Some(1000),
+            Self::Tsp | Self::Tbsp => None,
+        }
+    }
+}
+impl Quantity {
+    pub(crate) fn convert(&self, target: Unit) -> Result<Self, &'static str> {
+        if self.unit == target {
+            return Ok(self.clone());
+        }
+        if self.unit.dimension() != target.dimension() {
+            return Err("ingredient_conversion_required");
+        }
+        let from = self.unit.factor().ok_or("spoon_standard_required")?;
+        let to = target.factor().ok_or("spoon_standard_required")?;
+        let numerator = self.amount.atoms() * from;
+        if numerator % to != 0 {
+            return Err("precision_exceeded");
+        }
+        let atoms = numerator / to;
+        if atoms > 1_000_000_000_000_000 {
+            return Err("quantity_out_of_range");
+        }
+        let amount = Amount::try_from(format!("{}.{:06}", atoms / SCALE, atoms % SCALE))
+            .map_err(|_| "quantity_out_of_range")?;
+        Ok(Self {
+            amount,
+            unit: target,
+        })
+    }
+}
