@@ -29,17 +29,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Err(error) => return Err(error.into()),
     };
     let listener = tokio::net::TcpListener::bind(address).await?;
-    let mut app = mealshop_server::router_with_recipe_directory(&json, directory)?;
-    if let Ok(token) = std::env::var("MEALSHOP_HOUSEHOLD_TOKEN") {
-        let directory =
+    let app = if let Ok(token) = std::env::var("MEALSHOP_HOUSEHOLD_TOKEN") {
+        let household_directory =
             std::env::var("MEALSHOP_HOUSEHOLD_DIR").unwrap_or_else(|_| "var/household".to_owned());
-        app = app.merge(mealshop_server::household_router_with_reader(
+        mealshop_server::family_router(
             &json,
             directory,
+            household_directory,
             token,
             std::env::var("MEALSHOP_HOUSEHOLD_READ_TOKEN").ok(),
-        )?);
-    }
+        )?
+    } else {
+        mealshop_server::router_with_recipe_directory(&json, directory)?
+    };
     eprintln!("Mealshop listening on {}", listener.local_addr()?);
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown())

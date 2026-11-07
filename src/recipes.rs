@@ -15,9 +15,9 @@ const MAX_RECORD_BYTES: u64 = 2_097_152;
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Step {
-    instruction: String,
-    active_seconds: u32,
-    passive_seconds: u32,
+    pub(crate) instruction: String,
+    pub(crate) active_seconds: u32,
+    pub(crate) passive_seconds: u32,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -28,7 +28,7 @@ pub(crate) struct Recipe {
     author: String,
     pub(crate) lines: Vec<nutrition::RecipeLine>,
     pub(crate) servings: u32,
-    steps: Vec<Step>,
+    pub(crate) steps: Vec<Step>,
     preparation: nutrition::Preparation,
 }
 

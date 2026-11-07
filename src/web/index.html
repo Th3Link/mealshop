@@ -72,6 +72,29 @@
       <button id="household-evaluate" type="button" data-i18n="household_evaluate">Review current ingredients for all members</button>
       <p id="household-status" role="status"></p>
     </section>
+    <section class="panel"><h2 data-i18n="plan_heading">Family meal planning</h2>
+      <p data-i18n="plan_scope">Uses the household access token above. Preview changes before applying; unblocked meals still require review.</p>
+      <fieldset id="plan-controls"><button id="plan-load" type="button" data-i18n="plan_load">Load family and saved plans</button>
+      <label><span data-i18n="plan_saved">Saved meal</span><select id="plan-saved"></select></label><button id="plan-edit" type="button" data-i18n="plan_edit">Load selected meal settings</button>
+      <label><span data-i18n="plan_date">Date</span><input id="plan-date" type="date"></label>
+      <label><span data-i18n="plan_meal">Meal</span><select id="plan-meal"><option value="breakfast" data-i18n="plan_breakfast">Breakfast</option><option value="lunch" data-i18n="plan_lunch">Lunch</option><option value="dinner" data-i18n="plan_dinner">Dinner</option></select></label>
+      <label><span data-i18n="plan_attendees">Attendees (multiple selection)</span><select id="plan-attendees" multiple size="5"></select></label>
+      <label><span data-i18n="plan_recipe">Recipe revision</span><select id="plan-recipe"></select></label>
+      <label><span data-i18n="plan_servings">Target servings</span><input id="plan-servings" type="number" min="1" max="1000000" value="2"></label>
+      <label><span data-i18n="plan_active">Available active time (seconds)</span><input id="plan-active" type="number" min="0" max="86400" value="1800"></label>
+      <label><span data-i18n="plan_elapsed">Available elapsed time on meal day (seconds)</span><input id="plan-elapsed" type="number" min="0" max="86400" value="3600"></label>
+      <label><span data-i18n="plan_advance">Available advance preparation lead (seconds)</span><input id="plan-advance" type="number" min="0" max="2592000" value="0"></label>
+      <label><span data-i18n="plan_calendar">Import calendar attendance snapshot (.json)</span><input id="plan-calendar" type="file" accept="application/json,.json"></label>
+      <label><input id="plan-consent" type="checkbox"><span data-i18n="plan_consent">I consent to using this calendar attendance snapshot</span></label>
+      <label><input id="plan-use-calendar" type="checkbox"><span data-i18n="plan_use_calendar">Use calendar attendance instead of the manual selection</span></label>
+      <p id="plan-calendar-source"></p><button id="plan-clear-calendar" type="button" data-i18n="plan_clear_calendar">Clear calendar snapshot</button>
+      <button id="plan-preview" type="button" data-i18n="plan_preview">Preview selected recipe</button><button id="plan-suggest" type="button" data-i18n="plan_suggest">Suggest from listed recipes (maximum 50)</button>
+      <label><span data-i18n="plan_candidates">Candidate recipes (select up to 50)</span><select id="plan-candidates" multiple size="5"></select></label><label><span data-i18n="plan_suggestions">Suggestions requiring review</span><select id="plan-suggestions"></select></label><button id="plan-use-suggestion" type="button" data-i18n="plan_use_suggestion">Preview this suggestion</button>
+      <button id="plan-remove-preview" type="button" data-i18n="plan_remove_preview">Preview removal of this meal slot</button>
+      <div id="plan-requirements"></div><div id="plan-preview-output"></div>
+      <label><input id="plan-reviewed" type="checkbox"><span data-i18n="plan_reviewed">I reviewed the dietary uncertainties, time requirements and shopping changes</span></label>
+      <button id="plan-apply" type="button" disabled data-i18n="plan_apply">Apply preview</button></fieldset><p id="plan-status" role="status"></p>
+    </section>
     <noscript><p class="notice" data-i18n="javascript">This demo needs JavaScript. The catalogue is also available at /api/ingredients.</p></noscript>
   </main>
   <footer><span data-i18n="footer">Mealshop / disposable nutrition demo</span><span data-i18n="footer_limits">Product web clients: F22 · Localization: F21</span></footer>

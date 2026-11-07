@@ -1,6 +1,6 @@
 # Family meal planning and calendar attendance
 
-Status: Draft
+Status: Done
 Priority: Must
 Origin: Customer
 Milestone: M2
@@ -19,7 +19,17 @@ Choose feasible meals for the family and adapt when plans change.
 Autonomous calendar writes or purchases.
 
 ## UX notes
-UI flows, accessibility, empty/error states and user review points must be specified before Ready.
+See ux-notes.md.
 
 ## Links
 Requirement: [F10](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
+
+## Implementation contract
+Local protected planning uses F09 operator/reader roles and immutable recipe revisions. Calendar
+attendance is supplied through a consented read-only snapshot import with source/date/event and
+mapped household IDs; no specific live provider is implied. Preparation is estimated from ordered
+recipe steps; scaled batch-time uncertainty is shown for review. Preview/apply revisions prevent
+stale profile/plan decisions, and known hard/time conflicts cannot be acknowledged away.
+Shopping changes are plan-derived mass requirements, not completion of F06 purchase workflows.
+Unknown allergen data remains review-required. Hosted provider adapters and process scheduling
+belong to their own features; F10 does not autonomously write external calendars or make purchases.

@@ -18,7 +18,7 @@ use std::{
 
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-struct Member {
+pub(crate) struct Member {
     id: String,
     name: String,
     allergies: Vec<String>,
@@ -31,10 +31,10 @@ struct Member {
 }
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-struct Profiles {
+pub(crate) struct Profiles {
     schema_version: u32,
-    revision: u64,
-    members: Vec<Member>,
+    pub(crate) revision: u64,
+    pub(crate) members: Vec<Member>,
 }
 impl Default for Profiles {
     fn default() -> Self {
@@ -49,12 +49,12 @@ impl Default for Profiles {
 #[serde(deny_unknown_fields)]
 struct Update {
     expected_revision: u64,
-    members: Vec<Member>,
+    pub(crate) members: Vec<Member>,
 }
-struct Store {
+pub(crate) struct Store {
     path: PathBuf,
     lock: PathBuf,
-    data: Profiles,
+    pub(crate) data: Profiles,
     writable: bool,
 }
 impl Drop for Store {
@@ -62,25 +62,27 @@ impl Drop for Store {
         let _ = fs::remove_file(&self.lock);
     }
 }
-struct Household {
+pub(crate) struct Household {
     token: String,
     reader_token: Option<String>,
-    store: Mutex<Store>,
+    pub(crate) store: Mutex<Store>,
+    pub(crate) recipes: Option<Arc<Mutex<crate::recipes::Store>>>,
+    pub(crate) plans: Mutex<crate::planning::PlanStore>,
     ingredients: BTreeSet<String>,
     aliases: BTreeMap<String, BTreeSet<String>>,
-    allergen_data: serde_json::Value,
+    pub(crate) allergen_data: serde_json::Value,
 }
-type Shared = Arc<Household>;
-fn reply(status: StatusCode, body: serde_json::Value) -> Response {
+pub(crate) type Shared = Arc<Household>;
+pub(crate) fn reply(status: StatusCode, body: serde_json::Value) -> Response {
     (status, [(header::CACHE_CONTROL, "no-store")], Json(body)).into_response()
 }
-fn can_write(state: &Household, headers: &HeaderMap) -> bool {
+pub(crate) fn can_write(state: &Household, headers: &HeaderMap) -> bool {
     headers
         .get(header::AUTHORIZATION)
         .and_then(|h| h.to_str().ok())
         .is_some_and(|h| h.strip_prefix("Bearer ") == Some(state.token.as_str()))
 }
-fn authorized(state: &Household, headers: &HeaderMap) -> bool {
+pub(crate) fn authorized(state: &Household, headers: &HeaderMap) -> bool {
     can_write(state, headers)
         || state.reader_token.as_ref().is_some_and(|token| {
             headers
@@ -101,6 +103,7 @@ pub(crate) fn router(
     directory: &Path,
     token: String,
     reader_token: Option<String>,
+    recipes: Option<Arc<Mutex<crate::recipes::Store>>>,
 ) -> Result<Router, String> {
     if token.len() < 32
         || token.len() > 200
@@ -171,17 +174,12 @@ pub(crate) fn router(
             return Err("Unsupported household schema".to_owned());
         }
     }
-    if let Some(entries) = allergen_data["entries"].as_array_mut() {
-        entries.retain(|e| {
-            catalogue.ingredients.iter().any(|i| {
-                e["ingredient_id"] == i.id
-                    && e["form"] == i.form
-                    && e["source_record_id"] == i.source.record_id
-            })
-        });
-    }
+    filter_allergens(&mut allergen_data, &catalogue);
     let aliases = ingredient_aliases(&catalogue);
+    let plans = crate::planning::PlanStore::open(directory)?;
     let state = Household {
+        recipes,
+        plans: Mutex::new(plans),
         aliases,
         token,
         reader_token,
@@ -195,6 +193,7 @@ pub(crate) fn router(
     }
     Ok(Router::new()
         .route("/api/household/allergens", get(allergens))
+        .merge(crate::planning::routes())
         .route("/api/household/profiles", get(read).put(write))
         .route("/api/household/evaluate", post(evaluate))
         .layer(DefaultBodyLimit::max(131_072))
@@ -244,13 +243,20 @@ async fn read(State(state): State<Shared>, headers: HeaderMap) -> Response {
     if !authorized(&state, &headers) {
         return denied();
     }
-    match state.store.lock() {
+    tokio::task::spawn_blocking(move || match state.store.lock() {
         Ok(store) => reply(StatusCode::OK, json!(store.data)),
         Err(_) => reply(
             StatusCode::SERVICE_UNAVAILABLE,
             json!({"code":"household_storage_failed"}),
         ),
-    }
+    })
+    .await
+    .unwrap_or_else(|_| {
+        reply(
+            StatusCode::SERVICE_UNAVAILABLE,
+            json!({"code":"household_storage_failed"}),
+        )
+    })
 }
 async fn write(
     State(state): State<Shared>,
@@ -347,9 +353,9 @@ async fn write(
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Evaluation {
-    member_ids: Vec<String>,
-    ingredient_ids: Vec<String>,
+pub(crate) struct Evaluation {
+    pub(crate) member_ids: Vec<String>,
+    pub(crate) ingredient_ids: Vec<String>,
 }
 async fn evaluate(
     State(state): State<Shared>,
@@ -372,18 +378,34 @@ async fn evaluate(
             json!({"code":"invalid_household"}),
         );
     }
-    let Ok(store) = state.store.lock() else {
-        return reply(
+    tokio::task::spawn_blocking(move || {
+        let Ok(store) = state.store.lock() else {
+            return reply(
+                StatusCode::SERVICE_UNAVAILABLE,
+                json!({"code":"household_storage_failed"}),
+            );
+        };
+        match review(&state, &store.data, &input) {
+            Ok(value) => reply(StatusCode::OK, value),
+            Err(code) => reply(StatusCode::UNPROCESSABLE_ENTITY, json!({"code":code})),
+        }
+    })
+    .await
+    .unwrap_or_else(|_| {
+        reply(
             StatusCode::SERVICE_UNAVAILABLE,
             json!({"code":"household_storage_failed"}),
-        );
-    };
-    let members: BTreeMap<_, _> = store.data.members.iter().map(|m| (&m.id, m)).collect();
+        )
+    })
+}
+pub(crate) fn review(
+    state: &Household,
+    profiles: &Profiles,
+    input: &Evaluation,
+) -> Result<serde_json::Value, &'static str> {
+    let members: BTreeMap<_, _> = profiles.members.iter().map(|m| (&m.id, m)).collect();
     if input.member_ids.iter().any(|id| !members.contains_key(id)) {
-        return reply(
-            StatusCode::UNPROCESSABLE_ENTITY,
-            json!({"code":"unknown_household_member"}),
-        );
+        return Err("unknown_household_member");
     }
     let mut resolved = BTreeSet::new();
     for input in &input.ingredient_ids {
@@ -425,9 +447,8 @@ async fn evaluate(
             }
         }
     }
-    reply(
-        StatusCode::OK,
-        json!({"status":if excluded.is_empty(){"review_required"}else{"blocked"},"excluded_ingredients":excluded,"allergen_matches":allergen_matches,"allergen_data_version":state.allergen_data["version"],"disliked_ingredients":disliked,"unknown_ingredients":input.ingredient_ids.iter().filter(|id|!state.ingredients.contains(*id) && state.aliases.get(&id.to_lowercase()).is_none_or(|ids|ids.len()!=1)).collect::<Vec<_>>(),"warning_codes":["allergen_coverage_incomplete","cross_contamination_unmodelled"],"profile_revision":store.data.revision}),
+    Ok(
+        json!({"status":if excluded.is_empty(){"review_required"}else{"blocked"},"excluded_ingredients":excluded,"allergen_matches":allergen_matches,"review_notes":input.member_ids.iter().filter_map(|id|members.get(id)).map(|m|json!({"member_id":m.id,"name":m.name,"allergies":m.allergies,"intolerances":m.intolerances,"allergen_ids":m.allergen_ids})).collect::<Vec<_>>(),"allergen_data_version":state.allergen_data["version"],"disliked_ingredients":disliked,"unknown_ingredients":input.ingredient_ids.iter().filter(|id|!state.ingredients.contains(*id) && state.aliases.get(&id.to_lowercase()).is_none_or(|ids|ids.len()!=1)).collect::<Vec<_>>(),"warning_codes":["allergen_coverage_incomplete","cross_contamination_unmodelled"],"profile_revision":profiles.revision}),
     )
 }
 
@@ -475,4 +496,19 @@ fn ingredient_aliases(
         }
     }
     aliases
+}
+
+fn filter_allergens(
+    allergen_data: &mut serde_json::Value,
+    catalogue: &crate::nutrition::catalogue::Catalogue,
+) {
+    if let Some(entries) = allergen_data["entries"].as_array_mut() {
+        entries.retain(|e| {
+            catalogue.ingredients.iter().any(|i| {
+                e["ingredient_id"] == i.id
+                    && e["form"] == i.form
+                    && e["source_record_id"] == i.source.record_id
+            })
+        });
+    }
 }

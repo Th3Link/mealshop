@@ -481,7 +481,7 @@ let household = {revision:0,members:[]};
 let householdAllergens=[];
 async function householdRequest(path,options={}) {
   const response=await fetch('/api/household/'+path,{...options,cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+$('household-token').value},signal:AbortSignal.timeout(10000)});
-  if (!response.ok) throw new Error('household request failed');
+  if (!response.ok) {let code='request_failed';try{code=(await response.json()).code;}catch{}throw Object.assign(new Error('household request failed'),{code});}
   return response.json();
 }
 function householdEditor() {
@@ -520,3 +520,50 @@ $('household-evaluate').addEventListener('click',()=>householdAction(async()=>{
   const result=await householdRequest('evaluate',{method:'POST',body:JSON.stringify({member_ids:household.members.map(m=>m.id),ingredient_ids:recipeLines().map(l=>l.ingredient_id)})});
   $('household-status').textContent=t('household_'+result.status)+' '+result.excluded_ingredients.map(id=>name(catalogue.ingredients.find(i=>i.id===id))).join(', ');
 }));
+
+let familyPlans={revision:0,meals:[]}; let familyRecipes=[];let planPreview;let planRemoving=false;let calendarSnapshot=null;let planSuggestions=[];
+function invalidatePlan(){planSuggestions=[];$('plan-suggestions').replaceChildren();planPreview=undefined;$('plan-apply').disabled=true;$('plan-reviewed').checked=false;$('plan-preview-output').replaceChildren();}
+function selectedRecipe(){const [id,revision]=$('plan-recipe').value.split('@');return {id,revision:Number(revision)};}
+function planDraft(){return {date:$('plan-date').value,meal:$('plan-meal').value,recipe:selectedRecipe(),attendees:$('plan-use-calendar').checked?null:[...$('plan-attendees').selectedOptions].map(o=>o.value),calendar:calendarSnapshot?{...calendarSnapshot,consent:$('plan-consent').checked}:null,servings:Number($('plan-servings').value),active_seconds:Number($('plan-active').value),elapsed_seconds:Number($('plan-elapsed').value),advance_seconds:Number($('plan-advance').value)};}
+function calendarSource(){ $('plan-calendar-source').textContent=calendarSnapshot?t('plan_calendar_source',{source:calendarSnapshot.source,date:calendarSnapshot.date,people:calendarSnapshot.member_ids.join(', ')}):t('plan_no_calendar'); }
+function showPlanPreview(value,removing=false){
+  planPreview=value;planRemoving=removing;$('plan-reviewed').checked=false;
+  const out=$('plan-preview-output');out.replaceChildren();
+  const conflicts=value.conflicts ?? [];
+  out.append(node('p',removing?t('plan_removal'):value.feasible?t('plan_needs_review'):t('plan_conflicts')));
+  for(const code of conflicts)out.append(node('p',t('plan_conflict_'+code)));
+  for(const id of value.review?.excluded_ingredients ?? []){const item=catalogue.ingredients.find(i=>i.id===id);out.append(node('p',t('plan_excluded',{name:item?name(item):id})));}
+  if(value.review)out.append(node('p',t('household_review_required')));
+  for(const notes of value.review?.review_notes ?? []){const groups=(notes.allergen_ids ?? []).map(id=>{const group=householdAllergens.find(a=>a.id===id);return group?(locale==='de'?group.translations.de:group.name):id;});out.append(node('p',`${notes.name}: ${[...groups,...notes.allergies,...notes.intolerances].join(', ') || t('plan_no_notes')}`));}
+  if(value.nutrition){lastResult=value.nutrition;renderResult(value.nutrition);}
+  if(value.timing)out.append(node('p',t('plan_time_estimate',{servings:number(value.timing.reference_servings)})));
+  if(value.timing)out.append(node('p',t('plan_timing',{active:number(value.timing.active_seconds),elapsed:number(value.timing.elapsed_seconds),advance:number(value.timing.advance_preparation_seconds)})));
+  out.append(node('h3',t('plan_shopping')));
+  for(const line of value.shopping_delta ?? []){const item=catalogue.ingredients.find(i=>i.id===line.ingredient_id);const negative=line.grams_delta.startsWith('-');const value=negative?line.grams_delta.slice(1):line.grams_delta;out.append(node('p',`${item?name(item):line.ingredient_id}: ${negative?'-':'+'}${number(value)} g`));}
+  if(!(value.shopping_delta?.length))out.append(node('p',t('plan_no_delta')));
+  $('plan-apply').disabled=!value.feasible;
+}
+async function planAction(action){$('plan-controls').disabled=true;try{await action();}catch(error){$('plan-status').textContent=t('plan_failed',{code:error.code ?? 'request_failed'});}finally{$('plan-controls').disabled=false;}}
+async function loadFamilyPlans(){
+  householdAllergens=(await householdRequest('allergens')).groups;household=await householdRequest('profiles');familyPlans=await householdRequest('mealplan');familyRecipes=(await recipeRequest('/api/recipes')).recipes;
+  $('plan-attendees').replaceChildren(...household.members.map(m=>{const o=node('option',m.name);o.value=m.id;o.selected=true;return o;}));
+  $('plan-candidates').replaceChildren(...familyRecipes.map((r,index)=>{const o=node('option',`${r.title} · ${r.revision}`);o.value=`${r.id}@${r.revision}`;o.selected=index<50;return o;}));
+  const refs=new Map(familyRecipes.map(r=>[`${r.id}@${r.revision}`,r]));for(const p of familyPlans.meals)refs.set(`${p.recipe.id}@${p.recipe.revision}`,p.recipe);
+  $('plan-recipe').replaceChildren(...[...refs.values()].map(r=>{const o=node('option',`${r.title ?? r.id} · ${r.id} · ${r.revision}`);o.value=`${r.id}@${r.revision}`;return o;}));
+  $('plan-saved').replaceChildren(...familyPlans.meals.map((p,index)=>{const o=node('option',`${p.date} · ${p.meal} · ${p.recipe.id} · ${p.recipe.revision}`);o.value=String(index);return o;}));
+  $('plan-requirements').replaceChildren(node('h3',t('plan_requirements')),...(familyPlans.shopping_requirements ?? []).map(q=>{const item=catalogue.ingredients.find(i=>i.id===q.ingredient_id);return node('p',`${item?name(item):q.ingredient_id}: ${number(q.grams)} g`);}));
+  const pending=familyPlans.review_required_slots?.length ?? 0;$('plan-status').textContent=t('plan_loaded',{count:number(familyPlans.meals.length),pending:number(pending)});
+}
+$('plan-load').addEventListener('click',()=>planAction(async()=>{invalidatePlan();await loadFamilyPlans();}));
+$('plan-controls').addEventListener('input',event=>{if(!['plan-reviewed','plan-calendar','plan-suggestions','plan-saved'].includes(event.target.id))invalidatePlan();});
+$('plan-controls').addEventListener('change',event=>{if(!['plan-reviewed','plan-calendar','plan-suggestions','plan-saved'].includes(event.target.id))invalidatePlan();});
+$('plan-calendar').addEventListener('change',()=>planAction(async()=>{invalidatePlan();calendarSnapshot=null;$('plan-consent').checked=false;calendarSource();const file=$('plan-calendar').files[0];if(!file || file.size>32768)throw new Error('calendar');const data=JSON.parse(await file.text());if(typeof data.source!=='string' || typeof data.event_id!=='string' || typeof data.date!=='string' || !Array.isArray(data.member_ids))throw Object.assign(new Error('calendar'),{code:'invalid_calendar_snapshot'});calendarSnapshot={source:data.source,event_id:data.event_id,date:data.date,member_ids:data.member_ids};$('plan-consent').checked=false;calendarSource();}));
+$('plan-clear-calendar').addEventListener('click',()=>{calendarSnapshot=null;$('plan-consent').checked=false;$('plan-use-calendar').checked=false;$('plan-calendar').value='';invalidatePlan();calendarSource();});
+$('plan-edit').addEventListener('click',()=>{const p=familyPlans.meals[Number($('plan-saved').value)];if(!p)return;invalidatePlan();$('plan-date').value=p.date;$('plan-meal').value=p.meal;$('plan-recipe').value=`${p.recipe.id}@${p.recipe.revision}`;$('plan-servings').value=p.servings;$('plan-active').value=p.active_seconds;$('plan-elapsed').value=p.elapsed_seconds;$('plan-advance').value=p.advance_seconds;for(const o of $('plan-attendees').options)o.selected=p.attendees?.includes(o.value)??false;calendarSnapshot=p.calendar;$('plan-consent').checked=!!p.calendar?.consent;$('plan-use-calendar').checked=p.attendees===null;calendarSource();});
+$('plan-preview').addEventListener('click',()=>planAction(async()=>{invalidatePlan();showPlanPreview(await householdRequest('mealplan/preview',{method:'POST',body:JSON.stringify(planDraft())}));}));
+$('plan-remove-preview').addEventListener('click',()=>planAction(async()=>{invalidatePlan();const value=await householdRequest('mealplan/remove-preview',{method:'POST',body:JSON.stringify(planDraft())});showPlanPreview(value,true);}));
+$('plan-suggest').addEventListener('click',()=>planAction(async()=>{invalidatePlan();const candidates=[...$('plan-candidates').selectedOptions].map(o=>{const[id,revision]=o.value.split('@');return{id,revision:Number(revision)};});if(!candidates.length || candidates.length>50)throw Object.assign(new Error('candidate limit'),{code:'candidate_limit'});const result=await householdRequest('mealplan/suggestions',{method:'POST',body:JSON.stringify({template:planDraft(),candidates})});planSuggestions=result.suggestions;$('plan-suggestions').replaceChildren(...planSuggestions.map((s,index)=>{const o=node('option',`${s.plan.recipe.id} · ${s.plan.recipe.revision}`);o.value=String(index);return o;}));$('plan-status').textContent=result.reason?t('plan_no_feasible'):t('plan_suggestions_ready');for(const rejected of result.rejected ?? []){for(const code of rejected.conflicts ?? [rejected.error])$('plan-preview-output').append(node('p',`${rejected.plan?.recipe.id ?? rejected.recipe?.id}: ${hasMessage('plan_conflict_'+code)?t('plan_conflict_'+code):code}`));}}));
+$('plan-use-suggestion').addEventListener('click',()=>{const s=planSuggestions[Number($('plan-suggestions').value)];if(!s)return;$('plan-recipe').value=`${s.plan.recipe.id}@${s.plan.recipe.revision}`;showPlanPreview(s);});
+$('plan-apply').addEventListener('click',()=>planAction(async()=>{if(!planPreview || !$('plan-reviewed').checked){$('plan-status').textContent=t('plan_review_first');return;}const result=await householdRequest('mealplan/apply',{method:'POST',body:JSON.stringify({plan:planRemoving?planPreview.removed:planPreview.plan,expected_revision:planPreview.plan_revision,profile_revision:planPreview.profile_revision,reviewed:true,remove:planRemoving})});invalidatePlan();await loadFamilyPlans();$('plan-status').textContent=t('plan_applied',{revision:number(result.revision)});}));
+
+$('plan-suggestions').addEventListener('change',()=>{planPreview=undefined;$('plan-apply').disabled=true;$('plan-reviewed').checked=false;$('plan-preview-output').replaceChildren();});
