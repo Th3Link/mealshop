@@ -308,3 +308,48 @@ async fn filesystem_failure_never_overwrites_a_revision_or_accepts_further_write
         StatusCode::SERVICE_UNAVAILABLE
     );
 }
+
+#[tokio::test]
+async fn custom_catalogue_snapshot_must_fit_the_restart_loader_before_publication() {
+    let dir = Directory::new();
+    let mut catalogue: Value =
+        serde_json::from_str(include_str!("../data/catalogue.json")).unwrap();
+    let mut oats = catalogue["ingredients"][0].clone();
+    oats.as_object_mut().unwrap().remove("category");
+    oats.as_object_mut().unwrap().remove("translations");
+    let mut note = oats["education"][0].clone();
+    note["summary"] = json!("x".repeat(4000));
+    oats["education"] = json!([]);
+    catalogue["ingredients"] = json!([oats]);
+    catalogue.as_object_mut().unwrap().remove("language");
+    let target = 1_048_575;
+    while catalogue.to_string().len() + note.to_string().len() + 1 < target {
+        catalogue["ingredients"][0]["education"]
+            .as_array_mut()
+            .unwrap()
+            .push(note.clone());
+    }
+    for field in ["uncertainty", "form"] {
+        let gap = target - catalogue.to_string().len();
+        let previous = catalogue["ingredients"][0][field]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        let padding = gap.min(4000 - previous.len());
+        catalogue["ingredients"][0][field] = json!(previous + &"x".repeat(padding));
+    }
+    assert_eq!(catalogue.to_string().len(), target);
+    let app = dir.with_catalogue(&catalogue.to_string());
+    let mut input = recipe();
+    input["lines"] = json!([{"ingredient_id":"oats","grams":"100"}]);
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", input).await.0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    assert_eq!(
+        request(&app, "GET", "/api/recipes", Value::Null).await.1,
+        json!({"recipes":[]})
+    );
+    drop(app);
+    let _reopened = dir.app();
+}

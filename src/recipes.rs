@@ -265,6 +265,8 @@ impl Store {
                 .cloned()
                 .collect(),
         };
+        let snapshot_json = serde_json::to_string(&snapshot).map_err(|_| Error::Storage)?;
+        Catalogue::from_json(&snapshot_json).map_err(Error::Invalid)?;
         let record = Record {
             schema_version: 1,
             id,

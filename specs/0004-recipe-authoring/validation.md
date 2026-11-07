@@ -8,7 +8,7 @@ Date: 2026-11-07. Customer acceptance pending; F04/F18 remain In progress.
   unchanged 313 ingredients, 284 profiles, 29 identity-only records and 3,778 numeric values.
 - `node --check src/web/demo.mjs` and `node tests/i18n.test.mjs`: six locale tests passed.
 - `cargo fmt --all --check` and `cargo clippy --workspace --all-targets --locked -- -D warnings` passed.
-- `cargo nextest run --workspace --locked`: 26 tests passed, none skipped, including six new
+- `cargo nextest run --workspace --locked`: 27 tests passed, none skipped, including seven new
   durable-recipe acceptance tests and the loopback-only startup check. Startup socket checks
   require an environment that permits loopback binding; an initial sandboxed run rejected
   that operation, and the full run with the needed permission passed.
