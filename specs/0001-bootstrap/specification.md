@@ -1,6 +1,6 @@
 # Server and delivery foundation
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer
 Milestone: M0
@@ -22,4 +22,4 @@ Product endpoints, authentication, persistent data and Flutter.
 No product UI in the bootstrap.
 
 ## Links
-Requirement: [F01](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
+Requirement: [F01](../../docs/requirements.md). Verification: [bootstrap evidence](../../docs/bootstrap-verification.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
