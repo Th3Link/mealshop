@@ -91,8 +91,8 @@ function addLine(id = catalogue.ingredients[0]?.id, grams = '100', original = nu
   else missingOption(select,id);
   ingredientLabel.append(label, select);
   const massLabel = node('label');
-  const massText = node('span', t('grams'));
-  massText.dataset.rowLabel = 'grams';
+  const massText = node('span', t('quantity_amount'));
+  massText.dataset.rowLabel = 'quantity_amount';
   const input = node('input');
   input.name = `grams-${nextLine++}`;
   input.type = 'text';
@@ -362,6 +362,8 @@ function recipeLines() {
       const conversion={ingredient_id:id,form:catalogue.ingredients.find(i=>i.id===id)?.form};
       for (const field of row.querySelectorAll('[data-conversion]')) conversion[field.dataset.conversion]=field.value || null;
       const selected=curatedConversions.find(c=>c.id===row.querySelector('[data-curated]').value);
+      if (!selected && row.querySelector('[data-curated]').value!=='saved' && (!conversion.grams_per_base_unit || !conversion.source_url || !conversion.version || !conversion.uncertainty)) throw Object.assign(new Error('Missing conversion'),{code:'conversion_required'});
+      if (['tsp','tbsp'].includes(quantity.unit) && !selected && row.querySelector('[data-curated]').value!=='saved' && (!conversion.spoon_standard || !conversion.millilitres_per_spoon)) throw Object.assign(new Error('Missing spoon context'),{code:'spoon_required'});
       result.conversion=row.querySelector('[data-curated]').value==='saved' ? row.savedEvidence : selected ? selected.evidence : conversion;
     }
     return result;
@@ -465,12 +467,12 @@ translateStatic();
 initialize();
 
 function displayMass(grams) {
-  if ($('unit-preference').value === 'kg') {
+  if ($('unit-preference').value === 'kg' || ($('unit-preference').value === 'g_kg' && BigInt(grams.split('.')[0]) >= 1000n)) {
     const [whole,fraction='']=grams.split('.');
     const digits=(BigInt(whole)*1000000n+BigInt(fraction.padEnd(6,'0'))).toString().padStart(10,'0');
     return number(digits.slice(0,-9)+'.'+digits.slice(-9))+' kg';
   }
   return number(grams)+' g';
 }
-try { $('unit-preference').value=localStorage.getItem('mealshop.demo.massUnit')==='kg'?'kg':'g'; } catch {}
+try { $('unit-preference').value=['g','kg','g_kg'].includes(localStorage.getItem('mealshop.demo.massUnit'))?localStorage.getItem('mealshop.demo.massUnit'):'g'; } catch {}
 $('unit-preference').addEventListener('change',()=>{ clearScale(); try {localStorage.setItem('mealshop.demo.massUnit',$('unit-preference').value);} catch {} });

@@ -1,6 +1,6 @@
 # Precise quantities and configurable units
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer
 Milestone: M1
@@ -26,7 +26,7 @@ Recipe lines now accept quantity plus optional conversion evidence, persist orig
 A universal density or undocumented spoon/piece constants.
 
 ## UX notes
-UI flows, accessibility, empty/error states and user review points must be specified before Ready.
+See ux-notes.md and validation.md.
 
 ## Links
 Requirement: [F03](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
@@ -37,3 +37,7 @@ records its input unit and source food record ID; applying it to another unit, s
 fails validation. Source modifiers distinguish packet/block/cake sizes. Spoon gram weights
 are direct source measures, not inferred ml densities. Cross-device preferences are deferred
 to the end of the backlog at customer request.
+
+Completion scope: local de/en demo, bounded exact input, sourced/manual conversions and immutable
+recipe integration. Unsupported exact conversions fail explicitly; source coverage is incremental.
+Cross-device preferences are explicitly excluded by the customer.

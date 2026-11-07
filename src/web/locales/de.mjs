@@ -100,7 +100,7 @@ export default {
   "recipe_steps": "Anleitung",
   "save_recipe": "Rezept / neue Revision speichern",
   "new_recipe": "Neues Rezept beginnen",
-  "save_limits": "Lokale Ablage für einen Haushalt. Autor ist selbst angegeben. Neue Revisionen nutzen den aktuellen Katalog. Die Portionszahl teilt dieselbe Gesamtmenge; Zutaten werden noch nicht skaliert.",
+  "save_limits": "Lokale Ablage für einen Haushalt. Autor ist selbst angegeben. Neue Revisionen nutzen den aktuellen Katalog. Die Portionszahl teilt dieselbe Gesamtmenge; die separate Skalierungsvorschau passt Zutaten proportional an.",
   "saved_recipes": "Gespeicherte Rezepte",
   "refresh_recipes": "Liste aktualisieren",
   "load_recipe": "Ausgewähltes Rezept laden (ersetzt Eingaben)",
@@ -147,5 +147,9 @@ export default {
   "unit_tbsp": "EL",
   "unit_piece": "Stück",
   "curated_conversion": "Kuratierte Referenzportion",
-  "manual_conversion": "Eigener Beleg"
+  "manual_conversion": "Eigener Beleg",
+  "quantity_amount": "Menge",
+  "error_conversion_required": "Passende Referenzportion wählen oder zutatenbezogene Dichte/Stückmasse, Quelle, Stand und Unsicherheit angeben. Ohne Beleg ist keine Massenumrechnung möglich.",
+  "error_spoon_required": "Benannten regionalen Löffelstandard und Volumen angeben oder passende Referenzportion wählen.",
+  "warning_conversion_estimate": "Zutatenmassen enthalten geschätzte Umrechnungen. Originalmengen und Belege bleiben im gespeicherten Rezept erhalten."
 };

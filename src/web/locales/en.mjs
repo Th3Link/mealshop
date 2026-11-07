@@ -100,7 +100,7 @@ export default {
   "recipe_steps": "Instructions",
   "save_recipe": "Save recipe / new revision",
   "new_recipe": "Start new recipe",
-  "save_limits": "Local single-household storage. Author is self-reported. A new revision uses the current catalogue. Changing servings divides the same batch; ingredient scaling is not implemented.",
+  "save_limits": "Local single-household storage. Author is self-reported. New revisions use the current catalogue. The batch serving count divides the same quantities; use the separate scaling preview for proportional ingredient quantities.",
   "saved_recipes": "Saved recipes",
   "refresh_recipes": "Refresh list",
   "load_recipe": "Load selected recipe (replaces inputs)",
@@ -147,5 +147,9 @@ export default {
   "unit_tbsp": "tbsp",
   "unit_piece": "piece",
   "curated_conversion": "Curated reference portion",
-  "manual_conversion": "Manual evidence"
+  "manual_conversion": "Manual evidence",
+  "quantity_amount": "Amount",
+  "error_conversion_required": "Select a matching reference portion or enter ingredient-specific density/piece mass, source, version and uncertainty. No mass conversion is assumed.",
+  "error_spoon_required": "Enter the named regional spoon standard and its volume, or select a matching source portion.",
+  "warning_conversion_estimate": "Ingredient masses include estimated conversions. Original quantities and evidence remain in the saved recipe."
 };

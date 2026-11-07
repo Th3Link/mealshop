@@ -458,3 +458,89 @@ async fn curated_reference_portions_round_trip_without_inventing_density() {
         43
     );
 }
+
+#[tokio::test]
+async fn scaling_keeps_rational_nutrition_and_original_yield_across_changes_and_restart() {
+    let dir = Directory::new();
+    let mut catalogue: Value =
+        serde_json::from_str(include_str!("../data/catalogue.json")).unwrap();
+    catalogue["ingredients"][0]["nutrients"]["energy_kcal"]["amount"] = json!("3000000");
+    let app = dir.with_catalogue(&catalogue.to_string());
+    let mut input = recipe();
+    input["servings"] = json!(3);
+    input["lines"] = json!([{"ingredient_id":"oats","grams":"1"}]);
+    let created = request(&app, "POST", "/api/recipes", input).await.1;
+    let path = format!("/api/recipes/{}", created["id"].as_str().unwrap());
+    for target in [1, 7, 2, 1] {
+        let (status, preview) = request(
+            &app,
+            "GET",
+            &format!("{path}/scale?servings={target}"),
+            Value::Null,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(preview["original_servings"], 3);
+        assert_eq!(nutrient(&preview, "energy_kcal")["per_serving"], "10000.00");
+        if target == 1 {
+            assert_eq!(preview["lines"][0]["grams"], "0.333333");
+        }
+    }
+    for target in ["0", "1000001", "1.5", "-1"] {
+        assert!(
+            request(
+                &app,
+                "GET",
+                &format!("{path}/scale?servings={target}"),
+                Value::Null
+            )
+            .await
+            .0
+            .is_client_error()
+        );
+    }
+    assert_eq!(request(&app, "GET", &path, Value::Null).await.1, created);
+    drop(app);
+    let app = dir.app();
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            &format!("{path}/scale?servings=1"),
+            Value::Null
+        )
+        .await
+        .1["nutrition"]["nutrients"][0]["per_serving"],
+        "10000.00"
+    );
+}
+
+#[tokio::test]
+async fn scaling_limits_and_missing_nutrition_are_explicit() {
+    let dir = Directory::new();
+    let app = dir.app();
+    for (grams, servings, target) in [("1000000000", 1, 2), ("0.000001", 1_000_000, 1)] {
+        let mut input = recipe();
+        input["servings"] = json!(servings);
+        input["lines"] = json!([{"ingredient_id":"oats","grams":grams}]);
+        let created = request(&app, "POST", "/api/recipes", input).await.1;
+        let path = format!(
+            "/api/recipes/{}/scale?servings={target}",
+            created["id"].as_str().unwrap()
+        );
+        assert_eq!(
+            request(&app, "GET", &path, Value::Null).await.0,
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+    let mut input = recipe();
+    input["lines"] = json!([{"ingredient_id":"psyllium-husks","grams":"1"}]);
+    let created = request(&app, "POST", "/api/recipes", input).await.1;
+    let path = format!(
+        "/api/recipes/{}/scale?servings=3",
+        created["id"].as_str().unwrap()
+    );
+    let preview = request(&app, "GET", &path, Value::Null).await.1;
+    assert_eq!(nutrient(&preview, "energy_kcal")["status"], "unknown");
+    assert!(nutrient(&preview, "energy_kcal")["per_serving"].is_null());
+}

@@ -217,7 +217,11 @@ async fn scale(
         line.conversion = None;
     }
     calculation.servings = query.servings;
-    let nutrition = nutrition::calculate(&record.catalogue, &calculation)
-        .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
-    Ok(([(header::CACHE_CONTROL,"no-store")], Json(json!({"id":record.id,"revision":record.revision,"original_servings":original,"servings":query.servings,"lines":calculation.lines,"nutrition":nutrition,"rounding":"nearest 0.000001 g, half up"}))).into_response())
+    let nutrition = nutrition::scaled_nutrition(
+        &record.catalogue,
+        &record.recipe.calculation(),
+        query.servings,
+    )
+    .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
+    Ok(([(header::CACHE_CONTROL,"no-store")], Json(json!({"id":record.id,"revision":record.revision,"original_servings":original,"servings":query.servings,"lines":calculation.lines,"nutrition":nutrition,"rounding":"grams: nearest 0.000001 g, half up; nutrition: exact original serving ratio before display rounding"}))).into_response())
 }

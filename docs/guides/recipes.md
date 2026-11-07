@@ -17,7 +17,7 @@ The saved list and load button retrieve persisted recipes and their saved servin
 Load/new actions explicitly replace inputs. Failed saves keep all inputs. On a revision
 conflict, copy your edits before loading the latest revision and reconciling them manually.
 
-Changing the authoring serving count divides the same batch. The separate scaling preview uses the saved original revision and rounds each ingredient half up to 0.000001 g. Nutrition is calculated from these rounded ingredient amounts. A
+Changing the authoring serving count divides the same batch. The separate scaling preview uses the saved original revision and rounds each ingredient half up to 0.000001 g. Nutrition uses the exact original serving ratio before display rounding. A
 saved recipe uses its own source snapshot, even after the catalogue changes. Saving a new
 revision uses the current catalogue and recalculates nutrition. Missing current ingredient
 IDs cannot be silently substituted: restore the catalogue or explicitly replace them.
