@@ -15,3 +15,6 @@ Before implementation, derive acceptance tests from each numbered criterion. Inc
 
 ## First slice evidence
 `cargo test --test quantities --locked` checks exact input retention, dimension-specific conversions, unavailable cross-dimension/spoon conversions and precision limits.
+
+## Integration delivery
+Recipe quantity/evidence persistence and legacy compatibility are implemented. Demo input units and local mass display preference are implemented. `tests/recipes.rs` checks kilogram input round trips across restart and declared piece-mass evidence with identity rejection. Full validation and review remain pending.

@@ -129,5 +129,21 @@ export default {
   "scale_recipe": "Skalierte Zutaten anzeigen",
   "scale_load_first": "Zuerst ein Rezept laden oder speichern.",
   "scale_summary": "Original: {original} Portionen · Vorschau: {target} Portionen. Auf 0,000001 g gerundet.",
-  "scale_error": "Skalierung nicht möglich: Portionen und unterstützten Mengenbereich prüfen."
+  "scale_error": "Skalierung nicht möglich: Portionen und unterstützten Mengenbereich prüfen.",
+  "quantity_unit": "Eingabeeinheit",
+  "conversion_evidence": "Umrechnungsbeleg (selbst angegeben; Faktoren mit Dezimalpunkt)",
+  "mass_preference": "Massenanzeige für Skalierungsvorschauen",
+  "conversion_grams_per_base_unit": "Gramm pro ml oder Stück",
+  "conversion_source_url": "Quellen-URL (https)",
+  "conversion_version": "Quellenstand / Messdatum",
+  "conversion_uncertainty": "Unsicherheit / Messbedingungen",
+  "conversion_spoon_standard": "Benannter Löffelstandard (inklusive TL/EL)",
+  "conversion_millilitres_per_spoon": "Milliliter pro gewähltem Löffel",
+  "unit_g": "g",
+  "unit_kg": "kg",
+  "unit_ml": "ml",
+  "unit_l": "l",
+  "unit_tsp": "TL",
+  "unit_tbsp": "EL",
+  "unit_piece": "Stück"
 };

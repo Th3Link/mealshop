@@ -20,7 +20,7 @@ A typed quantity conversion endpoint retains the submitted decimal string and un
 mass/volume/count, and converts exactly between g/kg and ml/l. Piece identity is retained.
 Cross-dimension conversion requires ingredient data; spoon conversions require an explicit
 standard. Results beyond six fractional digits or supported bounds are rejected, never rounded.
-Recipe persistence, conversion sources and user preferences remain unimplemented.
+Recipe lines now accept quantity plus optional conversion evidence, persist original input and normalized grams, and verify both on reload. Legacy gram lines remain supported. The demo supports per-line units and local g/kg display preferences. Evidence is user-declared with ingredient/state, HTTPS reference, version, uncertainty, and density or piece mass; spoon input additionally requires a named standard and declared spoon volume. Values are not independently verified provider data.
 
 ## Out of scope
 A universal density or undocumented spoon/piece constants.

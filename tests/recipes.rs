@@ -383,3 +383,50 @@ async fn scaling_uses_original_revision_and_keeps_it_unchanged() {
     );
     assert_eq!(request(&app, "GET", &path, Value::Null).await.1, created);
 }
+
+#[tokio::test]
+async fn source_quantities_and_conversion_evidence_survive_restart() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let mut input = recipe();
+    input["lines"] = json!([{"ingredient_id":"oats","quantity":{"amount":"0.100500","unit":"kg"}}]);
+    let saved = request(&app, "POST", "/api/recipes", input).await;
+    assert_eq!(saved.0, StatusCode::CREATED);
+    assert_eq!(saved.1["recipe"]["lines"][0]["grams"], "100.500000");
+    let path = format!("/api/recipes/{}", saved.1["id"].as_str().unwrap());
+    drop(app);
+    let app = dir.app();
+    assert_eq!(request(&app, "GET", &path, Value::Null).await.1, saved.1);
+    let catalogue: Value = serde_json::from_str(include_str!("../data/catalogue.json")).unwrap();
+    let form = catalogue["ingredients"][0]["form"].clone();
+    let mut input = recipe();
+    input["lines"] = json!([{"ingredient_id":"oats","quantity":{"amount":"2","unit":"piece"},"conversion":{"ingredient_id":"oats","form":form,"source_url":"https://example.org/measurement","version":"test measurement","uncertainty":"Declared fixture, not reference data","grams_per_base_unit":"5","spoon_standard":null,"millilitres_per_spoon":null}}]);
+    let saved = request(&app, "POST", "/api/recipes", input.clone()).await;
+    assert_eq!(saved.0, StatusCode::CREATED);
+    assert_eq!(saved.1["recipe"]["lines"][0]["grams"], "10.000000");
+    input["lines"][0]["quantity"]["unit"] = json!("ml");
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", input.clone()).await.1["recipe"]["lines"][0]["grams"],
+        "10.000000"
+    );
+    input["lines"][0]["quantity"]["unit"] = json!("tsp");
+    assert!(
+        request(&app, "POST", "/api/recipes", input.clone())
+            .await
+            .0
+            .is_client_error()
+    );
+    input["lines"][0]["conversion"]["spoon_standard"] = json!("Declared test teaspoon, 5 ml");
+    input["lines"][0]["conversion"]["millilitres_per_spoon"] = json!("5");
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", input.clone()).await.1["recipe"]["lines"][0]["grams"],
+        "50.000000"
+    );
+    input["lines"][0]["conversion"]["ingredient_id"] = json!("chia");
+    assert!(
+        request(&app, "POST", "/api/recipes", input)
+            .await
+            .0
+            .is_client_error()
+    );
+}

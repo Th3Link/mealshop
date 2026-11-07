@@ -211,6 +211,11 @@ async fn scale(
             .scaled(query.servings, original)
             .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
     }
+    // Preview lines are normalized masses; original inputs remain in the saved revision.
+    for line in &mut calculation.lines {
+        line.quantity = None;
+        line.conversion = None;
+    }
     calculation.servings = query.servings;
     let nutrition = nutrition::calculate(&record.catalogue, &calculation)
         .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;

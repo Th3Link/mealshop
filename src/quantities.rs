@@ -151,3 +151,69 @@ impl Quantity {
         })
     }
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ConversionEvidence {
+    pub(crate) ingredient_id: String,
+    pub(crate) form: String,
+    pub(crate) source_url: String,
+    pub(crate) version: String,
+    pub(crate) uncertainty: String,
+    pub(crate) grams_per_base_unit: Amount,
+    pub(crate) spoon_standard: Option<String>,
+    pub(crate) millilitres_per_spoon: Option<Amount>,
+}
+impl Quantity {
+    pub(crate) fn grams(
+        &self,
+        id: &str,
+        evidence: Option<&ConversionEvidence>,
+    ) -> Result<Grams, String> {
+        if self.unit.dimension() == Dimension::Mass {
+            return self
+                .convert(Unit::G)
+                .map(|q| Grams(q.amount))
+                .map_err(str::to_owned);
+        }
+        let e = evidence.ok_or("ingredient_conversion_required")?;
+        if e.ingredient_id != id
+            || [&e.form, &e.version, &e.uncertainty]
+                .iter()
+                .any(|s| s.trim().is_empty() || s.len() > 4000)
+            || !e.source_url.starts_with("https://")
+            || e.source_url.len() > 4000
+            || e.grams_per_base_unit.atoms() == 0
+        {
+            return Err("invalid_conversion_evidence".to_owned());
+        }
+        let base = match self.unit {
+            Unit::Ml | Unit::Piece => self.amount.atoms(),
+            Unit::L => self.amount.atoms() * 1000,
+            Unit::Tsp | Unit::Tbsp => {
+                if e.spoon_standard
+                    .as_ref()
+                    .is_none_or(|s| s.trim().is_empty() || s.len() > 200)
+                {
+                    return Err("spoon_standard_required".to_owned());
+                }
+                let size = e
+                    .millilitres_per_spoon
+                    .as_ref()
+                    .ok_or("spoon_standard_required")?
+                    .atoms();
+                if size == 0 || self.amount.atoms() * size % SCALE != 0 {
+                    return Err("precision_exceeded".to_owned());
+                }
+                self.amount.atoms() * size / SCALE
+            }
+            _ => return Err("invalid_conversion_evidence".to_owned()),
+        };
+        let numerator = base * e.grams_per_base_unit.atoms();
+        if numerator % SCALE != 0 {
+            return Err("precision_exceeded".to_owned());
+        }
+        let atoms = numerator / SCALE;
+        Amount::try_from(format!("{}.{:06}", atoms / SCALE, atoms % SCALE)).map(Grams)
+    }
+}
