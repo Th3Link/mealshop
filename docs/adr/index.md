@@ -14,3 +14,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [ADR 0008: curated ingredient sources](0008-curated-ingredient-sources.md) — Customer scope accepted; import/model details proposed.
 
 - [ADR 0009: local recipe revisions](0009-local-recipe-revisions.md) — Local authoring slice; review pending.
+
+- [ADR 0010: protected local household access](0010-local-household-access.md) — Proposed local F09 slice.

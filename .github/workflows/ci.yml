@@ -27,6 +27,7 @@ jobs:
       - run: python3 scripts/import_catalogue.py --check
       - run: python3 scripts/verify_catalogue.py
       - run: python3 scripts/verify_conversions.py
+      - run: python3 scripts/verify_allergens.py
       - run: node --check src/web/demo.mjs
       - run: node --test tests/i18n.test.mjs
       - run: cargo fmt --all --check

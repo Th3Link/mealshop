@@ -56,6 +56,22 @@
       <section class="panel"><h3 data-i18n="sources">Sources & calculation limits</h3><p class="subtle" data-i18n="original_notes">Provenance, uncertainty and educational text below are retained in their original language.</p><div id="provenance"></div><p id="rounding" class="subtle"></p></section>
       <section class="panel"><h3 data-i18n="evidence">Components & evidence (original text)</h3><p class="subtle" data-i18n="evidence_intro">Evidence about a component does not establish its amount or a benefit in this meal.</p><div id="education"></div></section>
     </section>
+    <section class="panel"><h2 data-i18n="household_heading">Household profiles</h2>
+      <p data-i18n="household_scope">Protected local profiles. Allergen coverage is incomplete; reviews never establish safety.</p>
+      <label><span data-i18n="household_token">Household operator token (session only)</span><input id="household-token" type="password" autocomplete="off"></label>
+      <button id="household-load" type="button" data-i18n="household_load">Load profiles / export</button>
+      <label><span data-i18n="household_member">Member</span><select id="household-member"></select></label>
+      <label><span data-i18n="household_name">Name</span><input id="household-name" maxlength="200"></label>
+      <label><span data-i18n="household_allergies">Allergies / intolerances (one per line; requires review)</span><textarea id="household-allergies" rows="3"></textarea></label>
+      <label><span data-i18n="household_allergen_ids">Allergen groups (hard constraints)</span><select id="household-allergen-ids" multiple size="6"></select></label>
+      <label><span data-i18n="household_intolerances">Other intolerances (one per line; requires review)</span><textarea id="household-intolerances" rows="3"></textarea></label>
+      <label><span data-i18n="household_excluded">Hard ingredient exclusions (multiple selection)</span><select id="household-excluded" multiple size="6"></select></label>
+      <label><span data-i18n="household_disliked">Disliked ingredients (soft preferences)</span><select id="household-disliked" multiple size="6"></select></label>
+      <button id="household-save" type="button" data-i18n="household_save">Save member</button>
+      <button id="household-remove" type="button" data-i18n="household_remove">Remove selected member</button>
+      <button id="household-evaluate" type="button" data-i18n="household_evaluate">Review current ingredients for all members</button>
+      <p id="household-status" role="status"></p>
+    </section>
     <noscript><p class="notice" data-i18n="javascript">This demo needs JavaScript. The catalogue is also available at /api/ingredients.</p></noscript>
   </main>
   <footer><span data-i18n="footer">Mealshop / disposable nutrition demo</span><span data-i18n="footer_limits">Product web clients: F22 · Localization: F21</span></footer>

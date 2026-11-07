@@ -476,3 +476,47 @@ function displayMass(grams) {
 }
 try { $('unit-preference').value=['g','kg','g_kg'].includes(localStorage.getItem('mealshop.demo.massUnit'))?localStorage.getItem('mealshop.demo.massUnit'):'g'; } catch {}
 $('unit-preference').addEventListener('change',()=>{ clearScale(); try {localStorage.setItem('mealshop.demo.massUnit',$('unit-preference').value);} catch {} });
+
+let household = {revision:0,members:[]};
+let householdAllergens=[];
+async function householdRequest(path,options={}) {
+  const response=await fetch('/api/household/'+path,{...options,cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+$('household-token').value},signal:AbortSignal.timeout(10000)});
+  if (!response.ok) throw new Error('household request failed');
+  return response.json();
+}
+function householdEditor() {
+  const member=household.members.find(m=>m.id===$('household-member').value);
+  $('household-name').value=member?.name ?? '';
+  $('household-allergies').value=(member?.allergies ?? []).join('\n');
+  $('household-intolerances').value=(member?.intolerances ?? []).join('\n');
+  $('household-allergen-ids').replaceChildren(...householdAllergens.map(a=>{const option=node('option',locale==='de'?a.translations.de:a.name);option.value=a.id;option.selected=member?.allergen_ids?.includes(a.id) ?? false;return option;}));
+  for (const [element,field] of [['household-excluded','excluded_ingredients'],['household-disliked','disliked_ingredients']]) {
+    const select=$(element); select.replaceChildren(...catalogue.ingredients.map(i=>{const option=node('option',name(i));option.value=i.id;option.selected=member?.[field].includes(i.id) ?? false;return option;}));
+  }
+}
+function householdRender() {
+  const selected=$('household-member').value;
+  const fresh=node('option',t('household_new'));fresh.value='';
+  $('household-member').replaceChildren(fresh,...household.members.map(m=>{const o=node('option',m.name);o.value=m.id;return o;}));
+  if(household.members.some(m=>m.id===selected)) $('household-member').value=selected;
+  householdEditor();
+}
+async function householdAction(action) {
+  try {await action();} catch {$('household-status').textContent=t('household_failed');}
+}
+$('household-load').addEventListener('click',()=>householdAction(async()=>{householdAllergens=(await householdRequest('allergens')).groups;household=await householdRequest('profiles');householdRender();$('household-status').textContent=t('household_loaded');}));
+$('household-member').addEventListener('change',householdEditor);
+async function householdWrite(members) {
+  household=await householdRequest('profiles',{method:'PUT',body:JSON.stringify({expected_revision:household.revision,members})});
+  householdRender();$('household-status').textContent=t('household_saved');
+}
+$('household-save').addEventListener('click',()=>householdAction(async()=>{
+  const id=$('household-member').value || 'member-'+crypto.randomUUID();
+  const member={id,name:$('household-name').value,allergen_ids:[...$('household-allergen-ids').selectedOptions].map(o=>o.value),intolerances:$('household-intolerances').value.split('\n').filter(s=>s.trim()),allergies:$('household-allergies').value.split('\n').filter(s=>s.trim()),excluded_ingredients:[...$('household-excluded').selectedOptions].map(o=>o.value),disliked_ingredients:[...$('household-disliked').selectedOptions].map(o=>o.value)};
+  const members=household.members.filter(m=>m.id!==id);members.push(member);await householdWrite(members);
+}));
+$('household-remove').addEventListener('click',()=>householdAction(async()=>{const id=$('household-member').value;if(id)await householdWrite(household.members.filter(m=>m.id!==id));}));
+$('household-evaluate').addEventListener('click',()=>householdAction(async()=>{
+  const result=await householdRequest('evaluate',{method:'POST',body:JSON.stringify({member_ids:household.members.map(m=>m.id),ingredient_ids:recipeLines().map(l=>l.ingredient_id)})});
+  $('household-status').textContent=t('household_'+result.status)+' '+result.excluded_ingredients.map(id=>name(catalogue.ingredients.find(i=>i.id===id))).join(', ');
+}));
