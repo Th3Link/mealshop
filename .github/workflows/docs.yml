@@ -29,7 +29,7 @@ jobs:
           <li><a href="mealshop_server/docs/page_docs_adr_index_md/index.html">Architecture decisions</a></li>
           <li><a href="mealshop_server/index.html">Rust API reference</a></li></ul></html>
           HTML
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v4
         with:
           path: target/doc
