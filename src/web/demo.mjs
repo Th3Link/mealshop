@@ -10,6 +10,9 @@ let catalogue;
 let definitions;
 let nextLine = 0;
 let lastResult;
+let loadedRecipe;
+let savedRecipes = [];
+let storageState = {key:'no_recipes', values:{}};
 let statusState = {key:'loading', values:{}, error:false, preserved:false};
 const t = (key, values) => message(locale, key, values);
 const number = value => formatDecimal(String(value), locale);
@@ -47,6 +50,8 @@ function translateStatic() {
   $('language').value = locale;
   $('search').placeholder = t('search_hint');
   renderStatus();
+  renderStorageStatus();
+  renderSavedChoices();
 }
 function changed(event) {
   if (event?.target?.name?.startsWith('grams-')) delete event.target.dataset.invalidLocale;
@@ -62,6 +67,11 @@ function choices(select, ingredients) {
     return option;
   }));
   if (ingredients.some(ingredient => ingredient.id === previous)) select.value = previous;
+  else if (previous && select.name.startsWith('ingredient-')) missingOption(select,previous);
+}
+function missingOption(select,id) {
+  const option = node('option',t('missing_catalogue_ingredient',{id})); option.value = id;
+  select.append(option); select.value = id;
 }
 function addLine(id = catalogue.ingredients[0]?.id, grams = '100') {
   const row = node('div', undefined, 'line');
@@ -74,7 +84,8 @@ function addLine(id = catalogue.ingredients[0]?.id, grams = '100') {
   select.setAttribute('aria-label', t('ingredient_number', {number:nextLine + 1}));
   select.required = true;
   choices(select, catalogue.ingredients);
-  select.value = id;
+  if (catalogue.ingredients.some(i => i.id === id)) select.value = id;
+  else missingOption(select,id);
   ingredientLabel.append(label, select);
   const massLabel = node('label');
   const massText = node('span', t('grams'));
@@ -223,6 +234,7 @@ function filterNotebook() {
   showDetail();
 }
 function switchLanguage() {
+  if ($('recipe-controls').disabled) return;
   const previous = locale;
   locale = resolveLocale($('language').value);
   let invalid = false;
@@ -262,9 +274,137 @@ async function initialize() {
       addLine('oats', '100'); addLine('chia', '25');
     } else addLine(catalogue.ingredients[0].id);
     showDetail();
+    await refreshRecipes();
     status('ready', {count:catalogue.ingredients.length, nutrients:definitions.length});
   } catch { status('load_failed', {}, true); $('retry').hidden = false; }
 }
+function addStep(step = {instruction:'',active_seconds:0,passive_seconds:0}) {
+  const row = node('fieldset');
+  const label = node('label');
+  const title = node('span',t('step_instruction')); title.dataset.i18n = 'step_instruction';
+  const input = node('textarea'); input.rows = 2; input.maxLength = 4000; input.value = step.instruction;
+  label.append(title,input); row.append(label);
+  for (const key of ['active_seconds','passive_seconds']) {
+    const label = node('label'); const title = node('span',t(key)); title.dataset.i18n = key;
+    const input = node('input'); input.type = 'number'; input.min = '0'; input.max = '604800'; input.step = '1';
+    input.required = true; input.value = step[key]; input.dataset.duration = key;
+    label.append(title,input); row.append(label);
+  }
+  const remove = node('button',t('remove_step')); remove.dataset.i18n = 'remove_step'; remove.type = 'button';
+  remove.addEventListener('click',() => { row.remove(); changed(); }); row.append(remove);
+  $('recipe-steps').append(row);
+}
+function renderStorageStatus() {
+  $('recipe-storage-status').textContent = t(storageState.key, storageState.values) +
+    (loadedRecipe ? ' ' + t('loaded_revision', {id:loadedRecipe.id,revision:number(loadedRecipe.revision)}) : '');
+}
+function storageStatus(key, values = {}) { storageState = {key,values}; renderStorageStatus(); }
+function renderSavedChoices() {
+  const selected = $('saved-recipes').value;
+  $('saved-recipes').replaceChildren(...savedRecipes.map(recipe => {
+    const option = node('option', `${recipe.title} · ${recipe.id} · ${number(recipe.revision)}`);
+    option.value = recipe.id;
+    return option;
+  }));
+  if (!savedRecipes.length) $('saved-recipes').append(node('option', t('no_recipes')));
+  if (savedRecipes.some(r => r.id === selected)) $('saved-recipes').value = selected;
+  $('load-recipe').disabled = savedRecipes.length === 0;
+}
+async function recipeRequest(path, options = {}) {
+  const response = await fetch(path, {...options, cache:'no-store', signal:AbortSignal.timeout(10000)});
+  if (!response.ok) {
+    let code = 'request_failed';
+    try { code = (await response.json()).code; } catch { /* Preserve local input on every failure. */ }
+    throw Object.assign(new Error('Recipe request failed'), {code});
+  }
+  return response.json();
+}
+async function refreshRecipes() {
+  try {
+    const result = await recipeRequest('/api/recipes');
+    savedRecipes = result.recipes;
+    renderSavedChoices();
+    storageStatus('storage_ready', {count:number(savedRecipes.length)});
+  } catch { storageStatus('storage_unavailable'); }
+}
+function recipeLines() {
+  return [...$('lines').children].map(row => {
+    const input = row.querySelector('input');
+    if (input.dataset.invalidLocale) throw Object.assign(new Error('Invalid amount'), {code:'invalid_amount'});
+    return {ingredient_id:row.querySelector('select').value,grams:normalizeAmount(input.value,locale)};
+  });
+}
+function draft() {
+  return {
+    title:$('recipe-name').value,author:$('recipe-author').value,language:$('recipe-language').value,
+    lines:recipeLines(),servings:Number($('servings').value),preparation:$('preparation').value,
+    steps:[...$('recipe-steps').children].map(row => ({instruction:row.querySelector('textarea').value,
+      active_seconds:Number(row.querySelector('[data-duration="active_seconds"]').value),
+      passive_seconds:Number(row.querySelector('[data-duration="passive_seconds"]').value)})),
+  };
+}
+async function saveRecipe() {
+  if (!$('recipe-form').reportValidity()) return;
+  let recipe;
+  try {
+    recipe = draft();
+    if (!recipe.title.trim() || !recipe.author.trim()) { storageStatus('recipe_invalid'); return; }
+  } catch (error) { storageStatus(hasMessage('error_' + error.code) ? 'error_' + error.code : 'recipe_invalid'); return; }
+  $('recipe-controls').disabled = true;
+  storageStatus('recipe_saving');
+  try {
+    const result = await recipeRequest(loadedRecipe ? '/api/recipes/' + loadedRecipe.id : '/api/recipes', {
+      method:loadedRecipe ? 'PUT' : 'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(loadedRecipe ? {expected_revision:loadedRecipe.revision,recipe} : recipe),
+    });
+    loadedRecipe = result;
+    lastResult = result.nutrition;
+    renderResult(lastResult);
+    status('estimate_ready');
+    await refreshRecipes();
+    $('saved-recipes').value = result.id;
+    storageStatus('recipe_saved', {id:result.id,revision:number(result.revision)});
+  } catch (error) { storageStatus(hasMessage('error_' + error.code) ? 'error_' + error.code : 'storage_unavailable'); }
+  finally { $('recipe-controls').disabled = false; }
+}
+async function loadRecipe() {
+  const id = $('saved-recipes').value;
+  if (!savedRecipes.some(r => r.id === id)) return;
+  $('recipe-controls').disabled = true;
+  try {
+    const result = await recipeRequest('/api/recipes/' + id);
+    loadedRecipe = result;
+    const recipe = result.recipe;
+    $('recipe-name').value = recipe.title;
+    $('recipe-author').value = recipe.author;
+    $('recipe-language').value = recipe.language;
+    $('recipe-steps').replaceChildren();
+    for (const step of recipe.steps) addStep(step);
+    $('servings').value = recipe.servings;
+    $('preparation').value = recipe.preparation;
+    $('lines').replaceChildren(); nextLine = 0;
+    const missing = recipe.lines.some(line => !catalogue.ingredients.some(i => i.id === line.ingredient_id));
+    for (const line of recipe.lines) addLine(line.ingredient_id,line.grams);
+    lastResult = result.nutrition;
+    renderResult(lastResult);
+    status('estimate_ready');
+    storageStatus(missing ? 'recipe_missing_ingredients' : 'recipe_loaded', {id:result.id,revision:number(result.revision)});
+  } catch (error) { storageStatus(hasMessage('error_' + error.code) ? 'error_' + error.code : 'storage_unavailable'); }
+  finally { $('recipe-controls').disabled = false; }
+}
+function newRecipe() {
+  loadedRecipe = undefined;
+  $('recipe-name').value = ''; $('recipe-author').value = ''; $('recipe-steps').replaceChildren();
+  $('recipe-language').value = locale;
+  $('servings').value = '2'; $('preparation').value = 'as_recorded';
+  $('lines').replaceChildren(); nextLine = 0; addLine(); changed();
+  storageStatus('recipe_new');
+}
+$('add-step').addEventListener('click',() => { addStep(); changed(); });
+$('save-recipe').addEventListener('click', saveRecipe);
+$('load-recipe').addEventListener('click', loadRecipe);
+$('new-recipe').addEventListener('click', newRecipe);
+$('refresh-recipes').addEventListener('click', refreshRecipes);
 $('recipe-form').addEventListener('submit', calculate);
 $('recipe-form').addEventListener('input', changed);
 $('recipe-form').addEventListener('change', changed);

@@ -1,6 +1,6 @@
 # English-base kitchen ingredient catalogue
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer (2026-11-07)
 Milestone: M1
@@ -56,3 +56,5 @@ as original when no reviewed translation exists. No design system or Vue migrati
 ## Links
 [F02](../0002-ingredients-nutrition/specification.md), [F21](../0021-internationalization/specification.md),
 [F22](../0022-product-web-clients/specification.md), [ADRs](adrs.md), [plan](plan.md).
+
+Customer accepted this slice by merging PR #5.

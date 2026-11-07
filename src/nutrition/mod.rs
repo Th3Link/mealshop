@@ -9,7 +9,7 @@ use nutrients::{Nutrient, NutrientInfo};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct RecipeLine {
     pub(crate) ingredient_id: String,
@@ -23,7 +23,7 @@ pub(crate) enum Preparation {
     CookingUnmodelled,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Calculation {
     pub(crate) lines: Vec<RecipeLine>,

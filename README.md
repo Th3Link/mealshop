@@ -1,7 +1,8 @@
 # Mealshop
 
 Recipes, informed nutrition, shopping and family meal planning. **Early development:** a
-Rust HTTP server now includes an ingredient catalogue and nutrition demo (F02, accepted in PR #4).
+Rust HTTP server includes a curated ingredient catalogue (F02/F23, accepted in PRs #4/#5),
+plus a local recipe authoring/persistence slice (F04/F18, review pending).
 The broader product features below remain planned.
 
 [![CI](https://github.com/Th3Link/mealshop/actions/workflows/ci.yml/badge.svg)](https://github.com/Th3Link/mealshop/actions/workflows/ci.yml)
@@ -29,8 +30,11 @@ Open [the demo](http://127.0.0.1:3000/) to calculate recipe/serving nutrients an
 sources, unknowns and component evidence. The English-base catalogue contains 313 ingredients
 with German names: 284 source-backed BLS/USDA profiles and 29 explicitly unknown product identities.
 [Data and licences](data/README.md) · [Demo, API and custom catalogue guide](docs/guides/nutrition.md).
-Use Ctrl-C for graceful shutdown. There is no household authentication or saved recipe data
-yet. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
+Recipes can be created, saved, loaded and revised using catalogue ingredients; per-serving
+estimates retain their saved source snapshots. The executable stores data in `var/recipes`
+(or `MEALSHOP_RECIPE_DIR`) and requires loopback access until authentication exists.
+[Recipe API, storage and recovery guide](docs/guides/recipes.md).
+Use Ctrl-C for graceful shutdown. There is no household authentication or proportional ingredient scaling yet. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
 
 The current browser surface is a pragmatic test demo, not the product UI. It supports German
 and English interface/quantity presentation; untranslated source content stays explicitly original.

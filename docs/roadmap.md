@@ -11,10 +11,13 @@ This is a proposed delivery order, not a promise of dates. Dependencies can chan
 | M4 | Brewing/fermentation and commercial operations | F14, F19 |
 | M5 | Opt-in federation | F20 |
 
-Before M1, choose the first persistence adapter and identity model, validate nutrient data
-sources, and specify the Flutter interaction. F18 spans several milestones: a first backend
+M1 starts with local recipe revision files and pinned BLS/USDA nutrition sources.
+The authenticated identity model, Git/SQL adapters and Flutter interaction remain to be specified. F18 spans several milestones: a first backend
 is not completion of the four-backend/Nextcloud/client acceptance contract. Online learning
 starts with inspectable rules and feedback; production ML follows measured benefit.
 
 PR #4 is accepted. Its browser surface is a demo only. F21 starts with pragmatic demo localization;
 F22 specifies Vue 3 shells for Nextcloud and standalone hosting before product UI implementation.
+
+PR #5 is accepted (F23 Done; initial F21 slice accepted). F04/F18 now starts local recipe
+authoring and file persistence; proportional scaling and production integrations remain open.

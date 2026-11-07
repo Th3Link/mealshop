@@ -82,8 +82,9 @@ reference, conditions and limitations, independent of measured nutrient amounts.
 
 The immutable catalogue is public operator-provided reference data. It is not a place for
 private household/health data. Catalogue writes/authentication, persistent ingredient editing,
-recipe saving, user unit preferences, cooking retention models and the Flutter shell remain
-separate features (F03/F04/F09/F18).
+user unit preferences, cooking retention models and the Flutter shell remain separate
+features (F03/F09/F18). The [local recipe authoring slice](recipes.md) now saves recipes
+and pins catalogue subsets independently of this public reference dataset.
 
 ## Limits and provenance
 JSON recipe bodies are limited to 128 KiB; catalogue input to 1 MiB and 1000 records.

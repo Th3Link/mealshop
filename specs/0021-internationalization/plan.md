@@ -22,3 +22,5 @@ layout and do not add visual design work.
 ## Delivery evidence (2026-11-07)
 See [shared validation](../0023-kitchen-ingredient-catalogue/validation.md). The current slice
 is implemented; cross-client localization and customer acceptance remain open.
+
+Customer accepted the initial demo/catalogue slice by merging PR #5. Broader product work remains open.
