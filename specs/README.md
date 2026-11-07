@@ -9,7 +9,7 @@ New folders take the next free number; keep index/status changes in the same com
 | Requirement | Feature | Status | Priority | Milestone |
 |---|---|---|---|---|
 | F01 | [Server and delivery foundation](0001-bootstrap/specification.md) | Done | Must | M0 |
-| F02 | [Ingredient catalogue and nutrition](0002-ingredients-nutrition/specification.md) | Draft | Must | M1 |
+| F02 | [Ingredient catalogue and nutrition](0002-ingredients-nutrition/specification.md) | In progress | Must | M1 |
 | F03 | [Precise quantities and configurable units](0003-quantities-units/specification.md) | Draft | Must | M1 |
 | F04 | [Recipe authoring and scaling](0004-recipe-authoring/specification.md) | Draft | Must | M1 |
 | F05 | [Recipe sharing and collections](0005-sharing-collections/specification.md) | Draft | Must | M2 |

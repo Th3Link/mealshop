@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "version": "synthetic-test-only",
+  "ingredients": [
+    {
+      "id": "fixture-a",
+      "name": "Synthetic fixture fixture-a",
+      "aliases": [
+        "fixture"
+      ],
+      "form": "fictional",
+      "basis": "per_100g_edible_portion",
+      "source": {
+        "name": "Synthetic acceptance fixture; not food data",
+        "url": "https://example.org/fixture",
+        "record_id": "fictional",
+        "version": "1",
+        "retrieved_on": "2026-11-07",
+        "license": "AGPL-3.0-only"
+      },
+      "uncertainty": "Synthetic arithmetic fixture only; not a real ingredient.",
+      "nutrients": {
+        "energy_kcal": {
+          "amount": "0.01",
+          "uncertainty": "Synthetic number, not measured food data."
+        }
+      },
+      "education": []
+    },
+    {
+      "id": "fixture-b",
+      "name": "Synthetic fixture fixture-b",
+      "aliases": [
+        "fixture"
+      ],
+      "form": "fictional",
+      "basis": "per_100g_edible_portion",
+      "source": {
+        "name": "Synthetic acceptance fixture; not food data",
+        "url": "https://example.org/fixture",
+        "record_id": "fictional",
+        "version": "1",
+        "retrieved_on": "2026-11-07",
+        "license": "AGPL-3.0-only"
+      },
+      "uncertainty": "Synthetic arithmetic fixture only; not a real ingredient.",
+      "nutrients": {
+        "energy_kcal": {
+          "amount": "0.02",
+          "uncertainty": "Synthetic number, not measured food data."
+        }
+      },
+      "education": []
+    }
+  ]
+}

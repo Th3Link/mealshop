@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mealshop · Ingredient & nutrition workbench</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a class="brand" href="/">mealshop<span>01 / nutrition</span></a><span class="tag">Early development</span></header>
+  <main>
+    <section class="intro"><p class="eyebrow">Know what goes into your meals</p><h1>Good food.<br>Clear information.</h1>
+      <p class="lead">Explore ingredients, build a portion, and see what the data can tell you — including what it cannot.</p>
+      <p class="subtle">Source-based estimates. No cooking-loss correction or personal health predictions. Your entries are not saved.</p>
+    </section>
+    <div class="layout">
+      <section class="panel" aria-labelledby="recipe-title">
+        <div class="section-head"><h2 id="recipe-title">Your ingredients</h2><span class="tag">Grams</span></div>
+        <form id="recipe-form">
+          <fieldset id="recipe-controls" disabled>
+            <legend class="sr-only">Ingredients and serving settings</legend>
+            <div id="lines"></div>
+            <button type="button" id="add-line" class="secondary">+ Add ingredient</button>
+            <div class="settings"><label>Servings<input id="servings" name="servings" type="number" min="1" max="1000000" step="1" value="2" required></label>
+              <label>Preparation<select id="preparation" name="preparation"><option value="as_recorded">As recorded in the catalogue</option><option value="cooking_unmodelled">Will be cooked / yield unknown</option></select></label></div>
+            <button id="calculate" type="submit" class="primary">Calculate nutrition <span aria-hidden="true">↗</span></button>
+          </fieldset>
+        </form>
+        <p id="status" role="status" aria-live="polite">Loading ingredient catalogue…</p>
+        <button id="retry" type="button" class="secondary" hidden>Retry loading</button>
+      </section>
+      <section class="panel catalogue" aria-labelledby="catalogue-title">
+        <p class="eyebrow">The source matters</p><h2 id="catalogue-title">Ingredient notebook</h2>
+        <label>Find an ingredient<input id="search" type="search" placeholder="Try oats, Hafer or chia" disabled></label>
+        <label>Ingredient<select id="ingredient-detail" disabled></select></label>
+        <div id="detail"></div>
+      </section>
+    </div>
+    <section id="results" hidden aria-labelledby="results-title">
+      <div class="result-head"><div><p class="eyebrow">A closer look</p><h2 id="results-title">Nutrition per serving</h2></div><p id="result-context" class="subtle"></p></div>
+      <div id="macro-cards" class="cards"></div>
+      <div id="warnings" class="notice"></div>
+      <div class="table-wrap panel"><table><caption>Recipe and serving estimates · rounded to two decimal places</caption><thead><tr><th scope="col">Nutrient</th><th scope="col">Whole recipe</th><th scope="col">Per serving</th><th scope="col">Data coverage</th></tr></thead><tbody id="nutrients"></tbody></table></div>
+      <section class="panel"><h3>Sources & calculation limits</h3><div id="provenance"></div><p id="rounding" class="subtle"></p></section>
+      <section class="panel"><p class="eyebrow">Food for thought</p><h3>Components & evidence</h3><p class="subtle">Context is not a promise. A source describing a component does not measure its amount in your meal.</p><div id="education"></div></section>
+    </section>
+    <noscript><p class="notice">This workbench needs JavaScript. The read-only catalogue is also available at <a href="/api/ingredients">/api/ingredients</a>.</p></noscript>
+  </main>
+  <footer>Mealshop / ingredient & nutrition foundation <span>Small catalogue. Explicit uncertainty.</span></footer>
+</body>
+</html>

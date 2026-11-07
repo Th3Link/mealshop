@@ -14,7 +14,8 @@ The [feature index](../specs/README.md) maps F01–F20 one-to-one to acceptance 
 - N08: Spec-driven development, ADRs and CI with Renovate, builds, docs/Pages, audit, SBOM, metrics and MSRV.
 
 ## Scope and unresolved decisions
-M0 implements the bootstrap only. Nutrition data provider/licences, identity/authentication,
+M0 delivered the bootstrap. F02 adds a read-only, versioned nutrition starter catalogue and
+stateless workbench under review. Its USDA snapshots are CC0; long-term provider coverage/refresh, identity/authentication,
 calendar provider, database migration/sync details, payment provider, attestation feasibility,
 notification transport, federation protocol and concrete paid tiers remain open. No customer
 price, health guarantee or provider commitment is inferred from the vision.
