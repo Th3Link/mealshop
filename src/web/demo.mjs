@@ -8,6 +8,7 @@ try { savedLocale = localStorage.getItem('mealshop.demo.locale'); } catch { /* S
 let locale = resolveLocale(savedLocale, navigator.language);
 let catalogue;
 let definitions;
+let curatedConversions = [];
 let nextLine = 0;
 let lastResult;
 let loadedRecipe;
@@ -113,6 +114,20 @@ function addLine(id = catalogue.ingredients[0]?.id, grams = '100', original = nu
     const field=node('input'); field.dataset.conversion=key;
     field.value=evidence?.[key] ?? ''; label.append(caption,field); context.append(label);
   }
+  const curatedLabel=node('label'); curatedLabel.append(node('span',t('curated_conversion')));
+  const curated=node('select'); curated.dataset.curated='true';
+  const manual=node('option',t('manual_conversion')); manual.value=''; curated.append(manual);
+  const refreshCurated = () => {
+  curated.replaceChildren(manual);
+  for (const item of curatedConversions.filter(c=>c.evidence.ingredient_id===select.value)) {
+    const option=node('option',item.label); option.value=item.id; curated.append(option);
+  }
+  };
+  refreshCurated();
+  if (evidence?.input_unit) { const saved=node('option',evidence.version); saved.value='saved'; curated.append(saved); curated.value='saved'; row.savedEvidence=evidence; }
+  select.addEventListener('change',()=>{ refreshCurated(); for(const field of context.querySelectorAll('[data-conversion]')) field.value=''; row.savedEvidence=null; });
+  curated.addEventListener('change',()=>{ const item=curatedConversions.find(c=>c.id===curated.value); if(item) unit.value=item.unit; changed(); });
+  curatedLabel.append(curated); context.prepend(curatedLabel);
   row.append(ingredientLabel, massLabel, remove, context);
   $('lines').append(row);
 }
@@ -272,6 +287,7 @@ async function initialize() {
     if (!response.ok) throw new Error('Catalogue request failed');
     catalogue = await response.json();
     definitions = catalogue.nutrient_definitions;
+    curatedConversions = (await recipeRequest('/api/conversions')).entries;
     if (!catalogue.ingredients.length) { status('empty'); return; }
     choices($('ingredient-detail'), catalogue.ingredients);
     $('search').disabled = false;
@@ -345,7 +361,8 @@ function recipeLines() {
     if (!['g','kg'].includes(quantity.unit)) {
       const conversion={ingredient_id:id,form:catalogue.ingredients.find(i=>i.id===id)?.form};
       for (const field of row.querySelectorAll('[data-conversion]')) conversion[field.dataset.conversion]=field.value || null;
-      result.conversion=conversion;
+      const selected=curatedConversions.find(c=>c.id===row.querySelector('[data-curated]').value);
+      result.conversion=row.querySelector('[data-curated]').value==='saved' ? row.savedEvidence : selected ? selected.evidence : conversion;
     }
     return result;
   });

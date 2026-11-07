@@ -82,6 +82,15 @@ pub(crate) fn router(catalogue: Catalogue) -> Router {
             get(|| async { javascript(include_str!("web/locales/de.mjs")) }),
         )
         .route("/api/quantities/convert", post(convert_quantity))
+        .route(
+            "/api/conversions",
+            get(|| async {
+                (
+                    [(header::CONTENT_TYPE, "application/json")],
+                    include_str!("../data/conversions.json"),
+                )
+            }),
+        )
         .route("/api/ingredients", get(list))
         .route("/api/ingredients/{id}", get(detail))
         .route("/api/nutrition/calculate", post(estimate))

@@ -430,3 +430,31 @@ async fn source_quantities_and_conversion_evidence_survive_restart() {
             .is_client_error()
     );
 }
+
+#[tokio::test]
+async fn curated_reference_portions_round_trip_without_inventing_density() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let data: Value = serde_json::from_str(include_str!("../data/conversions.json")).unwrap();
+    for entry in data["entries"].as_array().unwrap() {
+        let mut input = recipe();
+        input["lines"] = json!([{"ingredient_id":entry["evidence"]["ingredient_id"],"quantity":{"amount":"1","unit":entry["unit"]},"conversion":entry["evidence"]}]);
+        let saved = request(&app, "POST", "/api/recipes", input).await;
+        assert_eq!(saved.0, StatusCode::CREATED, "{}", entry["id"]);
+        assert_eq!(
+            saved.1["recipe"]["lines"][0]["conversion"],
+            entry["evidence"]
+        );
+        let path = format!("/api/recipes/{}", saved.1["id"].as_str().unwrap());
+        assert_eq!(request(&app, "GET", &path, Value::Null).await.1, saved.1);
+    }
+    drop(app);
+    let app = dir.app();
+    assert_eq!(
+        request(&app, "GET", "/api/recipes", Value::Null).await.1["recipes"]
+            .as_array()
+            .unwrap()
+            .len(),
+        43
+    );
+}

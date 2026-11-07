@@ -20,3 +20,5 @@ These are explicit future work, not completed features or ignored CI findings.
 
 - Recipe file storage is a Linux/local-filesystem slice with an exclusive lock, manual crash
   recovery and 1000-revision capacity. POST idempotency and non-Unix crash durability remain open.
+
+- Lowest-priority deferred item (customer request): cross-device preference synchronization.

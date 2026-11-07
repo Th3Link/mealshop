@@ -127,11 +127,12 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         let ingredient = catalogue
             .find(&line.ingredient_id)
             .ok_or_else(|| format!("Unknown ingredient: {}", line.ingredient_id))?;
-        if line
-            .conversion
-            .as_ref()
-            .is_some_and(|e| e.form != ingredient.form)
-        {
+        if line.conversion.as_ref().is_some_and(|e| {
+            e.form != ingredient.form
+                || e.source_record_id
+                    .as_ref()
+                    .is_some_and(|id| id != &ingredient.source.record_id)
+        }) {
             return Err("conversion_state_mismatch".to_owned());
         }
         ingredients.push((ingredient, &line.grams));
