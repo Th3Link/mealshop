@@ -58,3 +58,7 @@ homeautomation; exact source revisions and adaptation notes are in [provenance](
 ## License
 AGPL-3.0-only. See [LICENSE](LICENSE). Paid distribution does not remove recipients' rights
 to use, modify or redistribute the software under that licence.
+
+Protected family planning links saved recipe revisions with household constraints, preparation
+budgets and consented calendar attendance imports. Changes have an explicit shopping-quantity
+preview before apply. See the [family planning guide](docs/guides/meal-planning.md).

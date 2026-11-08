@@ -17,7 +17,7 @@ New folders take the next free number; keep index/status changes in the same com
 | F07 | [Preferred shops and learned shopping order](0007-shops-order-learning/specification.md) | Draft | Should | M2 |
 | F08 | [Barcode scanning and product matching](0008-barcode/specification.md) | Draft | Could | M3 |
 | F09 | [Household members and dietary constraints](0009-household-profiles/specification.md) | Done | Must | M1 |
-| F10 | [Family meal planning and calendar attendance](0010-meal-planning/specification.md) | Draft | Must | M2 |
+| F10 | [Family meal planning and calendar attendance](0010-meal-planning/specification.md) | Done | Must | M2 |
 | F11 | [Cooking history and online preference learning](0011-recommendation-feedback/specification.md) | Draft | Should | M2 |
 | F12 | [Guided cooking and preset timers](0012-guided-cooking/specification.md) | Draft | Must | M2 |
 | F13 | [Multi-day bread, rolls and pizza scheduling](0013-bread-schedules/specification.md) | Draft | Should | M3 |

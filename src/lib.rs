@@ -3,6 +3,7 @@
 mod api;
 mod household;
 mod nutrition;
+mod planning;
 mod quantities;
 mod recipe_api;
 mod recipes;
@@ -55,7 +56,7 @@ pub fn household_router(
     directory: impl AsRef<std::path::Path>,
     token: String,
 ) -> Result<axum::Router, String> {
-    household::router(json, directory.as_ref(), token, None)
+    household::router(json, directory.as_ref(), token, None, None)
 }
 
 /// Builds household routes with operator and optional read-only credentials.
@@ -67,5 +68,31 @@ pub fn household_router_with_reader(
     token: String,
     reader: Option<String>,
 ) -> Result<axum::Router, String> {
-    household::router(json, directory.as_ref(), token, reader)
+    household::router(json, directory.as_ref(), token, reader, None)
+}
+
+/// Builds recipes, household profiles and protected family meal planning with shared revisions.
+/// # Errors
+/// Returns an error for invalid data, credentials or unavailable/locked storage directories.
+pub fn family_router(
+    json: &str,
+    recipe_directory: impl AsRef<std::path::Path>,
+    household_directory: impl AsRef<std::path::Path>,
+    token: String,
+    reader: Option<String>,
+) -> Result<axum::Router, String> {
+    let catalogue = nutrition::catalogue::Catalogue::from_json(json)?;
+    let recipes = std::sync::Arc::new(std::sync::Mutex::new(recipes::Store::open(
+        recipe_directory.as_ref(),
+    )?));
+    let household = household::router(
+        json,
+        household_directory.as_ref(),
+        token,
+        reader,
+        Some(recipes.clone()),
+    )?;
+    Ok(api::router(catalogue.clone())
+        .merge(recipe_api::router_shared(catalogue, recipes))
+        .merge(household))
 }

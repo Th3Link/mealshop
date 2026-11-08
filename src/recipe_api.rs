@@ -18,19 +18,19 @@ use std::sync::{Arc, Mutex};
 type Shared = Arc<RecipeState>;
 struct RecipeState {
     catalogue: Catalogue,
-    store: Mutex<Store>,
+    store: Arc<Mutex<Store>>,
 }
 
 pub(crate) fn router(catalogue: Catalogue, store: Store) -> Router {
+    router_shared(catalogue, Arc::new(Mutex::new(store)))
+}
+pub(crate) fn router_shared(catalogue: Catalogue, store: Arc<Mutex<Store>>) -> Router {
     Router::new()
         .route("/api/recipes", get(list).post(create))
         .route("/api/recipes/{id}", get(detail).put(update))
         .route("/api/recipes/{id}/scale", get(scale))
         .layer(DefaultBodyLimit::max(131_072))
-        .with_state(Arc::new(RecipeState {
-            catalogue,
-            store: Mutex::new(store),
-        }))
+        .with_state(Arc::new(RecipeState { catalogue, store }))
 }
 
 struct ApiError(StatusCode, &'static str, String);
