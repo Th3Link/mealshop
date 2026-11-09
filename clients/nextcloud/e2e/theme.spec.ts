@@ -11,9 +11,24 @@ test('native system light/dark themes, reduced motion and keyboard focus', async
   await page.getByLabel('Search ingredients', { exact: true }).fill('oats')
   await page.locator('.record-list').getByRole('link').first().click()
   await expect(page.getByRole('heading', { name: 'Nutrient values', exact: true })).toBeVisible()
+  async function settleVisualState() {
+    await page.evaluate(async () => {
+      await document.fonts.ready
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      )
+      await Promise.all(
+        document
+          .getAnimations()
+          .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+          .map((animation) => animation.finished.catch(() => {})),
+      )
+    })
+  }
   const backgrounds: string[] = []
   for (const scheme of ['light', 'dark'] satisfies ('light' | 'dark')[]) {
     await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' })
+    await settleVisualState()
     backgrounds.push(
       await page
         .locator('.mealshop')
@@ -26,7 +41,20 @@ test('native system light/dark themes, reduced motion and keyboard focus', async
     expect(axe.violations).toEqual([])
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 1000 })
-      await page.screenshot({ path: `test-results/theme-${scheme}-${width}.png`, fullPage: true })
+      await expect(page.locator('#app-navigation-vue')).toHaveAttribute(
+        'aria-hidden',
+        String(width < 1024),
+      )
+      await settleVisualState()
+      const screenshot = await page.screenshot({
+        path: `test-results/theme-${scheme}-${width}.png`,
+        fullPage: true,
+        animations: 'disabled',
+      })
+      expect(screenshot.readUInt32BE(16)).toBe(width)
+      await expect
+        .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width)
     }
   }
   expect(backgrounds[0]).not.toEqual(backgrounds[1])
