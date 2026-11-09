@@ -37,7 +37,8 @@ router.beforeEach(async (to) => {
     return '/households'
   }
 })
-router.afterEach(async (to, from) => {
+router.afterEach(async (to, from, failure) => {
+  if (failure) return
   if (typeof to.params.home === 'string') rememberHousehold(to.params.home)
   if (to.path === from.path && to.query.edit === from.query.edit) return
   await nextTick()

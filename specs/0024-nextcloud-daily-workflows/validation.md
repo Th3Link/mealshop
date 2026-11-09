@@ -1,6 +1,6 @@
 # Daily workflow validation
 
-Status: In progress; final immutable-image deployment and CI still pending.
+Status: In progress; packaged-image and restart verification complete, PR CI pending.
 
 - Rust acceptance suite: 48 passed, including optional author/restart, household declarations,
   composition cycles, isolation, archive, reverse lookup, private raster assets and pinned hard
@@ -19,10 +19,29 @@ Status: In progress; final immutable-image deployment and CI still pending.
 - Two additional daily-workflow tests passed together in 33.5 seconds, including simultaneous
   ingredient editors: stale writes preserve the draft; explicit reload obtains the saved version.
 
-The running test container was gracefully stopped and a private pre-change data copy retained
-under ignored var/nextcloud/backups before the first rollout. UI iteration temporarily mounts only
-built assets read-only into the actual test container. Final validation must remove this temporary
-mount and verify the complete packaged image and restart persistence before completion.
+## Final packaged deployment
 
-No existing Nextcloud data reset or AGENTS.md changes. These checks do not establish formal WCAG
+The complete immutable image (2635bf700f9f) is running as UID/GID 1000 with a read-only root
+filesystem. The temporary development asset mount was removed and its absence inspected.
+All six browser tests passed together against this package in approximately 1.6 minutes,
+including recipe thumbnails, cancelled unsaved-image navigation, unchanged household defaults
+when a switch is cancelled, and an independently created ingredient conflict fixture.
+
+A real container restart preserved canonical authenticated API responses for admin and the
+dedicated test account across 21 household memberships. SHA-256 comparisons confirmed all
+120 persisted files unchanged; nine currently referenced images were also retrieved and
+checked for exact bytes, private cache policy and no-sniff headers. Enabled state and household
+access recovered without a manual enable hook. Private payloads were not printed.
+
+Rootless TCP and Unix-socket smoke tests passed, including creation of a household ingredient
+and recipe and mode-0600 verification of the overlay. Production image build uses Rust 1.85.
+
+Private pre-change copies remain under ignored var/nextcloud/backups. Seventeen old strictly
+recognised synthetic browser-fixture memberships were retired from the admin selector, with
+ownership/data retained by the dedicated test account; four admin households remain. Fixtures
+with unrecognised profile names, recipe titles or other members were excluded from this cleanup.
+No existing Nextcloud data reset or AGENTS.md changes.
+
+Repository gates and client audit passed locally. Remote CI is tracked in the feature PR and
+must complete before review is declared ready. These checks do not establish formal WCAG
 certification, a live calendar provider or nutrient composition for household declarations.

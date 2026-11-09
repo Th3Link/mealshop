@@ -235,3 +235,8 @@ Plan checks and durable application hold the same ingredient guard, preventing c
 from being skipped between review and save. A separate dietary revision avoids invalidating
 plans when only a favourite/archive annotation changes; older overlays retain their global
 revision as a conservative fallback.
+
+The current F24 test image is `mealshop.local/mealshop:daily-workflows`, selected in the private
+Compose settings. It contains the client assets; no development asset mount is required.
+The final packaged-browser/restart evidence and synthetic-fixture housekeeping are recorded in
+[F24 validation](../../specs/0024-nextcloud-daily-workflows/validation.md).
