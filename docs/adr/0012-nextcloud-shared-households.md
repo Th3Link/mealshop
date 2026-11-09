@@ -56,3 +56,8 @@ addresses the npm advisory in the Nextcloud component dependency graph; no compo
 
 Primary integration reference: [Nextcloud 35 `ExApp` overview](https://docs.nextcloud.com/server/stable/developer_manual/exapp_development/development_overview/ExAppOverview.html).
 The installed `AppAPI` 35.0.0 PHP controller and asset services were also read and tested directly.
+
+## Scope follow-up (2026-11-10)
+The customer approved closing the delivered Nextcloud portion of F21/F22. Their complete original
+acceptance criteria are retained verbatim in Draft F29/F30. This supersedes the F22 status statement
+above without claiming standalone/Flutter delivery; F18 remains In progress.

@@ -1,6 +1,6 @@
 # Plan for product web clients
 
-Status: In progress. The Nextcloud client is implemented; the standalone shell remains a separate slice.
+Status: Done for the customer-approved Nextcloud scope.
 
 - [x] Record the native Nextcloud UX, role model and acceptance flows in ux-notes.md.
 - [x] Validate installed Nextcloud 35.0.2 and `AppAPI` 35.0.0 contracts; record ADR 0012.
@@ -12,6 +12,6 @@ Status: In progress. The Nextcloud client is implemented; the standalone shell r
 - [x] Package the client and backend in a rootless-compatible container; verify isolated TCP and Unix-socket transports.
 - [x] Complete the final combined verification and record evidence in validation.md.
 - [x] Deploy the prepared container after explicit customer approval of the internal trusted domain; verify all browser workflows and persisted API responses across restart.
-- [ ] Implement and verify the standalone shell in its own usable slice (AC 2).
+- [x] Preserve the full original client contract in F30; standalone implementation remains Draft there.
 
 See docs/guides/nextcloud.md for reproducible commands and remaining production deployment limits. Do not treat the product vision, standalone shell, account-lifecycle reconciliation or a complete `HaRP` deployment as verified functionality.

@@ -1,7 +1,7 @@
 # Product requirements
 
 Origin: customer vision, 2026-11-07. Mealshop is a working name.
-The [feature index](../specs/README.md) maps F01–F28 one-to-one to acceptance contracts.
+The [feature index](../specs/README.md) maps F01–F30 one-to-one to acceptance contracts.
 
 ## Cross-cutting requirements
 - N01: Rust/Axum/Tokio backend and Flutter client; standalone and free Nextcloud `ExApp` deployment.
@@ -48,3 +48,9 @@ Groups provide discovery and optional explicit household declarations, without s
 
 F28 reviews all shipped native views and improves draft protection, profile editing, discovery,
 error recovery and review focus. N03/N04/N09/N10 → F28.
+
+F06/F07/F08 deliver protected shopping provenance, optional household shop ordering and manual/native
+barcode product capture. N03/N04/N09/N10 apply. F21/F22 close only the delivered Nextcloud scope
+by explicit customer decision. F29/F30 retain the complete original cross-client acceptance contracts
+unchanged; standalone/Flutter localization, versioned content translations and standalone shell remain open.
+N09 → F21/F29; N10 → F22/F30/F18.

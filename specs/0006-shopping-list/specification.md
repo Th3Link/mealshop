@@ -1,6 +1,6 @@
 # Shopping lists and recipe provenance
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer
 Milestone: M2

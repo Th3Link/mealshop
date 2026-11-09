@@ -44,3 +44,8 @@ educational content in the original language with an explicit label when no revi
 translation exists. Full versioned ingredient/recipe/content translations are later F21 work.
 The demo may remain framework-free or be removed once product clients provide equivalent
 review flows. A UX/UI agent is not spawned by this decision; the customer decides when to involve one.
+
+## Customer-approved scope update (2026-11-10)
+F21/F22 now close the verified Nextcloud scope. F29/F30 retain their original full acceptance
+contracts verbatim for remaining content, standalone and Flutter work. No requirement was dropped
+or declared implemented merely by moving it. ADR 0012 records the actual native integration.

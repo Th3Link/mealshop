@@ -315,3 +315,12 @@ clients from silently removing new declarations.
 Group reverse lookup includes recipes using current group members as well as pinned historical
 composition/group references, so recipes created before grouping remain discoverable without rewriting
 their source snapshots.
+
+## Browser fixture ownership
+The embedded suite records created household IDs privately in var/nextcloud/browser-fixtures.jsonl.
+Dependent tests open only the matching recorded setup fixture, waiting for the household list to load.
+Run the complete suite from the repository root after configuring the documented test credentials.
+Individual dependent specs require their authoring/Nextcloud setup spec first; missing fixtures fail
+closed instead of opening the last household. Never point tests at customer-owned households.
+Archive confirmed fixtures after stopping the sole writer, taking a complete private backup and checking
+that retained customer files are byte-identical. Test reports and the fixture ledger remain ignored.

@@ -15,7 +15,7 @@ Use an own server or the hosted service without locking household data to one ba
 4. Given a Flutter app, users can configure an own server or hosted endpoint and understand connection/authentication failures.
 5. Given concurrent edits or a Git conflict, data is not silently overwritten; recovery and backup/restore behaviour is documented per adapter.
 
-6. Nextcloud and standalone product web shells follow F22 (Vue 3); the current nutrition
+6. Nextcloud and standalone product web shells follow F22/F30 (Vue 3); the current nutrition
    browser demo does not satisfy product integration. Localization follows F21; Flutter remains distinct.
 
 ## Current slice
