@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+  <id>mealshop</id>
+  <name>Mealshop</name>
+  <summary>Shared household recipes and meal planning</summary>
+  <description>Precise recipe quantities, source-backed ingredients and reviewed household meal plans.</description>
+  <version>0.1.0</version>
+  <licence>agpl</licence>
+  <author>Mealshop contributors</author>
+  <namespace>Mealshop</namespace>
+  <category>integration</category>
+  <website>https://github.com/Th3Link/mealshop</website>
+  <bugs>https://github.com/Th3Link/mealshop/issues</bugs>
+  <dependencies><nextcloud min-version="35" max-version="35"/></dependencies>
+  <external-app>
+    <docker-install><registry>mealshop.local</registry><image>mealshop</image><image-tag>0.1.0</image-tag></docker-install>
+    <routes>
+      <route><url>^/api/.*$</url><verb>GET,POST,PUT,DELETE</verb><access_level>USER</access_level><headers_to_exclude>["Cookie","Authorization"]</headers_to_exclude></route>
+      <route><url>^/(js/mealshop\.js|css/mealshop\.css|img/app\.svg)$</url><verb>GET</verb><access_level>USER</access_level></route>
+    </routes>
+  </external-app>
+</info>

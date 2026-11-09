@@ -18,3 +18,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [ADR 0010: protected local household access](0010-local-household-access.md) — Proposed local F09 slice.
 
 - [ADR 0011: family meal planning](0011-family-meal-planning.md) — Local protected preview/apply and consented attendance import.
+
+- [0012: native Nextcloud client and shared household boundary](0012-nextcloud-shared-households.md)

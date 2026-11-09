@@ -350,10 +350,16 @@ async fn list(State(state): State<Shared>, headers: HeaderMap) -> Response {
     }
     work(state,|state,profiles,recipes,plans| {
         let mut quantities:BTreeMap<String,u128>=BTreeMap::new();
-        for plan in &plans.data.meals {for(id,atoms)in masses(&load_recipe(recipes,plan)?,plan.servings)?{*quantities.entry(id).or_default()+=atoms;}}
+        let mut revisions = BTreeMap::new();
+        for plan in &plans.data.meals {
+            let record = load_recipe(recipes, plan)?;
+            revisions.entry((record.id.clone(), record.revision)).or_insert_with(|| json!({"id":record.id,"revision":record.revision,"title":record.recipe.title}));
+            for (id, atoms) in masses(&record, plan.servings)? { *quantities.entry(id).or_default() += atoms; }
+        }
+        let revisions = revisions.into_values().collect::<Vec<_>>();
         let requirements=quantities.into_iter().map(|(id,n)|signed_atoms(n).map(|n|json!({"ingredient_id":id,"grams":decimal(n)}))).collect::<Result<Vec<_>,_>>()?;
         let pending=plans.data.meals.iter().filter(|p|p.reviewed_profile_revision!=Some(profiles.revision) || p.reviewed_allergen_version.as_deref()!=state.allergen_data["version"].as_str()).map(|p|json!({"date":p.date,"meal":p.meal})).collect::<Vec<_>>();
-        Ok(json!({"schema_version":1,"revision":plans.data.revision,"meals":plans.data.meals,"profile_revision":profiles.revision,"review_required_slots":pending,"shopping_requirements":requirements}))
+        Ok(json!({"schema_version":1,"revision":plans.data.revision,"meals":plans.data.meals,"profile_revision":profiles.revision,"review_required_slots":pending,"shopping_requirements":requirements,"recipe_revisions":revisions}))
     }).await
 }
 async fn show_preview(

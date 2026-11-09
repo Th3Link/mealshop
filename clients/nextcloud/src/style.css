@@ -1,0 +1,309 @@
+.mealshop {
+  color: var(--color-main-text);
+}
+.mealshop .workspace {
+  padding: 24px 32px 48px;
+  max-width: 1440px;
+  margin-inline: auto;
+}
+.mealshop h1 {
+  font-size: 28px;
+  line-height: 1.3;
+  font-weight: 600;
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.mealshop h2 {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+.mealshop h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 24px 0 8px;
+}
+.mealshop p {
+  margin: 0 0 16px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.mealshop section {
+  margin-block: 32px;
+}
+.mealshop .page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-block: 16px 24px;
+}
+.mealshop .page-header p,
+.mealshop .context,
+.mealshop .muted {
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .context {
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+.mealshop .toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-block: 24px;
+}
+.mealshop .toolbar > :first-child {
+  width: min(100%, 480px);
+}
+.mealshop .toolbar p {
+  flex-shrink: 0;
+  margin: 0;
+}
+.mealshop .record-list {
+  padding: 0;
+  margin: 16px 0;
+  list-style: none;
+}
+.mealshop .record-list li {
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .record-list a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 12px;
+  min-height: 64px;
+  border-radius: var(--border-radius);
+  color: var(--color-main-text);
+  text-decoration: none;
+}
+.mealshop .record-list a:hover {
+  background: var(--color-background-hover);
+}
+.mealshop .record-list strong {
+  display: block;
+  font-weight: 600;
+}
+.mealshop .record-list span {
+  display: block;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .record-list small,
+.mealshop td small {
+  display: block;
+}
+.mealshop .source-label {
+  text-align: end;
+  max-width: 38%;
+  font-size: 13px;
+}
+.mealshop .detail-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 48px;
+}
+.mealshop table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.mealshop th,
+.mealshop td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: start;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.mealshop thead th {
+  font-weight: 600;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop tbody th {
+  font-weight: 400;
+}
+.mealshop .numeric {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.mealshop th small,
+.mealshop td small {
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop dt {
+  color: var(--color-text-maxcontrast);
+  margin-top: 16px;
+}
+.mealshop dd {
+  margin: 4px 0 12px;
+  overflow-wrap: anywhere;
+}
+.mealshop details {
+  margin-block: 24px;
+}
+.mealshop summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding-block: 12px;
+  font-weight: 600;
+}
+.mealshop .narrow {
+  max-width: 680px;
+}
+.mealshop form {
+  display: grid;
+  gap: 16px;
+}
+.mealshop .inline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block: 16px;
+}
+.mealshop .form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: end;
+}
+.mealshop .line {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(100px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+.mealshop .field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.mealshop select,
+.mealshop textarea {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+}
+.mealshop textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+.mealshop .language {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+.mealshop .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block: 16px;
+}
+.mealshop .table-scroll {
+  overflow-x: auto;
+}
+.mealshop :focus-visible {
+  outline: 2px solid var(--color-main-text);
+  outline-offset: 3px;
+}
+.mealshop h1:focus {
+  outline: none;
+}
+@media (max-width: 1024px) {
+  .mealshop .workspace {
+    padding: 24px;
+  }
+  .mealshop .detail-columns {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+@media (max-width: 600px) {
+  .mealshop .workspace {
+    padding: 16px;
+  }
+  .mealshop .page-header,
+  .mealshop .toolbar {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mealshop .toolbar > :first-child {
+    width: 100%;
+  }
+  .mealshop .form-row,
+  .mealshop .line {
+    grid-template-columns: 1fr;
+  }
+  .mealshop .record-list a {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mealshop .source-label {
+    max-width: 100%;
+    text-align: start;
+  }
+  .mealshop h1 {
+    font-size: 24px;
+  }
+}
+
+.mealshop fieldset {
+  border: 0;
+  padding: 0;
+  margin-block: 16px;
+  min-width: 0;
+}
+.mealshop fieldset > * {
+  margin-block: 8px;
+}
+.mealshop legend {
+  font-weight: 600;
+  margin-block: 8px;
+}
+.mealshop .plain-list {
+  padding-inline-start: 24px;
+}
+.mealshop .plain-list li {
+  margin-block: 12px;
+  overflow-wrap: anywhere;
+}
+.mealshop dl {
+  display: grid;
+  grid-template-columns: minmax(80px, auto) minmax(0, 1fr);
+  gap: 12px 16px;
+}
+.mealshop dt,
+.mealshop dd {
+  float: none;
+  width: auto;
+  margin: 0;
+}
+.mealshop .context {
+  padding-inline-start: 40px;
+  min-height: 32px;
+}
+.mealshop th.numeric,
+.mealshop td.numeric {
+  text-align: end;
+}
+.mealshop table {
+  white-space: normal;
+  table-layout: fixed;
+}
+.mealshop th,
+.mealshop td {
+  white-space: normal;
+}
+.mealshop .detail-columns > section {
+  min-width: 0;
+}
+@media (max-width: 1024px) {
+  .mealshop .detail-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

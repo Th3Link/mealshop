@@ -4,6 +4,9 @@ use std::{error::Error, net::SocketAddr};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    if std::env::var_os("APP_SECRET").is_some() {
+        return run_exapp().await;
+    }
     let address: SocketAddr = std::env::var("MEALSHOP_LISTEN_ADDR")
         .unwrap_or_else(|_| "127.0.0.1:3000".to_owned())
         .parse()?;
@@ -50,7 +53,59 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 async fn shutdown() {
-    if let Err(error) = tokio::signal::ctrl_c().await {
-        eprintln!("Cannot install shutdown signal handler: {error}");
+    #[cfg(unix)]
+    {
+        match tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+            Ok(mut terminate) => {
+                tokio::select! { _ = tokio::signal::ctrl_c() => {}, _ = terminate.recv() => {} }
+            }
+            Err(_) => {
+                let _ = tokio::signal::ctrl_c().await;
+            }
+        }
     }
+    #[cfg(not(unix))]
+    {
+        let _ = tokio::signal::ctrl_c().await;
+    }
+}
+
+async fn run_exapp() -> Result<(), Box<dyn Error>> {
+    let config = mealshop_server::exapp::Config {
+        secret: std::env::var("APP_SECRET")?,
+        nextcloud_url: std::env::var("NEXTCLOUD_URL")?,
+        directory: std::env::var("APP_PERSISTENT_STORAGE")?.into(),
+        assets: std::env::var("MEALSHOP_ASSET_DIR")
+            .unwrap_or_else(|_| "clients/nextcloud/dist".to_owned())
+            .into(),
+    };
+    let app = mealshop_server::exapp::router(config).await?;
+    #[cfg(unix)]
+    if std::env::var_os("HP_SHARED_KEY").is_some() {
+        use std::os::unix::fs::{FileTypeExt, PermissionsExt};
+        let path = std::path::Path::new("/tmp/exapp.sock");
+        if let Ok(metadata) = std::fs::symlink_metadata(path) {
+            if !metadata.file_type().is_socket() {
+                return Err("Refusing to replace a non-socket /tmp/exapp.sock".into());
+            }
+            std::fs::remove_file(path)?;
+        }
+        let listener = tokio::net::UnixListener::bind(path)?;
+        std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o666))?;
+        eprintln!("Mealshop AppAPI unix transport ready");
+        axum::serve(listener, app)
+            .with_graceful_shutdown(shutdown())
+            .await?;
+        return Ok(());
+    }
+    let address = SocketAddr::new(
+        std::env::var("APP_HOST")?.parse()?,
+        std::env::var("APP_PORT")?.parse()?,
+    );
+    let listener = tokio::net::TcpListener::bind(address).await?;
+    eprintln!("Mealshop AppAPI transport ready");
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown())
+        .await?;
+    Ok(())
 }

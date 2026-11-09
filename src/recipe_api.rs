@@ -101,7 +101,35 @@ async fn blocking<T: Send + 'static>(
     .map_err(|_| ApiError::from(recipes::Error::Storage))?
     .map_err(ApiError::from)
 }
-fn response(record: &Record, status: StatusCode) -> Result<Response, ApiError> {
+#[derive(Clone, Copy, Default, Deserialize, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+enum DisplayUnit {
+    #[default]
+    G,
+    Kg,
+}
+fn display_lines(lines: &[nutrition::RecipeLine], unit: DisplayUnit) -> serde_json::Value {
+    json!(
+        lines
+            .iter()
+            .map(|line| {
+                let amount = match unit {
+                    DisplayUnit::G => String::from(line.grams.0.clone()),
+                    DisplayUnit::Kg => {
+                        let atoms = line.grams.0.atoms();
+                        format!("{}.{:09}", atoms / 1_000_000_000, atoms % 1_000_000_000)
+                    }
+                };
+                json!({"ingredient_id":line.ingredient_id,"amount":amount,"unit":unit})
+            })
+            .collect::<Vec<_>>()
+    )
+}
+fn response(
+    record: &Record,
+    status: StatusCode,
+    display_unit: DisplayUnit,
+) -> Result<Response, ApiError> {
     let nutrition = nutrition::calculate(&record.catalogue, &record.recipe.calculation())
         .map_err(|_| ApiError::from(recipes::Error::Storage))?;
     Ok((
@@ -109,7 +137,7 @@ fn response(record: &Record, status: StatusCode) -> Result<Response, ApiError> {
         [(header::CACHE_CONTROL, "no-store")],
         Json(json!({
             "id":record.id,"revision":record.revision,"recipe":record.recipe,
-            "nutrition":nutrition,
+            "nutrition":nutrition,"display_lines":display_lines(&record.recipe.lines,display_unit),
         })),
     )
         .into_response())
@@ -126,6 +154,8 @@ async fn list(State(state): State<Shared>) -> Result<Response, ApiError> {
 #[serde(deny_unknown_fields)]
 struct RevisionQuery {
     revision: Option<u64>,
+    #[serde(default)]
+    display_unit: DisplayUnit,
 }
 async fn detail(
     State(state): State<Shared>,
@@ -140,7 +170,7 @@ async fn detail(
         )
     })?;
     let record = blocking(state, move |store, _| store.get(&id, query.revision)).await?;
-    response(&record, StatusCode::OK)
+    response(&record, StatusCode::OK, query.display_unit)
 }
 async fn create(
     State(state): State<Shared>,
@@ -151,7 +181,7 @@ async fn create(
         store.save(recipe, None, catalogue)
     })
     .await?;
-    response(&record, StatusCode::CREATED)
+    response(&record, StatusCode::CREATED, DisplayUnit::G)
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -173,7 +203,7 @@ async fn update(
         )
     })
     .await?;
-    response(&record, StatusCode::OK)
+    response(&record, StatusCode::OK, DisplayUnit::G)
 }
 
 #[derive(Deserialize)]
@@ -181,6 +211,8 @@ async fn update(
 struct ScaleQuery {
     servings: u32,
     revision: Option<u64>,
+    #[serde(default)]
+    display_unit: DisplayUnit,
 }
 async fn scale(
     State(state): State<Shared>,
@@ -223,5 +255,5 @@ async fn scale(
         query.servings,
     )
     .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
-    Ok(([(header::CACHE_CONTROL,"no-store")], Json(json!({"id":record.id,"revision":record.revision,"original_servings":original,"servings":query.servings,"lines":calculation.lines,"nutrition":nutrition,"rounding":"grams: nearest 0.000001 g, half up; nutrition: exact original serving ratio before display rounding"}))).into_response())
+    Ok(([(header::CACHE_CONTROL,"no-store")], Json(json!({"id":record.id,"revision":record.revision,"original_servings":original,"servings":query.servings,"lines":calculation.lines,"display_lines":display_lines(&calculation.lines,query.display_unit),"nutrition":nutrition,"rounding":"grams: nearest 0.000001 g, half up; nutrition: exact original serving ratio before display rounding"}))).into_response())
 }

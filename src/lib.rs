@@ -1,7 +1,9 @@
 //! Mealshop ingredient catalogue and nutrition HTTP application.
 
 mod api;
+pub mod exapp;
 mod household;
+mod membership;
 mod nutrition;
 mod planning;
 mod quantities;

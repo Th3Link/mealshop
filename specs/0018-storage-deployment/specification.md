@@ -23,8 +23,10 @@ F04 starts one local file store with immutable schema-1 revisions and pinned cat
 It is not Git-backed and does not complete AC 1. Dedicated-directory exclusive locking,
 expected-revision writes and fail-closed recovery address a bounded local part of AC 5.
 See [ADR 0009](../../docs/adr/0009-local-recipe-revisions.md) and the
-[operator guide](../../docs/guides/recipes.md). SQL/Git adapters, migration, Nextcloud,
-authentication and Flutter remain unimplemented.
+[operator guide](../../docs/guides/recipes.md). SQL/Git adapters, migration and Flutter remain unimplemented. The customer-authorized
+Nextcloud slice now adds authenticated `AppAPI` lifecycle/transport, shared-household roles and
+private file stores; real-host and container deployment evidence are
+tracked in [F22](../0022-product-web-clients/plan.md) and the [Nextcloud guide](../../docs/guides/nextcloud.md).
 
 ## Out of scope
 All adapters in the bootstrap, an unvalidated common SQL dialect or a prematurely selected sync algorithm.

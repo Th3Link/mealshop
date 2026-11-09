@@ -544,3 +544,33 @@ async fn scaling_limits_and_missing_nutrition_are_explicit() {
     assert_eq!(nutrient(&preview, "energy_kcal")["status"], "unknown");
     assert!(nutrient(&preview, "energy_kcal")["per_serving"].is_null());
 }
+
+#[tokio::test]
+async fn mass_display_preferences_preserve_nine_decimal_kilograms_and_saved_input() {
+    let directory = Directory::new();
+    let app = directory.app();
+    let mut input = recipe();
+    input["servings"] = json!(1);
+    input["lines"] =
+        json!([{"ingredient_id":"oats","quantity":{"amount":"100.000001","unit":"g"}}]);
+    let (status, saved) = request(&app, "POST", "/api/recipes", input).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let path = format!("/api/recipes/{}", saved["id"].as_str().unwrap());
+    let (status, kg) = request(&app, "GET", &format!("{path}?display_unit=kg"), Value::Null).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(kg["display_lines"][0]["amount"], "0.100000001");
+    assert_eq!(kg["display_lines"][0]["unit"], "kg");
+    assert_eq!(kg["recipe"], saved["recipe"]);
+    let (_, preview) = request(
+        &app,
+        "GET",
+        &format!("{path}/scale?servings=3&display_unit=kg"),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(preview["display_lines"][0]["amount"], "0.300000003");
+    let (_, reloaded) = request(&app, "GET", &path, Value::Null).await;
+    assert_eq!(reloaded["recipe"], saved["recipe"]);
+    assert_eq!(reloaded["display_lines"][0]["amount"], "100.000001");
+    assert_eq!(reloaded["display_lines"][0]["unit"], "g");
+}
