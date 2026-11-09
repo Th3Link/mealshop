@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, useId } from 'vue'
 import axios from '@nextcloud/axios'
 import { generateOcsUrl } from '@nextcloud/router'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { t } from './i18n'
 const model = defineModel<string>({ required: true })
 const props = defineProps<{ excluded: string[] }>()
+const id = useId()
 const personSchema = z.object({
   label: z.string(),
   value: z.object({ shareType: z.literal(0), shareWith: z.string() }),
@@ -84,8 +85,11 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <div>
+  <div class="labeled-field">
+    <label :for="id">{{ t('invitePerson') }}</label>
     <NcSelect
+      :input-id="id"
+      label-outside
       :input-label="t('invitePerson')"
       :placeholder="t('searchPeople')"
       :model-value="selected"
@@ -97,12 +101,13 @@ onBeforeUnmount(() => {
       @update:model-value="select"
     >
       <template #option="person"
-        ><div class="person-option">
+        ><div class="mealshop-person-option">
           <NcAvatar :user="person.id" :size="32" /><span
             >{{ person.label }}<small>{{ person.id }}</small></span
           >
         </div></template
       >
+      <template #no-options>{{ t('noSearchResults') }}</template>
     </NcSelect>
     <p class="muted">{{ t('searchPeopleHelp') }}</p>
     <NcNoteCard v-if="failed" type="error" role="alert">{{ t('error') }}</NcNoteCard>

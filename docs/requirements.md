@@ -1,7 +1,7 @@
 # Product requirements
 
 Origin: customer vision, 2026-11-07. Mealshop is a working name.
-The [feature index](../specs/README.md) maps F01–F27 one-to-one to acceptance contracts.
+The [feature index](../specs/README.md) maps F01–F28 one-to-one to acceptance contracts.
 
 ## Cross-cutting requirements
 - N01: Rust/Axum/Tokio backend and Flutter client; standalone and free Nextcloud `ExApp` deployment.
@@ -45,3 +45,6 @@ sorbitol intolerance declarations. N03/N04/N09/N10 → F26. Full catalogue group
 
 F27 organizes every bundled ingredient through a complete exact-ID mapping, after F26 verification.
 Groups provide discovery and optional explicit household declarations, without shared source nutrition.
+
+F28 reviews all shipped native views and improves draft protection, profile editing, discovery,
+error recovery and review focus. N03/N04/N09/N10 → F28.

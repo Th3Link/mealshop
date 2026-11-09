@@ -30,6 +30,12 @@ Recipes support creation, immutable revisions, original-language content and exa
 previews. Ingredient quantities accept g, kg, ml, l, tsp, tbsp and pieces. Non-mass inputs need
 an explicitly selected exact-record reference portion or declared density/piece/spoon evidence.
 The original amount, unit and evidence persist; no nearby food record supplies missing data.
+Recipe title search retains its query when opening a result and returning. Empty ingredient results
+can reset search, favourites and archive filters together. Profile notes preserve multiline input and
+keep structured intolerance selections separate. Changed drafts are protected during household
+switches, internal navigation and browser exit (subject to browser before-unload support). Explicit
+reload/discard actions confirm changed drafts; failed saves retain their inputs. Meal review receives
+keyboard focus and a different proposal always requires a fresh confirmation.
 The per-browser recipe display preference requests g/kg presentation from Rust. Kilograms may
 need nine fractional digits to represent normalized micrograms exactly; this changes neither
 stored input precision nor ingredient quantities. Repeated edits use expected revisions.

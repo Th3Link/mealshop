@@ -132,7 +132,7 @@ test('household defaults, focused search, inline composites, private images, fav
   await expect(defaultCheck).toHaveURL(new RegExp(`${homePath}/recipes$`))
   await defaultCheck.close()
   page.on('dialog', acceptDialog)
-  await page.getByText('Cancel', { exact: true }).click()
+  await page.getByRole('link', { name: 'Cancel', exact: true }).first().click()
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
   await page.goto(homePath + '/recipes')
   const thumbnail = page
@@ -168,6 +168,7 @@ test('household defaults, focused search, inline composites, private images, fav
   await page.goto(recipePath)
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Household', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Dietary profiles', exact: true })).toBeVisible()
   if ((await page.getByLabel('Name', { exact: true }).count()) === 0) {
     await page.getByRole('button', { name: 'Add dietary profile', exact: true }).click()
     await page.getByLabel('Name', { exact: true }).fill('Test attendee')
@@ -176,6 +177,7 @@ test('household defaults, focused search, inline composites, private images, fav
   }
   await page.getByRole('button', { name: 'Add dietary profile', exact: true }).click()
   await page.getByLabel('Name', { exact: true }).last().fill(`Test skipper ${stamp}`)
+  await page.getByText('Notes and excluded tags', { exact: true }).last().click()
   await page
     .getByLabel(/^Hard excluded ingredient tags/)
     .last()

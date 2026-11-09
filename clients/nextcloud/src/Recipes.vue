@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, toRaw, watch } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
+import { computed, nextTick, onMounted, ref, toRaw, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcTextField from './LabeledField.vue'
@@ -20,6 +20,8 @@ import { homes, useTask, loadCatalogue } from './state'
 import { exact, locale, parseGrams, t } from './i18n'
 import { mdiPlus } from '@mdi/js'
 import Icon from './Icon.vue'
+import { foldSearch } from './ingredient-search'
+import { useUnsavedChanges } from './useUnsavedChanges'
 import Nutrition from './Nutrition.vue'
 import RecipeStructureEditor from './RecipeStructureEditor.vue'
 import RecipeContents from './RecipeContents.vue'
@@ -77,10 +79,30 @@ watch(displayUnit, () => {
 const { busy, error, run, errorMessage } = useTask()
 const editing = computed(() => route.params.id === 'new' || route.query.edit === '1')
 const listPath = computed(() => `/h/${home.value}/recipes`)
+const search = computed({
+  get: () => (typeof route.query.q === 'string' ? route.query.q : ''),
+  set: (q: string) => {
+    void router.replace({ query: { ...route.query, q: q || undefined } })
+  },
+})
+const matchingRecipes = computed(
+  () =>
+    records.value?.recipes.filter((record) =>
+      search.value
+        .trim()
+        .split(/\s+/)
+        .every((term) => foldSearch(record.title).includes(foldSearch(term))),
+    ) ?? [],
+)
+const confirmDiscard = useUnsavedChanges(() => dirty.value && creatingIngredient.value === null)
+async function reload() {
+  if (confirmDiscard()) await load()
+}
 const request = (path: string) => domain(home.value, path)
 let loadGeneration = 0
 async function load() {
   const generation = ++loadGeneration
+  dirty.value = false
   selected.value = undefined
   draft.value = undefined
   records.value = undefined
@@ -144,11 +166,13 @@ async function load() {
       })) ?? []
     dirty.value = false
   })
+  if (generation === loadGeneration) {
+    await nextTick()
+    document.querySelector<HTMLElement>('.mealshop h1')?.focus()
+  }
 }
 watch(() => [route.params.id, route.query.edit], load)
 onMounted(load)
-onBeforeRouteLeave(() => !dirty.value || window.confirm(t('unsaved')))
-onBeforeRouteUpdate(() => !dirty.value || window.confirm(t('unsaved')))
 function removeImage() {
   if (!draft.value) return
   draft.value.image_id = null
@@ -258,7 +282,10 @@ async function save() {
     )
     dirty.value = false
     selected.value = result
-    await router.push(`${listPath.value}/${result.id}`)
+    await router.push({
+      path: `${listPath.value}/${result.id}`,
+      query: { q: search.value || undefined },
+    })
   })
 }
 async function scale() {
@@ -280,9 +307,15 @@ async function scale() {
 }
 </script>
 <template>
+  <header v-if="route.params.id && !selected && !draft && !busy" class="page-header">
+    <h1 tabindex="-1">{{ t('recipes') }}</h1>
+    <NcButton :to="listPath">{{ t('back') }}</NcButton>
+  </header>
   <NcNoteCard v-if="error" type="error" role="alert"
     >{{ errorMessage(error)
-    }}<NcButton :disabled="busy" @click="load">{{ t('retry') }}</NcButton></NcNoteCard
+    }}<NcButton :disabled="busy" @click="reload">{{
+      t(dirty ? 'reloadSaved' : 'retry')
+    }}</NcButton></NcNoteCard
   >
   <NcLoadingIcon v-if="busy" :aria-label="t('loading')" />
   <template v-if="!route.params.id">
@@ -295,19 +328,40 @@ async function scale() {
         ><template #icon><Icon :path="mdiPlus" /></template>{{ t('newRecipe') }}</NcButton
       >
     </header>
+    <div v-if="records?.recipes.length" class="toolbar">
+      <NcTextField
+        v-model="search"
+        type="search"
+        :label="t('searchRecipes')"
+        :show-trailing-button="Boolean(search)"
+        trailing-button-icon="close"
+        :trailing-button-label="t('clearSearch')"
+        @trailing-button-click="search = ''"
+      />
+      <p role="status">{{ t('recipes') }}: {{ matchingRecipes.length }}</p>
+    </div>
     <NcEmptyContent
       v-if="records && !records.recipes.length"
       :name="t('noRecipes')"
       :description="t('noRecipesText')"
     />
+    <NcEmptyContent
+      v-if="records?.recipes.length && !matchingRecipes.length"
+      :name="t('noResults')"
+    >
+      <template #action
+        ><NcButton @click="search = ''">{{ t('clearSearch') }}</NcButton></template
+      >
+    </NcEmptyContent>
     <ul v-if="records" class="record-list">
-      <li v-for="record in records.recipes" :key="record.id">
-        <RouterLink :to="`${listPath}/${record.id}`"
+      <li v-for="record in matchingRecipes" :key="record.id">
+        <RouterLink :to="{ path: `${listPath}/${record.id}`, query: route.query }"
           ><img
             v-if="record.image_id"
             :src="imageUrl(home, record.image_id)"
             alt=""
             class="recipe-thumbnail"
+            loading="lazy"
             width="64"
             height="64"
           />
@@ -321,86 +375,102 @@ async function scale() {
     </ul>
   </template>
   <template v-else-if="editing && draft">
-    <NcButton :to="selected ? `${listPath}/${selected.id}` : listPath">{{ t('cancel') }}</NcButton>
+    <NcButton
+      :to="{
+        path: selected ? `${listPath}/${selected.id}` : listPath,
+        query: { q: search || undefined },
+      }"
+      >{{ t('cancel') }}</NcButton
+    >
     <header class="page-header">
       <h1 tabindex="-1">{{ selected ? t('edit') : t('newRecipe') }}</h1>
     </header>
     <NcNoteCard v-if="validation" type="error" role="alert">{{ validation }}</NcNoteCard>
     <form class="recipe-editor" @submit.prevent="save" @input="dirty = true" @change="dirty = true">
-      <NcTextField v-model="draft.title" :label="t('title')" required maxlength="200" />
-      <div class="form-row">
-        <NcTextField
-          v-model="draft.servings"
-          type="number"
-          :label="t('servings')"
-          min="1"
-          max="1000000"
-          step="1"
-          required
-        /><label class="field"
-          >{{ t('language')
-          }}<select v-model="draft.language">
-            <option value="en">English</option>
-            <option value="de">Deutsch</option>
-          </select></label
-        >
-      </div>
-      <details class="editor-disclosure" :open="Boolean(draft.image_id || draft.author)">
-        <summary>{{ t('optionalDetails') }}</summary>
-        <div class="editor-fields">
+      <fieldset class="editor-fields" :disabled="busy || !writable">
+        <NcTextField v-model="draft.title" :label="t('title')" required maxlength="200" />
+        <div class="form-row">
           <NcTextField
-            v-model="draft.author"
-            :label="t('author')"
-            :helper-text="t('optional')"
-            maxlength="200"
-          />
-          <fieldset class="recipe-image-editor">
-            <legend>{{ t('image') }}</legend>
-            <img
-              v-if="draft.image_id"
-              :src="imageUrl(home, draft.image_id)"
-              :alt="draft.title"
-              class="recipe-image"
-            />
-            <label class="field"
-              >{{ t('image')
-              }}<input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                :disabled="busy"
-                @change="uploadImage"
-            /></label>
-            <p class="muted">{{ t('imageHelp') }}</p>
-            <NcButton v-if="draft.image_id" @click="removeImage">{{ t('removeImage') }}</NcButton>
-          </fieldset>
-          <label class="field"
-            >{{ t('preparation')
-            }}<select v-model="draft.preparation">
-              <option value="as_recorded">{{ t('asRecorded') }}</option>
-              <option value="cooking_unmodelled">{{ t('cooking') }}</option>
+            v-model="draft.servings"
+            type="number"
+            :label="t('servings')"
+            min="1"
+            max="1000000"
+            step="1"
+            required
+          /><label class="field"
+            >{{ t('language')
+            }}<select v-model="draft.language">
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
             </select></label
           >
         </div>
-      </details>
-      <RecipeStructureEditor
-        v-if="catalogue"
-        v-model:recipe="draft"
-        v-model:lines="lineDrafts"
-        :catalogue="catalogue"
-        :conversions="conversions"
-        :invalid="Boolean(validation)"
-        @changed="dirty = true"
-        @create="(index, name) => (creatingIngredient = { index, name })"
-      />
-      <div class="editor-actions actions">
-        <NcButton variant="primary" type="submit" :disabled="busy || !writable">{{
-          t('save')
-        }}</NcButton>
-      </div>
+        <details class="editor-disclosure" :open="Boolean(draft.image_id || draft.author)">
+          <summary>{{ t('optionalDetails') }}</summary>
+          <div class="editor-fields">
+            <NcTextField
+              v-model="draft.author"
+              :label="t('author')"
+              :helper-text="t('optional')"
+              maxlength="200"
+            />
+            <fieldset class="recipe-image-editor">
+              <legend>{{ t('image') }}</legend>
+              <img
+                v-if="draft.image_id"
+                :src="imageUrl(home, draft.image_id)"
+                :alt="draft.title"
+                class="recipe-image"
+              />
+              <label class="field"
+                >{{ t('image')
+                }}<input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  :disabled="busy"
+                  @change="uploadImage"
+              /></label>
+              <p class="muted">{{ t('imageHelp') }}</p>
+              <NcButton v-if="draft.image_id" @click="removeImage">{{ t('removeImage') }}</NcButton>
+            </fieldset>
+            <label class="field"
+              >{{ t('preparation')
+              }}<select v-model="draft.preparation">
+                <option value="as_recorded">{{ t('asRecorded') }}</option>
+                <option value="cooking_unmodelled">{{ t('cooking') }}</option>
+              </select></label
+            >
+          </div>
+        </details>
+        <RecipeStructureEditor
+          v-if="catalogue"
+          v-model:recipe="draft"
+          v-model:lines="lineDrafts"
+          :catalogue="catalogue"
+          :conversions="conversions"
+          :invalid="Boolean(validation)"
+          @changed="dirty = true"
+          @create="(index, name) => (creatingIngredient = { index, name })"
+        />
+        <div class="editor-actions actions">
+          <NcButton
+            :disabled="busy"
+            :to="{
+              path: selected ? `${listPath}/${selected.id}` : listPath,
+              query: { q: search || undefined },
+            }"
+            >{{ t('cancel') }}</NcButton
+          >
+          <NcButton variant="primary" type="submit" :disabled="busy || !writable">{{
+            t('save')
+          }}</NcButton>
+        </div>
+      </fieldset>
     </form>
   </template>
   <template v-else-if="selected">
-    <NcButton :to="listPath">{{ t('back') }}</NcButton>
+    <NcButton :to="{ path: listPath, query: { q: search || undefined } }">{{ t('back') }}</NcButton>
     <header class="page-header">
       <div>
         <h1 tabindex="-1" :lang="selected.recipe.language">{{ selected.recipe.title }}</h1>
@@ -410,7 +480,9 @@ async function scale() {
           {{ t('servings') }}
         </p>
       </div>
-      <NcButton v-if="writable" :to="{ query: { edit: '1' } }">{{ t('edit') }}</NcButton>
+      <NcButton v-if="writable" :to="{ query: { ...route.query, edit: '1' } }">{{
+        t('edit')
+      }}</NcButton>
     </header>
     <img
       v-if="selected.recipe.image_id"
@@ -445,6 +517,7 @@ async function scale() {
     v-if="creatingIngredient !== null && catalogue"
     :home="home"
     :initial-name="creatingIngredient.name"
+    :parent-dirty="dirty"
     :catalogue="catalogue"
     @close="creatingIngredient = null"
     @saved="ingredientCreated"

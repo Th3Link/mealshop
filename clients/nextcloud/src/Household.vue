@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, toRaw } from 'vue'
-import { onBeforeRouteLeave, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcTextField from './LabeledField.vue'
@@ -16,6 +16,8 @@ import { locale, t } from './i18n'
 import IngredientPicker from './IngredientPicker.vue'
 import intoleranceTriggers from '../../../data/intolerance-triggers.json'
 import NextcloudPersonPicker from './NextcloudPersonPicker.vue'
+import ProfileNotes from './ProfileNotes.vue'
+import { useUnsavedChanges } from './useUnsavedChanges'
 const route = useRoute()
 const home = computed(() => String(route.params.home)),
   current = computed(() => homes.value.find((h) => h.id === home.value))
@@ -26,6 +28,21 @@ const catalogue = ref<z.infer<typeof catalogueSchema>>()
 const groups = ref<{ id: string; name: string; translations: Record<string, string> }[]>([])
 const draft = ref<Member[]>([]),
   dirty = ref(false)
+const saved = ref(false)
+const confirmDiscard = useUnsavedChanges(() => dirty.value)
+async function reload() {
+  if (confirmDiscard()) await load()
+}
+function reset() {
+  if (!profiles.value || !confirmDiscard()) return
+  draft.value = structuredClone(toRaw(profiles.value.members))
+  dirty.value = false
+  saved.value = false
+}
+function markChanged() {
+  dirty.value = true
+  saved.value = false
+}
 const inviteUser = ref(''),
   inviteRole = ref<'editor' | 'reader'>('reader')
 const { busy, error, run, errorMessage } = useTask()
@@ -55,6 +72,7 @@ async function load() {
     groups.value = results[3].groups
     draft.value = structuredClone(toRaw(results[1].members))
     dirty.value = false
+    saved.value = false
   })
 }
 async function save() {
@@ -65,6 +83,7 @@ async function save() {
       data: { expected_revision: profiles.value?.revision, members: draft.value },
     })
     dirty.value = false
+    saved.value = true
   })
 }
 async function refreshAccess() {
@@ -105,21 +124,12 @@ function add() {
     excluded_tags: [],
     disliked_ingredients: [],
   })
-  dirty.value = true
+  markChanged()
 }
 function remove(index: number) {
   if (window.confirm(t('deleteProfile'))) {
     draft.value.splice(index, 1)
-    dirty.value = true
-  }
-}
-function notes(event: Event, member: Member, key: 'allergies' | 'intolerances' | 'excluded_tags') {
-  if (event.target instanceof HTMLTextAreaElement) {
-    member[key] = event.target.value
-      .split('\n')
-      .map((s) => s.trim())
-      .filter(Boolean)
-    dirty.value = true
+    markChanged()
   }
 }
 function exportProfiles() {
@@ -133,7 +143,6 @@ function exportProfiles() {
   a.click()
   URL.revokeObjectURL(url)
 }
-onBeforeRouteLeave(() => !dirty.value || window.confirm(t('unsaved')))
 onMounted(load)
 </script>
 <template>
@@ -144,46 +153,32 @@ onMounted(load)
     </div>
   </header>
   <NcNoteCard v-if="error" type="error" role="alert"
-    >{{ errorMessage(error) }}<NcButton @click="load">{{ t('retry') }}</NcButton></NcNoteCard
+    >{{ errorMessage(error)
+    }}<NcButton :disabled="busy" @click="reload">{{
+      t(dirty ? 'reloadSaved' : 'retry')
+    }}</NcButton></NcNoteCard
   ><NcLoadingIcon v-if="busy" :aria-label="t('loading')" />
   <section v-if="profiles" class="narrow">
     <h2>{{ t('profiles') }}</h2>
     <NcEmptyContent v-if="!draft.length" :name="t('noProfiles')" />
-    <form @submit.prevent="save" @input="dirty = true" @change="dirty = true">
+    <p v-if="saved" role="status" class="save-status">{{ t('changesSaved') }}</p>
+    <form @submit.prevent="save" @input="markChanged" @change="markChanged">
       <fieldset v-for="(member, index) in draft" :key="member.id" :disabled="!writable || busy">
         <legend>{{ member.name || `${t('profiles')} ${index + 1}` }}</legend>
         <NcTextField v-model="member.name" :label="t('name')" required maxlength="200" />
         <fieldset>
           <legend>{{ t('allergenGroups') }}</legend>
-          <NcCheckboxRadioSwitch
-            v-for="group in groups"
-            :key="group.id"
-            v-model="member.allergen_ids"
-            :value="group.id"
-            >{{ group.translations[locale] ?? group.name }}</NcCheckboxRadioSwitch
-          >
+          <div class="allergen-options">
+            <NcCheckboxRadioSwitch
+              v-for="group in groups"
+              :key="group.id"
+              v-model="member.allergen_ids"
+              :value="group.id"
+              >{{ group.translations[locale] ?? group.name }}</NcCheckboxRadioSwitch
+            >
+          </div>
         </fieldset>
-        <label class="field"
-          >{{ t('allergies') }} · {{ t('onePerLine')
-          }}<textarea
-            :value="member.allergies.join('\n')"
-            @change="notes($event, member, 'allergies')"
-          /></label
-        ><label class="field"
-          >{{ t('intolerances') }} · {{ t('onePerLine')
-          }}<textarea
-            :value="member.intolerances.join('\n')"
-            @change="notes($event, member, 'intolerances')"
-          />
-        </label>
-        <label class="field"
-          >{{ t('excludedTags') }} · {{ t('onePerLine')
-          }}<textarea
-            :value="member.excluded_tags.join('\n')"
-            @change="notes($event, member, 'excluded_tags')"
-          />
-        </label>
-        <p class="muted">{{ t('excludedTagsHelp') }}</p>
+        <ProfileNotes :member="member" @changed="markChanged" />
         <fieldset>
           <legend>{{ t('intoleranceTriggers') }}</legend>
           <NcCheckboxRadioSwitch
@@ -195,26 +190,29 @@ onMounted(load)
           >
         </fieldset>
         <IngredientPicker
-          @update:model-value="dirty = true"
+          @update:model-value="markChanged"
           v-model="member.excluded_ingredients"
           :ingredients="catalogue?.ingredients ?? []"
           :label="t('excluded')"
           :disabled="!writable || busy"
         />
         <IngredientPicker
-          @update:model-value="dirty = true"
+          @update:model-value="markChanged"
           v-model="member.disliked_ingredients"
           :ingredients="catalogue?.ingredients ?? []"
           :label="t('disliked')"
           :disabled="!writable || busy"
         /><NcButton v-if="writable" @click="remove(index)">{{ t('remove') }}</NcButton>
       </fieldset>
-      <div class="actions">
+      <div class="actions editor-actions">
         <NcButton v-if="writable" :disabled="busy || draft.length >= 100" @click="add">{{
           t('newMember')
         }}</NcButton
         ><NcButton v-if="writable" type="submit" variant="primary" :disabled="busy || !dirty">{{
-          t('save')
+          t(busy ? 'saving' : 'save')
+        }}</NcButton
+        ><NcButton v-if="writable && dirty" :disabled="busy" @click="reset">{{
+          t('discardChanges')
         }}</NcButton
         ><NcButton :disabled="busy" @click="exportProfiles">{{ t('exportProfiles') }}</NcButton>
       </div>

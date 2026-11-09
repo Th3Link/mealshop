@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, toRaw, watch } from 'vue'
-import { onBeforeRouteLeave, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcTextField from './LabeledField.vue'
@@ -16,6 +16,7 @@ import { homes, useTask, loadCatalogue } from './state'
 import { compactExact, locale, t, explanation } from './i18n'
 import PlanReview from './PlanReview.vue'
 import MealCalendar from './MealCalendar.vue'
+import { useUnsavedChanges } from './useUnsavedChanges'
 const route = useRoute(),
   home = computed(() => String(route.params.home))
 const writable = computed(() => homes.value.some((h) => h.id === home.value && h.role !== 'reader'))
@@ -26,6 +27,18 @@ const plans = ref<z.infer<typeof plansSchema>>(),
 const calendarDate = ref(new Date().toLocaleDateString('en-CA'))
 const draft = ref<Plan>(),
   reviewed = ref(false)
+const initialDraft = ref('')
+const editingExisting = ref(false)
+const confirmDiscard = useUnsavedChanges(
+  () => Boolean(draft.value) && JSON.stringify(draft.value) !== initialDraft.value,
+)
+async function reload() {
+  if (confirmDiscard()) {
+    draft.value = undefined
+    result.value = undefined
+    await load()
+  }
+}
 const result = ref<ReviewValue>()
 const suggestionSchema = previewSchema.extend({ plan: planSchema })
 const suggestions = ref<z.infer<typeof suggestionSchema>[]>([])
@@ -77,6 +90,7 @@ async function load() {
   })
 }
 function start(plan?: Plan) {
+  editingExisting.value = Boolean(plan)
   draft.value = plan
     ? structuredClone(toRaw(plan))
     : {
@@ -95,6 +109,7 @@ function start(plan?: Plan) {
   result.value = undefined
   suggestions.value = []
   rejected.value = []
+  initialDraft.value = JSON.stringify(draft.value)
   void nextTick().then(() => document.getElementById('mealshop-meal-editor-title')?.focus())
 }
 function selectSlot(date: string, meal: string, plan?: Plan) {
@@ -103,11 +118,15 @@ function selectSlot(date: string, meal: string, plan?: Plan) {
   if (draft.value) {
     draft.value.date = date
     draft.value.meal = meal
+    initialDraft.value = JSON.stringify(draft.value)
   }
 }
 function cancelPlan() {
+  if (!confirmDiscard()) return
   draft.value = undefined
   result.value = undefined
+  suggestions.value = []
+  rejected.value = []
   void nextTick().then(() => document.getElementById('mealshop-calendar-title')?.focus())
 }
 function selectedRecipe(event: Event) {
@@ -219,7 +238,13 @@ watch(
   },
   { deep: true },
 )
-onBeforeRouteLeave(() => !draft.value || window.confirm(t('unsaved')))
+watch(result, async (value) => {
+  reviewed.value = false
+  if (value) {
+    await nextTick()
+    document.getElementById('mealshop-review-title')?.focus()
+  }
+})
 onMounted(load)
 </script>
 <template>
@@ -236,8 +261,21 @@ onMounted(load)
     >
   </header>
   <NcNoteCard v-if="error" type="error" role="alert"
-    >{{ errorMessage(error) }}<NcButton @click="load">{{ t('retry') }}</NcButton></NcNoteCard
+    >{{ errorMessage(error)
+    }}<NcButton :disabled="busy" @click="reload">{{
+      t(draft ? 'reloadSaved' : 'retry')
+    }}</NcButton></NcNoteCard
   ><NcLoadingIcon v-if="busy" :aria-label="t('loading')" />
+  <NcNoteCard
+    v-if="plans && profiles && recipes && (!profiles.members.length || !recipes.recipes.length)"
+    type="info"
+  >
+    {{ t('planPrerequisites') }}
+    <div class="actions">
+      <NcButton :to="`/h/${home}/recipes`">{{ t('recipes') }}</NcButton
+      ><NcButton :to="`/h/${home}/household`">{{ t('profiles') }}</NcButton>
+    </div>
+  </NcNoteCard>
   <NcEmptyContent
     v-if="plans && !plans.meals.length && !draft"
     :name="t('emptyPlan')"
@@ -270,7 +308,9 @@ onMounted(load)
       @click="preview(true)"
       >{{ t('remove') }}</NcButton
     >
-    <h2 id="mealshop-meal-editor-title" tabindex="-1">{{ t('newMeal') }}</h2>
+    <h2 id="mealshop-meal-editor-title" tabindex="-1">
+      {{ t(editingExisting ? 'editMeal' : 'newMeal') }}
+    </h2>
     <form @submit.prevent="preview(false)">
       <div class="form-row">
         <label class="field"
@@ -391,7 +431,7 @@ onMounted(load)
           </fieldset></template
         >
       </details>
-      <div class="actions">
+      <div class="actions editor-actions">
         <NcButton type="submit" variant="primary" :disabled="busy">{{ t('review') }}</NcButton
         ><NcButton :disabled="busy" @click="suggest">{{ t('suggestions') }}</NcButton
         ><NcButton @click="cancelPlan">{{ t('cancel') }}</NcButton>

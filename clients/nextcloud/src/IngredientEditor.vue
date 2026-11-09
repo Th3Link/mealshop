@@ -15,11 +15,13 @@ import type { Catalogue, Ingredient } from './contracts'
 import IngredientPicker from './IngredientPicker.vue'
 import IngredientOrganization from './IngredientOrganization.vue'
 import { organizationSchema } from './contracts'
+import { useUnsavedChanges } from './useUnsavedChanges'
 const props = defineProps<{
   home: string
   catalogue: Catalogue
   ingredient?: Ingredient
   initialName?: string
+  parentDirty?: boolean
 }>()
 const catalogue = ref(props.catalogue)
 const currentIngredient = ref(props.ingredient)
@@ -34,6 +36,7 @@ const components = ref([...(props.ingredient?.components ?? [])])
 const allergens = ref([...(props.ingredient?.declared_allergens ?? [])])
 const { busy, error, run, errorMessage } = useTask()
 const changed = ref(false)
+useUnsavedChanges(() => changed.value || Boolean(props.parentDirty))
 watch(
   [name, form, source, recorded, tags, components, allergens, organization],
   () => {
@@ -42,7 +45,7 @@ watch(
   { deep: true },
 )
 function close() {
-  if (!changed.value || window.confirm(t('unsaved'))) emit('close')
+  if (!busy.value && (!changed.value || window.confirm(t('unsaved')))) emit('close')
 }
 function revealInvalid(event: Event) {
   if (event.target instanceof HTMLElement) {
@@ -54,7 +57,7 @@ function revealInvalid(event: Event) {
   }
 }
 async function reload() {
-  if (props.ingredient && !window.confirm(t('unsaved'))) return
+  if (props.ingredient && changed.value && !window.confirm(t('unsaved'))) return
   await run(async () => {
     const latest = await loadCatalogue(props.home)
     catalogue.value = latest
@@ -110,6 +113,7 @@ async function save() {
             },
       },
     )
+    changed.value = false
     emit('saved', result.id ?? props.ingredient?.id ?? '')
   })
 }
@@ -122,80 +126,86 @@ async function save() {
     @close="close"
   >
     <form class="ingredient-editor" @submit.prevent="save" @invalid.capture="revealInvalid">
-      <NcNoteCard v-if="error" type="error" role="alert"
-        >{{ errorMessage(error)
-        }}<NcButton :disabled="busy" @click="reload">{{ t('reloadSaved') }}</NcButton></NcNoteCard
-      >
-      <section v-if="!ingredient" class="editor-section">
-        <h3>{{ t('identitySection') }}</h3>
-        <p class="muted">{{ t('identityHelp') }}</p>
-        <NcTextField v-model="name" :label="t('ingredientName')" required maxlength="200" />
-        <NcTextField v-model="form" :label="t('ingredientForm')" required maxlength="200" />
-      </section>
-      <IngredientOrganization v-model="organization" :catalogue="catalogue" :id="ingredient?.id" />
-      <details class="editor-disclosure">
-        <summary>{{ t('ingredientMetadata') }}</summary>
-        <div class="editor-fields">
-          <label class="field"
-            >{{ t('tags') }}<textarea v-model="tags" maxlength="2400" :aria-label="t('tags')" />
-          </label>
-          <p class="muted">{{ t('tagsHelp') }}</p>
-          <IngredientPicker
-            v-model="components"
-            :ingredients="
-              catalogue.ingredients.filter(
-                (item) =>
-                  item.id !== ingredient?.id && (!item.archived || components.includes(item.id)),
-              )
-            "
-            :label="t('components')"
-          />
-        </div>
-      </details>
-      <details class="editor-disclosure" :open="Boolean(ingredient?.declared_allergens.length)">
-        <summary>{{ t('declaredAllergens') }}</summary>
-        <fieldset>
-          <legend>{{ t('declaredAllergens') }}</legend>
-          <div class="allergen-options">
-            <NcCheckboxRadioSwitch
-              v-for="group in groups"
-              :key="group.id"
-              v-model="allergens"
-              :value="group.id"
-              >{{ allergenName(group.id) }}</NcCheckboxRadioSwitch
-            >
-          </div>
-        </fieldset>
-      </details>
-      <details class="editor-disclosure">
-        <summary>
-          {{ t('intoleranceTriggers')
-          }}<span v-if="organization.intolerance_triggers.length"> · {{ t('sorbitol') }}</span>
-        </summary>
-        <p class="muted">{{ t('allergenHelp') }}</p>
-        <NcCheckboxRadioSwitch
-          v-for="trigger in intoleranceTriggers"
-          :key="trigger.id"
-          v-model="organization.intolerance_triggers"
-          :value="trigger.id"
-          >{{ t('sorbitol') }}</NcCheckboxRadioSwitch
+      <fieldset class="editor-fields" :disabled="busy">
+        <NcNoteCard v-if="error" type="error" role="alert"
+          >{{ errorMessage(error)
+          }}<NcButton :disabled="busy" @click="reload">{{ t('reloadSaved') }}</NcButton></NcNoteCard
         >
-      </details>
-      <details v-if="!ingredient" class="editor-disclosure">
-        <summary>{{ t('provenanceSection') }}</summary>
-        <div class="editor-fields">
-          <NcTextField v-model="source" :label="t('sourceOptional')" type="url" />
-          <label class="field"
-            >{{ t('recordedOn') }}<input v-model="recorded" type="date" required
-          /></label>
+        <section v-if="!ingredient" class="editor-section">
+          <h3>{{ t('identitySection') }}</h3>
+          <p class="muted">{{ t('identityHelp') }}</p>
+          <NcTextField v-model="name" :label="t('ingredientName')" required maxlength="200" />
+          <NcTextField v-model="form" :label="t('ingredientForm')" required maxlength="200" />
+        </section>
+        <IngredientOrganization
+          v-model="organization"
+          :catalogue="catalogue"
+          :id="ingredient?.id"
+        />
+        <details class="editor-disclosure">
+          <summary>{{ t('ingredientMetadata') }}</summary>
+          <div class="editor-fields">
+            <label class="field"
+              >{{ t('tags') }}<textarea v-model="tags" maxlength="2400" :aria-label="t('tags')" />
+            </label>
+            <p class="muted">{{ t('tagsHelp') }}</p>
+            <IngredientPicker
+              v-model="components"
+              :ingredients="
+                catalogue.ingredients.filter(
+                  (item) =>
+                    item.id !== ingredient?.id && (!item.archived || components.includes(item.id)),
+                )
+              "
+              :label="t('components')"
+            />
+          </div>
+        </details>
+        <details class="editor-disclosure" :open="Boolean(ingredient?.declared_allergens.length)">
+          <summary>{{ t('declaredAllergens') }}</summary>
+          <fieldset>
+            <legend>{{ t('declaredAllergens') }}</legend>
+            <div class="allergen-options">
+              <NcCheckboxRadioSwitch
+                v-for="group in groups"
+                :key="group.id"
+                v-model="allergens"
+                :value="group.id"
+                >{{ allergenName(group.id) }}</NcCheckboxRadioSwitch
+              >
+            </div>
+          </fieldset>
+        </details>
+        <details class="editor-disclosure">
+          <summary>
+            {{ t('intoleranceTriggers')
+            }}<span v-if="organization.intolerance_triggers.length"> · {{ t('sorbitol') }}</span>
+          </summary>
+          <p class="muted">{{ t('allergenHelp') }}</p>
+          <NcCheckboxRadioSwitch
+            v-for="trigger in intoleranceTriggers"
+            :key="trigger.id"
+            v-model="organization.intolerance_triggers"
+            :value="trigger.id"
+            >{{ t('sorbitol') }}</NcCheckboxRadioSwitch
+          >
+        </details>
+        <details v-if="!ingredient" class="editor-disclosure">
+          <summary>{{ t('provenanceSection') }}</summary>
+          <div class="editor-fields">
+            <NcTextField v-model="source" :label="t('sourceOptional')" type="url" />
+            <label class="field"
+              >{{ t('recordedOn') }}<input v-model="recorded" type="date" required
+            /></label>
+          </div>
+        </details>
+        <div class="actions editor-actions">
+          <NcButton :disabled="busy" @click="close">{{ t('cancel') }}</NcButton
+          ><NcButton variant="primary" type="submit" :disabled="busy">{{
+            busy ? t('ingredientPending') : t('save')
+          }}</NcButton>
         </div>
-      </details>
-      <div class="actions editor-actions">
-        <NcButton :disabled="busy" @click="close">{{ t('cancel') }}</NcButton
-        ><NcButton variant="primary" type="submit" :disabled="busy">{{
-          busy ? t('ingredientPending') : t('save')
-        }}</NcButton>
-      </div>
+      </fieldset>
     </form>
   </NcDialog>
 </template>

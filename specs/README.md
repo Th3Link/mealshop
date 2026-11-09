@@ -37,3 +37,5 @@ New folders take the next free number; keep index/status changes in the same com
 | F26 | [Comfortable native authoring](0026-authoring-experience/specification.md) | Done | Must | M1 |
 
 | F27 | [Complete catalogue organization](0027-catalogue-organization/specification.md) | Done | Must | M1 |
+
+| F28 | [Native usability review](0028-native-usability-review/specification.md) | In progress | Must | M1 |

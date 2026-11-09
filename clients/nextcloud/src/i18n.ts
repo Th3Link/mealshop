@@ -1,6 +1,15 @@
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  searchRecipes: 'Search recipes',
+  resetFilters: 'Reset filters',
+  changesSaved: 'Changes saved.',
+  saving: 'Saving…',
+  discardChanges: 'Discard changes',
+  profileNotes: 'Notes and excluded tags',
+  editMeal: 'Meal details',
+  planPrerequisites: 'Add a recipe and a dietary profile before planning meals.',
+
   noSearchResults: 'No matching results. Try another name.',
   createNamed: 'Create ingredient',
   identitySection: 'Ingredient details',
@@ -279,6 +288,14 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  searchRecipes: 'Rezepte suchen',
+  resetFilters: 'Filter zurücksetzen',
+  changesSaved: 'Änderungen gespeichert.',
+  saving: 'Wird gespeichert…',
+  discardChanges: 'Änderungen verwerfen',
+  profileNotes: 'Notizen und ausgeschlossene Tags',
+  editMeal: 'Mahlzeit bearbeiten',
+  planPrerequisites: 'Lege zuerst ein Rezept und ein Personenprofil an, um Mahlzeiten zu planen.',
   noSearchResults: 'Keine passenden Ergebnisse. Versuche einen anderen Namen.',
   createNamed: 'Zutat anlegen',
   identitySection: 'Angaben zur Zutat',
