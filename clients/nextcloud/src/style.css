@@ -732,3 +732,20 @@
 .mealshop .editor-actions .button-vue {
   max-width: 100%;
 }
+
+.mealshop .shopping-items {
+  padding: 0;
+  list-style: none;
+}
+.mealshop .shopping-items > li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .shopping-items .checkbox-radio-switch {
+  --default-clickable-area: 48px;
+  width: 100%;
+}
+.mealshop .shopping-items details {
+  margin-block: 0 8px;
+  padding-inline-start: 48px;
+}

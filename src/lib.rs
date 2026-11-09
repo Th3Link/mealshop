@@ -15,6 +15,7 @@ mod recipe_api;
 mod recipe_images;
 mod recipe_structure;
 mod recipes;
+mod shopping;
 
 /// Builds the application with the bundled, versioned starter catalogue.
 ///

@@ -1,6 +1,34 @@
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  shoppingMode: 'Shopping mode',
+  shoppingManage: 'Manage list',
+  shoppingEditItem: 'Edit item',
+  shoppingAddRecipe: 'Add recipe quantities',
+  shoppingFromPlan: 'From meal plan',
+  shoppingSyncPlan: 'Update plan contributions',
+  shoppingSourceHelp:
+    'Purchased quantities keep their original provenance. Only outstanding quantities change.',
+  shoppingPlanHelp:
+    'Select the meal slots for this list. Unselected plan contributions are removed; purchased and manual contributions remain.',
+
+  shoppingList: 'Shopping list',
+  shoppingIntro: 'Keep exact quantities and see where every item comes from.',
+  shoppingQuantity: 'Quantity',
+  shoppingPieces: 'pieces',
+  shoppingToBuy: 'To buy',
+  shoppingBought: 'Purchased',
+  shoppingContributions: 'Recipes and contributions',
+  shoppingRequired: 'Required now',
+  shoppingEmpty: 'Your shopping list is empty',
+  shoppingEmptyHelp:
+    'Add groceries or household goods. Recipe and plan contributions stay separate.',
+  shoppingAddManual: 'Add item',
+  shoppingLinkIngredient: 'Link to an ingredient (optional)',
+  shoppingSources: 'List sources',
+  shoppingRemoveHelp:
+    'Remove the outstanding contribution? Purchased quantities and other sources remain.',
+
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
   changesSaved: 'Changes saved.',
@@ -288,6 +316,33 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  shoppingMode: 'Einkaufsmodus',
+  shoppingManage: 'Liste verwalten',
+  shoppingEditItem: 'Artikel bearbeiten',
+  shoppingAddRecipe: 'Rezeptmengen hinzufügen',
+  shoppingFromPlan: 'Aus dem Speiseplan',
+  shoppingSyncPlan: 'Planbeiträge aktualisieren',
+  shoppingSourceHelp:
+    'Gekaufte Mengen behalten ihre ursprüngliche Herkunft. Nur offene Mengen ändern sich.',
+  shoppingPlanHelp:
+    'Wähle die Mahlzeiten für diese Liste. Nicht ausgewählte Planbeiträge entfallen; gekaufte und manuelle Beiträge bleiben erhalten.',
+
+  shoppingList: 'Einkaufsliste',
+  shoppingIntro: 'Exakte Mengen und die Herkunft jedes Eintrags im Blick.',
+  shoppingQuantity: 'Menge',
+  shoppingPieces: 'Stück',
+  shoppingToBuy: 'Noch einkaufen',
+  shoppingBought: 'Gekauft',
+  shoppingContributions: 'Rezepte und Beiträge',
+  shoppingRequired: 'Aktuell benötigt',
+  shoppingEmpty: 'Deine Einkaufsliste ist leer',
+  shoppingEmptyHelp:
+    'Füge Lebensmittel oder Haushaltswaren hinzu. Rezept- und Planbeiträge bleiben getrennt.',
+  shoppingAddManual: 'Artikel hinzufügen',
+  shoppingLinkIngredient: 'Mit einer Zutat verknüpfen (optional)',
+  shoppingSources: 'Quellen der Liste',
+  shoppingRemoveHelp:
+    'Den offenen Beitrag entfernen? Gekaufte Mengen und andere Quellen bleiben erhalten.',
   searchRecipes: 'Rezepte suchen',
   resetFilters: 'Filter zurücksetzen',
   changesSaved: 'Änderungen gespeichert.',
@@ -653,6 +708,30 @@ const explanations: Record<string, { en: string; de: string }> = {
     en: 'This person already belongs to the household.',
     de: 'Diese Person gehört bereits zum Haushalt.',
   },
+  shopping_quantity_invalid: {
+    en: 'Use a positive exact quantity up to 1,000,000,000 base g, ml or pieces per contribution.',
+    de: 'Verwende eine positive exakte Menge bis 1.000.000.000 g, ml oder Stück je Beitrag.',
+  },
+  shopping_request_invalid: {
+    en: 'Review the item name, quantity and selected source.',
+    de: 'Prüfe den Artikelnamen, die Menge und die ausgewählte Quelle.',
+  },
+  shopping_source_not_found: {
+    en: 'This list source is no longer available. Reload and review the list.',
+    de: 'Diese Listenquelle ist nicht mehr verfügbar. Lade die Liste neu und prüfe sie.',
+  },
+  shopping_plan_invalid: {
+    en: 'The selected meal slots are no longer current. Reload and review the selection.',
+    de: 'Die ausgewählten Mahlzeiten sind nicht mehr aktuell. Lade sie neu und prüfe die Auswahl.',
+  },
+  shopping_capacity: {
+    en: 'The shopping storage limit has been reached. Contact the operator before adding more entries.',
+    de: 'Die Speichergrenze der Einkaufsliste ist erreicht. Kontaktiere den Betreiber vor weiteren Einträgen.',
+  },
+  shopping_label_invalid: {
+    en: 'Enter an item name up to 200 bytes.',
+    de: 'Gib einen Artikelnamen mit höchstens 200 Bytes ein.',
+  },
   membership_capacity: {
     en: 'The household or membership limit has been reached.',
     de: 'Die Grenze für Haushalte oder Mitgliedschaften wurde erreicht.',
@@ -662,8 +741,11 @@ const explanations: Record<string, { en: string; de: string }> = {
     de: 'Die gewählte Rezeptversion ist nicht verfügbar. Wähle eine vorhandene Version.',
   },
 }
+export function knownExplanation(code: string): string | undefined {
+  return explanations[code]?.[locale.value]
+}
 export function explanation(code: string): string {
-  return explanations[code]?.[locale.value] ?? t('reviewRequired')
+  return knownExplanation(code) ?? t('reviewRequired')
 }
 
 export function allergenName(id: string): string {
