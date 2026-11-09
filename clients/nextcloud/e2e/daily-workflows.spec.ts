@@ -250,11 +250,11 @@ test('ingredient conflicts retain the draft and require explicit version review'
   await expect(createDialog).toHaveCount(0)
   await expect(page.getByRole('heading', { name: fixtureName, exact: true })).toBeVisible()
   const ingredientPath = new URL(page.url()).pathname
-  await page.getByRole('button', { name: 'Tags and composition', exact: true }).click()
+  await page.getByRole('button', { name: 'Edit ingredient', exact: true }).click()
   await page.getByRole('dialog').getByLabel('Tags', { exact: true }).fill('unsaved-declaration')
   const other = await context.newPage()
   await other.goto(ingredientPath)
-  await other.getByRole('button', { name: 'Tags and composition', exact: true }).click()
+  await other.getByRole('button', { name: 'Edit ingredient', exact: true }).click()
   await other.getByRole('dialog').getByLabel('Tags', { exact: true }).fill('concurrent-declaration')
   await other.getByRole('dialog').getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(other.getByRole('dialog')).toHaveCount(0)

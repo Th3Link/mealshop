@@ -4,6 +4,7 @@ mod api;
 pub mod exapp;
 mod household;
 mod ingredient_api;
+mod ingredient_groups;
 mod ingredients;
 mod membership;
 mod nutrition;

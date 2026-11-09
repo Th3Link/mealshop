@@ -13,10 +13,21 @@ const options = computed(() =>
     .map((item) => ({
       id: item.id,
       label:
+        (item.organization.group_id
+          ? (props.ingredients.find((p) => p.id === item.organization.group_id)?.translations[
+              locale.value
+            ]?.name ??
+              props.ingredients.find((p) => p.id === item.organization.group_id)?.name ??
+              '') + ' › '
+          : '') +
         (item.translations[locale.value]?.name ?? item.name) +
         (item.archived ? ` · ${t('archived')}` : ''),
       search: [
         item.name,
+        props.ingredients.find((p) => p.id === item.organization.group_id)?.name ?? '',
+        props.ingredients.find((p) => p.id === item.organization.group_id)?.translations[
+          locale.value
+        ]?.name ?? '',
         ...item.aliases,
         ...Object.values(item.translations).flatMap((tr) => [tr.name, ...tr.aliases]),
       ]

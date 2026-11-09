@@ -25,7 +25,35 @@ const sourceSchema = z
   })
   .refine((source) => source.kind === 'household_declaration' || source.url.startsWith('https://'))
 const readingSchema = z.object({ amount: z.string().nullable(), uncertainty: z.string() })
+export const organizationSchema = z.object({
+  is_group: z.boolean().default(false),
+  group_id: z.string().nullable().default(null),
+  diet: z.enum(['unknown', 'vegan', 'vegetarian', 'meat_fish']).default('unknown'),
+  origin: z.enum(['unknown', 'plant', 'animal', 'mixed']).default('unknown'),
+  nutrition: z
+    .discriminatedUnion('mode', [
+      z.object({ mode: z.literal('reference') }),
+      z.object({ mode: z.literal('inherit') }),
+      z.object({
+        mode: z.literal('own'),
+        values: z.record(z.string(), readingSchema),
+        note: z.string(),
+        source_url: z.string(),
+      }),
+    ])
+    .default({ mode: 'reference' }),
+})
+export type Organization = z.infer<typeof organizationSchema>
 export const ingredientSchema = z.object({
+  organization: organizationSchema.default({
+    is_group: false,
+    group_id: null,
+    diet: 'unknown',
+    origin: 'unknown',
+    nutrition: { mode: 'reference' },
+  }),
+  reference_source: sourceSchema.nullable().optional(),
+  nutrition_inherited_from: z.string().nullable().optional(),
   id: z.string(),
   category: z.string(),
   tags: z.array(z.string()).default([]),

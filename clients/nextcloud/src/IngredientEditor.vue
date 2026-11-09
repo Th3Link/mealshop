@@ -12,9 +12,12 @@ import { groups } from '../../../data/allergens.json'
 import { useTask, loadCatalogue } from './state'
 import type { Catalogue, Ingredient } from './contracts'
 import IngredientPicker from './IngredientPicker.vue'
+import IngredientOrganization from './IngredientOrganization.vue'
+import { organizationSchema } from './contracts'
 const props = defineProps<{ home: string; catalogue: Catalogue; ingredient?: Ingredient }>()
 const catalogue = ref(props.catalogue)
 const currentIngredient = ref(props.ingredient)
+const organization = ref(organizationSchema.parse(props.ingredient?.organization ?? {}))
 const emit = defineEmits<{ close: []; saved: [id: string] }>()
 const name = ref(''),
   form = ref(''),
@@ -33,6 +36,7 @@ async function reload() {
       const item = latest.ingredients.find((item) => item.id === props.ingredient?.id)
       if (!item) throw new Error('Ingredient not found')
       currentIngredient.value = item
+      organization.value = structuredClone(item.organization)
       tags.value = item.tags.join('\n')
       components.value = [...item.components]
       allergens.value = [...item.declared_allergens]
@@ -42,6 +46,7 @@ async function reload() {
 async function save() {
   await run(async () => {
     const annotations = {
+      organization: organization.value,
       tags: [
         ...new Set(
           tags.value
@@ -86,7 +91,7 @@ async function save() {
   <NcDialog
     size="large"
     content-classes="mealshop ingredient-dialog"
-    :name="ingredient ? t('ingredientMetadata') : t('addIngredient')"
+    :name="ingredient ? t('editIngredient') : t('addIngredient')"
     @close="emit('close')"
   >
     <form class="ingredient-editor" @submit.prevent="save">
@@ -103,6 +108,7 @@ async function save() {
           >{{ t('recordedOn') }}<input v-model="recorded" type="date" required
         /></label>
       </template>
+      <IngredientOrganization v-model="organization" :catalogue="catalogue" :id="ingredient?.id" />
       <label class="field"
         >{{ t('tags') }}<textarea v-model="tags" maxlength="2400" :aria-label="t('tags')" />
       </label>

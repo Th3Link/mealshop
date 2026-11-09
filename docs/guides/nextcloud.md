@@ -204,7 +204,7 @@ Under each authorized household domain prefix (or the protected local family API
 - `POST /api/household/ingredients`: `{ expected_revision, ingredient: { name, language, form,
   recorded_on, source_url?, annotations? } }`; returns stable `id` and new revision.
 - `PUT /api/household/ingredients/{id}`: `{ expected_revision, annotations }`, where annotations
-  contain `tags`, `components`, `declared_allergens`, `favorite` and `archived`.
+  contain `tags`, `components`, `declared_allergens`, `favorite`, `archived` and optional `organization`.
 - `DELETE /api/household/ingredients/{id}`: `{ expected_revision }`; archives without deleting history.
 - `GET /api/household/ingredients/{id}/recipes`: latest saved recipes that include this ingredient,
   directly or through their pinned composition.
@@ -215,7 +215,7 @@ Under each authorized household domain prefix (or the protected local family API
 All shared mutations require writer permission and the existing browser-write marker. Reader
 accounts can inspect the merged catalogue and reverse lookup but cannot mutate annotations or
 assets. Favourites are explicitly shared household annotations. Reference source records remain
-immutable; household annotations never rewrite a primary nutrient record. Archived ingredients
+immutable; household overrides retain the original reference source and never rewrite catalogue files. Archived ingredients
 are hidden from new selection and cannot be newly introduced through the recipe API, while
 existing recipes remain readable/editable with their pinned identity.
 
@@ -240,3 +240,27 @@ The current F24 test image is `mealshop.local/mealshop:daily-workflows`, selecte
 Compose settings. It contains the client assets; no development asset mount is required.
 The final packaged-browser/restart evidence and synthetic-fixture housekeeping are recorded in
 [F24 validation](../../specs/0024-nextcloud-daily-workflows/validation.md).
+
+
+### Ingredient groups and declared nutrient profiles (F25)
+
+Households can organise ingredients into groups and one level of subtypes. Wheat, rye and spelt
+flours are grouped by their existing exact record IDs; their original nutrient values remain intact.
+Searching includes the parent name, and recipe selectors qualify subtypes with their group.
+
+`organization` contains `is_group`, nullable `group_id`, `diet`, `origin` and `nutrition`.
+Diet is `unknown`, `vegan`, `vegetarian` or `meat_fish`; origin is `unknown`, `plant`, `animal`
+or `mixed`. Both are explicit household declarations, not allergen clearance or inferred claims.
+Nutrition uses `mode: reference`, `mode: own` or `mode: inherit`. Own profiles contain `values`
+keyed by the returned nutrient definitions, an evidence `note`, and an optional HTTPS `source_url`.
+Amounts are exact decimal strings per 100 g with the definition's unit; absent/null remains unknown
+and zero is explicit. Salt, total sugars and saturated fat can be entered independently; no conversion
+from sodium or inference from another nutrient is performed.
+
+Inheritance is explicit, follows only the selected parent, and retains that parent's identity.
+Effective overrides use household-declaration provenance; `reference_source` retains the original
+source and `nutrition_inherited_from` identifies inherited values. Saved recipe revisions include
+both the effective values and group record, so editing a group changes future calculations only.
+Existing readers remain read-only and all writes keep revision checks and private atomic persistence.
+Back up the whole private data directory before upgrading; a downgrade must use the matching backup
+because older versions do not understand the added organization fields.

@@ -131,6 +131,7 @@ async fn archive(
             return failure("invalid_ingredient");
         };
         Annotation {
+            organization: Some(i.organization),
             tags: i.tags,
             components: i.components,
             declared_allergens: i.declared_allergens,
