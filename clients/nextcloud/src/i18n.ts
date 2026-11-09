@@ -10,6 +10,8 @@ const en = {
   inheritValues: 'Inherit group values',
   nutritionNote: 'Nutrient source / evidence note',
   nutritionSource: 'Nutrient source URL (optional, HTTPS)',
+  nutrientQuantityError:
+    'Use zero or a positive decimal value with at most six decimal places, without grouping separators.',
   unknownValue: 'Empty means unknown; 0 is an explicit zero. All values are per 100 g.',
   dietClass: 'Dietary classification',
   vegan: 'Vegan',
@@ -247,6 +249,8 @@ const de: Record<keyof typeof en, string> = {
   inheritValues: 'Gruppenwerte erben',
   nutritionNote: 'Quelle / Beleg der Nährwerte',
   nutritionSource: 'Nährwertquelle als URL (optional, HTTPS)',
+  nutrientQuantityError:
+    'Verwende null oder einen positiven Dezimalwert mit höchstens sechs Nachkommastellen ohne Tausendertrennzeichen.',
   unknownValue:
     'Leer bedeutet unbekannt; 0 ist ein ausdrücklicher Nullwert. Alle Werte gelten je 100 g.',
   dietClass: 'Ernährungsweise',

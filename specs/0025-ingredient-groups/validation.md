@@ -21,18 +21,20 @@ The test image runs as UID/GID 1000 with a read-only root filesystem. No data re
 - Client strict checking, production build, formatting and all five unit tests passed.
   Production output is approximately 358 kB gzip JavaScript and 18.3 kB gzip CSS, with no new packages.
 - Full real embedded Nextcloud browser suite passed all seven workflows together in approximately
-  1.7 minutes. The group form had no automated WCAG-tag violations; screenshots at 390 and 1440 px
+  1.8 minutes. The group form had no automated WCAG-tag violations; screenshots at 390 and 1440 px
   were inspected. No application console errors occurred in the group workflow.
 - Rootless TCP and Unix-socket container smoke tests passed lifecycle, assets, auth, CSRF and private storage.
-- Real container restart preserved canonical authenticated APIs and SHA-256 hashes of 131 persisted
-  files across 22 memberships; ten referenced images retained exact bytes and private response headers.
+- Real container restart preserved canonical authenticated APIs and SHA-256 hashes of 141 persisted
+  files across 23 memberships; eleven referenced images retained exact bytes and private response headers.
 - Offline import/catalogue, reference-conversion and allergen verifiers, demo i18n, Rust format,
   licence and `RustSec` gates passed. Client audit reported zero vulnerabilities.
 
 ## Final review
 
 The final archive-parent workflow passed separately in 18.8 seconds: archiving a group leaves
-active subtypes visible and preserves their selected archived parent in the editor. PR CI status is
-tracked before closing this plan. Browser evidence is scoped to tested flows and sizes; it does not claim formal WCAG
+active subtypes visible and preserves their selected archived parent in the editor. Core implementation commit 723af6f passed all ten PR checks, including Rust 1.85 image
+build/transport verification, coverage, both build profiles, client types/build/audit, MSRV, licences,
+advisories, SBOM and binary metrics. Current-head checks are tracked in
+[PR #19](https://github.com/Th3Link/mealshop/pull/19). Browser evidence is scoped to tested flows and sizes; it does not claim formal WCAG
 certification. Classifications are household statements, not inferred safety, and no nutrient value
 is inferred from a neighbouring ingredient or converted implicitly between sodium and salt.

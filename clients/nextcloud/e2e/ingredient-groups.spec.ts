@@ -37,7 +37,16 @@ test('groups, declared nutrient values and explicit subtype inheritance persist'
     .getByLabel('Nutrient source / evidence note', { exact: true })
     .fill('Fictional packaging for automated testing')
   await dialog.getByLabel('Protein (g)', { exact: true }).fill('12.5')
+  await dialog.getByLabel('Fat (g)', { exact: true }).fill('-1')
+  await expect(dialog.getByLabel('Fat (g)', { exact: true })).toHaveJSProperty(
+    'validationMessage',
+    'Use zero or a positive decimal value with at most six decimal places, without grouping separators.',
+  )
   await dialog.getByLabel('Fat (g)', { exact: true }).fill('0')
+  await expect(dialog.getByLabel('Fat (g)', { exact: true })).toHaveJSProperty(
+    'validationMessage',
+    '',
+  )
   const audit = await new AxeBuilder({ page })
     .include('[role="dialog"]')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])

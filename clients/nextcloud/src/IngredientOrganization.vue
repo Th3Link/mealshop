@@ -37,7 +37,7 @@ function amount(id: string, event: Event) {
   const input = event.target.value
   const zero = locale.value === 'de' ? /^0(?:,0{1,6})?$/ : /^0(?:\.0{1,6})?$/
   const canonical = parseGrams(input) ?? (zero.test(input) ? input.replace(',', '.') : null)
-  event.target.setCustomValidity(input && canonical === null ? t('quantityError') : '')
+  event.target.setCustomValidity(input && canonical === null ? t('nutrientQuantityError') : '')
   if (!input || canonical !== null)
     model.value.nutrition.values[id] = {
       amount: canonical,

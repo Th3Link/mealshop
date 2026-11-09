@@ -1,6 +1,6 @@
 # Ingredient groups, declared nutrition and classification
 
-Status: In progress
+Status: Done
 Origin: Customer, after PR #18 merge
 
 1. Household ingredients form explicit groups with one level of subtypes. Existing wheat, rye and spelt flour records are organised without changing identities or copying nutrient profiles.
