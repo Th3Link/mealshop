@@ -376,6 +376,7 @@ async function scale() {
   </template>
   <template v-else-if="editing && draft">
     <NcButton
+      :disabled="busy"
       :to="{
         path: selected ? `${listPath}/${selected.id}` : listPath,
         query: { q: search || undefined },

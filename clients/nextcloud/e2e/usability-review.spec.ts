@@ -75,8 +75,23 @@ test('profile and meal drafts survive rejected discard and household switching',
   const existing = page.getByRole('button', { name: /^View details/ }).first()
   await existing.click()
   await expect(page.getByRole('heading', { name: 'Meal details', exact: true })).toBeFocused()
+  let release: (() => void) | undefined
+  const pending = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  await page.route('**/api/household/mealplan/preview', async (route) => {
+    await pending
+    await route.continue()
+  })
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
+  try {
+    await expect(page.getByLabel('Servings', { exact: true })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeDisabled()
+  } finally {
+    release?.()
+  }
   await expect(page.locator('#mealshop-review-title')).toBeFocused()
+  await page.unroute('**/api/household/mealplan/preview')
   const acknowledgement = 'I reviewed the unknown dietary data and serving/time uncertainty.'
   await page.getByText(acknowledgement, { exact: true }).click()
   await expect(page.getByRole('checkbox', { name: acknowledgement, exact: true })).toBeChecked()

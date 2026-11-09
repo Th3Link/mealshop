@@ -38,4 +38,4 @@ New folders take the next free number; keep index/status changes in the same com
 
 | F27 | [Complete catalogue organization](0027-catalogue-organization/specification.md) | Done | Must | M1 |
 
-| F28 | [Native usability review](0028-native-usability-review/specification.md) | In progress | Must | M1 |
+| F28 | [Native usability review](0028-native-usability-review/specification.md) | Done | Must | M1 |

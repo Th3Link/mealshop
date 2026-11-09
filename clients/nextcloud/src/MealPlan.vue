@@ -312,130 +312,132 @@ onMounted(load)
       {{ t(editingExisting ? 'editMeal' : 'newMeal') }}
     </h2>
     <form @submit.prevent="preview(false)">
-      <div class="form-row">
+      <fieldset class="editor-fields" :disabled="busy" aria-labelledby="mealshop-meal-editor-title">
+        <div class="form-row">
+          <label class="field"
+            >{{ t('date') }}<input v-model="draft.date" type="date" required /></label
+          ><label class="field"
+            >{{ t('meal')
+            }}<select v-model="draft.meal">
+              <option
+                v-if="!['breakfast', 'lunch', 'dinner', 'snack'].includes(draft.meal)"
+                :value="draft.meal"
+              >
+                {{ draft.meal }}
+              </option>
+              <option
+                v-for="meal in ['breakfast', 'lunch', 'dinner', 'snack']"
+                :key="meal"
+                :value="meal"
+              >
+                {{ mealLabel(meal) }}
+              </option>
+            </select></label
+          >
+        </div>
         <label class="field"
-          >{{ t('date') }}<input v-model="draft.date" type="date" required /></label
-        ><label class="field"
-          >{{ t('meal')
-          }}<select v-model="draft.meal">
+          >{{ t('recipes')
+          }}<select
+            :value="`${draft.recipe.id}@${draft.recipe.revision}`"
+            required
+            @change="selectedRecipe"
+          >
+            <option value="" disabled>{{ t('recipes') }}</option>
             <option
-              v-if="!['breakfast', 'lunch', 'dinner', 'snack'].includes(draft.meal)"
-              :value="draft.meal"
+              v-for="r in recipeOptions"
+              :key="`${r.id}@${r.revision}`"
+              :value="`${r.id}@${r.revision}`"
             >
-              {{ draft.meal }}
-            </option>
-            <option
-              v-for="meal in ['breakfast', 'lunch', 'dinner', 'snack']"
-              :key="meal"
-              :value="meal"
-            >
-              {{ mealLabel(meal) }}
+              {{ r.title }} · {{ t('revision') }} {{ r.revision }}
             </option>
           </select></label
         >
-      </div>
-      <label class="field"
-        >{{ t('recipes')
-        }}<select
-          :value="`${draft.recipe.id}@${draft.recipe.revision}`"
-          required
-          @change="selectedRecipe"
-        >
-          <option value="" disabled>{{ t('recipes') }}</option>
-          <option
-            v-for="r in recipeOptions"
-            :key="`${r.id}@${r.revision}`"
-            :value="`${r.id}@${r.revision}`"
+        <fieldset v-if="draft.attendees">
+          <legend>{{ t('attendees') }}</legend>
+          <p class="muted">{{ t('attendanceHelp') }}</p>
+          <NcCheckboxRadioSwitch
+            v-for="member in profiles?.members"
+            :key="member.id"
+            v-model="draft.attendees"
+            :value="member.id"
+            >{{ member.name }}</NcCheckboxRadioSwitch
           >
-            {{ r.title }} · {{ t('revision') }} {{ r.revision }}
-          </option>
-        </select></label
-      >
-      <fieldset v-if="draft.attendees">
-        <legend>{{ t('attendees') }}</legend>
-        <p class="muted">{{ t('attendanceHelp') }}</p>
-        <NcCheckboxRadioSwitch
-          v-for="member in profiles?.members"
-          :key="member.id"
-          v-model="draft.attendees"
-          :value="member.id"
-          >{{ member.name }}</NcCheckboxRadioSwitch
-        >
+        </fieldset>
+        <NcTextField
+          v-model="draft.servings"
+          type="number"
+          :label="t('servings')"
+          min="1"
+          max="1000000"
+          step="1"
+          required
+        />
+        <NcTextField
+          v-model="draft.active_seconds"
+          type="number"
+          :label="t('activeBudget')"
+          min="0"
+          max="86400"
+          step="1"
+          required
+        /><NcTextField
+          v-model="draft.elapsed_seconds"
+          type="number"
+          :label="t('elapsedBudget')"
+          min="0"
+          max="86400"
+          step="1"
+          required
+        /><NcTextField
+          v-model="draft.advance_seconds"
+          type="number"
+          :label="t('advanceBudget')"
+          min="0"
+          max="2592000"
+          step="1"
+          required
+        />
+        <details>
+          <summary>{{ t('calendar') }}</summary>
+          <p>{{ t('calendarHelp') }}</p>
+          <NcCheckboxRadioSwitch
+            :model-value="Boolean(draft.calendar)"
+            @update:model-value="setCalendar"
+            >{{ t('consent') }}</NcCheckboxRadioSwitch
+          ><template v-if="draft.calendar"
+            ><NcCheckboxRadioSwitch
+              :model-value="draft.attendees !== null"
+              @update:model-value="draft.attendees = $event ? [...draft.calendar.member_ids] : null"
+              >{{ t('overrideAttendance') }}</NcCheckboxRadioSwitch
+            ><NcTextField
+              v-model="draft.calendar.source"
+              :label="t('calendarSource')"
+              required
+              maxlength="200"
+            /><NcTextField
+              v-model="draft.calendar.event_id"
+              :label="t('eventId')"
+              required
+              maxlength="200"
+            />
+            <fieldset>
+              <legend>{{ t('attendees') }}</legend>
+              <NcCheckboxRadioSwitch
+                v-for="m in profiles?.members"
+                :key="m.id"
+                v-model="draft.calendar.member_ids"
+                :value="m.id"
+                >{{ m.name }}</NcCheckboxRadioSwitch
+              >
+            </fieldset></template
+          >
+        </details>
+        <div class="actions editor-actions">
+          <NcButton type="submit" variant="primary" :disabled="busy">{{ t('review') }}</NcButton
+          ><NcButton :disabled="busy" @click="suggest">{{ t('suggestions') }}</NcButton
+          ><NcButton :disabled="busy" @click="cancelPlan">{{ t('cancel') }}</NcButton>
+        </div>
       </fieldset>
-      <NcTextField
-        v-model="draft.servings"
-        type="number"
-        :label="t('servings')"
-        min="1"
-        max="1000000"
-        step="1"
-        required
-      />
-      <NcTextField
-        v-model="draft.active_seconds"
-        type="number"
-        :label="t('activeBudget')"
-        min="0"
-        max="86400"
-        step="1"
-        required
-      /><NcTextField
-        v-model="draft.elapsed_seconds"
-        type="number"
-        :label="t('elapsedBudget')"
-        min="0"
-        max="86400"
-        step="1"
-        required
-      /><NcTextField
-        v-model="draft.advance_seconds"
-        type="number"
-        :label="t('advanceBudget')"
-        min="0"
-        max="2592000"
-        step="1"
-        required
-      />
-      <details>
-        <summary>{{ t('calendar') }}</summary>
-        <p>{{ t('calendarHelp') }}</p>
-        <NcCheckboxRadioSwitch
-          :model-value="Boolean(draft.calendar)"
-          @update:model-value="setCalendar"
-          >{{ t('consent') }}</NcCheckboxRadioSwitch
-        ><template v-if="draft.calendar"
-          ><NcCheckboxRadioSwitch
-            :model-value="draft.attendees !== null"
-            @update:model-value="draft.attendees = $event ? [...draft.calendar.member_ids] : null"
-            >{{ t('overrideAttendance') }}</NcCheckboxRadioSwitch
-          ><NcTextField
-            v-model="draft.calendar.source"
-            :label="t('calendarSource')"
-            required
-            maxlength="200"
-          /><NcTextField
-            v-model="draft.calendar.event_id"
-            :label="t('eventId')"
-            required
-            maxlength="200"
-          />
-          <fieldset>
-            <legend>{{ t('attendees') }}</legend>
-            <NcCheckboxRadioSwitch
-              v-for="m in profiles?.members"
-              :key="m.id"
-              v-model="draft.calendar.member_ids"
-              :value="m.id"
-              >{{ m.name }}</NcCheckboxRadioSwitch
-            >
-          </fieldset></template
-        >
-      </details>
-      <div class="actions editor-actions">
-        <NcButton type="submit" variant="primary" :disabled="busy">{{ t('review') }}</NcButton
-        ><NcButton :disabled="busy" @click="suggest">{{ t('suggestions') }}</NcButton
-        ><NcButton @click="cancelPlan">{{ t('cancel') }}</NcButton>
-      </div>
     </form>
   </section>
   <section v-if="suggestions.length">
@@ -447,6 +449,7 @@ onMounted(load)
     >
       <span>{{ title(suggestion.plan) }}</span
       ><NcButton
+        :disabled="busy"
         @click="
           result = { plan: planSchema.parse(suggestion.plan), preview: suggestion, remove: false }
         "

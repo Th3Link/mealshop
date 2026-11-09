@@ -1,6 +1,6 @@
 # Native usability review
 
-Status: In progress
+Status: Done
 Origin: Customer review after merging PR #20
 
 1. Review every shipped Nextcloud view in the existing test instance: household selection/creation,

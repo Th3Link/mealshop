@@ -26,8 +26,19 @@ technology claim. Manual browser review recorded no console warnings/errors in t
 
 Current checks: 58 Rust tests, seven client unit tests, strict client build and formatting,
 catalogue import/verification, i18n, clippy, Rust formatting, licences and advisories pass.
-Final immutable-image rollout, all twelve workflows together, restart integrity and exact-head CI
-are pending and will be recorded in the PR before review readiness.
+All twelve workflows passed together against the immutable implementation image, followed by a real
+restart: authenticated APIs and 228 persisted files unchanged, 37 memberships and 20 referenced
+images checked. All ten CI checks passed on implementation commit 9f3e95f.
+
+Final review additionally locks meal inputs/cancel/proposal selection while an asynchronous preview
+or apply is pending. The regression deliberately holds a real preview request and checks that servings
+and cancellation cannot change until it completes. The affected five workflows are repeated on the
+final image; final image identity, restart and exact-head CI evidence are recorded in the PR.
+
+The synthetic owner account reached the existing twenty-household membership bound after the full
+suite. An optional cleanup through ownership transfers was rejected by automatic approval review
+and was not executed. Existing household ownership and fixture history remain intact; subsequent
+targeted checks reuse the existing households. This does not block verification of the changed UI.
 
 Implementation references: [Vue Router guards](https://router.vuejs.org/guide/advanced/composition-api)
 and [Vue composable lifecycle cleanup](https://vuejs.org/guide/reusability/composables).
