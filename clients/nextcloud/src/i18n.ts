@@ -1,6 +1,26 @@
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  ingredientGroup: 'Ingredient group',
+  groupIngredient: 'This is a group',
+  noGroup: 'No group',
+  nutritionMode: 'Nutrient values per 100 g',
+  referenceValues: 'Keep original reference / unknown',
+  ownValues: 'Enter own values',
+  inheritValues: 'Inherit group values',
+  nutritionNote: 'Nutrient source / evidence note',
+  nutritionSource: 'Nutrient source URL (optional, HTTPS)',
+  unknownValue: 'Empty means unknown; 0 is an explicit zero. All values are per 100 g.',
+  dietClass: 'Dietary classification',
+  vegan: 'Vegan',
+  vegetarian: 'Vegetarian',
+  meat_fish: 'Contains meat/fish',
+  originClass: 'Ingredient origin',
+  plant: 'Plant-derived',
+  animal: 'Animal-derived',
+  mixed: 'Mixed origin',
+  subtypes: 'Subtypes',
+  inheritedFrom: 'Nutrient values inherited from',
   reloadSaved: 'Reload saved version',
   householdEvidence: 'Household declaration',
   excludedTags: 'Hard excluded ingredient tags',
@@ -14,7 +34,7 @@ const en = {
   tagsHelp: 'One tag per line; descriptive tags do not establish allergy safety.',
   components: 'Contains ingredients',
   declaredAllergens: 'Declared allergens',
-  sourceDeclaration: 'Household declaration · nutrition unknown',
+  sourceDeclaration: 'Household declaration · values may be incomplete',
   sourceOptional: 'Source URL (optional, HTTPS)',
   recordedOn: 'Recorded on',
   favorite: 'Household favourite',
@@ -24,6 +44,7 @@ const en = {
   restoreIngredient: 'Restore ingredient',
   archiveHelp:
     'Archive this ingredient for new selections? Saved recipes and their sources remain available.',
+  editIngredient: 'Edit ingredient',
   ingredientMetadata: 'Tags and composition',
   recipesUsingIngredient: 'Recipes with this ingredient',
   noRecipesForIngredient: 'No saved recipes use this ingredient.',
@@ -217,6 +238,27 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  ingredientGroup: 'Zutatengruppe',
+  groupIngredient: 'Dies ist eine Gruppe',
+  noGroup: 'Keine Gruppe',
+  nutritionMode: 'Nährwerte je 100 g',
+  referenceValues: 'Originalreferenz / unbekannt beibehalten',
+  ownValues: 'Eigene Werte eingeben',
+  inheritValues: 'Gruppenwerte erben',
+  nutritionNote: 'Quelle / Beleg der Nährwerte',
+  nutritionSource: 'Nährwertquelle als URL (optional, HTTPS)',
+  unknownValue:
+    'Leer bedeutet unbekannt; 0 ist ein ausdrücklicher Nullwert. Alle Werte gelten je 100 g.',
+  dietClass: 'Ernährungsweise',
+  vegan: 'Vegan',
+  vegetarian: 'Vegetarisch',
+  meat_fish: 'Mit Fleisch/Fisch',
+  originClass: 'Herkunft der Zutat',
+  plant: 'Pflanzlich',
+  animal: 'Tierisch',
+  mixed: 'Gemischt',
+  subtypes: 'Untertypen',
+  inheritedFrom: 'Nährwerte geerbt von',
   reloadSaved: 'Gespeicherte Version neu laden',
   householdEvidence: 'Haushaltsangabe',
   excludedTags: 'Hart ausgeschlossene Zutaten-Tags',
@@ -230,7 +272,7 @@ const de: Record<keyof typeof en, string> = {
   tagsHelp: 'Ein Tag pro Zeile; beschreibende Tags bestätigen keine Allergiesicherheit.',
   components: 'Enthaltene Zutaten',
   declaredAllergens: 'Deklarierte Allergene',
-  sourceDeclaration: 'Haushaltsangabe · Nährwerte unbekannt',
+  sourceDeclaration: 'Haushaltsangabe · Werte können unvollständig sein',
   sourceOptional: 'Quellen-URL (optional, HTTPS)',
   recordedOn: 'Erfasst am',
   favorite: 'Haushaltsfavorit',
@@ -240,6 +282,7 @@ const de: Record<keyof typeof en, string> = {
   restoreIngredient: 'Zutat wiederherstellen',
   archiveHelp:
     'Diese Zutat für neue Auswahlen archivieren? Gespeicherte Rezepte und Quellen bleiben erhalten.',
+  editIngredient: 'Zutat bearbeiten',
   ingredientMetadata: 'Tags und Zusammensetzung',
   recipesUsingIngredient: 'Rezepte mit dieser Zutat',
   noRecipesForIngredient: 'Kein gespeichertes Rezept verwendet diese Zutat.',
@@ -528,4 +571,30 @@ export function allergenName(id: string): string {
 export function compactExact(value: string | null): string {
   if (value === null) return t('unknown')
   return exact(value.includes('.') ? value.replace(/0+$/, '').replace(/\.$/, '') : value)
+}
+
+const nutrientGerman: Record<string, string> = {
+  energy_kcal: 'Energie',
+  energy_kj: 'Energie',
+  protein: 'Eiweiß',
+  fat: 'Fett',
+  total_sugars: 'Zucker',
+  saturated_fat: 'Gesättigte Fettsäuren',
+  salt: 'Salz',
+  carbohydrate: 'Kohlenhydrate (Differenzmethode, einschließlich Ballaststoffe)',
+  available_carbohydrate: 'Verfügbare Kohlenhydrate (mit Polyolen, ohne Ballaststoffe)',
+  fibre: 'Ballaststoffe',
+  calcium: 'Calcium',
+  iron: 'Eisen',
+  magnesium: 'Magnesium',
+  potassium: 'Kalium',
+  sodium: 'Natrium',
+  vitamin_c: 'Vitamin C',
+  folate: 'Folat gesamt',
+  food_folate: 'Nahrungsfolat (kein Gesamtfolat oder DFE)',
+  beta_glucan: 'Beta-Glucan',
+  soluble_fibre: 'Lösliche Ballaststoffe',
+}
+export function nutrientLabel(id: string, original: string): string {
+  return locale.value === 'de' ? (nutrientGerman[id] ?? original) : original
 }

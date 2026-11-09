@@ -27,6 +27,9 @@ pub(crate) struct NutrientInfo {
 nutrients! {
     EnergyKcal => ("energy_kcal", "Energy", "kcal", "energy"),
     EnergyKj => ("energy_kj", "Energy", "kJ", "energy"),
+    TotalSugars => ("total_sugars", "Sugars", "g", "macro"),
+    SaturatedFat => ("saturated_fat", "Saturated fat", "g", "macro"),
+    Salt => ("salt", "Salt", "g", "macro"),
     Protein => ("protein", "Protein", "g", "macro"),
     Fat => ("fat", "Fat", "g", "macro"),
     Carbohydrate => ("carbohydrate", "Carbohydrate (by difference, includes fibre)", "g", "macro"),

@@ -16,6 +16,8 @@ pub(crate) type Shared = Arc<Mutex<Store>>;
 #[serde(deny_unknown_fields)]
 pub(crate) struct Annotation {
     #[serde(default)]
+    pub(crate) organization: Option<crate::ingredient_groups::Organization>,
+    #[serde(default)]
     pub(crate) tags: Vec<String>,
     #[serde(default)]
     pub(crate) components: Vec<String>,
@@ -50,13 +52,16 @@ pub(crate) struct Declaration {
 }
 pub(crate) struct Store {
     base: Catalogue,
+    effective: Catalogue,
     document: Document,
     path: Option<PathBuf>,
     writable: bool,
 }
 impl Store {
-    pub(crate) fn memory(base: Catalogue) -> Self {
+    pub(crate) fn memory(mut base: Catalogue) -> Self {
+        crate::ingredient_groups::seed(&mut base);
         Self {
+            effective: base.clone(),
             base,
             document: Document {
                 schema_version: 1,
@@ -89,6 +94,7 @@ impl Store {
                 serde_json::from_slice(&bytes).map_err(|_| "Invalid ingredient overlay")?;
         }
         store.validate(&store.document)?;
+        store.effective = store.build(&store.document)?;
         Ok(store)
     }
     pub(crate) fn revision(&self) -> u64 {
@@ -100,13 +106,21 @@ impl Store {
             .unwrap_or(self.document.revision)
     }
     pub(crate) fn catalogue(&self) -> Catalogue {
-        self.merge(&self.document)
+        self.effective.clone()
+    }
+    fn build(&self, document: &Document) -> Result<Catalogue, String> {
+        let mut result = self.merge(document);
+        crate::ingredient_groups::resolve(&mut result, document.revision)?;
+        Ok(result)
     }
     fn merge(&self, document: &Document) -> Catalogue {
         let mut result = self.base.clone();
         result.ingredients.extend(document.customs.iter().cloned());
         for ingredient in &mut result.ingredients {
             if let Some(annotation) = document.annotations.get(&ingredient.id) {
+                if let Some(org) = &annotation.organization {
+                    ingredient.organization = org.clone();
+                }
                 ingredient.tags.clone_from(&annotation.tags);
                 ingredient.components.clone_from(&annotation.components);
                 ingredient
@@ -132,7 +146,7 @@ impl Store {
         {
             return Err("Invalid household ingredient overlay".to_owned());
         }
-        let catalogue = self.merge(document);
+        let catalogue = self.build(document)?;
         if document
             .annotations
             .keys()
@@ -163,6 +177,7 @@ impl Store {
                     &item.tags,
                     &item.components,
                     &item.declared_allergens,
+                    &item.organization,
                 )
             })
             .eq(current.ingredients.iter().map(|item| {
@@ -171,6 +186,7 @@ impl Store {
                     &item.tags,
                     &item.components,
                     &item.declared_allergens,
+                    &item.organization,
                 )
             }));
         document.dietary_revision = Some(if unchanged {
@@ -182,6 +198,7 @@ impl Store {
         });
         document.revision = expected.checked_add(1).ok_or("ingredient_capacity")?;
         self.validate(&document).map_err(|_| "invalid_ingredient")?;
+        let effective = self.build(&document).map_err(|_| "invalid_ingredient")?;
         let bytes = serde_json::to_vec(&document).map_err(|_| "ingredient_storage_failed")?;
         if bytes.len() > 2_097_152 {
             return Err("ingredient_capacity");
@@ -213,6 +230,7 @@ impl Store {
                 return Err("ingredient_storage_failed");
             }
         }
+        self.effective = effective;
         self.document = document;
         Ok(())
     }
@@ -240,6 +258,9 @@ impl Store {
             BTreeMap::new()
         };
         let ingredient = Ingredient {
+            organization: crate::ingredient_groups::Organization::default(),
+            reference_source: None,
+            nutrition_inherited_from: None,
             id: id.clone(),
             category: "other".to_owned(),
             name: if input.language == "en" {
@@ -284,10 +305,16 @@ impl Store {
     pub(crate) fn annotate(
         &mut self,
         id: String,
-        input: Annotation,
+        mut input: Annotation,
         expected: u64,
     ) -> Result<(), &'static str> {
         let mut document = self.document.clone();
+        if input.organization.is_none() {
+            input.organization = document
+                .annotations
+                .get(&id)
+                .and_then(|a| a.organization.clone());
+        }
         document.annotations.insert(id, input);
         self.save(document, expected)
     }

@@ -70,6 +70,7 @@ async function annotate(item: Ingredient, changes: { favorite?: boolean; archive
         data: {
           expected_revision: data.value?.revision,
           annotations: {
+            organization: item.organization,
             tags: item.tags,
             components: item.components,
             declared_allergens: item.declared_allergens,
@@ -97,15 +98,28 @@ const query = computed({
 const name = (item: Ingredient) => item.translations[locale.value]?.name ?? item.name
 const form = (item: Ingredient) => item.translations[locale.value]?.form ?? item.form
 const selected = computed(() => data.value?.ingredients.find((i) => i.id === route.params.id))
+const expandedGroups = ref<string[]>([])
 const filtered = computed(() => {
   const terms = query.value.trim().toLocaleLowerCase().split(/\s+/)
   return (
     data.value?.ingredients
       .filter((i) => (showArchived.value || !i.archived) && (!favoritesOnly.value || i.favorite))
+      .filter(
+        (i) =>
+          !i.organization.group_id ||
+          (!showArchived.value &&
+            data.value?.ingredients.some((p) => p.id === i.organization.group_id && p.archived)) ||
+          favoritesOnly.value ||
+          Boolean(query.value.trim()) ||
+          expandedGroups.value.includes(i.organization.group_id),
+      )
       .filter((i) => {
         const text = [
           i.name,
           ...i.aliases,
+          ...(data.value?.ingredients.find((p) => p.id === i.organization.group_id)
+            ? [name(data.value.ingredients.find((p) => p.id === i.organization.group_id) ?? i)]
+            : []),
           ...i.tags,
           ...Object.values(i.translations).flatMap((tr) => [tr.name, ...tr.aliases]),
         ]
@@ -113,7 +127,15 @@ const filtered = computed(() => {
           .toLocaleLowerCase()
         return terms.every((term) => text.includes(term))
       })
-      .sort((a, b) => name(a).localeCompare(name(b), locale.value)) ?? []
+      .sort((a, b) => {
+        const parent = (i: Ingredient) =>
+          data.value?.ingredients.find((p) => p.id === i.organization.group_id) ?? i
+        return (
+          name(parent(a)).localeCompare(name(parent(b)), locale.value) ||
+          Number(Boolean(a.organization.group_id)) - Number(Boolean(b.organization.group_id)) ||
+          name(a).localeCompare(name(b), locale.value)
+        )
+      }) ?? []
   )
 })
 async function load() {
@@ -179,11 +201,31 @@ onMounted(load)
           ><template #icon><Icon :path="selected.favorite ? mdiStar : mdiStarOutline" /></template
           >{{ t('favorite') }}</NcButton
         >
-        <NcButton @click="editor = 'metadata'">{{ t('ingredientMetadata') }}</NcButton>
+        <NcButton @click="editor = 'metadata'">{{ t('editIngredient') }}</NcButton>
         <NcButton @click="archive(selected)">{{
           selected.archived ? t('restoreIngredient') : t('archiveIngredient')
         }}</NcButton>
       </div>
+      <p>
+        {{ t('dietClass') }}: {{ t(selected.organization.diet) }} · {{ t('originClass') }}:
+        {{ t(selected.organization.origin) }}
+      </p>
+      <p v-if="selected.nutrition_inherited_from">
+        {{ t('inheritedFrom') }}:
+        {{
+          name(
+            data.ingredients.find((i) => i.id === selected?.nutrition_inherited_from) ?? selected,
+          )
+        }}
+      </p>
+      <ul v-if="selected.organization.is_group" class="record-list">
+        <li
+          v-for="child in data.ingredients.filter((i) => i.organization.group_id === selected?.id)"
+          :key="child.id"
+        >
+          <RouterLink :to="`/h/${home}/ingredients/${child.id}`">{{ name(child) }}</RouterLink>
+        </li>
+      </ul>
       <NcNoteCard v-if="selected.archived" type="warning">{{ t('archived') }}</NcNoteCard>
       <NcNoteCard type="info">{{
         selected.source.kind === 'household_declaration'
@@ -268,9 +310,25 @@ onMounted(load)
             rel="noopener noreferrer"
             >{{ t('openSource') }}</a
           >
+          <details v-if="selected.reference_source">
+            <summary>{{ t('referenceValues') }}</summary>
+            <p>
+              {{ selected.reference_source.name }} · {{ selected.reference_source.record_id }} ·
+              {{ selected.reference_source.version }}
+            </p>
+            <a
+              v-if="selected.reference_source.url"
+              :href="selected.reference_source.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              >{{ t('openSource') }}</a
+            >
+          </details>
           <h3>{{ t('uncertainty') }}</h3>
           <p class="muted">{{ t('original') }}</p>
-          <p lang="en">{{ selected.uncertainty }}</p>
+          <p :lang="selected.source.kind === 'primary' ? 'en' : undefined">
+            {{ selected.uncertainty }}
+          </p>
           <details v-for="note in selected.education" :key="note.component">
             <summary lang="en">{{ note.title }}</summary>
             <p lang="en">{{ note.summary }}</p>
@@ -295,7 +353,27 @@ onMounted(load)
         ></NcEmptyContent
       >
       <ul v-else class="record-list">
-        <li v-for="item in filtered" :key="item.id" class="ingredient-list-row">
+        <li
+          v-for="item in filtered"
+          :key="item.id"
+          class="ingredient-list-row"
+          :class="{ subtype: item.organization.group_id }"
+        >
+          <NcButton
+            v-if="item.organization.is_group"
+            variant="tertiary"
+            :aria-expanded="expandedGroups.includes(item.id)"
+            :aria-label="`${name(item)}: ${t('subtypes')}`"
+            @click="
+              expandedGroups = expandedGroups.includes(item.id)
+                ? expandedGroups.filter((id) => id !== item.id)
+                : [...expandedGroups, item.id]
+            "
+            >{{ t('subtypes') }}
+            {{
+              data.ingredients.filter((i) => i.organization.group_id === item.id).length
+            }}</NcButton
+          >
           <RouterLink
             :to="{ path: `/h/${route.params.home}/ingredients/${item.id}`, query: route.query }"
             ><div>

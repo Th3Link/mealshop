@@ -551,3 +551,216 @@ async fn assert_legacy_overlay_loads(dir: &Directory, revision: u64) {
         1
     );
 }
+
+#[tokio::test]
+async fn subtype_nutrition_is_explicit_pinned_and_persistent() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let create = json!({"expected_revision":0,"ingredient":{"name":"Test flour group","language":"en","form":"Flour","recorded_on":"2026-11-09","annotations":{"organization":{"is_group":true,"diet":"vegan","origin":"plant","nutrition":{"mode":"own","note":"Test packaging declaration per 100 g","source_url":"","values":{"protein":{"amount":"10.500000","uncertainty":"Declared label"},"fat":{"amount":"0","uncertainty":"Declared zero"}}}}}}});
+    let (status, group) = call(&app, "POST", "/api/household/ingredients", create, false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let child = json!({"expected_revision":1,"ingredient":{"name":"Test Type 550","language":"en","form":"Flour","recorded_on":"2026-11-09","annotations":{"organization":{"group_id":group["id"],"nutrition":{"mode":"inherit"}}}}});
+    let (status, child) = call(&app, "POST", "/api/household/ingredients", child, false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let recipe = json!({"title":"Inherited flour","language":"en","servings":2,"preparation":"as_recorded","lines":[{"ingredient_id":child["id"],"grams":"200"}],"steps":[]});
+    let (status, saved) = call(&app, "POST", "/api/recipes", recipe, false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let protein = saved["nutrition"]["nutrients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|n| n["id"] == "protein")
+        .unwrap();
+    assert_eq!(protein["total"], "21.00");
+    let update = json!({"expected_revision":2,"annotations":{"organization":{"is_group":true,"nutrition":{"mode":"own","note":"Changed label","source_url":"","values":{"protein":{"amount":"20","uncertainty":"Declared"}}}}}});
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            &format!(
+                "/api/household/ingredients/{}",
+                group["id"].as_str().unwrap()
+            ),
+            update,
+            false
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let id = saved["id"].as_str().unwrap();
+    assert_eq!(
+        call(
+            &app,
+            "GET",
+            &format!("/api/recipes/{id}"),
+            Value::Null,
+            false
+        )
+        .await
+        .1,
+        saved
+    );
+    let invalid = json!({"expected_revision":3,"annotations":{"organization":{"is_group":true,"group_id":child["id"]}}});
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            &format!(
+                "/api/household/ingredients/{}",
+                group["id"].as_str().unwrap()
+            ),
+            invalid,
+            false
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    drop(app);
+    let reopened = dir.app();
+    assert_eq!(
+        call(
+            &reopened,
+            "GET",
+            &format!("/api/recipes/{id}"),
+            Value::Null,
+            false
+        )
+        .await
+        .1,
+        saved
+    );
+    let list = call(
+        &reopened,
+        "GET",
+        "/api/household/ingredients",
+        Value::Null,
+        true,
+    )
+    .await
+    .1;
+    let flour = list["ingredients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["id"] == child["id"])
+        .unwrap();
+    assert_eq!(flour["nutrients"]["protein"]["amount"], "20");
+    assert_eq!(flour["nutrition_inherited_from"], group["id"]);
+}
+
+#[tokio::test]
+async fn ingredient_profiles_reject_invalid_inputs_and_preserve_primary_sources() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let original = call(&app, "GET", "/api/household/ingredients", Value::Null, true)
+        .await
+        .1;
+    let oats = original["ingredients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["id"] == "oats")
+        .unwrap();
+    let profile = json!({"nutrition":{"mode":"own","note":"Explicit test label","source_url":"https://example.org/label","values":{"protein":{"amount":"1.250000","uncertainty":"Test label"},"salt":{"amount":"0","uncertainty":"Explicit zero"}}},"diet":"vegan","origin":"plant"});
+    let update = json!({"expected_revision":0,"annotations":{"organization":profile}});
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            update.clone(),
+            true
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    for invalid in [
+        json!({"nutrition":{"mode":"inherit"}}),
+        json!({"group_id":"missing"}),
+        json!({"group_id":"oats"}),
+        json!({"diet":"invented"}),
+        json!({"nutrition":{"mode":"own","note":"","source_url":"","values":{}}}),
+        json!({"nutrition":{"mode":"own","note":"Label","source_url":"http://example.org","values":{}}}),
+        json!({"nutrition":{"mode":"own","note":"Label","source_url":"","values":{"protein":{"amount":"-1","uncertainty":"Label"}}}}),
+    ] {
+        assert_eq!(
+            call(
+                &app,
+                "PUT",
+                "/api/household/ingredients/oats",
+                json!({"expected_revision":0,"annotations":{"organization":invalid}}),
+                false
+            )
+            .await
+            .0,
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            update,
+            false
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    // Older clients toggling favourites must not erase organization or effective values.
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            json!({"expected_revision":1,"annotations":{"favorite":true}}),
+            false
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let list = call(&app, "GET", "/api/household/ingredients", Value::Null, true)
+        .await
+        .1;
+    let changed = list["ingredients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["id"] == "oats")
+        .unwrap();
+    assert_eq!(changed["reference_source"], oats["source"]);
+    assert_eq!(
+        changed["source"]["retrieved_on"],
+        "Not recorded for this household declaration"
+    );
+    assert_eq!(changed["nutrients"]["protein"]["amount"], "1.250000");
+    assert_eq!(changed["nutrients"]["salt"]["amount"], "0");
+    assert!(changed["nutrients"].get("calcium").is_none());
+    assert_eq!(changed["organization"]["diet"], "vegan");
+    assert_eq!(changed["favorite"], true);
+}
+
+#[tokio::test]
+async fn ingredient_profiles_reject_duplicate_values() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let duplicate = br#"{"expected_revision":0,"annotations":{"organization":{"nutrition":{"mode":"own","note":"Label","source_url":"","values":{"protein":{"amount":"1","uncertainty":"Label"},"protein":{"amount":"2","uncertainty":"Label"}}}}}}"#;
+    assert_eq!(
+        raw(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            "application/json",
+            duplicate.to_vec(),
+            false
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+}

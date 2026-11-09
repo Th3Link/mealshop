@@ -43,7 +43,7 @@ pub(crate) struct Education {
     pub(crate) limitations: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Reading {
     pub(crate) amount: Option<Amount>,
@@ -69,6 +69,12 @@ pub(crate) struct IngredientText {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Ingredient {
+    #[serde(default)]
+    pub(crate) organization: crate::ingredient_groups::Organization,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) reference_source: Option<Source>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) nutrition_inherited_from: Option<String>,
     pub(crate) id: String,
     #[serde(default = "other_category")]
     pub(crate) category: String,
@@ -159,7 +165,11 @@ impl Catalogue {
         let mut pending: Vec<_> = ids.iter().cloned().collect();
         while let Some(id) = pending.pop() {
             if let Some(ingredient) = self.find(&id) {
-                for component in &ingredient.components {
+                for component in ingredient
+                    .components
+                    .iter()
+                    .chain(ingredient.organization.group_id.iter())
+                {
                     if result.insert(component.clone()) {
                         pending.push(component.clone());
                     }
@@ -217,8 +227,15 @@ impl Ingredient {
 
     fn validate_household_fields(&self) -> Result<(), String> {
         if self.source.kind == SourceKind::HouseholdDeclaration {
-            if !self.id.starts_with("custom-")
-                || !self.nutrients.is_empty()
+            if (!self.id.starts_with("custom-")
+                && matches!(
+                    self.organization.nutrition,
+                    crate::ingredient_groups::Nutrition::Reference
+                ))
+                || (matches!(
+                    self.organization.nutrition,
+                    crate::ingredient_groups::Nutrition::Reference
+                ) && !self.nutrients.is_empty())
                 || !self.education.is_empty()
             {
                 return Err("Household declarations must retain explicit unknown nutrition and a custom identity".to_owned());
@@ -324,7 +341,9 @@ impl Ingredient {
     }
 }
 
-fn unique_readings<'de, D>(deserializer: D) -> Result<BTreeMap<Nutrient, Reading>, D::Error>
+pub(crate) fn unique_readings<'de, D>(
+    deserializer: D,
+) -> Result<BTreeMap<Nutrient, Reading>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {

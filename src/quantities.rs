@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub(crate) const SCALE: u128 = 1_000_000;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(try_from = "String", into = "String")]
 pub(crate) struct Amount {
     original: String,
