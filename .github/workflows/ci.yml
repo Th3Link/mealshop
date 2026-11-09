@@ -153,3 +153,5 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: docker build -t mealshop.local/mealshop:ci .
+      - name: Verify rootless TCP and Unix transports
+        run: python3 scripts/test_exapp_container.py --image mealshop.local/mealshop:ci

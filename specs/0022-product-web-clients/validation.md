@@ -23,8 +23,12 @@ The Playwright suite drives household creation, addressed invitations, reader pe
 
 Final sequential run: `playwright test --config clients/nextcloud/playwright.config.ts` passed all four browser tests in 52.8 seconds. An earlier run during a simultaneous frontend rebuild timed out; the final run used stable assets.
 
-## Remaining deployment work
+## Verified test-container deployment
 
-The manual daemon serves the implemented client on the supplied test instance. The prepared container uses the existing Docker network and persistent app directory. Automatic approval review rejected adding the internal hostname `nextcloud` to the host's `trusted_domains` without explicit permission for that security setting. No such setting was changed. Final deployment and its persistence/browser checks await that permission.
+On 2026-11-09, the customer explicitly approved the internal `nextcloud` trusted domain and container switch. The hostname was added at index 3 without replacing existing entries. The manual process was gracefully stopped, its storage lock released, and the prepared container started with the same secret, port and persistent directory. The container healthcheck passed.
+
+The complete four-test Playwright suite passed against the container in 58.5 seconds. A subsequent graceful container restart preserved byte-equivalent canonical JSON responses for the authenticated owner's household list, memberships/roles, recipes, profiles and plans across all 14 test households. Startup restored enabled state and authenticated access without a manual enable hook. No private payload was printed.
+
+All ten checks for the initial PR commit passed in GitHub CI, including image build, native client, Rust quality/coverage, MSRV, both build profiles, licences, advisories, SBOM and binary metrics. Deployment evidence updates receive the same CI checks.
 
 The standalone shell, full production `HaRP` tunnel deployment and Nextcloud account deletion/recreation reconciliation are outside this completed native-client implementation and must not be presented as implemented. See the deployment guide and ADR 0012.

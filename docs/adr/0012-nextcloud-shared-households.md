@@ -1,12 +1,12 @@
 # ADR 0012: native Nextcloud client and shared household boundary
 
-Status: Accepted for implementation by the customer, 2026-11-09; verification pending.
+Status: Accepted, 2026-11-09; verified native client and test-container integration (see F22 validation).
 
 ## Context
-The repository currently serves a loopback-only single-household Rust API and a disposable
+Before this change, the repository served a loopback-only single-household Rust API and a disposable
 framework-free demo. Customer requests a complete native Nextcloud 35 client and chose shared
 households with explicit invitations and read/write roles. The supplied test installation is
-Nextcloud 35.0.2 with `AppAPI` 35.0.0; no `ExApp` or deployment daemon is registered yet.
+Nextcloud 35.0.2 with `AppAPI` 35.0.0; no `ExApp` or deployment daemon was registered initially.
 
 ## Alternatives
 Publishing the existing server exposes unowned recipes and operator-token health APIs.

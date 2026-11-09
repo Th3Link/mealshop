@@ -25,7 +25,7 @@ expected-revision writes and fail-closed recovery address a bounded local part o
 See [ADR 0009](../../docs/adr/0009-local-recipe-revisions.md) and the
 [operator guide](../../docs/guides/recipes.md). SQL/Git adapters, migration and Flutter remain unimplemented. The customer-authorized
 Nextcloud slice now adds authenticated `AppAPI` lifecycle/transport, shared-household roles and
-private file stores; real-host evidence and the pending container rollout permission are
+private file stores; real-host and container deployment evidence are
 tracked in [F22](../0022-product-web-clients/plan.md) and the [Nextcloud guide](../../docs/guides/nextcloud.md).
 
 ## Out of scope

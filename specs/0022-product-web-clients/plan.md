@@ -11,7 +11,7 @@ Status: In progress. The Nextcloud client is implemented; the standalone shell r
 - [x] Exercise actual Nextcloud browser workflows, conflicts, revocation, responsive bounds and accessibility with Playwright.
 - [x] Package the client and backend in a rootless-compatible container; verify isolated TCP and Unix-socket transports.
 - [x] Complete the final combined verification and record evidence in validation.md.
-- [ ] Deploy the prepared container into the existing test stack after explicit approval of its internal trusted domain. Manual test deployment is already operational.
+- [x] Deploy the prepared container after explicit customer approval of the internal trusted domain; verify all browser workflows and persisted API responses across restart.
 - [ ] Implement and verify the standalone shell in its own usable slice (AC 2).
 
 See docs/guides/nextcloud.md for reproducible commands and remaining production deployment limits. Do not treat the product vision, standalone shell, account-lifecycle reconciliation or a complete `HaRP` deployment as verified functionality.

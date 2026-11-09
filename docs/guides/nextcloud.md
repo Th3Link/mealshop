@@ -106,7 +106,7 @@ the active app data is `/data/mealshop-nextcloud/mealshop`, separate from Nextcl
 A pre-migration copy of the initial synthetic app data remains under ignored
 `var/nextcloud/data`. The Nextcloud reset script has not been used.
 
-## Container artifact and pending deployment permission
+## Container artifact and verified test deployment
 
 ```sh
 docker build -t mealshop.local/mealshop:0.1.0 .
@@ -129,12 +129,23 @@ Nextcloud network, with the same secret and data, no added capabilities and an i
 port binding. It requires private environment/settings files for the image, data owner UID/GID,
 port, data path and external network. It does not modify the original Nextcloud Compose file.
 
-Switching the supplied test instance to this container requires its internal service hostname
-`nextcloud` to be added to Nextcloud's `trusted_domains`, preserving existing entries. Automatic
-approval review rejected that specific persistent security-setting change. It has not been
-performed or bypassed. The real Nextcloud verification currently uses the authorized manual
-transport; container rollout into that instance awaits explicit customer approval. Backup the
-Nextcloud registry/config and app data together before changing identities or resetting the instance.
+The customer explicitly approved adding the internal service hostname `nextcloud` to the test
+instance's `trusted_domains` on 2026-11-09. It was added at index 3, preserving existing entries.
+The manual process was gracefully stopped before starting `mealshop-exapp-test-mealshop-1`
+with the same private secret, port and `/data/mealshop-nextcloud/mealshop` directory. The original
+Nextcloud Compose configuration was not modified. The image runs as the existing data owner,
+with a read-only root filesystem, no additional capabilities and `no-new-privileges`.
+
+Manage this deployment from the repository root using the private configuration:
+
+```sh
+docker compose --env-file var/nextcloud/compose.env -f deploy/nextcloud/compose.yaml ps
+docker compose --env-file var/nextcloud/compose.env -f deploy/nextcloud/compose.yaml restart mealshop
+```
+
+The manual startup helper remains available for development, but must not run concurrently
+against the same directory. Back up the Nextcloud registry/config and app data together before
+changing identities or resetting the instance. See F22 validation for restart and browser evidence.
 
 ## Repeatable checks
 
