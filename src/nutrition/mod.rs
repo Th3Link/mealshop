@@ -11,6 +11,10 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Serialize)]
 pub(crate) struct RecipeLine {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) part_id: Option<String>,
     pub(crate) ingredient_id: String,
     pub(crate) grams: Grams,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -23,6 +27,8 @@ impl<'de> Deserialize<'de> for RecipeLine {
         #[derive(Deserialize)]
         #[serde(deny_unknown_fields)]
         struct Input {
+            id: Option<String>,
+            part_id: Option<String>,
             ingredient_id: String,
             grams: Option<Grams>,
             quantity: Option<crate::quantities::Quantity>,
@@ -50,6 +56,8 @@ impl<'de> Deserialize<'de> for RecipeLine {
                 .ok_or_else(|| serde::de::Error::custom("quantity_required"))?
         };
         Ok(Self {
+            id: input.id,
+            part_id: input.part_id,
             ingredient_id: input.ingredient_id,
             grams,
             quantity: input.quantity,
@@ -101,6 +109,7 @@ pub(crate) struct NutrientResult {
 
 #[derive(Serialize)]
 pub(crate) struct Estimate {
+    constituents: Vec<crate::constituents::ResultRow>,
     catalogue_version: String,
     servings: u32,
     preparation: Preparation,
@@ -176,6 +185,7 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         warnings.push("Sources use different carbohydrate definitions. By-difference and available carbohydrate totals stay separate and may be partial; no inferred conversion is applied.");
     }
     Ok(Estimate {
+        constituents: crate::constituents::calculate(&ingredients, recipe.servings, 1, 1)?,
         catalogue_version: catalogue.version.clone(),
         servings: recipe.servings,
         preparation: recipe.preparation,
@@ -265,6 +275,8 @@ pub(crate) fn scaled_nutrition(
         .iter()
         .map(|&n| calculate_nutrient(n, &ingredients, target, target, original.servings))
         .collect::<Result<Vec<_>, _>>()?;
+    result.constituents =
+        crate::constituents::calculate(&ingredients, target, target, original.servings)?;
     result.servings = target;
     for ingredient in &mut result.ingredients {
         ingredient.grams.0 = ingredient.grams.0.scaled(target, original.servings)?;

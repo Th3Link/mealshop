@@ -3,7 +3,7 @@ import { computed, onMounted, ref, toRaw, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcTextField from './LabeledField.vue'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
@@ -17,11 +17,12 @@ import {
 } from './contracts'
 import type { Recipe } from './contracts'
 import { homes, useTask, loadCatalogue } from './state'
-import { exact, compactExact, locale, parseGrams, t } from './i18n'
-import { mdiPlus, mdiTrashCanOutline } from '@mdi/js'
+import { exact, locale, parseGrams, t } from './i18n'
+import { mdiPlus } from '@mdi/js'
 import Icon from './Icon.vue'
 import Nutrition from './Nutrition.vue'
-import RecipeQuantity from './RecipeQuantity.vue'
+import RecipeStructureEditor from './RecipeStructureEditor.vue'
+import RecipeContents from './RecipeContents.vue'
 import IngredientEditor from './IngredientEditor.vue'
 import { conversionsSchema } from './quantity-api'
 import type { LineDraft } from './quantity-api'
@@ -35,11 +36,19 @@ const catalogue = ref<z.infer<typeof catalogueSchema>>()
 const draft = ref<Recipe>()
 const conversions = ref<z.infer<typeof conversionsSchema>>({ entries: [] })
 const lineDrafts = ref<LineDraft[]>([])
-const creatingIngredient = ref<number | null>(null)
+const creatingIngredient = ref<{ index: number; name: string } | null>(null)
 async function ingredientCreated(id: string) {
-  const index = creatingIngredient.value
+  const index = creatingIngredient.value?.index
   catalogue.value = await loadCatalogue(home.value)
-  if (index !== null && lineDrafts.value[index]) lineDrafts.value[index].ingredient_id = id
+  const line = index === undefined ? undefined : lineDrafts.value[index]
+  if (line) {
+    line.ingredient_id = id
+    line.evidence = null
+    line.mode = 'manual'
+    line.density = ''
+    line.spoon = ''
+    line.invalidFields = []
+  }
   creatingIngredient.value = null
   dirty.value = true
 }
@@ -107,6 +116,7 @@ async function load() {
         preparation: 'as_recorded',
         lines: [],
         steps: [],
+        parts: [],
       }
       selected.value = undefined
     } else {
@@ -121,6 +131,8 @@ async function load() {
     }
     lineDrafts.value =
       draft.value?.lines.map((l) => ({
+        id: l.id ?? `line-${crypto.randomUUID()}`,
+        part_id: l.part_id ?? null,
         ingredient_id: l.ingredient_id,
         input: exact(l.quantity?.amount ?? l.grams),
         unit: l.quantity?.unit ?? 'g',
@@ -137,35 +149,6 @@ watch(() => [route.params.id, route.query.edit], load)
 onMounted(load)
 onBeforeRouteLeave(() => !dirty.value || window.confirm(t('unsaved')))
 onBeforeRouteUpdate(() => !dirty.value || window.confirm(t('unsaved')))
-function addLine() {
-  lineDrafts.value.push({
-    ingredient_id: '',
-    input: '1',
-    unit: 'g',
-    evidence: null,
-    mode: 'manual',
-    density: '',
-    spoon: '',
-    invalidFields: [],
-  })
-  dirty.value = true
-}
-function createIngredientLine() {
-  addLine()
-  creatingIngredient.value = lineDrafts.value.length - 1
-}
-function removeLine(index: number) {
-  lineDrafts.value.splice(index, 1)
-  dirty.value = true
-}
-function removeStep(index: number) {
-  draft.value?.steps.splice(index, 1)
-  dirty.value = true
-}
-function addStep() {
-  draft.value?.steps.push({ instruction: '', active_seconds: 0, passive_seconds: 0 })
-  dirty.value = true
-}
 function removeImage() {
   if (!draft.value) return
   draft.value.image_id = null
@@ -210,7 +193,12 @@ async function save() {
       return
     }
     if (line.unit === 'g' || line.unit === 'kg') {
-      lines.push({ ingredient_id: line.ingredient_id, quantity: { amount, unit: line.unit } })
+      lines.push({
+        id: line.id,
+        part_id: line.part_id,
+        ingredient_id: line.ingredient_id,
+        quantity: { amount, unit: line.unit },
+      })
       continue
     }
     const evidence = line.evidence ? structuredClone(toRaw(line.evidence)) : null
@@ -232,6 +220,8 @@ async function save() {
       evidence.millilitres_per_spoon = spoon
     }
     lines.push({
+      id: line.id,
+      part_id: line.part_id,
       ingredient_id: line.ingredient_id,
       quantity: { amount, unit: line.unit },
       conversion: evidence,
@@ -336,33 +326,8 @@ async function scale() {
       <h1 tabindex="-1">{{ selected ? t('edit') : t('newRecipe') }}</h1>
     </header>
     <NcNoteCard v-if="validation" type="error" role="alert">{{ validation }}</NcNoteCard>
-    <form class="narrow" @submit.prevent="save" @input="dirty = true" @change="dirty = true">
+    <form class="recipe-editor" @submit.prevent="save" @input="dirty = true" @change="dirty = true">
       <NcTextField v-model="draft.title" :label="t('title')" required maxlength="200" />
-      <NcTextField
-        v-model="draft.author"
-        :label="t('author')"
-        :helper-text="t('optional')"
-        maxlength="200"
-      />
-      <fieldset class="recipe-image-editor">
-        <legend>{{ t('image') }}</legend>
-        <img
-          v-if="draft.image_id"
-          :src="imageUrl(home, draft.image_id)"
-          :alt="draft.title"
-          class="recipe-image"
-        />
-        <label class="field"
-          >{{ t('image')
-          }}<input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            :disabled="busy"
-            @change="uploadImage"
-        /></label>
-        <p class="muted">{{ t('imageHelp') }}</p>
-        <NcButton v-if="draft.image_id" @click="removeImage">{{ t('removeImage') }}</NcButton>
-      </fieldset>
       <div class="form-row">
         <NcTextField
           v-model="draft.servings"
@@ -380,65 +345,58 @@ async function scale() {
           </select></label
         >
       </div>
-      <label class="field"
-        >{{ t('preparation')
-        }}<select v-model="draft.preparation">
-          <option value="as_recorded">{{ t('asRecorded') }}</option>
-          <option value="cooking_unmodelled">{{ t('cooking') }}</option>
-        </select></label
-      >
-      <h2>{{ t('lines') }}</h2>
-      <div v-for="(line, index) in lineDrafts" :key="index" class="recipe-ingredient-row">
-        <RecipeQuantity
-          :model-value="line"
-          @changed="dirty = true"
-          @update:model-value="lineDrafts[index] = $event"
-          :index="index"
-          :ingredients="catalogue?.ingredients ?? []"
-          :conversions="conversions"
-          :invalid="Boolean(validation)"
-        /><NcButton
-          variant="tertiary"
-          :aria-label="`${t('remove')} ${index + 1}`"
-          @click="removeLine(index)"
-          ><template #icon><Icon :path="mdiTrashCanOutline" /></template
-        ></NcButton>
-      </div>
-      <NcButton @click="createIngredientLine">{{ t('createInline') }}</NcButton>
-      <NcButton :disabled="lineDrafts.length >= 100" @click="addLine">{{ t('addLine') }}</NcButton>
-      <h2>{{ t('steps') }}</h2>
-      <div v-for="(step, index) in draft.steps" :key="index">
-        <label class="field"
-          >{{ index + 1 }}. {{ t('instruction')
-          }}<textarea v-model="step.instruction" required maxlength="4000" />
-        </label>
-        <div class="form-row">
+      <details class="editor-disclosure" :open="Boolean(draft.image_id || draft.author)">
+        <summary>{{ t('optionalDetails') }}</summary>
+        <div class="editor-fields">
           <NcTextField
-            v-model="step.active_seconds"
-            type="number"
-            :label="t('activeSeconds')"
-            min="0"
-            max="604800"
-            step="1"
-          /><NcTextField
-            v-model="step.passive_seconds"
-            type="number"
-            :label="t('passiveSeconds')"
-            min="0"
-            max="604800"
-            step="1"
+            v-model="draft.author"
+            :label="t('author')"
+            :helper-text="t('optional')"
+            maxlength="200"
           />
+          <fieldset class="recipe-image-editor">
+            <legend>{{ t('image') }}</legend>
+            <img
+              v-if="draft.image_id"
+              :src="imageUrl(home, draft.image_id)"
+              :alt="draft.title"
+              class="recipe-image"
+            />
+            <label class="field"
+              >{{ t('image')
+              }}<input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                :disabled="busy"
+                @change="uploadImage"
+            /></label>
+            <p class="muted">{{ t('imageHelp') }}</p>
+            <NcButton v-if="draft.image_id" @click="removeImage">{{ t('removeImage') }}</NcButton>
+          </fieldset>
+          <label class="field"
+            >{{ t('preparation')
+            }}<select v-model="draft.preparation">
+              <option value="as_recorded">{{ t('asRecorded') }}</option>
+              <option value="cooking_unmodelled">{{ t('cooking') }}</option>
+            </select></label
+          >
         </div>
-        <NcButton
-          :aria-label="`${t('remove')} ${t('instruction')} ${index + 1}`"
-          @click="removeStep(index)"
-          >{{ t('remove') }}</NcButton
-        >
+      </details>
+      <RecipeStructureEditor
+        v-if="catalogue"
+        v-model:recipe="draft"
+        v-model:lines="lineDrafts"
+        :catalogue="catalogue"
+        :conversions="conversions"
+        :invalid="Boolean(validation)"
+        @changed="dirty = true"
+        @create="(index, name) => (creatingIngredient = { index, name })"
+      />
+      <div class="editor-actions actions">
+        <NcButton variant="primary" type="submit" :disabled="busy || !writable">{{
+          t('save')
+        }}</NcButton>
       </div>
-      <NcButton :disabled="draft.steps.length >= 100" @click="addStep">{{ t('addStep') }}</NcButton>
-      <NcButton variant="primary" type="submit" :disabled="busy || !writable">{{
-        t('save')
-      }}</NcButton>
     </form>
   </template>
   <template v-else-if="selected">
@@ -460,8 +418,7 @@ async function scale() {
       :alt="selected.recipe.title"
       class="recipe-image"
     />
-    <section>
-      <h2>{{ t('lines') }}</h2>
+    <section class="recipe-display-controls">
       <label class="field"
         >{{ t('displayUnit')
         }}<select v-model="displayUnit" :aria-label="t('displayUnit')">
@@ -469,32 +426,8 @@ async function scale() {
           <option value="kg">kg</option>
         </select></label
       >
-      <ul class="plain-list">
-        <li v-for="(line, index) in scaledLines ?? selected.display_lines" :key="index">
-          {{ compactExact(line.amount) }} {{ line.unit }} ·
-          {{
-            selected.nutrition.ingredients.find((i) => i.ingredient_id === line.ingredient_id)
-              ?.name ?? line.ingredient_id
-          }}<small v-if="selected.recipe.lines[index]?.quantity">
-            · {{ t('originalInput') }}:
-            {{ exact(selected.recipe.lines[index]?.quantity?.amount ?? null) }}
-            {{ selected.recipe.lines[index]?.quantity?.unit }}</small
-          >
-        </li>
-      </ul>
     </section>
-    <section>
-      <h2>{{ t('steps') }}</h2>
-      <ol class="plain-list">
-        <li v-for="(step, index) in selected.recipe.steps" :key="index">
-          <p :lang="selected.recipe.language">{{ step.instruction }}</p>
-          <small
-            >{{ t('activeSeconds') }}: {{ step.active_seconds }} · {{ t('passiveSeconds') }}:
-            {{ step.passive_seconds }}</small
-          >
-        </li>
-      </ol>
-    </section>
+    <RecipeContents :record="selected" :lines="scaledLines ?? selected.display_lines" />
     <form class="inline-row" @submit.prevent="scale">
       <NcTextField
         v-model="previewCount"
@@ -511,6 +444,7 @@ async function scale() {
   <IngredientEditor
     v-if="creatingIngredient !== null && catalogue"
     :home="home"
+    :initial-name="creatingIngredient.name"
     :catalogue="catalogue"
     @close="creatingIngredient = null"
     @saved="ingredientCreated"

@@ -111,3 +111,11 @@ Only positive associations are recorded; omissions never assert absence. Cross-c
 product exceptions, thresholds and complete brand composition are not inferred. Source coverage
 can be expanded without relaxing the review-required behaviour. Run
 `python3 scripts/verify_allergens.py` to validate registry/selection identity and provenance fields.
+
+## Organizational groups
+
+`ingredient-groups.json` is project-authored discovery metadata mapping all bundled IDs to 73 bilingual
+groups. It supplies no nutrient, allergy or health data and never replaces frozen source records.
+`python3 scripts/verify_catalogue.py` checks complete and unique coverage alongside the original
+source verifier. `intolerance-triggers.json` is a separate explicit-declaration vocabulary; it is not
+part of the regulated fourteen-allergen positive-identity mapping.

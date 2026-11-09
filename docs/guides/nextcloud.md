@@ -264,3 +264,48 @@ both the effective values and group record, so editing a group changes future ca
 Existing readers remain read-only and all writes keep revision checks and private atomic persistence.
 Back up the whole private data directory before upgrading; a downgrade must use the matching backup
 because older versions do not understand the added organization fields.
+
+
+### Comfortable authoring and optional constituents (F26)
+
+Ingredient creation is offered directly in recipe search results and prefills the searched name. It
+returns to the same quantity row; cancelling or closing a changed dialog requires an explicit discard.
+Compound spellings such as Haferflocken/Hafer Flocken match without substituting another food identity.
+Native selectors retain complete accessible names and the household switcher wraps its selected name.
+
+Own profiles optionally contain `nutrition.constituents`, keyed by stable constituent ID. Each entry has
+`name`, optional `translations`, `unit` (`g`, `mg`, `µg`) and nullable exact `amount` per 100 g. They share
+the profile's required evidence note and optional source URL. Inherited profiles include these declarations.
+The effective ingredient snapshot exposes `constituents`. Saved recipe and serving-estimate responses expose a separate
+`constituents` array with total, per-serving value, known subtotals, status and missing ingredient IDs.
+Unknown is never converted into zero. Built-in beta-glucan/soluble fibre amounts remain readable through
+legacy nutrient keys for existing API/demo callers, but native nutrient entry/results present them as
+optional constituents. No constituent amount or health effect is inferred from another nutrient.
+
+`organization.intolerance_triggers` accepts `sorbitol`. The separate trigger registry is returned alongside
+`groups` as `intolerance_triggers` from the existing allergen API. Selecting a trigger in a profile writes
+its canonical ID to `intolerances`. Explicit presence blocks affected attendees using current and pinned
+composition. The regulated fourteen-allergen data remains unchanged; unselected triggers do not assert
+absence. Back up private data before upgrading and use matching backups for downgrades.
+
+
+### Full catalogue organization (F27)
+
+The versioned `data/ingredient-groups.json` maps all 313 bundled IDs into 73 bilingual organizational
+groups. `python3 scripts/verify_catalogue.py` also verifies this mapping's complete and unique coverage.
+Existing wheat/rye/spelt flour group IDs are retained. Source identities, names, quantities, nutrients and
+allergen mappings remain unchanged; organizational groups start with unknown nutrient values and no
+health declarations. Household overrides may move/ungroup records as before. Historical snapshots are
+not rewritten. Custom replacement catalogues only receive groups for mapped IDs actually present.
+
+Malformed or colliding organizational metadata fails startup. Group metadata is validated separately
+from a custom catalogue's source payload, preserving the existing bounded snapshot-publication checks.
+
+Older organization payloads preserve constituent and intolerance fields they do not know about.
+Explicit empty `constituents: {}` / `intolerance_triggers: []` clears these fields. Favourite changes
+without a semantic dietary change keep the existing review version. This protects already-open older
+clients from silently removing new declarations.
+
+Group reverse lookup includes recipes using current group members as well as pinned historical
+composition/group references, so recipes created before grouping remain discoverable without rewriting
+their source snapshots.

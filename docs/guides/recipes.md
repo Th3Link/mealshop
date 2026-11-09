@@ -104,3 +104,18 @@ Recipe detail and serving-preview GET requests accept optional `display_unit=g|k
 `display_lines` response contains server-formatted mass amounts and units. Kilograms retain up
 to nine fractional digits to represent normalized micrograms without rounding. This presentation
 does not change the stored source quantity, six-place input bound or nutrient calculation.
+
+
+## Recipe parts and step associations (F26)
+
+Recipes optionally contain `parts: [{ id, name, uses_parts? }]`. Ingredient lines may have stable `id`
+and nullable `part_id`; steps may have `part_id`, `ingredient_line_ids` and `prepared_parts`.
+References use IDs, never array positions or translated names. A maximum of 30 named parts is accepted.
+Unknown/duplicate references and part dependency cycles fail before saving. A step's prepared-part
+references also participate in cycle checks. The native editor moves removed parts' lines/steps to the
+main recipe and clears references after confirmation.
+
+Parts organize one flat ingredient list. Nutrition, serving previews, shopping requirements and dietary
+checks count each measured ingredient line once. They do not infer the yield of an empty part or create
+a parallel cooking schedule. Saved records pin all associations and source values; older flat records
+remain supported. Current APIs do not link independently saved recipes as nested references.

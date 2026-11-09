@@ -1,6 +1,7 @@
 //! Mealshop ingredient catalogue and nutrition HTTP application.
 
 mod api;
+mod constituents;
 pub mod exapp;
 mod household;
 mod ingredient_api;
@@ -12,6 +13,7 @@ mod planning;
 mod quantities;
 mod recipe_api;
 mod recipe_images;
+mod recipe_structure;
 mod recipes;
 
 /// Builds the application with the bundled, versioned starter catalogue.
@@ -47,7 +49,7 @@ pub fn router_with_recipe_directory(
 ) -> Result<axum::Router, String> {
     let catalogue = nutrition::catalogue::Catalogue::from_json(json)?;
     let store = recipes::Store::open(directory.as_ref())?;
-    Ok(api::router(catalogue.clone()).merge(recipe_api::router(catalogue, store)))
+    Ok(api::router(catalogue.clone()).merge(recipe_api::router(catalogue, store)?))
 }
 
 /// Project documentation published together with the API reference.

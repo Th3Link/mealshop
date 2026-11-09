@@ -69,6 +69,12 @@ pub(crate) struct IngredientText {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Ingredient {
+    #[serde(
+        default,
+        skip_serializing_if = "BTreeMap::is_empty",
+        deserialize_with = "crate::constituents::unique"
+    )]
+    pub(crate) constituents: BTreeMap<String, crate::constituents::Declaration>,
     #[serde(default)]
     pub(crate) organization: crate::ingredient_groups::Organization,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -158,6 +164,7 @@ impl Catalogue {
             }
         }
         result.validate_composition()?;
+        crate::constituents::validate(&result)?;
         Ok(result)
     }
     pub(crate) fn closure(&self, ids: &BTreeSet<String>) -> BTreeSet<String> {

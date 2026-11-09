@@ -98,3 +98,6 @@ for record in catalogue["ingredients"]:
         if name not in expected:
             assert reading["amount"] is None, (record["id"], name, "unsourced value")
 print(f"Verified {len(catalogue['ingredients'])} English-base ingredients, {profiles} source profiles, {identities} identity-only records and {values} mapped nutrient values.")
+
+from verify_ingredient_groups import verify as verify_groups
+verify_groups()

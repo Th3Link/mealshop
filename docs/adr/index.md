@@ -22,3 +22,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0012: native Nextcloud client and shared household boundary](0012-nextcloud-shared-households.md)
 
 - [0013: Household ingredient declarations and recipe images](0013-household-ingredients-and-images.md)
+
+- [0014: Recipe-owned parts and optional constituents](0014-recipe-parts-and-constituents.md)

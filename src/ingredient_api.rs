@@ -163,13 +163,36 @@ async fn recipes(
         return household::denied();
     }
     tokio::task::spawn_blocking(move || {
+        let ingredient_ids = {
+            let Ok(store) = state.catalogue.lock() else {
+                return failure("ingredient_storage_failed");
+            };
+            let catalogue = store.catalogue();
+            let mut ids = std::collections::BTreeSet::from([id.clone()]);
+            if catalogue
+                .find(&id)
+                .is_some_and(|item| item.organization.is_group)
+            {
+                ids.extend(
+                    catalogue
+                        .ingredients
+                        .iter()
+                        .filter(|item| item.organization.group_id.as_deref() == Some(id.as_str()))
+                        .map(|item| item.id.clone()),
+                );
+            }
+            ids
+        };
         let Some(recipes) = &state.recipes else {
             return household::reply(StatusCode::OK, json!({"recipes":[]}));
         };
         let Ok(recipes) = recipes.lock() else {
             return failure("ingredient_storage_failed");
         };
-        household::reply(StatusCode::OK, json!({"recipes":recipes.containing(&id)}))
+        household::reply(
+            StatusCode::OK,
+            json!({"recipes":recipes.containing(&ingredient_ids)}),
+        )
     })
     .await
     .unwrap_or_else(|_| failure("ingredient_storage_failed"))

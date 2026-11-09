@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcTextField from './LabeledField.vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
@@ -12,9 +12,10 @@ import type { Ingredient } from './contracts'
 import { homes, useTask, loadCatalogue } from './state'
 import { exact, locale, t, allergenName } from './i18n'
 import { api, domain } from './api'
+import { foldSearch } from './ingredient-search'
 import IngredientEditor from './IngredientEditor.vue'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
-import { mdiPlus, mdiStar, mdiStarOutline } from '@mdi/js'
+import { mdiPlus, mdiStar, mdiStarOutline, mdiChevronRight, mdiChevronDown } from '@mdi/js'
 import Icon from './Icon.vue'
 const route = useRoute(),
   router = useRouter()
@@ -125,7 +126,7 @@ const filtered = computed(() => {
         ]
           .join(' ')
           .toLocaleLowerCase()
-        return terms.every((term) => text.includes(term))
+        return terms.every((term) => foldSearch(text).includes(foldSearch(term)))
       })
       .sort((a, b) => {
         const parent = (i: Ingredient) =>
@@ -138,6 +139,17 @@ const filtered = computed(() => {
       }) ?? []
   )
 })
+const foodCount = computed(() =>
+  query.value.trim()
+    ? filtered.value.filter((i) => !i.organization.is_group).length
+    : (data.value?.ingredients.filter(
+        (i) =>
+          !i.organization.is_group &&
+          (showArchived.value || !i.archived) &&
+          (!favoritesOnly.value || i.favorite),
+      ).length ?? 0),
+)
+const groupCount = computed(() => filtered.value.filter((i) => i.organization.is_group).length)
 async function load() {
   await run(async () => {
     data.value = await loadCatalogue(String(route.params.home))
@@ -173,7 +185,9 @@ onMounted(load)
         :trailing-button-label="t('clearSearch')"
         @trailing-button-click="query = ''"
       />
-      <p v-if="data" role="status">{{ filtered.length }} {{ t('results') }}</p>
+      <p v-if="data" role="status">
+        {{ t('ingredients') }}: {{ foodCount }} · {{ t('ingredientGroups') }}: {{ groupCount }}
+      </p>
     </div>
   </template>
   <NcNoteCard v-if="error" type="error" role="alert"
@@ -209,6 +223,9 @@ onMounted(load)
       <p>
         {{ t('dietClass') }}: {{ t(selected.organization.diet) }} · {{ t('originClass') }}:
         {{ t(selected.organization.origin) }}
+      </p>
+      <p v-if="selected.organization.intolerance_triggers.length">
+        {{ t('intoleranceTriggers') }}: {{ t('sorbitol') }}
       </p>
       <p v-if="selected.nutrition_inherited_from">
         {{ t('inheritedFrom') }}:
@@ -278,7 +295,10 @@ onMounted(load)
               </tr>
             </thead>
             <tbody>
-              <tr v-for="nutrient in data.nutrient_definitions" :key="nutrient.id">
+              <tr
+                v-for="nutrient in data.nutrient_definitions.filter((n) => n.group !== 'component')"
+                :key="nutrient.id"
+              >
                 <th scope="row" lang="en">
                   {{ nutrient.label }} <small>{{ nutrient.unit }}</small>
                 </th>
@@ -288,6 +308,14 @@ onMounted(load)
               </tr>
             </tbody>
           </table>
+          <template v-if="Object.keys(selected.constituents).length"
+            ><h3>{{ t('foodConstituents') }}</h3>
+            <ul class="plain-list">
+              <li v-for="(c, id) in selected.constituents" :key="id">
+                {{ c.translations[locale] ?? c.name }}: {{ exact(c.amount) }} {{ c.unit }} / 100 g
+              </li>
+            </ul></template
+          >
         </section>
         <section>
           <h2>{{ t('source') }}</h2>
@@ -357,10 +385,13 @@ onMounted(load)
           v-for="item in filtered"
           :key="item.id"
           class="ingredient-list-row"
-          :class="{ subtype: item.organization.group_id }"
+          :class="{
+            subtype: item.organization.group_id,
+            'ingredient-group-row': item.organization.is_group,
+          }"
         >
           <NcButton
-            v-if="item.organization.is_group"
+            v-if="item.organization.is_group && !query.trim()"
             variant="tertiary"
             :aria-expanded="expandedGroups.includes(item.id)"
             :aria-label="`${name(item)}: ${t('subtypes')}`"
@@ -369,18 +400,29 @@ onMounted(load)
                 ? expandedGroups.filter((id) => id !== item.id)
                 : [...expandedGroups, item.id]
             "
-            >{{ t('subtypes') }}
-            {{
-              data.ingredients.filter((i) => i.organization.group_id === item.id).length
-            }}</NcButton
-          >
+            ><template #icon
+              ><Icon
+                :path="
+                  expandedGroups.includes(item.id) ? mdiChevronDown : mdiChevronRight
+                " /></template
+          ></NcButton>
           <RouterLink
+            :aria-label="item.organization.is_group ? name(item) : undefined"
             :to="{ path: `/h/${route.params.home}/ingredients/${item.id}`, query: route.query }"
             ><div>
-              <strong>{{ name(item) }}</strong
-              ><span>{{ form(item) }}</span>
+              <strong
+                >{{ name(item)
+                }}<small
+                  v-if="item.organization.is_group"
+                  class="ingredient-group-count"
+                  aria-hidden="true"
+                  >{{
+                    data.ingredients.filter((i) => i.organization.group_id === item.id).length
+                  }}</small
+                ></strong
+              ><span v-if="!item.organization.is_group">{{ form(item) }}</span>
             </div>
-            <span class="source-label"
+            <span v-if="!item.organization.is_group" class="source-label"
               >{{ item.source.name }} <small>{{ item.source.record_id }}</small></span
             ></RouterLink
           >

@@ -1,0 +1,1267 @@
+{
+  "version": "kitchen-organization-1",
+  "groups": [
+    {
+      "id": "custom-group-wheat-flour",
+      "name": "Wheat flour",
+      "translations": {
+        "de": {
+          "name": "Weizenmehl",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "wheat-wholemeal-flour",
+        "wheat-flour-type-812",
+        "wheat-flour-type-1050",
+        "wheat-flour-type-1600",
+        "wheat-flour-type-405",
+        "wheat-flour-type-550"
+      ]
+    },
+    {
+      "id": "custom-group-rye-flour",
+      "name": "Rye flour",
+      "translations": {
+        "de": {
+          "name": "Roggenmehl",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "rye-wholemeal-flour",
+        "rye-flour-type-815",
+        "rye-flour-type-997",
+        "rye-flour-type-1150",
+        "rye-flour-type-1370",
+        "rye-flour-type-1740"
+      ]
+    },
+    {
+      "id": "custom-group-spelt-flour",
+      "name": "Spelt flour",
+      "translations": {
+        "de": {
+          "name": "Dinkelmehl",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "spelt-wholemeal-flour",
+        "spelt-flour-type-630",
+        "spelt-flour-type-812",
+        "spelt-flour-type-1050"
+      ]
+    },
+    {
+      "id": "custom-group-oats",
+      "name": "Oats and oat products",
+      "translations": {
+        "de": {
+          "name": "Hafer und Haferprodukte",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "oats",
+        "oat-flour",
+        "oat-flakes"
+      ]
+    },
+    {
+      "id": "custom-group-rice",
+      "name": "Rice",
+      "translations": {
+        "de": {
+          "name": "Reis",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "rice-flour",
+        "rice-white-dry",
+        "rice-brown-dry",
+        "rice-parboiled-dry",
+        "rice-white-cooked",
+        "rice-brown-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-quinoa",
+      "name": "Quinoa",
+      "translations": {
+        "de": {
+          "name": "Quinoa",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "quinoa-white-dry",
+        "quinoa-tricolour-dry",
+        "quinoa-white-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-semolina",
+      "name": "Semolina",
+      "translations": {
+        "de": {
+          "name": "Grieß",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "durum-semolina",
+        "durum-wholemeal-semolina",
+        "soft-wheat-semolina",
+        "rye-semolina",
+        "spelt-semolina",
+        "maize-semolina",
+        "rice-semolina"
+      ]
+    },
+    {
+      "id": "custom-group-bulgur-couscous",
+      "name": "Bulgur and couscous",
+      "translations": {
+        "de": {
+          "name": "Bulgur und Couscous",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "bulgur-dry",
+        "couscous-dry",
+        "bulgur-cooked",
+        "couscous-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-legume-flours",
+      "name": "Legume flours",
+      "translations": {
+        "de": {
+          "name": "Hülsenfruchtmehle",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "chickpea-flour",
+        "pea-flour",
+        "lentil-flour",
+        "lupin-flour",
+        "soy-flour-full-fat"
+      ]
+    },
+    {
+      "id": "custom-group-other-flours",
+      "name": "Other flours",
+      "translations": {
+        "de": {
+          "name": "Weitere Mehle",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "durum-wholemeal-flour",
+        "einkorn-wholemeal-flour",
+        "emmer-wholemeal-flour",
+        "barley-flour",
+        "maize-flour",
+        "buckwheat-wholemeal-flour",
+        "buckwheat-flour",
+        "millet-flour"
+      ]
+    },
+    {
+      "id": "custom-group-cereal-grains",
+      "name": "Cereal grains",
+      "translations": {
+        "de": {
+          "name": "Getreidekörner",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "wheat-grain-raw",
+        "rye-grain-raw",
+        "spelt-grain-raw"
+      ]
+    },
+    {
+      "id": "custom-group-seeds-fibre",
+      "name": "Seeds and fibre ingredients",
+      "translations": {
+        "de": {
+          "name": "Saaten und Ballaststoffzutaten",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "chia",
+        "psyllium-husks",
+        "flaxseed",
+        "sesame-seed",
+        "sunflower-seed",
+        "pumpkin-seed"
+      ]
+    },
+    {
+      "id": "custom-group-nuts-spreads",
+      "name": "Nuts, coconut and nut spreads",
+      "translations": {
+        "de": {
+          "name": "Nüsse, Kokos und Nussmus",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "almonds",
+        "almonds-blanched",
+        "almond-butter",
+        "walnuts",
+        "hazelnuts",
+        "cashews",
+        "peanuts-roasted",
+        "peanut-butter-pure",
+        "peanut-butter-spread",
+        "coconut-desiccated"
+      ]
+    },
+    {
+      "id": "custom-group-butter",
+      "name": "Butter and clarified butter",
+      "translations": {
+        "de": {
+          "name": "Butter und Butterschmalz",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "butter-cheese-45-fat-dry-matter",
+        "butter-mildly-soured",
+        "butter-sweet-cream",
+        "butter-sour-cream",
+        "butter-salted",
+        "clarified-butter"
+      ]
+    },
+    {
+      "id": "custom-group-margarine",
+      "name": "Margarine",
+      "translations": {
+        "de": {
+          "name": "Margarine",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "margarine-full-fat-fortified",
+        "margarine-half-fat-fortified",
+        "margarine-three-quarter-fat-fortified",
+        "sunflower-margarine-full-fat"
+      ]
+    },
+    {
+      "id": "custom-group-oils",
+      "name": "Oils",
+      "translations": {
+        "de": {
+          "name": "Öle",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "olive-oil",
+        "rapeseed-oil",
+        "sunflower-oil",
+        "coconut-oil",
+        "sesame-oil"
+      ]
+    },
+    {
+      "id": "custom-group-sweeteners",
+      "name": "Sugar and sweeteners",
+      "translations": {
+        "de": {
+          "name": "Zucker und Süßungsmittel",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "sugar-white",
+        "sugar-brown",
+        "xylitol-powder",
+        "erythritol"
+      ]
+    },
+    {
+      "id": "custom-group-starches",
+      "name": "Starches",
+      "translations": {
+        "de": {
+          "name": "Stärke",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "potato-starch",
+        "rice-starch"
+      ]
+    },
+    {
+      "id": "custom-group-salt",
+      "name": "Salt",
+      "translations": {
+        "de": {
+          "name": "Salz",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "table-salt",
+        "table-salt-iodised"
+      ]
+    },
+    {
+      "id": "custom-group-baking-agents",
+      "name": "Yeast and baking agents",
+      "translations": {
+        "de": {
+          "name": "Hefe und Backtriebmittel",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "baking-powder",
+        "nutritional-yeast-flakes",
+        "baking-soda",
+        "bakers-yeast-fresh",
+        "bakers-yeast-active-dry"
+      ]
+    },
+    {
+      "id": "custom-group-vinegar",
+      "name": "Vinegars",
+      "translations": {
+        "de": {
+          "name": "Essig",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "apple-cider-vinegar",
+        "spirit-vinegar",
+        "balsamic-vinegar"
+      ]
+    },
+    {
+      "id": "custom-group-cocoa",
+      "name": "Cocoa",
+      "translations": {
+        "de": {
+          "name": "Kakao",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "cocoa-powder-partly-defatted",
+        "cocoa-powder-strongly-defatted"
+      ]
+    },
+    {
+      "id": "custom-group-water",
+      "name": "Water",
+      "translations": {
+        "de": {
+          "name": "Wasser",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "drinking-water"
+      ]
+    },
+    {
+      "id": "custom-group-milk",
+      "name": "Milk",
+      "translations": {
+        "de": {
+          "name": "Milch",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "milk-skimmed-pasteurised",
+        "milk-1-5-pasteurised",
+        "milk-3-5-pasteurised",
+        "milk-skimmed-uht",
+        "milk-1-5-uht",
+        "milk-3-5-uht",
+        "milk-skimmed-lactose-free-pasteurised",
+        "milk-1-5-lactose-free-pasteurised",
+        "milk-3-5-lactose-free-pasteurised",
+        "milk-skimmed-lactose-free-uht",
+        "milk-1-5-lactose-free-uht",
+        "milk-3-5-lactose-free-uht"
+      ]
+    },
+    {
+      "id": "custom-group-quark",
+      "name": "Quark",
+      "translations": {
+        "de": {
+          "name": "Quark",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "quark-low-fat",
+        "quark-10-fat-dry-matter",
+        "quark-20-fat-dry-matter",
+        "quark-40-fat-dry-matter",
+        "quark-50-fat-dry-matter",
+        "quark-double-cream-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-cream",
+      "name": "Cream and sour cream",
+      "translations": {
+        "de": {
+          "name": "Sahne und Sauerrahm",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "whipping-cream-30",
+        "whipping-cream-36",
+        "sour-cream-10",
+        "sour-cream-20",
+        "creme-fraiche-30",
+        "creme-fraiche-40"
+      ]
+    },
+    {
+      "id": "custom-group-cultured-dairy",
+      "name": "Yogurt and cultured milk",
+      "translations": {
+        "de": {
+          "name": "Joghurt und gesäuerte Milchprodukte",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "skyr-plain",
+        "buttermilk",
+        "yogurt-skimmed-plain",
+        "yogurt-low-fat-plain",
+        "yogurt-whole-milk-plain",
+        "yogurt-whole-milk-lactose-free",
+        "yogurt-low-fat-lactose-free"
+      ]
+    },
+    {
+      "id": "custom-group-dairy-protein-desserts",
+      "name": "Dairy protein desserts",
+      "translations": {
+        "de": {
+          "name": "Protein-Milchdesserts",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "protein-pudding-unspecified",
+        "protein-yogurt-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-milk-whey-powders",
+      "name": "Milk and whey powders",
+      "translations": {
+        "de": {
+          "name": "Milch- und Molkenpulver",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "whole-milk-powder",
+        "sweet-whey-powder"
+      ]
+    },
+    {
+      "id": "custom-group-oat-drinks",
+      "name": "Oat drinks",
+      "translations": {
+        "de": {
+          "name": "Haferdrinks",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "oat-drink-unsweetened",
+        "oat-drink-unsweetened-fortified",
+        "oat-drink-sweetened-flavoured-fortified"
+      ]
+    },
+    {
+      "id": "custom-group-almond-drinks",
+      "name": "Almond drinks",
+      "translations": {
+        "de": {
+          "name": "Mandeldrinks",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "almond-drink-unsweetened",
+        "almond-drink-unsweetened-fortified",
+        "almond-drink-sweetened-flavoured-fortified"
+      ]
+    },
+    {
+      "id": "custom-group-soy-drinks",
+      "name": "Soy drinks",
+      "translations": {
+        "de": {
+          "name": "Sojadrinks",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "soy-drink-unsweetened",
+        "soy-drink-unsweetened-fortified",
+        "soy-drink-sweetened-flavoured"
+      ]
+    },
+    {
+      "id": "custom-group-rice-drinks",
+      "name": "Rice drinks",
+      "translations": {
+        "de": {
+          "name": "Reisdrinks",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "rice-drink-unsweetened",
+        "rice-drink-unsweetened-fortified"
+      ]
+    },
+    {
+      "id": "custom-group-coconut-milk",
+      "name": "Coconut milk",
+      "translations": {
+        "de": {
+          "name": "Kokosmilch",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "coconut-milk"
+      ]
+    },
+    {
+      "id": "custom-group-gouda",
+      "name": "Gouda",
+      "translations": {
+        "de": {
+          "name": "Gouda",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "gouda-48-fat-dry-matter",
+        "gouda-30-fat-dry-matter",
+        "gouda-40-fat-dry-matter"
+      ]
+    },
+    {
+      "id": "custom-group-edam",
+      "name": "Edam",
+      "translations": {
+        "de": {
+          "name": "Edamer",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "edam-30-fat-dry-matter",
+        "edam-45-fat-dry-matter"
+      ]
+    },
+    {
+      "id": "custom-group-mozzarella",
+      "name": "Mozzarella",
+      "translations": {
+        "de": {
+          "name": "Mozzarella",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "mozzarella-45-fat-dry-matter",
+        "mozzarella-20-fat-dry-matter"
+      ]
+    },
+    {
+      "id": "custom-group-cottage-cheese",
+      "name": "Cottage cheese",
+      "translations": {
+        "de": {
+          "name": "Körniger Frischkäse",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "cottage-cheese-low-fat",
+        "cottage-cheese-20-fat-dry-matter"
+      ]
+    },
+    {
+      "id": "custom-group-cream-cheese",
+      "name": "Cream cheese",
+      "translations": {
+        "de": {
+          "name": "Frischkäse",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "cream-cheese-low-fat",
+        "cream-cheese-40-fat-dry-matter",
+        "cream-cheese-45-fat-dry-matter",
+        "cream-cheese-50-fat-dry-matter",
+        "cream-cheese-60-fat-dry-matter",
+        "goat-cream-cheese-45-fat-dry-matter",
+        "sheep-cream-cheese-45-fat-dry-matter"
+      ]
+    },
+    {
+      "id": "custom-group-brie-camembert",
+      "name": "Brie and Camembert",
+      "translations": {
+        "de": {
+          "name": "Brie und Camembert",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "brie-45-fat-dry-matter",
+        "brie-60-fat-dry-matter",
+        "camembert-45-fat-dry-matter",
+        "camembert-60-fat-dry-matter"
+      ]
+    },
+    {
+      "id": "custom-group-cheese-varieties",
+      "name": "Other cheese varieties",
+      "translations": {
+        "de": {
+          "name": "Weitere Käsesorten",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "emmental-45-fat-dry-matter",
+        "mountain-cheese-45-fat-dry-matter",
+        "mountain-cheese-50-fat-dry-matter",
+        "cheddar-45-fat-dry-matter",
+        "cheddar-50-fat-dry-matter",
+        "parmesan-30-fat-dry-matter",
+        "feta-45-fat-dry-matter",
+        "gorgonzola-48-fat-dry-matter",
+        "halloumi",
+        "ricotta-45-fat-dry-matter",
+        "sour-milk-cheese-low-fat"
+      ]
+    },
+    {
+      "id": "custom-group-lentils",
+      "name": "Lentils",
+      "translations": {
+        "de": {
+          "name": "Linsen",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "lentils-dry",
+        "red-lentils-dry",
+        "lentils-cooked",
+        "red-lentils-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-peas",
+      "name": "Peas",
+      "translations": {
+        "de": {
+          "name": "Erbsen",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "peas-green-raw",
+        "peas-green-frozen",
+        "peas-green-cooked",
+        "peas-mature-dry",
+        "peas-mature-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-chickpeas",
+      "name": "Chickpeas",
+      "translations": {
+        "de": {
+          "name": "Kichererbsen",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "chickpeas-dry",
+        "chickpeas-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-soybeans",
+      "name": "Soybeans and edamame",
+      "translations": {
+        "de": {
+          "name": "Sojabohnen und Edamame",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "edamame-raw",
+        "soybeans-dry",
+        "soybeans-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-green-beans",
+      "name": "Green beans",
+      "translations": {
+        "de": {
+          "name": "Grüne Bohnen",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "green-beans-raw",
+        "green-beans-frozen",
+        "green-beans-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-tofu",
+      "name": "Tofu",
+      "translations": {
+        "de": {
+          "name": "Tofu",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "tofu",
+        "tofu-firm-calcium-magnesium",
+        "tofu-soft-calcium-magnesium",
+        "tofu-extra-firm-nigari",
+        "tofu-smoked-unspecified",
+        "tofu-silken-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-seitan",
+      "name": "Seitan",
+      "translations": {
+        "de": {
+          "name": "Seitan",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "seitan"
+      ]
+    },
+    {
+      "id": "custom-group-protein-bars",
+      "name": "Protein bars",
+      "translations": {
+        "de": {
+          "name": "Proteinriegel",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "protein-bar-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-protein-powders",
+      "name": "Protein powders",
+      "translations": {
+        "de": {
+          "name": "Proteinpulver",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "soy-protein-isolate",
+        "whey-protein-powder-usda-reference",
+        "whey-protein-isolate-usda-reference",
+        "soy-protein-concentrate-alcohol-extracted",
+        "pea-protein-isolate-unspecified",
+        "pea-protein-concentrate-unspecified",
+        "whey-protein-concentrate-unspecified",
+        "whey-protein-isolate-unspecified",
+        "casein-protein-unspecified",
+        "rice-protein-unspecified",
+        "hemp-protein-unspecified",
+        "vegan-protein-blend-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-peppers",
+      "name": "Peppers",
+      "translations": {
+        "de": {
+          "name": "Paprika",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "pepper-green-raw",
+        "pepper-red-raw",
+        "pepper-yellow-raw"
+      ]
+    },
+    {
+      "id": "custom-group-tomatoes",
+      "name": "Tomatoes and tomato products",
+      "translations": {
+        "de": {
+          "name": "Tomaten und Tomatenprodukte",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "tomato-raw",
+        "tomato-passata",
+        "tomatoes-peeled-canned",
+        "tomato-paste",
+        "tomatoes-chopped-canned-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-potatoes",
+      "name": "Potatoes",
+      "translations": {
+        "de": {
+          "name": "Kartoffeln",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "potato-peeled-raw",
+        "potato-unpeeled-raw",
+        "potato-peeled-cooked",
+        "potato-unpeeled-cooked",
+        "potato-unpeeled-baked"
+      ]
+    },
+    {
+      "id": "custom-group-beetroot",
+      "name": "Beetroot",
+      "translations": {
+        "de": {
+          "name": "Rote Bete",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "beetroot-raw",
+        "beetroot-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-onions-garlic",
+      "name": "Onions and garlic",
+      "translations": {
+        "de": {
+          "name": "Zwiebeln und Knoblauch",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "spring-onion-raw",
+        "onion-raw",
+        "shallot-raw",
+        "garlic-raw"
+      ]
+    },
+    {
+      "id": "custom-group-vegetables",
+      "name": "Other vegetables",
+      "translations": {
+        "de": {
+          "name": "Weiteres Gemüse",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "zucchini-raw",
+        "cucumber-raw",
+        "spinach-raw",
+        "broccoli-raw",
+        "aubergine-raw",
+        "carrot-raw",
+        "sugar-snap-peas-raw",
+        "parsley-root-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-eggs",
+      "name": "Eggs",
+      "translations": {
+        "de": {
+          "name": "Eier",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "egg-whole-raw",
+        "egg-yolk-raw",
+        "egg-white-raw",
+        "egg-whole-boiled",
+        "egg-white-dried"
+      ]
+    },
+    {
+      "id": "custom-group-chicken",
+      "name": "Chicken",
+      "translations": {
+        "de": {
+          "name": "Hähnchen",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "chicken-breast-fillet-raw",
+        "chicken-meat-skinless-raw",
+        "chicken-thigh-with-skin-raw",
+        "chicken-drumstick-with-skin-raw",
+        "chicken-wings-with-skin-raw",
+        "chicken-breast-fillet-roasted",
+        "chicken-breast-fillet-boiled"
+      ]
+    },
+    {
+      "id": "custom-group-rice-noodles",
+      "name": "Rice noodles",
+      "translations": {
+        "de": {
+          "name": "Reisnudeln",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "rice-noodles-dry",
+        "rice-noodles-cooked"
+      ]
+    },
+    {
+      "id": "custom-group-glass-noodles",
+      "name": "Glass noodles",
+      "translations": {
+        "de": {
+          "name": "Glasnudeln",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "mung-bean-starch-glass-noodles-dry"
+      ]
+    },
+    {
+      "id": "custom-group-rice-paper",
+      "name": "Rice paper",
+      "translations": {
+        "de": {
+          "name": "Reispapier",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "rice-paper-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-pasta",
+      "name": "Pasta",
+      "translations": {
+        "de": {
+          "name": "Nudeln",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "pasta-egg-free-dry",
+        "pasta-wholemeal-egg-free-dry",
+        "pasta-gluten-free-egg-free-dry",
+        "pasta-egg-free-cooked",
+        "pasta-wholemeal-egg-free-cooked",
+        "pasta-gluten-free-egg-free-cooked",
+        "pasta-durum-wheat-unspecified",
+        "pasta-lentil-dry-unspecified",
+        "pasta-chickpea-dry-unspecified",
+        "pasta-pea-dry-unspecified",
+        "pasta-spelt-dry-unspecified",
+        "pasta-wholemeal-spelt-dry-unspecified",
+        "pasta-rice-maize-dry-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-basil",
+      "name": "Basil",
+      "translations": {
+        "de": {
+          "name": "Basilikum",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "basil-fresh",
+        "basil-dried"
+      ]
+    },
+    {
+      "id": "custom-group-parsley",
+      "name": "Parsley",
+      "translations": {
+        "de": {
+          "name": "Petersilie",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "parsley-fresh",
+        "parsley-dried"
+      ]
+    },
+    {
+      "id": "custom-group-chives",
+      "name": "Chives",
+      "translations": {
+        "de": {
+          "name": "Schnittlauch",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "chives-fresh",
+        "chives-dried"
+      ]
+    },
+    {
+      "id": "custom-group-dill",
+      "name": "Dill",
+      "translations": {
+        "de": {
+          "name": "Dill",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "dill-fresh",
+        "dill-dried"
+      ]
+    },
+    {
+      "id": "custom-group-thyme",
+      "name": "Thyme",
+      "translations": {
+        "de": {
+          "name": "Thymian",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "thyme-fresh",
+        "thyme-dried"
+      ]
+    },
+    {
+      "id": "custom-group-rosemary",
+      "name": "Rosemary",
+      "translations": {
+        "de": {
+          "name": "Rosmarin",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "rosemary-fresh",
+        "rosemary-dried"
+      ]
+    },
+    {
+      "id": "custom-group-oregano",
+      "name": "Oregano",
+      "translations": {
+        "de": {
+          "name": "Oregano",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "oregano-dried",
+        "oregano-fresh-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-sage",
+      "name": "Sage",
+      "translations": {
+        "de": {
+          "name": "Salbei",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "sage-ground",
+        "sage-fresh-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-other-herbs",
+      "name": "Other herbs",
+      "translations": {
+        "de": {
+          "name": "Weitere Kräuter",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "coriander-leaf-fresh",
+        "peppermint-fresh",
+        "spearmint-fresh",
+        "bay-leaf-dried",
+        "marjoram-dried",
+        "savory-ground",
+        "tarragon-dried",
+        "chervil-dried",
+        "lovage-fresh-unspecified"
+      ]
+    },
+    {
+      "id": "custom-group-spices",
+      "name": "Spices",
+      "translations": {
+        "de": {
+          "name": "Gewürze",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "caraway-seed",
+        "coriander-seed",
+        "cumin-seed",
+        "cinnamon-ground",
+        "nutmeg-ground",
+        "paprika-ground",
+        "black-pepper",
+        "cayenne-pepper",
+        "turmeric-ground"
+      ]
+    },
+    {
+      "id": "custom-group-fruit",
+      "name": "Fruit",
+      "translations": {
+        "de": {
+          "name": "Obst",
+          "aliases": [],
+          "form": "Zutatengruppe"
+        }
+      },
+      "ingredient_ids": [
+        "apple-raw",
+        "banana-raw",
+        "lemon-raw"
+      ]
+    }
+  ]
+}

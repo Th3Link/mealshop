@@ -43,12 +43,13 @@ test('household defaults, focused search, inline composites, private images, fav
   const ingredientName = `Workflow mix ${stamp}`
   await page.goto(homePath + '/recipes/new')
   await page.getByLabel('Recipe title', { exact: true }).fill(title)
-  await page
-    .getByRole('button', { name: 'Missing ingredient? Create it here', exact: true })
-    .click()
+  await page.getByRole('button', { name: 'Add ingredient', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Choose ingredient', exact: true }).fill(ingredientName)
+  await page.getByRole('option').filter({ hasText: 'Create ingredient' }).click()
   const dialog = page.getByRole('dialog')
   await dialog.getByLabel('Ingredient name', { exact: true }).fill(ingredientName)
   await dialog.getByLabel('Form or product description', { exact: true }).fill('Dry mixture')
+  await dialog.getByText('Tags and composition', { exact: true }).click()
   await dialog.getByLabel('Tags', { exact: true }).fill('test-mixture')
   await dialog.getByRole('combobox', { name: 'Contains ingredients', exact: true }).fill('oats')
   await page.getByRole('option', { name: 'Oats', exact: true }).click()
@@ -78,6 +79,7 @@ test('household defaults, focused search, inline composites, private images, fav
     (response) =>
       response.url().endsWith('/api/household/images') && response.request().method() === 'POST',
   )
+  await page.getByText('Optional details', { exact: true }).click()
   await page
     .locator('input[type=file]')
     .setInputFiles({ name: 'test-image.png', mimeType: 'image/png', buffer: png })
@@ -166,6 +168,12 @@ test('household defaults, focused search, inline composites, private images, fav
   await page.goto(recipePath)
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Household', exact: true }).click()
+  if ((await page.getByLabel('Name', { exact: true }).count()) === 0) {
+    await page.getByRole('button', { name: 'Add dietary profile', exact: true }).click()
+    await page.getByLabel('Name', { exact: true }).fill('Test attendee')
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Save changes', exact: true })).toBeDisabled()
+  }
   await page.getByRole('button', { name: 'Add dietary profile', exact: true }).click()
   await page.getByLabel('Name', { exact: true }).last().fill(`Test skipper ${stamp}`)
   await page
@@ -251,10 +259,12 @@ test('ingredient conflicts retain the draft and require explicit version review'
   await expect(page.getByRole('heading', { name: fixtureName, exact: true })).toBeVisible()
   const ingredientPath = new URL(page.url()).pathname
   await page.getByRole('button', { name: 'Edit ingredient', exact: true }).click()
+  await page.getByRole('dialog').getByText('Tags and composition', { exact: true }).click()
   await page.getByRole('dialog').getByLabel('Tags', { exact: true }).fill('unsaved-declaration')
   const other = await context.newPage()
   await other.goto(ingredientPath)
   await other.getByRole('button', { name: 'Edit ingredient', exact: true }).click()
+  await other.getByRole('dialog').getByText('Tags and composition', { exact: true }).click()
   await other.getByRole('dialog').getByLabel('Tags', { exact: true }).fill('concurrent-declaration')
   await other.getByRole('dialog').getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(other.getByRole('dialog')).toHaveCount(0)

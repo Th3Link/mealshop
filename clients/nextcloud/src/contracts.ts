@@ -24,9 +24,17 @@ const sourceSchema = z
     license: z.string(),
   })
   .refine((source) => source.kind === 'household_declaration' || source.url.startsWith('https://'))
+export const constituentSchema = z.object({
+  name: z.string(),
+  translations: z.record(z.string(), z.string()).default({}),
+  unit: z.enum(['g', 'mg', 'µg']),
+  amount: z.string().nullable(),
+})
+export type Constituent = z.infer<typeof constituentSchema>
 const readingSchema = z.object({ amount: z.string().nullable(), uncertainty: z.string() })
 export const organizationSchema = z.object({
   is_group: z.boolean().default(false),
+  intolerance_triggers: z.array(z.literal('sorbitol')).default([]),
   group_id: z.string().nullable().default(null),
   diet: z.enum(['unknown', 'vegan', 'vegetarian', 'meat_fish']).default('unknown'),
   origin: z.enum(['unknown', 'plant', 'animal', 'mixed']).default('unknown'),
@@ -37,6 +45,7 @@ export const organizationSchema = z.object({
       z.object({
         mode: z.literal('own'),
         values: z.record(z.string(), readingSchema),
+        constituents: z.record(z.string(), constituentSchema).default({}),
         note: z.string(),
         source_url: z.string(),
       }),
@@ -45,8 +54,10 @@ export const organizationSchema = z.object({
 })
 export type Organization = z.infer<typeof organizationSchema>
 export const ingredientSchema = z.object({
+  constituents: z.record(z.string(), constituentSchema).default({}),
   organization: organizationSchema.default({
     is_group: false,
+    intolerance_triggers: [],
     group_id: null,
     diet: 'unknown',
     origin: 'unknown',
@@ -99,11 +110,28 @@ export const catalogueSchema = z.object({
 export type Catalogue = z.infer<typeof catalogueSchema>
 export type Ingredient = z.infer<typeof ingredientSchema>
 export const nutritionSchema = z.object({
+  constituents: z
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+        translations: z.record(z.string(), z.string()).default({}),
+        unit: z.string(),
+        total: z.string().nullable(),
+        per_serving: z.string().nullable(),
+        known_total: z.string(),
+        known_per_serving: z.string(),
+        status: z.string(),
+        missing_ingredients: z.array(z.string()),
+      }),
+    )
+    .default([]),
   servings: z.number(),
   nutrients: z.array(
     z.object({
       id: z.string(),
       label: z.string(),
+      group: z.string(),
       unit: z.string(),
       per_serving: z.string().nullable(),
       total: z.string().nullable(),
@@ -120,12 +148,28 @@ export const nutritionSchema = z.object({
       ingredient_id: z.string(),
       name: z.string(),
       grams: z.string(),
+      translations: z
+        .record(
+          z.string(),
+          z.object({
+            name: z.string(),
+            aliases: z.array(z.string()).default([]),
+            form: z.string().nullable().optional(),
+          }),
+        )
+        .default({}),
       source: sourceSchema,
       uncertainty: z.string(),
     }),
   ),
 })
+export const recipePartSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  uses_parts: z.array(z.string()).default([]),
+})
 export const recipeSchema = z.object({
+  parts: z.array(recipePartSchema).default([]),
   image_id: z.string().nullable().optional(),
   title: z.string(),
   language: z.enum(['en', 'de']),
@@ -134,6 +178,8 @@ export const recipeSchema = z.object({
   preparation: z.enum(['as_recorded', 'cooking_unmodelled']),
   lines: z.array(
     z.object({
+      id: z.string().optional(),
+      part_id: z.string().nullable().optional(),
       ingredient_id: z.string(),
       grams: z.string(),
       quantity: quantitySchema.optional(),
@@ -142,6 +188,9 @@ export const recipeSchema = z.object({
   ),
   steps: z.array(
     z.object({
+      part_id: z.string().nullable().default(null),
+      ingredient_line_ids: z.array(z.string()).default([]),
+      prepared_parts: z.array(z.string()).default([]),
       instruction: z.string(),
       active_seconds: z.number().int(),
       passive_seconds: z.number().int(),

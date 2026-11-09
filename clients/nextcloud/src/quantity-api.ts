@@ -25,6 +25,8 @@ export const conversionsSchema = z.object({
 export type Unit = z.infer<typeof unitSchema>
 export type Evidence = z.infer<typeof evidenceSchema>
 export type LineDraft = {
+  id?: string
+  part_id?: string | null
   ingredient_id: string
   input: string
   unit: Unit

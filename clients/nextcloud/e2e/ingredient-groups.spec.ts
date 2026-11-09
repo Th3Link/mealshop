@@ -23,6 +23,7 @@ test('groups, declared nutrient values and explicit subtype inheritance persist'
   let dialog = page.getByRole('dialog')
   await dialog.getByLabel('Ingredient name', { exact: true }).fill(group)
   await dialog.getByLabel('Form or product description', { exact: true }).fill('Flour')
+  await dialog.getByText('Classification and composition', { exact: true }).click()
   await dialog.getByText('This is a group', { exact: true }).click()
   await dialog
     .getByRole('combobox', { name: 'Dietary classification', exact: true })
@@ -68,6 +69,7 @@ test('groups, declared nutrient values and explicit subtype inheritance persist'
   dialog = page.getByRole('dialog')
   await dialog.getByLabel('Ingredient name', { exact: true }).fill(child)
   await dialog.getByLabel('Form or product description', { exact: true }).fill('Flour subtype')
+  await dialog.getByText('Classification and composition', { exact: true }).click()
   await dialog
     .getByRole('combobox', { name: 'Ingredient group', exact: true })
     .selectOption({ label: group })
@@ -90,10 +92,7 @@ test('groups, declared nutrient values and explicit subtype inheritance persist'
   await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
   await page.goto(homePath + '/ingredients')
   await page.getByLabel('Search ingredients', { exact: true }).fill(group)
-  await page
-    .getByRole('link', { name: group + ' Flour', exact: false })
-    .first()
-    .click()
+  await page.getByRole('link', { name: group, exact: true }).first().click()
   page.once('dialog', (prompt) => prompt.accept())
   await page.getByRole('button', { name: 'Archive ingredient', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Restore ingredient', exact: true })).toBeVisible()
@@ -102,6 +101,7 @@ test('groups, declared nutrient values and explicit subtype inheritance persist'
   await page.getByRole('link').filter({ hasText: child }).click()
   await page.getByRole('button', { name: 'Edit ingredient', exact: true }).click()
   dialog = page.getByRole('dialog')
+  await dialog.getByText('Classification and composition', { exact: true }).click()
   await expect(dialog.getByRole('combobox', { name: 'Ingredient group', exact: true })).toHaveValue(
     /custom-/,
   )
