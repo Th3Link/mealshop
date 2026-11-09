@@ -24,7 +24,7 @@ function names(id: string) {
 </script>
 <template>
   <section>
-    <h2>{{ t('review') }}</h2>
+    <h2 id="mealshop-review-title" tabindex="-1">{{ t('review') }}</h2>
     <p>
       {{ value.plan.date }} · {{ mealTitle }} · {{ recipeTitle }} · {{ value.plan.servings }}
       {{ t('servings') }}
@@ -73,7 +73,12 @@ function names(id: string) {
         </p>
         <p v-if="note.allergies.length">{{ t('allergies') }}: {{ note.allergies.join(', ') }}</p>
         <p v-if="note.intolerances.length">
-          {{ t('intolerances') }}: {{ note.intolerances.join(', ') }}
+          {{ t('intolerances') }}:
+          {{
+            note.intolerances
+              .map((value) => (value === 'sorbitol' ? t('sorbitol') : value))
+              .join(', ')
+          }}
         </p>
       </div>
       <p v-if="value.preview.review.excluded_ingredients.length">

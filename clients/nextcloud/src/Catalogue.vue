@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { catalogueSchema, recipesSchema } from './contracts'
 import type { Ingredient } from './contracts'
 import { homes, useTask, loadCatalogue } from './state'
-import { exact, locale, t, allergenName } from './i18n'
+import { exact, locale, t, allergenName, nutrientLabel } from './i18n'
 import { api, domain } from './api'
 import { foldSearch } from './ingredient-search'
 import IngredientEditor from './IngredientEditor.vue'
@@ -26,6 +26,11 @@ const writable = computed(() =>
 )
 const favoritesOnly = ref(false),
   showArchived = ref(false)
+function resetFilters() {
+  query.value = ''
+  favoritesOnly.value = false
+  showArchived.value = false
+}
 const editor = ref<'create' | 'metadata' | null>(null)
 const related = ref<z.infer<typeof recipesSchema>>()
 const relatedError = ref<unknown>(null)
@@ -211,12 +216,13 @@ onMounted(load)
       <div class="actions" v-if="writable">
         <NcButton
           :aria-pressed="selected.favorite"
+          :disabled="busy"
           @click="annotate(selected, { favorite: !selected.favorite })"
           ><template #icon><Icon :path="selected.favorite ? mdiStar : mdiStarOutline" /></template
           >{{ t('favorite') }}</NcButton
         >
-        <NcButton @click="editor = 'metadata'">{{ t('editIngredient') }}</NcButton>
-        <NcButton @click="archive(selected)">{{
+        <NcButton :disabled="busy" @click="editor = 'metadata'">{{ t('editIngredient') }}</NcButton>
+        <NcButton :disabled="busy" @click="archive(selected)">{{
           selected.archived ? t('restoreIngredient') : t('archiveIngredient')
         }}</NcButton>
       </div>
@@ -286,7 +292,7 @@ onMounted(load)
       <div class="detail-columns">
         <section>
           <h2>{{ t('nutrients') }}</h2>
-          <p>{{ t('basis') }} · {{ t('original') }}</p>
+          <p>{{ t('basis') }}</p>
           <table>
             <thead>
               <tr>
@@ -299,8 +305,9 @@ onMounted(load)
                 v-for="nutrient in data.nutrient_definitions.filter((n) => n.group !== 'component')"
                 :key="nutrient.id"
               >
-                <th scope="row" lang="en">
-                  {{ nutrient.label }} <small>{{ nutrient.unit }}</small>
+                <th scope="row">
+                  {{ nutrientLabel(nutrient.id, nutrient.label) }}
+                  <small>{{ nutrient.unit }}</small>
                 </th>
                 <td class="numeric">
                   {{ exact(selected.nutrients[nutrient.id]?.amount ?? null) }}
@@ -377,7 +384,7 @@ onMounted(load)
     <template v-else
       ><NcEmptyContent v-if="!filtered.length" :name="t('noResults')"
         ><template #action
-          ><NcButton @click="query = ''">{{ t('clearSearch') }}</NcButton></template
+          ><NcButton @click="resetFilters">{{ t('resetFilters') }}</NcButton></template
         ></NcEmptyContent
       >
       <ul v-else class="record-list">
