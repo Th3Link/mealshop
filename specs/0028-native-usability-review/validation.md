@@ -39,6 +39,9 @@ The synthetic owner account reached the existing twenty-household membership bou
 suite. An optional cleanup through ownership transfers was rejected by automatic approval review
 and was not executed. Existing household ownership and fixture history remain intact; subsequent
 targeted checks reuse the existing households. This does not block verification of the changed UI.
+Known membership/revision error codes now use their existing localized explanations instead of an
+unrelated generic invalid-input/conflict message. The recovery regression simulates the documented
+membership-capacity response without creating another household and verifies the retained name.
 
 Implementation references: [Vue Router guards](https://router.vuejs.org/guide/advanced/composition-api)
 and [Vue composable lifecycle cleanup](https://vuejs.org/guide/reusability/composables).

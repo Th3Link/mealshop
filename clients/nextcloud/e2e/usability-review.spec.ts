@@ -182,4 +182,25 @@ test('failed profile save retains inputs and reload requires explicit discard', 
       ).toEqual([])
     }
   }
+  await page.setViewportSize({ width: 1440, height: 950 })
+  await expect(page.locator('#app-navigation-vue')).toHaveAttribute('aria-hidden', 'false')
+  await page.getByRole('link', { name: 'Your households', exact: true }).click()
+  await page.route('**/api/households', async (route) => {
+    if (route.request().method() === 'POST')
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'membership_capacity' }),
+      })
+    else await route.continue()
+  })
+  await page.getByLabel('Household name', { exact: true }).fill('Capacity verification')
+  await page.getByRole('button', { name: 'Create household', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText(
+    'The household or membership limit has been reached.',
+  )
+  await expect(page.getByLabel('Household name', { exact: true })).toHaveValue(
+    'Capacity verification',
+  )
+  await page.unroute('**/api/households')
 })
