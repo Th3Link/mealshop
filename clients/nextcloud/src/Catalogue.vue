@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -7,13 +7,86 @@ import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import { z } from 'zod'
-import { catalogueSchema } from './contracts'
+import { catalogueSchema, recipesSchema } from './contracts'
 import type { Ingredient } from './contracts'
-import { useTask, loadCatalogue } from './state'
-import { exact, locale, t } from './i18n'
+import { homes, useTask, loadCatalogue } from './state'
+import { exact, locale, t, allergenName } from './i18n'
+import { api, domain } from './api'
+import IngredientEditor from './IngredientEditor.vue'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import { mdiPlus, mdiStar, mdiStarOutline } from '@mdi/js'
+import Icon from './Icon.vue'
 const route = useRoute(),
   router = useRouter()
 const data = ref<z.infer<typeof catalogueSchema>>()
+const home = computed(() => String(route.params.home))
+const writable = computed(() =>
+  homes.value.some((item) => item.id === home.value && item.role !== 'reader'),
+)
+const favoritesOnly = ref(false),
+  showArchived = ref(false)
+const editor = ref<'create' | 'metadata' | null>(null)
+const related = ref<z.infer<typeof recipesSchema>>()
+const relatedError = ref<unknown>(null)
+let relatedGeneration = 0
+watch(
+  () => route.params.id,
+  () => {
+    void loadRelated()
+  },
+)
+async function loadRelated() {
+  const generation = ++relatedGeneration
+  related.value = undefined
+  relatedError.value = null
+  if (!route.params.id) return
+  try {
+    const result = await api(
+      domain(
+        home.value,
+        `/api/household/ingredients/${encodeURIComponent(String(route.params.id))}/recipes`,
+      ),
+      recipesSchema,
+    )
+    if (generation === relatedGeneration) related.value = result
+  } catch (error) {
+    if (generation === relatedGeneration) relatedError.value = error
+  }
+}
+async function saved(id: string) {
+  data.value = await loadCatalogue(home.value)
+  editor.value = null
+  await router.push(`/h/${home.value}/ingredients/${id}`)
+  await loadRelated()
+}
+async function annotate(item: Ingredient, changes: { favorite?: boolean; archived?: boolean }) {
+  if (!data.value) return
+  await run(async () => {
+    await api(
+      domain(home.value, `/api/household/ingredients/${item.id}`),
+      z.object({ revision: z.number() }),
+      {
+        method: 'PUT',
+        data: {
+          expected_revision: data.value?.revision,
+          annotations: {
+            tags: item.tags,
+            components: item.components,
+            declared_allergens: item.declared_allergens,
+            archived: item.archived,
+            favorite: item.favorite,
+            ...changes,
+          },
+        },
+      },
+    )
+    data.value = await loadCatalogue(home.value)
+  })
+}
+function archive(item: Ingredient) {
+  if (item.archived || window.confirm(t('archiveHelp')))
+    void annotate(item, { archived: !item.archived })
+}
 const { busy, error, run, errorMessage } = useTask()
 const query = computed({
   get: () => (typeof route.query.q === 'string' ? route.query.q : ''),
@@ -28,10 +101,12 @@ const filtered = computed(() => {
   const terms = query.value.trim().toLocaleLowerCase().split(/\s+/)
   return (
     data.value?.ingredients
+      .filter((i) => (showArchived.value || !i.archived) && (!favoritesOnly.value || i.favorite))
       .filter((i) => {
         const text = [
           i.name,
           ...i.aliases,
+          ...i.tags,
           ...Object.values(i.translations).flatMap((tr) => [tr.name, ...tr.aliases]),
         ]
           .join(' ')
@@ -43,7 +118,8 @@ const filtered = computed(() => {
 })
 async function load() {
   await run(async () => {
-    data.value = await loadCatalogue()
+    data.value = await loadCatalogue(String(route.params.home))
+    await loadRelated()
   })
 }
 onMounted(load)
@@ -55,7 +131,16 @@ onMounted(load)
         <h1 tabindex="-1">{{ t('ingredients') }}</h1>
         <p>{{ t('catalogueIntro') }}</p>
       </div>
+      <NcButton v-if="writable" variant="primary" @click="editor = 'create'"
+        ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addIngredient') }}</NcButton
+      >
     </header>
+    <div class="actions">
+      <NcCheckboxRadioSwitch v-model="favoritesOnly">{{
+        t('favoritesOnly')
+      }}</NcCheckboxRadioSwitch>
+      <NcCheckboxRadioSwitch v-model="showArchived">{{ t('showArchived') }}</NcCheckboxRadioSwitch>
+    </div>
     <div class="toolbar">
       <NcTextField
         v-model="query"
@@ -87,7 +172,58 @@ onMounted(load)
           </p>
         </div>
       </header>
-      <NcNoteCard type="info">{{ t('sourceNotice') }}</NcNoteCard>
+      <div class="actions" v-if="writable">
+        <NcButton
+          :aria-pressed="selected.favorite"
+          @click="annotate(selected, { favorite: !selected.favorite })"
+          ><template #icon><Icon :path="selected.favorite ? mdiStar : mdiStarOutline" /></template
+          >{{ t('favorite') }}</NcButton
+        >
+        <NcButton @click="editor = 'metadata'">{{ t('ingredientMetadata') }}</NcButton>
+        <NcButton @click="archive(selected)">{{
+          selected.archived ? t('restoreIngredient') : t('archiveIngredient')
+        }}</NcButton>
+      </div>
+      <NcNoteCard v-if="selected.archived" type="warning">{{ t('archived') }}</NcNoteCard>
+      <NcNoteCard type="info">{{
+        selected.source.kind === 'household_declaration'
+          ? t('sourceDeclaration')
+          : t('sourceNotice')
+      }}</NcNoteCard>
+      <section
+        v-if="
+          selected.tags.length || selected.components.length || selected.declared_allergens.length
+        "
+      >
+        <h2>{{ t('ingredientMetadata') }}</h2>
+        <p v-if="selected.tags.length">{{ t('tags') }}: {{ selected.tags.join(' · ') }}</p>
+        <p v-if="selected.declared_allergens.length">
+          {{ t('declaredAllergens') }}:
+          {{ selected.declared_allergens.map(allergenName).join(' · ') }}
+        </p>
+        <h3 v-if="selected.components.length">{{ t('components') }}</h3>
+        <ul v-if="selected.components.length" class="plain-list">
+          <li v-for="id in selected.components" :key="id">
+            <RouterLink :to="`/h/${home}/ingredients/${id}`">{{
+              name(data.ingredients.find((item) => item.id === id) ?? selected)
+            }}</RouterLink>
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h2>{{ t('recipesUsingIngredient') }}</h2>
+        <NcNoteCard v-if="relatedError" type="error"
+          >{{ errorMessage(relatedError)
+          }}<NcButton @click="loadRelated">{{ t('retry') }}</NcButton></NcNoteCard
+        >
+        <p v-else-if="related && !related.recipes.length">{{ t('noRecipesForIngredient') }}</p>
+        <ul v-else-if="related" class="record-list">
+          <li v-for="recipe in related.recipes" :key="recipe.id">
+            <RouterLink :to="`/h/${home}/recipes/${recipe.id}`">{{ recipe.title }}</RouterLink>
+          </li>
+        </ul>
+        <NcLoadingIcon v-else :aria-label="t('loading')" />
+      </section>
       <div class="detail-columns">
         <section>
           <h2>{{ t('nutrients') }}</h2>
@@ -125,9 +261,13 @@ onMounted(load)
             <dt>{{ t('retrieved') }}</dt>
             <dd>{{ selected.source.retrieved_on }}</dd>
           </dl>
-          <a :href="selected.source.url" target="_blank" rel="noopener noreferrer">{{
-            t('openSource')
-          }}</a>
+          <a
+            v-if="selected.source.url"
+            :href="selected.source.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            >{{ t('openSource') }}</a
+          >
           <h3>{{ t('uncertainty') }}</h3>
           <p class="muted">{{ t('original') }}</p>
           <p lang="en">{{ selected.uncertainty }}</p>
@@ -155,7 +295,7 @@ onMounted(load)
         ></NcEmptyContent
       >
       <ul v-else class="record-list">
-        <li v-for="item in filtered" :key="item.id">
+        <li v-for="item in filtered" :key="item.id" class="ingredient-list-row">
           <RouterLink
             :to="{ path: `/h/${route.params.home}/ingredients/${item.id}`, query: route.query }"
             ><div>
@@ -166,8 +306,24 @@ onMounted(load)
               >{{ item.source.name }} <small>{{ item.source.record_id }}</small></span
             ></RouterLink
           >
-        </li>
-      </ul></template
-    >
+          <NcButton
+            v-if="writable"
+            variant="tertiary"
+            :aria-label="`${t('favorite')} ${name(item)}`"
+            :aria-pressed="item.favorite"
+            :disabled="busy"
+            @click="annotate(item, { favorite: !item.favorite })"
+            ><template #icon><Icon :path="item.favorite ? mdiStar : mdiStarOutline" /></template
+          ></NcButton>
+        </li></ul
+    ></template>
   </template>
+  <IngredientEditor
+    v-if="editor && data"
+    :home="home"
+    :catalogue="data"
+    :ingredient="editor === 'metadata' ? selected : undefined"
+    @close="editor = null"
+    @saved="saved"
+  />
 </template>

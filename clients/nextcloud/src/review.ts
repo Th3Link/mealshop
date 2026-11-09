@@ -7,7 +7,11 @@ export const reviewSchema = z.object({
       member_id: z.string(),
       ingredient_id: z.string(),
       allergen_id: z.string(),
-      source_url: z.url().refine((s) => s.startsWith('https://')),
+      source_url: z
+        .url()
+        .refine((s) => s.startsWith('https://'))
+        .nullable(),
+      source_kind: z.string().optional(),
     }),
   ),
   review_notes: z.array(

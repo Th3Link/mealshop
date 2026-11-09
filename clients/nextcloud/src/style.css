@@ -307,3 +307,162 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.mealshop .household-switcher {
+  padding: 8px 12px;
+}
+.mealshop .recipe-ingredient-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-block: 16px;
+}
+.mealshop .recipe-ingredient-row > .quantity-line {
+  flex: 1;
+  min-width: 0;
+}
+.mealshop .recipe-ingredient-row > .button-vue {
+  flex-shrink: 0;
+  margin-top: 24px;
+}
+
+.mealshop .ingredient-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mealshop .ingredient-list-row > a {
+  flex: 1;
+  min-width: 0;
+}
+.mealshop .ingredient-editor {
+  padding: 8px;
+}
+
+.mealshop .recipe-image {
+  display: block;
+  width: min(100%, 720px);
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: var(--border-radius-large);
+  margin-block: 16px 24px;
+}
+.mealshop .person-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mealshop .person-option small {
+  display: block;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .calendar-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.mealshop .calendar-toolbar h2 {
+  margin: 0;
+}
+.mealshop .calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-top: 24px;
+  border-block: 1px solid var(--color-border);
+}
+.mealshop .calendar-day {
+  margin: 0;
+  min-width: 0;
+  border-inline-end: 1px solid var(--color-border);
+}
+.mealshop .calendar-day h3 {
+  margin: 0;
+  padding: 12px 8px;
+  font-size: 14px;
+  background: var(--color-background-hover);
+}
+.mealshop .meal-slot {
+  border-top: 1px solid var(--color-border);
+  padding: 12px 8px;
+  min-height: 152px;
+  overflow-wrap: anywhere;
+}
+.mealshop .meal-slot h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .meal-slot p {
+  font-size: 13px;
+  margin-block: 8px;
+}
+.mealshop .meal-slot .button-vue {
+  max-width: 100%;
+}
+@media (max-width: 1100px) {
+  .mealshop .calendar-days {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .mealshop .calendar-days {
+    grid-template-columns: 1fr;
+  }
+  .mealshop .meal-slot {
+    min-height: 96px;
+  }
+}
+
+.mealshop .allergen-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.mealshop .allergen-options > * {
+  margin: 0;
+}
+.mealshop .field input[type='date'] {
+  width: 100%;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .mealshop .allergen-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 601px) {
+  .mealshop .calendar-days {
+    grid-template-rows: auto repeat(var(--meal-slot-count, 4), minmax(120px, auto));
+  }
+  .mealshop .calendar-day {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span var(--meal-day-tracks, 5);
+  }
+  .mealshop .meal-slot {
+    min-height: 120px;
+  }
+}
+
+.mealshop .recipe-thumbnail {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+}
+.mealshop .recipe-thumbnail + div {
+  flex: 1;
+  min-width: 0;
+}
+.mealshop .meal-skips {
+  font-size: 13px;
+  margin-block: 8px;
+}
+.mealshop .meal-skips summary {
+  min-height: 32px;
+  cursor: pointer;
+}

@@ -14,6 +14,7 @@ import {
   mdiHomeOutline,
 } from '@mdi/js'
 import Icon from './Icon.vue'
+import HouseholdSwitcher from './HouseholdSwitcher.vue'
 import { homes, loadHomes } from './state'
 import { locale, t } from './i18n'
 const route = useRoute()
@@ -31,6 +32,7 @@ onMounted(() => {
 <template>
   <NcContent app-name="mealshop" class="mealshop">
     <NcAppNavigation :aria-label="t('households')">
+      <template #search><HouseholdSwitcher /></template>
       <template #list>
         <NcAppNavigationItem :name="t('households')" to="/households"
           ><template #icon><Icon :path="mdiHomeOutline" /></template

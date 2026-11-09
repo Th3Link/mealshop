@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 test('native system light/dark themes, reduced motion and keyboard focus', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' })
-  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/')
+  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/households')
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click({ timeout: 30000 })

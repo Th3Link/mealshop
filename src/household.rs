@@ -27,6 +27,8 @@ pub(crate) struct Member {
     #[serde(default)]
     intolerances: Vec<String>,
     excluded_ingredients: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    excluded_tags: Vec<String>,
     disliked_ingredients: Vec<String>,
 }
 #[derive(Clone, Deserialize, Serialize)]
@@ -68,8 +70,8 @@ pub(crate) struct Household {
     pub(crate) store: Mutex<Store>,
     pub(crate) recipes: Option<Arc<Mutex<crate::recipes::Store>>>,
     pub(crate) plans: Mutex<crate::planning::PlanStore>,
-    ingredients: BTreeSet<String>,
-    aliases: BTreeMap<String, BTreeSet<String>>,
+    pub(crate) images: PathBuf,
+    pub(crate) catalogue: crate::ingredients::Shared,
     pub(crate) allergen_data: serde_json::Value,
 }
 pub(crate) type Shared = Arc<Household>;
@@ -91,20 +93,14 @@ pub(crate) fn authorized(state: &Household, headers: &HeaderMap) -> bool {
                 .is_some_and(|h| h.strip_prefix("Bearer ") == Some(token.as_str()))
         })
 }
-fn denied() -> Response {
+pub(crate) fn denied() -> Response {
     reply(
         StatusCode::UNAUTHORIZED,
         json!({"code":"household_access_required"}),
     )
 }
 
-pub(crate) fn router(
-    json: &str,
-    directory: &Path,
-    token: String,
-    reader_token: Option<String>,
-    recipes: Option<Arc<Mutex<crate::recipes::Store>>>,
-) -> Result<Router, String> {
+fn validate_tokens(token: &str, reader_token: Option<&str>) -> Result<(), String> {
     if token.len() < 32
         || token.len() > 200
         || !token
@@ -116,8 +112,8 @@ pub(crate) fn router(
                 .to_owned(),
         );
     }
-    if reader_token.as_ref().is_some_and(|r| {
-        r == &token
+    if reader_token.is_some_and(|r| {
+        r == token
             || r.len() < 32
             || r.len() > 200
             || !r
@@ -126,6 +122,17 @@ pub(crate) fn router(
     }) {
         return Err("Reader token must be distinct and use 32–200 supported characters".to_owned());
     }
+    Ok(())
+}
+pub(crate) fn router(
+    json: &str,
+    directory: &Path,
+    token: String,
+    reader_token: Option<String>,
+    recipes: Option<Arc<Mutex<crate::recipes::Store>>>,
+    ingredients: Option<crate::ingredients::Shared>,
+) -> Result<Router, String> {
+    validate_tokens(&token, reader_token.as_deref())?;
     let mut allergen_data: serde_json::Value =
         serde_json::from_str(include_str!("../data/allergens.json"))
             .map_err(|_| "Invalid allergen registry")?;
@@ -156,7 +163,7 @@ pub(crate) fn router(
     lock_file
         .sync_all()
         .map_err(|_| "Cannot sync household lock")?;
-    if directory.join(".pending").exists() {
+    if directory.join(".pending").exists() || directory.join("images/.image.pending").exists() {
         return Err("Interrupted household write: recover before startup".to_owned());
     }
     if store.path.exists() {
@@ -175,25 +182,33 @@ pub(crate) fn router(
         }
     }
     filter_allergens(&mut allergen_data, &catalogue);
-    let aliases = ingredient_aliases(&catalogue);
+    let ingredients = ingredients.map_or_else(
+        || {
+            crate::ingredients::Store::open(catalogue.clone(), directory)
+                .map(|store| Arc::new(Mutex::new(store)))
+        },
+        Ok,
+    )?;
     let plans = crate::planning::PlanStore::open(directory)?;
     let state = Household {
         recipes,
+        images: directory.join("images"),
         plans: Mutex::new(plans),
-        aliases,
         token,
         reader_token,
         allergen_data,
         store: Mutex::new(store),
-        ingredients: catalogue.ingredients.into_iter().map(|i| i.id).collect(),
+        catalogue: ingredients,
     };
     {
         let store = state.store.lock().map_err(|_| "Household lock failed")?;
-        validate(&store.data.members, &state.ingredients)?;
+        validate(&store.data.members, &ingredient_ids(&state)?)?;
     }
     Ok(Router::new()
         .route("/api/household/allergens", get(allergens))
         .merge(crate::planning::routes())
+        .merge(crate::ingredient_api::routes())
+        .merge(crate::recipe_images::routes())
         .route("/api/household/profiles", get(read).put(write))
         .route("/api/household/evaluate", post(evaluate))
         .layer(DefaultBodyLimit::max(131_072))
@@ -227,6 +242,13 @@ fn validate(members: &[Member], ingredients: &BTreeSet<String>) -> Result<(), St
             || m.allergies
                 .iter()
                 .any(|a| a.trim().is_empty() || a.len() > 200 || a.chars().any(char::is_control))
+            || m.excluded_tags.len() > 30
+            || m.excluded_tags.iter().any(|tag| {
+                tag.trim().is_empty()
+                    || tag.trim() != tag
+                    || tag.len() > 80
+                    || tag.chars().any(char::is_control)
+            })
             || m.excluded_ingredients.len() > 1000
             || m.disliked_ingredients.len() > 1000
             || m.excluded_ingredients
@@ -276,7 +298,7 @@ async fn write(
     let Ok(Json(update)) = body else {
         return reply(StatusCode::BAD_REQUEST, json!({"code":"invalid_household"}));
     };
-    if validate(&update.members, &state.ingredients).is_err() {
+    if !ingredient_ids(&state).is_ok_and(|ids| validate(&update.members, &ids).is_ok()) {
         return reply(
             StatusCode::UNPROCESSABLE_ENTITY,
             json!({"code":"invalid_household"}),
@@ -403,17 +425,58 @@ pub(crate) fn review(
     profiles: &Profiles,
     input: &Evaluation,
 ) -> Result<serde_json::Value, &'static str> {
+    let ingredients = state
+        .catalogue
+        .lock()
+        .map_err(|_| "ingredient_storage_failed")?;
+    review_snapshot(state, profiles, input, &ingredients, None)
+}
+pub(crate) fn ingredient_ids(state: &Household) -> Result<BTreeSet<String>, String> {
+    Ok(state
+        .catalogue
+        .lock()
+        .map_err(|_| "Ingredient lock failed")?
+        .catalogue()
+        .ingredients
+        .into_iter()
+        .map(|i| i.id)
+        .collect())
+}
+pub(crate) fn allergen_version(
+    state: &Household,
+    ingredients: &crate::ingredients::Store,
+) -> String {
+    format!(
+        "{}+household-{}",
+        state.allergen_data["version"].as_str().unwrap_or("unknown"),
+        ingredients.dietary_revision()
+    )
+}
+pub(crate) fn review_snapshot(
+    state: &Household,
+    profiles: &Profiles,
+    input: &Evaluation,
+    current: &crate::ingredients::Store,
+    snapshot: Option<&crate::nutrition::catalogue::Catalogue>,
+) -> Result<serde_json::Value, &'static str> {
+    let catalogue = current.catalogue();
+    let ingredients: BTreeSet<_> = catalogue.ingredients.iter().map(|i| i.id.clone()).collect();
+    let aliases = ingredient_aliases(&catalogue);
     let members: BTreeMap<_, _> = profiles.members.iter().map(|m| (&m.id, m)).collect();
     if input.member_ids.iter().any(|id| !members.contains_key(id)) {
         return Err("unknown_household_member");
     }
     let mut resolved = BTreeSet::new();
     for input in &input.ingredient_ids {
-        if state.ingredients.contains(input) {
+        if ingredients.contains(input) {
             resolved.insert(input.clone());
-        } else if let Some(ids) = state.aliases.get(&input.to_lowercase()) {
+        } else if let Some(ids) = aliases.get(&input.to_lowercase()) {
             resolved.extend(ids.iter().cloned());
         }
+    }
+    resolved = catalogue.closure(&resolved);
+    if let Some(snapshot) = snapshot {
+        resolved.extend(snapshot.closure(&resolved));
     }
     let mut excluded = BTreeSet::new();
     let mut disliked = BTreeSet::new();
@@ -438,6 +501,28 @@ pub(crate) fn review(
                         allergen_matches.push(json!({"member_id":m.id,"ingredient_id":ingredient,"allergen_id":allergen,"source_url":entry["source_url"]}));
                     }
                 }
+                for source_catalogue in std::iter::once(&catalogue).chain(snapshot) {
+                    if let Some(item) = source_catalogue.find(ingredient) {
+                        if item.tags.iter().any(|tag| {
+                            m.excluded_tags
+                                .iter()
+                                .any(|excluded| excluded.to_lowercase() == tag.to_lowercase())
+                        }) {
+                            excluded.insert(ingredient);
+                        }
+                        for allergen in &item.declared_allergens {
+                            if m.allergen_ids.contains(allergen)
+                                || m.allergies
+                                    .iter()
+                                    .chain(&m.intolerances)
+                                    .any(|a| a.to_lowercase() == *allergen)
+                            {
+                                excluded.insert(ingredient);
+                                allergen_matches.push(json!({"member_id":m.id,"ingredient_id":ingredient,"allergen_id":allergen,"source_url":null,"source_kind":"household_declaration"}));
+                            }
+                        }
+                    }
+                }
                 if m.excluded_ingredients.contains(ingredient) {
                     excluded.insert(ingredient);
                 }
@@ -448,11 +533,11 @@ pub(crate) fn review(
         }
     }
     Ok(
-        json!({"status":if excluded.is_empty(){"review_required"}else{"blocked"},"excluded_ingredients":excluded,"allergen_matches":allergen_matches,"review_notes":input.member_ids.iter().filter_map(|id|members.get(id)).map(|m|json!({"member_id":m.id,"name":m.name,"allergies":m.allergies,"intolerances":m.intolerances,"allergen_ids":m.allergen_ids})).collect::<Vec<_>>(),"allergen_data_version":state.allergen_data["version"],"disliked_ingredients":disliked,"unknown_ingredients":input.ingredient_ids.iter().filter(|id|!state.ingredients.contains(*id) && state.aliases.get(&id.to_lowercase()).is_none_or(|ids|ids.len()!=1)).collect::<Vec<_>>(),"warning_codes":["allergen_coverage_incomplete","cross_contamination_unmodelled"],"profile_revision":profiles.revision}),
+        json!({"status":if excluded.is_empty(){"review_required"}else{"blocked"},"excluded_ingredients":excluded,"allergen_matches":allergen_matches,"review_notes":input.member_ids.iter().filter_map(|id|members.get(id)).map(|m|json!({"member_id":m.id,"name":m.name,"allergies":m.allergies,"intolerances":m.intolerances,"excluded_tags":m.excluded_tags,"allergen_ids":m.allergen_ids})).collect::<Vec<_>>(),"allergen_data_version":allergen_version(state, current),"disliked_ingredients":disliked,"unknown_ingredients":input.ingredient_ids.iter().filter(|id|!ingredients.contains(*id) && aliases.get(&id.to_lowercase()).is_none_or(|ids|ids.len()!=1)).collect::<Vec<_>>(),"warning_codes":["allergen_coverage_incomplete","cross_contamination_unmodelled"],"profile_revision":profiles.revision}),
     )
 }
 
-fn allergen_ids() -> &'static [&'static str] {
+pub(crate) fn allergen_ids() -> &'static [&'static str] {
     &[
         "milk",
         "egg",

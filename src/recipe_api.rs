@@ -17,20 +17,33 @@ use std::sync::{Arc, Mutex};
 
 type Shared = Arc<RecipeState>;
 struct RecipeState {
-    catalogue: Catalogue,
+    catalogue: crate::ingredients::Shared,
     store: Arc<Mutex<Store>>,
+    images: Option<std::path::PathBuf>,
 }
 
 pub(crate) fn router(catalogue: Catalogue, store: Store) -> Router {
-    router_shared(catalogue, Arc::new(Mutex::new(store)))
+    router_shared(
+        Arc::new(Mutex::new(crate::ingredients::Store::memory(catalogue))),
+        Arc::new(Mutex::new(store)),
+        None,
+    )
 }
-pub(crate) fn router_shared(catalogue: Catalogue, store: Arc<Mutex<Store>>) -> Router {
+pub(crate) fn router_shared(
+    catalogue: crate::ingredients::Shared,
+    store: Arc<Mutex<Store>>,
+    images: Option<std::path::PathBuf>,
+) -> Router {
     Router::new()
         .route("/api/recipes", get(list).post(create))
         .route("/api/recipes/{id}", get(detail).put(update))
         .route("/api/recipes/{id}/scale", get(scale))
         .layer(DefaultBodyLimit::max(131_072))
-        .with_state(Arc::new(RecipeState { catalogue, store }))
+        .with_state(Arc::new(RecipeState {
+            catalogue,
+            store,
+            images,
+        }))
 }
 
 struct ApiError(StatusCode, &'static str, String);
@@ -94,8 +107,13 @@ async fn blocking<T: Send + 'static>(
     action: impl FnOnce(&mut Store, &Catalogue) -> Result<T, recipes::Error> + Send + 'static,
 ) -> Result<T, ApiError> {
     tokio::task::spawn_blocking(move || {
+        let catalogue = state
+            .catalogue
+            .lock()
+            .map_err(|_| recipes::Error::Storage)?
+            .catalogue();
         let mut store = state.store.lock().map_err(|_| recipes::Error::Storage)?;
-        action(&mut store, &state.catalogue)
+        action(&mut store, &catalogue)
     })
     .await
     .map_err(|_| ApiError::from(recipes::Error::Storage))?
@@ -177,6 +195,7 @@ async fn create(
     input: Result<Json<Recipe>, JsonRejection>,
 ) -> Result<Response, ApiError> {
     let recipe = body(input)?;
+    validate_image(&state, &recipe)?;
     let record = blocking(state, move |store, catalogue| {
         store.save(recipe, None, catalogue)
     })
@@ -195,6 +214,7 @@ async fn update(
     input: Result<Json<Update>, JsonRejection>,
 ) -> Result<Response, ApiError> {
     let input = body(input)?;
+    validate_image(&state, &input.recipe)?;
     let record = blocking(state, move |store, catalogue| {
         store.save(
             input.recipe,
@@ -256,4 +276,19 @@ async fn scale(
     )
     .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
     Ok(([(header::CACHE_CONTROL,"no-store")], Json(json!({"id":record.id,"revision":record.revision,"original_servings":original,"servings":query.servings,"lines":calculation.lines,"display_lines":display_lines(&calculation.lines,query.display_unit),"nutrition":nutrition,"rounding":"grams: nearest 0.000001 g, half up; nutrition: exact original serving ratio before display rounding"}))).into_response())
+}
+
+fn validate_image(state: &RecipeState, recipe: &Recipe) -> Result<(), ApiError> {
+    if recipe.image_id.as_ref().is_some_and(|id| {
+        !crate::recipe_images::valid_id(id)
+            || !state
+                .images
+                .as_ref()
+                .is_some_and(|directory| directory.join(id).is_file())
+    }) {
+        return Err(ApiError::from(recipes::Error::Invalid(
+            "Upload a household image before referencing it".to_owned(),
+        )));
+    }
+    Ok(())
 }

@@ -14,10 +14,11 @@ import type { Member } from './contracts'
 import { homes, loadHomes, useTask, loadCatalogue } from './state'
 import { locale, t } from './i18n'
 import IngredientPicker from './IngredientPicker.vue'
+import NextcloudPersonPicker from './NextcloudPersonPicker.vue'
 const route = useRoute()
 const home = computed(() => String(route.params.home)),
   current = computed(() => homes.value.find((h) => h.id === home.value))
-const writable = computed(() => current.value?.role !== 'reader')
+const writable = computed(() => current.value?.role === 'owner' || current.value?.role === 'editor')
 const access = ref<z.infer<typeof accessSchema>>()
 const profiles = ref<z.infer<typeof profilesSchema>>()
 const catalogue = ref<z.infer<typeof catalogueSchema>>()
@@ -33,7 +34,7 @@ async function load() {
     const results = await Promise.all([
       api(base.value, accessSchema),
       api(domain(home.value, '/api/household/profiles'), profilesSchema),
-      loadCatalogue(),
+      loadCatalogue(home.value),
       api(
         domain(home.value, '/api/household/allergens'),
         z.object({
@@ -100,6 +101,7 @@ function add() {
     intolerances: [],
     allergen_ids: [],
     excluded_ingredients: [],
+    excluded_tags: [],
     disliked_ingredients: [],
   })
   dirty.value = true
@@ -110,7 +112,7 @@ function remove(index: number) {
     dirty.value = true
   }
 }
-function notes(event: Event, member: Member, key: 'allergies' | 'intolerances') {
+function notes(event: Event, member: Member, key: 'allergies' | 'intolerances' | 'excluded_tags') {
   if (event.target instanceof HTMLTextAreaElement) {
     member[key] = event.target.value
       .split('\n')
@@ -173,6 +175,14 @@ onMounted(load)
             @change="notes($event, member, 'intolerances')"
           />
         </label>
+        <label class="field"
+          >{{ t('excludedTags') }} · {{ t('onePerLine')
+          }}<textarea
+            :value="member.excluded_tags.join('\n')"
+            @change="notes($event, member, 'excluded_tags')"
+          />
+        </label>
+        <p class="muted">{{ t('excludedTagsHelp') }}</p>
         <IngredientPicker
           @update:model-value="dirty = true"
           v-model="member.excluded_ingredients"
@@ -229,12 +239,9 @@ onMounted(load)
       </div>
       <form class="narrow" @submit.prevent="invite">
         <h3>{{ t('invite') }}</h3>
-        <NcTextField
+        <NextcloudPersonPicker
           v-model="inviteUser"
-          :label="t('userId')"
-          :helper-text="t('inviteHelp')"
-          required
-          maxlength="255"
+          :excluded="[...Object.keys(access.members), ...Object.keys(access.invitations ?? {})]"
         /><label class="field"
           >{{ t('role')
           }}<select v-model="inviteRole">

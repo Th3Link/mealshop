@@ -16,7 +16,7 @@ test('native household, recipe, exact serving preview, profiles and plan review'
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text())
   })
-  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/')
+  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/households')
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click({ timeout: 30000 })
@@ -31,7 +31,8 @@ test('native household, recipe, exact serving preview, profiles and plan review'
   await page.getByLabel('Recipe title', { exact: true }).fill('Exact oat breakfast')
   await page.getByLabel('Author', { exact: true }).fill('Browser verification')
   await page.getByRole('button', { name: 'Add ingredient', exact: true }).click()
-  await page.getByRole('combobox', { name: 'Choose ingredient', exact: true }).selectOption('oats')
+  await page.getByRole('combobox', { name: 'Choose ingredient', exact: true }).fill('oats')
+  await page.getByRole('option', { name: 'Oats', exact: true }).click()
   await page.getByLabel('Grams', { exact: true }).fill('100.000001')
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('1. Instruction', { exact: true }).fill('Mix and serve.')
@@ -73,7 +74,7 @@ test('native household, recipe, exact serving preview, profiles and plan review'
   await page.getByLabel('Search ingredients', { exact: true }).fill('oats')
   await page.locator('.record-list').getByRole('link').first().click()
   await expect(page.getByRole('heading', { name: 'Nutrient values', exact: true })).toBeVisible()
-  expect(catalogueRequests).toBe(1)
+  expect(catalogueRequests).toBe(0)
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Nutrient values', exact: true })).toBeVisible()
   for (const width of [1440, 1024, 768, 390, 320]) {
@@ -107,7 +108,7 @@ test('addressed invitation, native reader access, revocation and stale revision 
   browser,
   page,
 }) => {
-  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/')
+  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/households')
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click({ timeout: 30000 })
@@ -123,8 +124,12 @@ test('addressed invitation, native reader access, revocation and stale revision 
   if (await oldAccess.count())
     await oldAccess.getByRole('button', { name: 'Revoke access', exact: true }).click()
   await page
-    .getByLabel('Exact Nextcloud user ID', { exact: true })
+    .getByRole('combobox', { name: 'Person to invite', exact: true })
     .fill(process.env.MEALSHOP_READER_USER ?? '')
+  await page
+    .getByRole('option')
+    .filter({ hasText: process.env.MEALSHOP_READER_USER ?? '' })
+    .click()
   await page.getByRole('button', { name: 'Invite a person', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Pending invitations', exact: true }),
@@ -132,7 +137,8 @@ test('addressed invitation, native reader access, revocation and stale revision 
   const readerContext = await browser.newContext()
   const reader = await readerContext.newPage()
   await reader.goto(
-    (process.env.MEALSHOP_TEST_URL ?? '') + '/index.php/apps/app_api/embedded/mealshop/main/',
+    (process.env.MEALSHOP_TEST_URL ?? '') +
+      '/index.php/apps/app_api/embedded/mealshop/main/households',
   )
   await reader.locator('#user').fill(process.env.MEALSHOP_READER_USER ?? '')
   await reader.locator('#password').fill(process.env.MEALSHOP_READER_PASSWORD ?? '')
@@ -204,7 +210,7 @@ test('German quantities, curated source portions and hard dietary conflicts rema
 }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
-  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/')
+  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/households')
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click({ timeout: 30000 })
@@ -213,7 +219,8 @@ test('German quantities, curated source portions and hard dietary conflicts rema
   await page.getByLabel('Recipe title', { exact: true }).fill('Quantity verification')
   await page.getByLabel('Author', { exact: true }).fill('Browser verification')
   await page.getByRole('button', { name: 'Add ingredient', exact: true }).click()
-  await page.getByRole('combobox', { name: 'Choose ingredient', exact: true }).selectOption('oats')
+  await page.getByRole('combobox', { name: 'Choose ingredient', exact: true }).fill('oats')
+  await page.getByRole('option', { name: 'Oats', exact: true }).click()
   await page.getByLabel('Grams', { exact: true }).fill('100.000001')
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('1. Instruction', { exact: true }).fill('Mix and serve.')
@@ -228,19 +235,18 @@ test('German quantities, curated source portions and hard dietary conflicts rema
   await page.getByRole('combobox', { name: 'Einheit', exact: true }).selectOption('kg')
   await page.getByLabel('Menge', { exact: true }).fill('0,100001')
   await page.getByRole('button', { name: 'Änderungen speichern', exact: true }).click()
-  await expect(page.getByText(/100,001000 g · Oats/)).toBeVisible()
+  await expect(page.getByText(/100,001 g · Oats/)).toBeVisible()
   await expect(page.getByText('Originaleingabe: 0,100001 kg', { exact: false })).toBeVisible()
   await page.getByText('Rezept bearbeiten', { exact: true }).click()
-  await page
-    .getByRole('combobox', { name: 'Zutat auswählen', exact: true })
-    .selectOption('caraway-seed')
+  await page.getByRole('combobox', { name: 'Zutat auswählen', exact: true }).fill('Kümmel')
+  await page.getByRole('option', { name: 'Kümmel Samen', exact: true }).click()
   await page.getByRole('combobox', { name: 'Einheit', exact: true }).selectOption('tsp')
   await page.getByLabel('Menge', { exact: true }).fill('1')
   await page
     .getByRole('combobox', { name: 'Umrechnungsbeleg', exact: true })
     .selectOption({ index: 1 })
   await page.getByRole('button', { name: 'Änderungen speichern', exact: true }).click()
-  await expect(page.locator('.plain-list').getByText(/^2,100000 g/)).toBeVisible()
+  await expect(page.locator('.plain-list').getByText(/^2,1 g/)).toBeVisible()
   await page.reload()
   await expect(page.getByText('Originaleingabe: 1 tsp', { exact: false })).toBeVisible()
   await page.getByRole('link', { name: 'Haushalt', exact: true }).click()

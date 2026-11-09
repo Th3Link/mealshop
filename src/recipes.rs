@@ -25,7 +25,10 @@ pub(crate) struct Step {
 pub(crate) struct Recipe {
     pub(crate) title: String,
     pub(crate) language: String,
+    #[serde(default)]
     author: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) image_id: Option<String>,
     pub(crate) lines: Vec<nutrition::RecipeLine>,
     pub(crate) servings: u32,
     pub(crate) steps: Vec<Step>,
@@ -49,7 +52,11 @@ impl Recipe {
 
     fn validate(&self, catalogue: &Catalogue) -> Result<(), String> {
         if !text(&self.title, 200)
-            || !text(&self.author, 200)
+            || (!self.author.is_empty() && !text(&self.author, 200))
+            || self
+                .image_id
+                .as_ref()
+                .is_some_and(|id| !crate::recipe_images::valid_id(id))
             || !matches!(self.language.as_str(), "en" | "de")
             || self.steps.len() > 100
             || self.steps.iter().any(|s| {
@@ -58,7 +65,7 @@ impl Recipe {
                     || s.passive_seconds > 604_800
             })
         {
-            return Err("Use a title/author of 1–200 bytes, language en/de and at most 100 nonempty steps of 4000 bytes with durations up to 604800 seconds".to_owned());
+            return Err("Use a title of 1–200 bytes and an optional author of at most 200 bytes, language en/de and at most 100 nonempty steps of 4000 bytes with durations up to 604800 seconds".to_owned());
         }
         nutrition::calculate(catalogue, &self.calculation()).map(|_| ())
     }
@@ -81,6 +88,8 @@ pub(crate) struct Summary {
     title: String,
     language: String,
     servings: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    image_id: Option<String>,
 }
 
 pub(crate) enum Error {
@@ -202,7 +211,30 @@ impl Store {
                 title: r.recipe.title.clone(),
                 language: r.recipe.language.clone(),
                 servings: r.recipe.servings,
+                image_id: r.recipe.image_id.clone(),
             })
+            .collect()
+    }
+
+    pub(crate) fn containing(&self, id: &str) -> Vec<Summary> {
+        let ids: BTreeSet<_> = self
+            .records
+            .values()
+            .filter_map(|versions| versions.last())
+            .filter(|record| {
+                let ingredients = record
+                    .recipe
+                    .lines
+                    .iter()
+                    .map(|line| line.ingredient_id.clone())
+                    .collect();
+                record.catalogue.closure(&ingredients).contains(id)
+            })
+            .map(|record| record.id.as_str())
+            .collect();
+        self.list()
+            .into_iter()
+            .filter(|recipe| ids.contains(recipe.id.as_str()))
             .collect()
     }
 
@@ -217,6 +249,38 @@ impl Store {
             .ok_or(Error::NotFound)
     }
 
+    fn validate_active_ingredients(
+        &self,
+        recipe: &Recipe,
+        update: Option<(&str, u64)>,
+        catalogue: &Catalogue,
+    ) -> Result<(), Error> {
+        let previous_ids = update
+            .map(|(id, _)| {
+                self.get(id, None).map(|record| {
+                    record
+                        .recipe
+                        .lines
+                        .into_iter()
+                        .map(|line| line.ingredient_id)
+                        .collect::<BTreeSet<_>>()
+                })
+            })
+            .transpose()?
+            .unwrap_or_default();
+        if recipe.lines.iter().any(|line| {
+            catalogue
+                .find(&line.ingredient_id)
+                .is_some_and(|ingredient| ingredient.archived)
+                && !previous_ids.contains(&line.ingredient_id)
+        }) {
+            return Err(Error::Invalid(
+                "Archived ingredients cannot be newly added to recipes".to_owned(),
+            ));
+        }
+        Ok(())
+    }
+
     pub(crate) fn save(
         &mut self,
         recipe: Recipe,
@@ -227,6 +291,7 @@ impl Store {
             return Err(Error::Storage);
         }
         recipe.validate(catalogue).map_err(Error::Invalid)?;
+        self.validate_active_ingredients(&recipe, update, catalogue)?;
         if self.count >= MAX_REVISIONS {
             return Err(Error::Full);
         }
@@ -249,11 +314,12 @@ impl Store {
             }
             (format!("recipe-{next:08}"), 1)
         };
-        let ids: BTreeSet<_> = recipe
+        let ids: BTreeSet<String> = recipe
             .lines
             .iter()
-            .map(|l| l.ingredient_id.as_str())
+            .map(|l| l.ingredient_id.clone())
             .collect();
+        let ids = catalogue.closure(&ids);
         let snapshot = Catalogue {
             schema_version: catalogue.schema_version,
             language: catalogue.language.clone(),
@@ -261,7 +327,7 @@ impl Store {
             ingredients: catalogue
                 .ingredients
                 .iter()
-                .filter(|i| ids.contains(i.id.as_str()))
+                .filter(|i| ids.contains(&i.id))
                 .cloned()
                 .collect(),
         };

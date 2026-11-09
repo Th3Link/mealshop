@@ -196,7 +196,7 @@ async fn invalid_recipes_never_create_records_and_unknown_composition_stays_unkn
     let app = dir.app();
     for (field, value) in [
         ("title", json!(" ")),
-        ("author", json!("")),
+        ("author", json!(" \n")),
         ("language", json!("xx")),
         ("servings", json!(0)),
         ("lines", json!([])),
@@ -573,4 +573,19 @@ async fn mass_display_preferences_preserve_nine_decimal_kilograms_and_saved_inpu
     assert_eq!(reloaded["recipe"], saved["recipe"]);
     assert_eq!(reloaded["display_lines"][0]["amount"], "100.000001");
     assert_eq!(reloaded["display_lines"][0]["unit"], "g");
+}
+
+#[tokio::test]
+async fn author_is_optional_and_missing_attribution_stays_empty_after_restart() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let mut input = recipe();
+    input.as_object_mut().unwrap().remove("author");
+    let (status, saved) = request(&app, "POST", "/api/recipes", input).await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(saved["recipe"]["author"], "");
+    drop(app);
+    let reopened = dir.app();
+    let path = format!("/api/recipes/{}", saved["id"].as_str().unwrap());
+    assert_eq!(request(&reopened, "GET", &path, Value::Null).await.1, saved);
 }

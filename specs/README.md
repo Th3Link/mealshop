@@ -31,3 +31,4 @@ New folders take the next free number; keep index/status changes in the same com
 | F21 | [Internationalization and localized content](0021-internationalization/specification.md) | In progress | Must | M1 |
 | F22 | [Vue 3 product web clients](0022-product-web-clients/specification.md) | In progress | Must | M1 |
 | F23 | [English-base kitchen ingredient catalogue](0023-kitchen-ingredient-catalogue/specification.md) | Done | Must | M1 |
+| F24 | [Native Nextcloud daily workflows](0024-nextcloud-daily-workflows/specification.md) | In progress | Must | M1 |

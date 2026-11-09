@@ -141,7 +141,7 @@ impl PlanStore {
         Ok(())
     }
 }
-fn date(value: &str) -> bool {
+pub(crate) fn date(value: &str) -> bool {
     let b = value.as_bytes();
     if b.len() != 10
         || b[4] != b'-'
@@ -245,11 +245,12 @@ fn preview(
     store: &Store,
     plans: &Plans,
     p: &Plan,
+    ingredients: &crate::ingredients::Store,
 ) -> Result<Value, &'static str> {
     validate(p)?;
     let record = load_recipe(store, p)?;
     let people = attendees(p);
-    let review = household::review(
+    let review = household::review_snapshot(
         state,
         profiles,
         &Evaluation {
@@ -261,6 +262,8 @@ fn preview(
                 .map(|l| l.ingredient_id.clone())
                 .collect(),
         },
+        ingredients,
+        Some(&record.catalogue),
     )?;
     let active: u64 = record
         .recipe
@@ -315,9 +318,9 @@ fn error(code: &'static str) -> Response {
     household::reply(
         match code {
             "revision_conflict" => StatusCode::CONFLICT,
-            "mealplan_storage_failed" | "recipe_store_unavailable" => {
-                StatusCode::SERVICE_UNAVAILABLE
-            }
+            "mealplan_storage_failed"
+            | "recipe_store_unavailable"
+            | "ingredient_storage_failed" => StatusCode::SERVICE_UNAVAILABLE,
             _ => StatusCode::UNPROCESSABLE_ENTITY,
         },
         json!({"code":code}),
@@ -348,7 +351,7 @@ async fn list(State(state): State<Shared>, headers: HeaderMap) -> Response {
             json!({"code":"household_access_required"}),
         );
     }
-    work(state,|state,profiles,recipes,plans| {
+    work(state,|state,profiles,recipes,plans,ingredients| {
         let mut quantities:BTreeMap<String,u128>=BTreeMap::new();
         let mut revisions = BTreeMap::new();
         for plan in &plans.data.meals {
@@ -358,7 +361,8 @@ async fn list(State(state): State<Shared>, headers: HeaderMap) -> Response {
         }
         let revisions = revisions.into_values().collect::<Vec<_>>();
         let requirements=quantities.into_iter().map(|(id,n)|signed_atoms(n).map(|n|json!({"ingredient_id":id,"grams":decimal(n)}))).collect::<Result<Vec<_>,_>>()?;
-        let pending=plans.data.meals.iter().filter(|p|p.reviewed_profile_revision!=Some(profiles.revision) || p.reviewed_allergen_version.as_deref()!=state.allergen_data["version"].as_str()).map(|p|json!({"date":p.date,"meal":p.meal})).collect::<Vec<_>>();
+        let allergen_version = household::allergen_version(state, ingredients);
+        let pending=plans.data.meals.iter().filter(|p|p.reviewed_profile_revision!=Some(profiles.revision) || p.reviewed_allergen_version.as_deref()!=Some(allergen_version.as_str())).map(|p|json!({"date":p.date,"meal":p.meal})).collect::<Vec<_>>();
         Ok(json!({"schema_version":1,"revision":plans.data.revision,"meals":plans.data.meals,"profile_revision":profiles.revision,"review_required_slots":pending,"shopping_requirements":requirements,"recipe_revisions":revisions}))
     }).await
 }
@@ -376,9 +380,12 @@ async fn show_preview(
     let Ok(Json(plan)) = body else {
         return error("invalid_meal_plan");
     };
-    work(state, move |state, profiles, recipes, plans| {
-        preview(state, profiles, recipes, &plans.data, &plan)
-    })
+    work(
+        state,
+        move |state, profiles, recipes, plans, ingredients| {
+            preview(state, profiles, recipes, &plans.data, &plan, ingredients)
+        },
+    )
     .await
 }
 #[derive(Deserialize)]
@@ -405,48 +412,58 @@ async fn apply(
     let Ok(Json(input)) = body else {
         return error("invalid_meal_plan");
     };
-    work(state, move |state, profiles, recipes, plans| {
-        if input.expected_revision != plans.data.revision
-            || input.profile_revision != profiles.revision
-        {
-            return Err("revision_conflict");
-        }
-        validate(&input.plan)?;
-        let result = if input.remove {
-            removal(recipes, &plans.data, &input.plan)?
-        } else {
-            preview(state, profiles, recipes, &plans.data, &input.plan)?
-        };
-        if !input.remove && result["feasible"] != true {
-            return Err("meal_constraints_conflict");
-        }
-        if !input.reviewed {
-            return Err("dietary_review_required");
-        }
-        let mut meals = plans.data.meals.clone();
-        meals.retain(|p| p.date != input.plan.date || p.meal != input.plan.meal);
-        if !input.remove {
-            let mut plan = input.plan;
-            plan.reviewed_profile_revision = Some(profiles.revision);
-            plan.reviewed_allergen_version =
-                state.allergen_data["version"].as_str().map(str::to_owned);
-            meals.push(plan);
-        }
-        if meals.len() > 100 {
-            return Err("mealplan_capacity");
-        }
-        let revision = plans
-            .data
-            .revision
-            .checked_add(1)
-            .ok_or("mealplan_capacity")?;
-        plans.save(Plans {
-            schema_version: 1,
-            revision,
-            meals,
-        })?;
-        Ok(json!({"revision":revision,"preview":result}))
-    })
+    work(
+        state,
+        move |state, profiles, recipes, plans, ingredients| {
+            if input.expected_revision != plans.data.revision
+                || input.profile_revision != profiles.revision
+            {
+                return Err("revision_conflict");
+            }
+            validate(&input.plan)?;
+            let result = if input.remove {
+                removal(recipes, &plans.data, &input.plan)?
+            } else {
+                preview(
+                    state,
+                    profiles,
+                    recipes,
+                    &plans.data,
+                    &input.plan,
+                    ingredients,
+                )?
+            };
+            if !input.remove && result["feasible"] != true {
+                return Err("meal_constraints_conflict");
+            }
+            if !input.reviewed {
+                return Err("dietary_review_required");
+            }
+            let mut meals = plans.data.meals.clone();
+            meals.retain(|p| p.date != input.plan.date || p.meal != input.plan.meal);
+            if !input.remove {
+                let mut plan = input.plan;
+                plan.reviewed_profile_revision = Some(profiles.revision);
+                plan.reviewed_allergen_version =
+                    Some(household::allergen_version(state, ingredients));
+                meals.push(plan);
+            }
+            if meals.len() > 100 {
+                return Err("mealplan_capacity");
+            }
+            let revision = plans
+                .data
+                .revision
+                .checked_add(1)
+                .ok_or("mealplan_capacity")?;
+            plans.save(Plans {
+                schema_version: 1,
+                revision,
+                meals,
+            })?;
+            Ok(json!({"revision":revision,"preview":result}))
+        },
+    )
     .await
 }
 #[derive(Deserialize)]
@@ -472,11 +489,11 @@ async fn suggest(
     if input.candidates.is_empty() || input.candidates.len() > 50 {
         return error("candidate_limit");
     }
-    work(state,move|state,profiles,recipes,plans| {
+    work(state,move|state,profiles,recipes,plans,ingredients| {
         let mut matches=Vec::new(); let mut rejected=Vec::new();
         for candidate in input.candidates {
             let mut plan=input.template.clone(); plan.recipe=candidate;
-            match preview(state,profiles,recipes,&plans.data,&plan) {
+            match preview(state,profiles,recipes,&plans.data,&plan,ingredients) {
                 Ok(value)=> {if value["feasible"]==true {matches.push(value);} else {rejected.push(value);}},
                 Err(code)=>rejected.push(json!({"recipe":plan.recipe,"error":code})),
             }
@@ -487,7 +504,13 @@ async fn suggest(
 }
 async fn work(
     state: Shared,
-    action: impl FnOnce(&Household, &Profiles, &Store, &mut PlanStore) -> Result<Value, &'static str>
+    action: impl FnOnce(
+        &Household,
+        &Profiles,
+        &Store,
+        &mut PlanStore,
+        &crate::ingredients::Store,
+    ) -> Result<Value, &'static str>
     + Send
     + 'static,
 ) -> Response {
@@ -504,7 +527,10 @@ async fn work(
         let Ok(mut plans) = state.plans.lock() else {
             return error("mealplan_storage_failed");
         };
-        match action(&state, &profiles.data, &recipes, &mut plans) {
+        let Ok(ingredients) = state.catalogue.lock() else {
+            return error("ingredient_storage_failed");
+        };
+        match action(&state, &profiles.data, &recipes, &mut plans, &ingredients) {
             Ok(value) => household::reply(StatusCode::OK, value),
             Err(code) => error(code),
         }
@@ -544,7 +570,7 @@ async fn remove_preview(
     let Ok(Json(plan)) = body else {
         return error("invalid_meal_plan");
     };
-    work(state, move |_, profiles, recipes, plans| {
+    work(state, move |_, profiles, recipes, plans, _| {
         let mut result = removal(recipes, &plans.data, &plan)?;
         result["profile_revision"] = json!(profiles.revision);
         Ok(result)
