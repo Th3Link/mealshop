@@ -1,3 +1,4 @@
+import { openFixture } from './fixtures'
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -6,7 +7,7 @@ test.beforeEach(async ({ page }) => {
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click()
-  await page.locator('.record-list').getByRole('link').last().click()
+  await openFixture(page, 'nextcloud.spec.ts')
   await expect(page.getByRole('heading', { name: 'Recipes', exact: true })).toBeVisible()
 })
 

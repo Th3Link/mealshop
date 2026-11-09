@@ -367,3 +367,203 @@ async fn selected_plan_sync_is_revision_checked_idempotent_and_keeps_manual_and_
     assert_eq!(row["remaining"], "0.000000");
     assert_eq!(row["purchased"], "100.000000");
 }
+
+#[tokio::test]
+async fn shops_fallback_order_and_opt_in_sessions_preserve_provenance() {
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    let mut revision = 0;
+    macro_rules! act {
+        ($body:expr) => {{
+            let result = command(&app, revision, $body).await;
+            revision += 1;
+            result
+        }};
+    }
+    let first =
+        act!(json!({"operation":"save_shop","name":"First"}))["shops"]["entries"][0]["id"].clone();
+    let second =
+        act!(json!({"operation":"save_shop","name":"Fallback"}))["shops"]["entries"][1]["id"]
+            .clone();
+    act!(json!({"operation":"preference","ingredient_id":"oats","first":first,"second":second}));
+    let data = act!(manual("Oats", Some("oats"), "100", "g"));
+    let oats = data["items"][0]["key"].clone();
+    assert_eq!(data["items"][0]["shop_id"], first);
+    assert_eq!(data["items"][0]["fallback_shop_id"], second);
+    let sources = data["sources"].clone();
+    let data = act!(json!({"operation":"assign_shop","key":oats,"shop_id":second}));
+    assert_eq!(data["sources"], sources);
+    assert_eq!(data["items"][0]["remaining"], "100.000000");
+    assert_eq!(data["items"][0]["shop_id"], second);
+    assert_eq!(request(&app,"POST",json!({"expected_revision":revision,"command":{"operation":"start_session","shop_id":first}}),Some(OWNER)).await.0,StatusCode::UNPROCESSABLE_ENTITY);
+    act!(json!({"operation":"assign_shop","key":oats,"shop_id":first}));
+    let data = act!(manual("Apples", Some("apple-raw"), "2", "piece"));
+    let apple = data["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["ingredient_id"] == "apple-raw")
+        .unwrap()["key"]
+        .clone();
+    act!(json!({"operation":"assign_shop","key":apple,"shop_id":first}));
+    act!(json!({"operation":"learning","enabled":true}));
+    for trip in 0..3 {
+        if trip > 0 {
+            act!(manual("Oats", Some("oats"), "100", "g"));
+            act!(manual("Apples", Some("apple-raw"), "2", "piece"));
+        }
+        let session =
+            act!(json!({"operation":"start_session","shop_id":first}))["shops"]["sessions"]
+                .as_array()
+                .unwrap()
+                .last()
+                .unwrap()["id"]
+                .clone();
+        act!(json!({"operation":"check","key":oats,"checked":true}));
+        act!(json!({"operation":"check","key":apple,"checked":true}));
+        let data = act!(json!({"operation":"finish_session","id":session,"discard":false}));
+        assert_eq!(
+            data["items"][0]["order_basis"],
+            if trip == 2 { "learned" } else { "uncertain" }
+        );
+    }
+    let data = act!(json!({"operation":"order","shop_id":first,"keys":[apple,oats]}));
+    assert_eq!(data["items"][0]["key"], apple);
+    assert_eq!(data["items"][0]["order_basis"], "manual");
+    let data = act!(json!({"operation":"order","shop_id":first,"keys":[]}));
+    assert_eq!(data["items"][0]["key"], oats);
+    let data = act!(json!({"operation":"check","key":oats,"checked":false}));
+    assert!(
+        data["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|i| i["order_basis"] == "uncertain")
+    );
+    let sources = data["sources"].clone();
+    let purchases = std::fs::read(dir.0.join("household/shopping.json")).unwrap();
+    let purchases: Value = serde_json::from_slice(&purchases).unwrap();
+    let data = act!(json!({"operation":"learning","enabled":false}));
+    assert_eq!(data["sources"], sources);
+    let data = act!(json!({"operation":"reset_history"}));
+    assert_eq!(data["sources"], sources);
+    let after: Value =
+        serde_json::from_slice(&std::fs::read(dir.0.join("household/shopping.json")).unwrap())
+            .unwrap();
+    assert_eq!(after["purchases"], purchases["purchases"]);
+    assert_eq!(revision, data["revision"].as_u64().unwrap());
+    drop(app);
+    let app = dir.app().unwrap();
+    assert_eq!(
+        request(&app, "GET", Value::Null, Some(READER)).await.1,
+        data
+    );
+}
+
+#[tokio::test]
+#[allow(clippy::too_many_lines)]
+async fn barcode_products_keep_packages_match_consent_and_purchased_snapshots_separate() {
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    let product = json!({"barcode":"034000470693","name":"Test packaged oats","brand":"Test brand","label_quantity":"2 x 50 g","quantity":{"amount":"0.100001","unit":"kg"},"ingredient_id":"oats","match_confirmed":false});
+    let (status, value) = request(
+        &app,
+        "POST",
+        json!({"expected_revision":0,"command":{"operation":"save_product","product":product}}),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(value["code"], "shopping_match_required");
+    for consent in [false, true] {
+        let (status,_) = request_path(&app,"POST","/api/household/shopping/lookup",json!({"expected_revision":0,"barcode":if consent {"http://127.0.0.1"} else {"034000470693"},"consent":consent}),Some(OWNER)).await;
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    assert!(!dir.0.join("household/shopping.json").exists());
+    let mut confirmed = product;
+    confirmed["match_confirmed"] = json!(true);
+    let data = command(
+        &app,
+        0,
+        json!({"operation":"save_product","product":confirmed}),
+    )
+    .await;
+    assert_eq!(
+        data["products"]["00034000470693"]["barcode"],
+        "034000470693"
+    );
+    assert!(data["products"]["00034000470693"]["evidence"].is_null());
+    let data = command(
+        &app,
+        1,
+        json!({"operation":"add_product","barcode":"0034000470693","packages":3}),
+    )
+    .await;
+    assert_eq!(data["items"][0]["remaining"], "300.003000");
+    assert_eq!(
+        data["sources"][0]["origin"]["product"]["quantity"]["amount"],
+        "0.100001"
+    );
+    assert_eq!(data["sources"][0]["origin"]["packages"], 3);
+    let key = data["items"][0]["key"].clone();
+    command(
+        &app,
+        2,
+        json!({"operation":"check","key":key,"checked":true}),
+    )
+    .await;
+    confirmed["name"] = json!("Revised product");
+    confirmed["quantity"]["amount"] = json!("2");
+    let data = command(
+        &app,
+        3,
+        json!({"operation":"save_product","product":confirmed}),
+    )
+    .await;
+    assert_eq!(data["items"][0]["purchased"], "300.003000");
+    assert_eq!(
+        data["items"][0]["contributions"][0]["receipts"][0]["origin"]["product"]["name"],
+        "Test packaged oats"
+    );
+    let data = command(
+        &app,
+        4,
+        json!({"operation":"remove_product","barcode":"034000470693"}),
+    )
+    .await;
+    assert_eq!(data["items"][0]["purchased"], "300.003000");
+    assert!(data["products"].as_object().unwrap().is_empty());
+    let original = std::fs::read(dir.0.join("household/shopping.json")).unwrap();
+    let mut forged = confirmed;
+    forged["candidate_id"] = json!("lookup-999");
+    let (status, _) = request(
+        &app,
+        "POST",
+        json!({"expected_revision":5,"command":{"operation":"save_product","product":forged}}),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(
+        std::fs::read(dir.0.join("household/shopping.json")).unwrap(),
+        original
+    );
+    assert_eq!(
+        request_path(
+            &app,
+            "POST",
+            "/api/household/shopping/lookup",
+            json!({"expected_revision":5,"barcode":"034000470693","consent":true}),
+            Some(READER)
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    drop(app);
+    let app = dir.app().unwrap();
+    assert_eq!(
+        request(&app, "GET", Value::Null, Some(READER)).await.1,
+        data
+    );
+}

@@ -1,3 +1,4 @@
+import { openFixture } from './fixtures'
 import { test, expect } from '@playwright/test'
 test('all reference ingredients have browsable groups and exact subtype search', async ({
   page,
@@ -6,7 +7,7 @@ test('all reference ingredients have browsable groups and exact subtype search',
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click()
-  await page.locator('.record-list').getByRole('link').last().click()
+  await openFixture(page, 'authoring-experience.spec.ts')
   await page.getByRole('link', { name: 'Ingredients', exact: true }).click()
   await expect.poll(() => page.locator('.ingredient-group-row').count()).toBeGreaterThanOrEqual(73)
   const wheat = page

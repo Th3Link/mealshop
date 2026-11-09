@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
@@ -8,6 +8,8 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcTextField from './LabeledField.vue'
 import IngredientSelect from './IngredientSelect.vue'
 import ShoppingQuantityInput from './ShoppingQuantityInput.vue'
+import ShoppingProduct from './ShoppingProduct.vue'
+import ShoppingShops from './ShoppingShops.vue'
 import ShoppingSources from './ShoppingSources.vue'
 import { plansSchema } from './planning-api'
 import { recipesSchema } from './contracts'
@@ -18,7 +20,7 @@ import { t } from './i18n'
 import ShoppingItems from './ShoppingItems.vue'
 import { useUnsavedChanges } from './useUnsavedChanges'
 import type { Catalogue } from './contracts'
-import { shoppingSchema } from './shopping-api'
+import { shoppingSchema, productLookupSchema } from './shopping-api'
 import type { Shopping, ShoppingCommand, ShoppingQuantity } from './shopping-api'
 const route = useRoute(),
   home = computed(() => String(route.params.home))
@@ -30,7 +32,21 @@ const recipes = ref<z.infer<typeof recipesSchema>>(),
 const recipeDirty = ref(false),
   manualId = ref<string>(),
   manualForm = ref<HTMLFormElement>()
-const shoppingMode = ref(false)
+const productDirty = ref(false)
+const shoppingMode = ref(false),
+  selectedShop = ref('all'),
+  shopDirty = ref(false)
+const filtered = computed(
+  () =>
+    data.value?.items.filter(
+      (item) =>
+        selectedShop.value === 'all' ||
+        (selectedShop.value === 'none'
+          ? item.shop_id === null
+          : item.shop_id === selectedShop.value),
+    ) ?? [],
+)
+const activeSession = computed(() => data.value?.shops.sessions.find((s) => !s.completed))
 const baseline = ref(
   JSON.stringify({ label: '', ingredient: '', quantity: { amount: '1', unit: 'piece' } }),
 )
@@ -40,10 +56,21 @@ const label = ref(''),
   quantity = ref<ShoppingQuantity>({ amount: '1', unit: 'piece' }),
   message = ref('')
 const open = computed(
-  () => data.value?.items.filter((item) => !/^0(?:\.0+)?$/.test(item.remaining)) ?? [],
+  () => filtered.value.filter((item) => !/^0(?:\.0+)?$/.test(item.remaining)) ?? [],
 )
 const purchased = computed(
-  () => data.value?.items.filter((item) => /^0(?:\.0+)?$/.test(item.remaining)) ?? [],
+  () => filtered.value.filter((item) => /^0(?:\.0+)?$/.test(item.remaining)) ?? [],
+)
+watch(
+  () => data.value?.shops.entries,
+  (shops) => {
+    if (
+      selectedShop.value !== 'all' &&
+      selectedShop.value !== 'none' &&
+      !shops?.some((s) => s.id === selectedShop.value)
+    )
+      selectedShop.value = 'all'
+  },
 )
 async function load() {
   await run(async () => {
@@ -57,6 +84,30 @@ async function load() {
     catalogue.value = foods
     recipes.value = recipeList
     plans.value = planList
+  })
+}
+async function lookupProduct(barcode: string) {
+  return run(async () => {
+    let result
+    try {
+      result = await api(
+        domain(home.value, '/api/household/shopping/lookup'),
+        productLookupSchema,
+        {
+          method: 'POST',
+          data: { expected_revision: data.value?.revision, barcode, consent: true },
+        },
+      )
+    } catch (error) {
+      try {
+        data.value = await api(domain(home.value, '/api/household/shopping'), shoppingSchema)
+      } catch {
+        /* Keep the recoverable original error. */
+      }
+      throw error
+    }
+    data.value = result.shopping
+    return result.candidate
   })
 }
 async function command(command: ShoppingCommand) {
@@ -106,6 +157,19 @@ async function add() {
     manualForm.value?.querySelector('input')?.focus()
   }
 }
+async function checkItem(key: string, checked: boolean) {
+  const focused =
+    document.activeElement?.closest('[data-item-key]')?.getAttribute('data-item-key') === key
+  const index = open.value.findIndex((item) => item.key === key)
+  if ((await command({ operation: 'check', key, checked })) && focused) {
+    await nextTick()
+    const next = open.value[Math.min(Math.max(index, 0), open.value.length - 1)]
+    const target = next
+      ? document.querySelector<HTMLInputElement>(`[data-item-key="${CSS.escape(next.key)}"] input`)
+      : document.querySelector<HTMLElement>('#mealshop-purchased > summary')
+    target?.focus()
+  }
+}
 async function editManual(source: Shopping['sources'][number]) {
   if (source.origin.kind !== 'manual' || (manualChanged.value && !window.confirm(t('unsaved'))))
     return
@@ -124,7 +188,9 @@ async function editManual(source: Shopping['sources'][number]) {
 function cancelManual() {
   if (!manualChanged.value || window.confirm(t('unsaved'))) resetManual()
 }
-useUnsavedChanges(() => manualChanged.value || recipeDirty.value)
+useUnsavedChanges(
+  () => manualChanged.value || recipeDirty.value || shopDirty.value || productDirty.value,
+)
 onMounted(load)
 </script>
 <template>
@@ -137,7 +203,7 @@ onMounted(load)
       v-if="data?.items.length"
       :variant="shoppingMode ? 'primary' : 'secondary'"
       :aria-pressed="shoppingMode"
-      :disabled="busy || manualChanged || recipeDirty"
+      :disabled="busy || manualChanged || recipeDirty || shopDirty || productDirty"
       @click="shoppingMode = !shoppingMode"
       >{{ t(shoppingMode ? 'shoppingManage' : 'shoppingMode') }}</NcButton
     >
@@ -154,22 +220,75 @@ onMounted(load)
       :name="t('shoppingEmpty')"
       :description="t('shoppingEmptyHelp')"
     />
+    <div v-if="data.shops.entries.length" class="shopping-filter">
+      <label class="field"
+        >{{ t('shopFilter')
+        }}<select :aria-label="t('shopFilter')" v-model="selectedShop" :disabled="busy">
+          <option value="all">{{ t('shopAll') }}</option>
+          <option value="none">{{ t('shopUnassigned') }}</option>
+          <option v-for="shop in data.shops.entries" :key="shop.id" :value="shop.id">
+            {{ shop.name }}
+          </option>
+        </select></label
+      >
+      <div v-if="writable && data.shops.learning" class="actions">
+        <template v-if="activeSession"
+          ><p role="status">
+            {{ t('shopSessionActive') }}:
+            {{ data.shops.entries.find((s) => s.id === activeSession?.shop_id)?.name }}
+          </p>
+          <NcButton
+            :disabled="busy"
+            @click="command({ operation: 'finish_session', id: activeSession.id, discard: false })"
+            >{{ t('shopFinish') }}</NcButton
+          ><NcButton
+            :disabled="busy"
+            @click="command({ operation: 'finish_session', id: activeSession.id, discard: true })"
+            >{{ t('shopDiscard') }}</NcButton
+          ></template
+        >
+        <NcButton
+          v-else
+          :disabled="busy || selectedShop === 'all' || selectedShop === 'none'"
+          @click="command({ operation: 'start_session', shop_id: selectedShop })"
+          >{{ t('shopStart') }}</NcButton
+        >
+      </div>
+      <NcButton
+        v-if="
+          writable &&
+          selectedShop !== 'all' &&
+          selectedShop !== 'none' &&
+          data.shops.manual_order[selectedShop]?.length
+        "
+        :disabled="busy"
+        @click="command({ operation: 'order', shop_id: selectedShop, keys: [] })"
+        >{{ t('shopClearOrder') }}</NcButton
+      >
+      <p v-if="!filtered.length">{{ t('shopEmptyList') }}</p>
+    </div>
     <section v-if="open.length">
       <h2>{{ t('shoppingToBuy') }}</h2>
       <ShoppingItems
         :items="open"
         :writable="writable"
         :busy="busy"
-        @check="(key, checked) => command({ operation: 'check', key, checked })"
+        :shops="data.shops"
+        :selected-shop="selectedShop"
+        @command="command"
+        @check="checkItem"
       />
     </section>
-    <details v-if="purchased.length">
+    <details v-if="purchased.length" id="mealshop-purchased">
       <summary>{{ t('shoppingBought') }} · {{ purchased.length }}</summary>
       <ShoppingItems
         :items="purchased"
         :writable="writable"
         :busy="busy"
-        @check="(key, checked) => command({ operation: 'check', key, checked })"
+        :shops="data.shops"
+        :selected-shop="selectedShop"
+        @command="command"
+        @check="checkItem"
       />
     </details>
     <section v-if="writable && !shoppingMode" class="narrow">
@@ -199,6 +318,25 @@ onMounted(load)
         </fieldset>
       </form>
     </section>
+    <ShoppingProduct
+      v-if="catalogue && writable && !shoppingMode"
+      :data="data"
+      :catalogue="catalogue"
+      :busy="busy"
+      :perform="command"
+      :lookup="lookupProduct"
+      :error="error"
+      @dirty="productDirty = $event"
+    />
+    <ShoppingShops
+      v-if="catalogue && !shoppingMode"
+      :data="data"
+      :catalogue="catalogue"
+      :busy="busy"
+      :writable="writable"
+      :perform="command"
+      @dirty="shopDirty = $event"
+    />
     <ShoppingSources
       v-if="recipes && plans && !shoppingMode"
       :data="data"

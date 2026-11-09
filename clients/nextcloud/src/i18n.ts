@@ -1,34 +1,9 @@
+import { shoppingEnglish, shoppingGerman } from './shopping-messages'
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
-  shoppingMode: 'Shopping mode',
-  shoppingManage: 'Manage list',
-  shoppingEditItem: 'Edit item',
-  shoppingAddRecipe: 'Add recipe quantities',
-  shoppingFromPlan: 'From meal plan',
-  shoppingSyncPlan: 'Update plan contributions',
-  shoppingSourceHelp:
-    'Purchased quantities keep their original provenance. Only outstanding quantities change.',
-  shoppingPlanHelp:
-    'Select the meal slots for this list. Unselected plan contributions are removed; purchased and manual contributions remain.',
-
-  shoppingList: 'Shopping list',
-  shoppingIntro: 'Keep exact quantities and see where every item comes from.',
-  shoppingQuantity: 'Quantity',
-  shoppingPieces: 'pieces',
-  shoppingToBuy: 'To buy',
-  shoppingBought: 'Purchased',
-  shoppingContributions: 'Recipes and contributions',
-  shoppingRequired: 'Required now',
-  shoppingEmpty: 'Your shopping list is empty',
-  shoppingEmptyHelp:
-    'Add groceries or household goods. Recipe and plan contributions stay separate.',
-  shoppingAddManual: 'Add item',
-  shoppingLinkIngredient: 'Link to an ingredient (optional)',
-  shoppingSources: 'List sources',
-  shoppingRemoveHelp:
-    'Remove the outstanding contribution? Purchased quantities and other sources remain.',
-
+  originalLanguage: 'Original language',
+  ...shoppingEnglish,
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
   changesSaved: 'Changes saved.',
@@ -316,33 +291,8 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
-  shoppingMode: 'Einkaufsmodus',
-  shoppingManage: 'Liste verwalten',
-  shoppingEditItem: 'Artikel bearbeiten',
-  shoppingAddRecipe: 'Rezeptmengen hinzufügen',
-  shoppingFromPlan: 'Aus dem Speiseplan',
-  shoppingSyncPlan: 'Planbeiträge aktualisieren',
-  shoppingSourceHelp:
-    'Gekaufte Mengen behalten ihre ursprüngliche Herkunft. Nur offene Mengen ändern sich.',
-  shoppingPlanHelp:
-    'Wähle die Mahlzeiten für diese Liste. Nicht ausgewählte Planbeiträge entfallen; gekaufte und manuelle Beiträge bleiben erhalten.',
-
-  shoppingList: 'Einkaufsliste',
-  shoppingIntro: 'Exakte Mengen und die Herkunft jedes Eintrags im Blick.',
-  shoppingQuantity: 'Menge',
-  shoppingPieces: 'Stück',
-  shoppingToBuy: 'Noch einkaufen',
-  shoppingBought: 'Gekauft',
-  shoppingContributions: 'Rezepte und Beiträge',
-  shoppingRequired: 'Aktuell benötigt',
-  shoppingEmpty: 'Deine Einkaufsliste ist leer',
-  shoppingEmptyHelp:
-    'Füge Lebensmittel oder Haushaltswaren hinzu. Rezept- und Planbeiträge bleiben getrennt.',
-  shoppingAddManual: 'Artikel hinzufügen',
-  shoppingLinkIngredient: 'Mit einer Zutat verknüpfen (optional)',
-  shoppingSources: 'Quellen der Liste',
-  shoppingRemoveHelp:
-    'Den offenen Beitrag entfernen? Gekaufte Mengen und andere Quellen bleiben erhalten.',
+  originalLanguage: 'Originalsprache',
+  ...shoppingGerman,
   searchRecipes: 'Rezepte suchen',
   resetFilters: 'Filter zurücksetzen',
   changesSaved: 'Änderungen gespeichert.',
@@ -640,10 +590,11 @@ const de: Record<keyof typeof en, string> = {
   accessHelp:
     'Besitzer verwalten Zugriffe. Bearbeiter ändern Rezepte, Profile und Pläne. Leser können diese ansehen, exportieren und prüfen.',
 }
+export function normalizeLocale(value: string): 'en' | 'de' {
+  return value.toLowerCase().split(/[-_]/)[0] === 'de' ? 'de' : 'en'
+}
 export const locale = ref<'en' | 'de'>(
-  typeof document !== 'undefined' && document.documentElement.lang.toLowerCase().startsWith('de')
-    ? 'de'
-    : 'en',
+  normalizeLocale(typeof document !== 'undefined' ? document.documentElement.lang : 'en'),
 )
 try {
   const saved = localStorage.getItem('mealshop.locale')
@@ -676,6 +627,43 @@ export function parseGrams(input: string, language = locale.value): string | nul
   return atoms > 0n && atoms <= 1000000000000000n ? canonical : null
 }
 const explanations: Record<string, { en: string; de: string }> = {
+  shopping_barcode_invalid: {
+    en: 'Enter a valid EAN/UPC/GTIN including check digit.',
+    de: 'Gib einen gültigen EAN/UPC/GTIN mit Prüfziffer ein.',
+  },
+  shopping_match_required: {
+    en: 'Confirm the ingredient match before saving.',
+    de: 'Bestätige die Zutatenzuordnung vor dem Speichern.',
+  },
+  shopping_candidate_expired: {
+    en: 'The lookup result expired. Look up the barcode again.',
+    de: 'Das Suchergebnis ist abgelaufen. Schlage den Barcode erneut nach.',
+  },
+  shopping_product_invalid: {
+    en: 'Review the product name, package quantity and package count.',
+    de: 'Prüfe Produktname, Packungsmenge und Packungsanzahl.',
+  },
+  shopping_product_not_found: {
+    en: 'Save this product before adding packages.',
+    de: 'Speichere dieses Produkt vor dem Hinzufügen der Packungen.',
+  },
+  shopping_lookup_consent_required: {
+    en: 'Confirm consent for this external barcode request.',
+    de: 'Bestätige die Zustimmung zu dieser externen Barcode-Anfrage.',
+  },
+  shopping_lookup_throttled: {
+    en: 'Wait a few seconds before another barcode lookup.',
+    de: 'Warte einige Sekunden vor einer weiteren Barcode-Suche.',
+  },
+  shopping_lookup_unavailable: {
+    en: 'The provider is unavailable. Enter the product manually.',
+    de: 'Der Anbieter ist nicht erreichbar. Erfasse das Produkt manuell.',
+  },
+  shopping_lookup_invalid: {
+    en: 'The provider returned unusable data. Enter the product manually.',
+    de: 'Der Anbieter hat unbrauchbare Daten geliefert. Erfasse das Produkt manuell.',
+  },
+
   dietary_exclusion: {
     en: 'An attendee has a hard dietary exclusion for this recipe.',
     de: 'Für eine mitessende Person enthält dieses Rezept einen harten Ernährungsausschluss.',
@@ -707,6 +695,14 @@ const explanations: Record<string, { en: string; de: string }> = {
   already_member: {
     en: 'This person already belongs to the household.',
     de: 'Diese Person gehört bereits zum Haushalt.',
+  },
+  shopping_shop_invalid: {
+    en: 'Choose an existing shop and distinct first/second choices. Finish an active session before removing its shop.',
+    de: 'Wähle ein vorhandenes Geschäft und unterschiedliche erste/zweite Wahl. Beende einen laufenden Einkauf vor dem Entfernen des Geschäfts.',
+  },
+  shopping_session_invalid: {
+    en: 'Enable local learning, select a shop and finish the active session before starting another.',
+    de: 'Aktiviere lokales Lernen, wähle ein Geschäft und beende den laufenden Einkauf vor dem nächsten.',
   },
   shopping_quantity_invalid: {
     en: 'Use a positive exact quantity up to 1,000,000,000 base g, ml or pieces per contribution.',
@@ -787,4 +783,37 @@ export function nutrientLabel(id: string, original: string): string {
 export function parseNonnegative(input: string, language = locale.value): string | null {
   const zero = language === 'de' ? /^0(?:,0{1,6})?$/ : /^0(?:\.0{1,6})?$/
   return parseGrams(input, language) ?? (zero.test(input) ? input.replace(',', '.') : null)
+}
+
+export function servingCount(count: number): string {
+  const unit =
+    locale.value === 'de'
+      ? count === 1
+        ? 'Portion'
+        : 'Portionen'
+      : count === 1
+        ? 'serving'
+        : 'servings'
+  return `${new Intl.NumberFormat(locale.value).format(count)} ${unit}`
+}
+export function mealName(value: string): string {
+  return value === 'breakfast' || value === 'lunch' || value === 'snack' || value === 'dinner'
+    ? t(value)
+    : value
+}
+export function calendarDate(value: string): string {
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }).format(
+    new Date(`${value}T12:00:00`),
+  )
+}
+
+export function timestamp(seconds: number): string {
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(seconds * 1000),
+  )
+}
+export function shoppingUnit(unit: string, amount: string): string {
+  return unit === 'piece'
+    ? t(/^0*1(?:\.0+)?$/.test(amount) ? 'shoppingPiece' : 'shoppingPieces')
+    : unit
 }

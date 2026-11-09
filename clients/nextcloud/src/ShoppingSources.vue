@@ -8,7 +8,7 @@ import ShoppingOrigin from './ShoppingOrigin.vue'
 import type { recipesSchema } from './contracts'
 import type { plansSchema } from './planning-api'
 import type { Shopping, ShoppingCommand } from './shopping-api'
-import { t } from './i18n'
+import { servingCount, calendarDate, mealName, t } from './i18n'
 const props = defineProps<{
   data: Shopping
   recipes: z.infer<typeof recipesSchema>
@@ -181,13 +181,13 @@ async function remove(id: string) {
           v-model="slots"
           :value="`${p.date}|${p.meal}`"
           @update:model-value="mark"
-          >{{ p.date }} · {{ p.meal }} ·
+          >{{ calendarDate(p.date) }} · {{ mealName(p.meal) }} ·
           {{
             plans.recipe_revisions.find(
               (r) => r.id === p.recipe.id && r.revision === p.recipe.revision,
             )?.title ?? p.recipe.id
           }}
-          · {{ p.servings }} {{ t('servings') }}</NcCheckboxRadioSwitch
+          · {{ servingCount(p.servings) }}</NcCheckboxRadioSwitch
         >
       </fieldset>
       <div class="actions">
@@ -204,7 +204,7 @@ async function remove(id: string) {
           <ShoppingOrigin :origin="source.origin" />
           <div v-if="writable" class="actions">
             <NcButton
-              v-if="source.origin.kind !== 'meal'"
+              v-if="['manual', 'recipe'].includes(source.origin.kind)"
               :disabled="busy"
               @click="source.origin.kind === 'manual' ? emit('manual', source) : recipe(source)"
               >{{ t(source.origin.kind === 'manual' ? 'shoppingEditItem' : 'edit') }}</NcButton

@@ -56,6 +56,10 @@ pub(crate) fn text(value: &str, max: usize) -> bool {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub(crate) enum Origin {
+    Product {
+        product: super::products::Product,
+        packages: u32,
+    },
     Manual {
         label: String,
         quantity: Quantity,
@@ -118,6 +122,10 @@ pub(crate) struct Data {
     pub(crate) next_id: u64,
     pub(crate) sources: Vec<Source>,
     pub(crate) purchases: Vec<Purchase>,
+    #[serde(default)]
+    pub(crate) shops: super::shops::Shops,
+    #[serde(default)]
+    pub(crate) products: super::products::Products,
 }
 impl Default for Data {
     fn default() -> Self {
@@ -127,6 +135,8 @@ impl Default for Data {
             next_id: 1,
             sources: vec![],
             purchases: vec![],
+            shops: super::shops::Shops::default(),
+            products: super::products::Products::default(),
         }
     }
 }
@@ -152,6 +162,7 @@ impl Data {
         {
             return Err("shopping_item_not_found");
         }
+        let before = self.purchases.len();
         if checked {
             let pending: Vec<_> = self
                 .sources
@@ -185,6 +196,7 @@ impl Data {
                 purchase.reversed = true;
             }
         }
+        self.record_check(key, checked, self.purchases.len() > before)?;
         Ok(())
     }
     pub(crate) fn rows(&self) -> Vec<serde_json::Value> {

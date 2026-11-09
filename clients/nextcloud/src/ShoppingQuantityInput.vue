@@ -48,7 +48,7 @@ watch(
     />
     <label class="field"
       >{{ t('unit')
-      }}<select v-model="model.unit" :disabled="disabled">
+      }}<select :aria-label="t('unit')" v-model="model.unit" :disabled="disabled">
         <option v-for="unit in ['g', 'kg', 'ml', 'l', 'piece']" :key="unit" :value="unit">
           {{ unit === 'piece' ? t('shoppingPieces') : unit }}
         </option>

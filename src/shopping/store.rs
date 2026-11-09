@@ -27,7 +27,15 @@ fn item_valid(item: &Item, source: &str) -> bool {
             .all(|(lang, name)| text(lang, 20) && text(name, 200))
 }
 fn origin_valid(origin: &Origin) -> bool {
+    if let Origin::Meal { date, meal, .. } = origin {
+        if !crate::planning::date(date) || !text(meal, 80) {
+            return false;
+        }
+    }
     match origin {
+        Origin::Product { product, packages } => {
+            super::products::product_valid(product) && (1..=1_000_000).contains(packages)
+        }
         Origin::Manual { label, quantity } => text(label, 200) && quantity.normalized().is_ok(),
         Origin::Recipe {
             recipe_id,
@@ -74,11 +82,6 @@ fn validate(data: &Data) -> Result<(), &'static str> {
         {
             return Err("shopping_data_invalid");
         }
-        if let Origin::Meal { date, meal, .. } = &source.origin {
-            if !crate::planning::date(date) || !text(meal, 80) {
-                return Err("shopping_data_invalid");
-            }
-        }
         let mut keys = BTreeSet::new();
         for requirement in &source.requirements {
             if !keys.insert(&requirement.item.key)
@@ -100,6 +103,8 @@ fn validate(data: &Data) -> Result<(), &'static str> {
             return Err("shopping_data_invalid");
         }
     }
+    data.validate_shops()?;
+    data.validate_products()?;
     Ok(())
 }
 impl Store {
@@ -145,6 +150,7 @@ impl Store {
         }
         let mut next = self.data.clone();
         action(&mut next)?;
+        next.prune_shop_metadata();
         next.revision = next.revision.checked_add(1).ok_or("shopping_capacity")?;
         validate(&next)?;
         let bytes = serde_json::to_vec(&next).map_err(|_| "shopping_storage_failed")?;
@@ -179,6 +185,6 @@ impl Store {
         Ok(())
     }
     pub(crate) fn view(&self) -> serde_json::Value {
-        serde_json::json!({"revision":self.data.revision,"items":self.data.rows(),"sources":self.data.sources})
+        serde_json::json!({"revision":self.data.revision,"items":self.data.shop_rows(),"sources":self.data.sources,"shops":self.data.shops,"products":self.data.products.records})
     }
 }

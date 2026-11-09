@@ -1,3 +1,4 @@
+import { openFixture } from './fixtures'
 import { test, expect, type Dialog } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { crc32 } from 'node:zlib'
@@ -16,7 +17,7 @@ test('household defaults, focused search, inline composites, private images, fav
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click()
-  await page.locator('.record-list').getByRole('link').last().click()
+  await openFixture(page, 'authoring-experience.spec.ts')
   await expect(page.getByRole('heading', { name: 'Recipes', exact: true })).toBeVisible()
   const homePath = new URL(page.url()).pathname.replace(/\/recipes$/, '')
   await page.goto('/index.php/apps/app_api/embedded/mealshop/main/')
@@ -249,7 +250,7 @@ test('ingredient conflicts retain the draft and require explicit version review'
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click()
-  await page.locator('.record-list').getByRole('link').last().click()
+  await openFixture(page, 'authoring-experience.spec.ts')
   await page.getByRole('link', { name: 'Ingredients', exact: true }).click()
   const fixtureName = `Conflict fixture ${Date.now()}`
   await page.getByRole('button', { name: 'Create ingredient', exact: true }).click()

@@ -1,3 +1,4 @@
+import { recordFixture, openFixture } from './fixtures'
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 test.describe.configure({ mode: 'serial' })
@@ -25,6 +26,7 @@ test('native household, recipe, exact serving preview, profiles and plan review'
     .getByLabel('Household name', { exact: true })
     .fill(`Browser verification ${Date.now()}`)
   await page.getByRole('button', { name: 'Create household', exact: true }).click()
+  await recordFixture(page, 'nextcloud.spec.ts')
   await expect(page.getByRole('heading', { name: 'Recipes', exact: true })).toBeVisible()
   const homePath = new URL(page.url()).pathname.replace(/\/recipes$/, '')
   await page.getByText('Create recipe', { exact: true }).click()
@@ -114,7 +116,7 @@ test('addressed invitation, native reader access, revocation and stale revision 
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click({ timeout: 30000 })
   await expect(page.getByRole('heading', { name: 'Your households', exact: true })).toBeVisible()
-  await page.locator('.record-list').getByRole('link').last().click()
+  await openFixture(page, 'nextcloud.spec.ts')
   const homePath = new URL(page.url()).pathname.replace(/\/recipes$/, '')
   const homeName = (await page.locator('.context').innerText()).split('·')[0]?.trim() ?? ''
   await page.getByRole('link', { name: 'Household', exact: true }).click()
@@ -165,6 +167,12 @@ test('addressed invitation, native reader access, revocation and stale revision 
   await expect(reader.getByText('Create recipe', { exact: true })).toHaveCount(0)
   await reader.locator('.record-list').getByRole('link').first().click()
   await expect(reader.getByText('Edit recipe', { exact: true })).toHaveCount(0)
+  await reader.getByRole('link', { name: 'Shopping list', exact: true }).click()
+  await expect(reader.getByRole('heading', { name: 'Shopping list', exact: true })).toBeVisible()
+  await expect(reader.getByRole('button', { name: 'Add item', exact: true })).toHaveCount(0)
+  await expect(
+    reader.getByRole('button', { name: 'Add packaged product', exact: true }),
+  ).toHaveCount(0)
   await reader.getByRole('link', { name: 'Household', exact: true }).click()
   await expect(reader.getByLabel('Name', { exact: true })).toBeDisabled()
   await expect(reader.getByText('Invite a person', { exact: true })).toHaveCount(0)
@@ -215,7 +223,7 @@ test('German quantities, curated source portions and hard dietary conflicts rema
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click({ timeout: 30000 })
-  await page.locator('.record-list').getByRole('link').last().click()
+  await openFixture(page, 'nextcloud.spec.ts')
   await page.getByText('Create recipe', { exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Quantity verification')
   await page.getByText('Optional details', { exact: true }).click()
