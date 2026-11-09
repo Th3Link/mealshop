@@ -13,18 +13,26 @@ export const accessSchema = z.object({
   members: z.record(z.string(), roleSchema),
   invitations: z.record(z.string(), roleSchema).optional(),
 })
-const sourceSchema = z.object({
-  name: z.string(),
-  url: z.url().refine((s) => s.startsWith('https://')),
-  record_id: z.string(),
-  version: z.string(),
-  retrieved_on: z.string(),
-  license: z.string(),
-})
+const sourceSchema = z
+  .object({
+    kind: z.enum(['primary', 'household_declaration']).default('primary'),
+    name: z.string(),
+    url: z.union([z.literal(''), z.url().refine((s) => s.startsWith('https://'))]),
+    record_id: z.string(),
+    version: z.string(),
+    retrieved_on: z.string(),
+    license: z.string(),
+  })
+  .refine((source) => source.kind === 'household_declaration' || source.url.startsWith('https://'))
 const readingSchema = z.object({ amount: z.string().nullable(), uncertainty: z.string() })
 export const ingredientSchema = z.object({
   id: z.string(),
   category: z.string(),
+  tags: z.array(z.string()).default([]),
+  components: z.array(z.string()).default([]),
+  declared_allergens: z.array(z.string()).default([]),
+  archived: z.boolean().default(false),
+  favorite: z.boolean().default(false),
   name: z.string(),
   aliases: z.array(z.string()),
   form: z.string(),
@@ -54,6 +62,7 @@ export const definitionsSchema = z.array(
   z.object({ id: z.string(), label: z.string(), unit: z.string(), group: z.string() }),
 )
 export const catalogueSchema = z.object({
+  revision: z.number().int().default(0),
   catalogue_version: z.string(),
   language: z.string(),
   ingredients: z.array(ingredientSchema),
@@ -89,6 +98,7 @@ export const nutritionSchema = z.object({
   ),
 })
 export const recipeSchema = z.object({
+  image_id: z.string().nullable().optional(),
   title: z.string(),
   language: z.enum(['en', 'de']),
   author: z.string(),
@@ -130,6 +140,7 @@ export const recipeRecordSchema = z.object({
 export const recipesSchema = z.object({
   recipes: z.array(
     z.object({
+      image_id: z.string().nullable().optional(),
       id: z.string(),
       revision: z.number().int(),
       title: z.string(),
@@ -146,6 +157,7 @@ export const memberSchema = z.object({
   intolerances: z.array(z.string()),
   allergen_ids: z.array(z.string()),
   excluded_ingredients: z.array(z.string()),
+  excluded_tags: z.array(z.string()).default([]),
   disliked_ingredients: z.array(z.string()),
 })
 export const profilesSchema = z.object({

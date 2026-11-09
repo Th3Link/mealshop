@@ -40,3 +40,5 @@ Requirement: [F04](../../docs/requirements.md). Delivery tasks: [plan.md](plan.m
 
 Completion scope: local single-household authoring, revision persistence and scaling.
 Authenticated ownership, alternate storage adapters and product clients remain separate features.
+
+F24 adds explicitly optional author attribution, private household recipe images and compact exact display for the native client; see [daily workflows](../0024-nextcloud-daily-workflows/specification.md).

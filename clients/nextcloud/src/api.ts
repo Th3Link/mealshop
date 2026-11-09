@@ -26,13 +26,17 @@ export async function api<T>(
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
     data?: unknown
     signal?: AbortSignal
+    contentType?: string
   } = {},
 ): Promise<T> {
   try {
     const response = await axios.request<unknown>({
       url: generateUrl(`/apps/app_api/proxy/mealshop${path}`),
       method: options.method ?? 'GET',
-      headers: { 'X-Mealshop-Request': '1' },
+      headers: {
+        'X-Mealshop-Request': '1',
+        ...(options.contentType ? { 'Content-Type': options.contentType } : {}),
+      },
       data: options.data,
       signal: options.signal,
     })
@@ -50,4 +54,10 @@ export async function api<T>(
 }
 export function domain(home: string, path: string): string {
   return `/api/households/${encodeURIComponent(home)}/domain${path}`
+}
+
+export function imageUrl(home: string, id: string): string {
+  return generateUrl(
+    `/apps/app_api/proxy/mealshop${domain(home, `/api/household/images/${encodeURIComponent(id)}`)}`,
+  )
 }

@@ -3,13 +3,14 @@ import { computed } from 'vue'
 import { z } from 'zod'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import type { Ingredient } from './contracts'
-import { locale } from './i18n'
+import { locale, t } from './i18n'
 const model = defineModel<string[]>({ required: true })
 const props = defineProps<{ ingredients: Ingredient[]; label: string; disabled?: boolean }>()
 const options = computed(() =>
   props.ingredients.map((i) => ({
     id: i.id,
-    label: i.translations[locale.value]?.name ?? i.name,
+    label:
+      (i.translations[locale.value]?.name ?? i.name) + (i.archived ? ` · ${t('archived')}` : ''),
     search: [
       i.name,
       ...i.aliases,

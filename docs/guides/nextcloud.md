@@ -167,3 +167,76 @@ actual host, read/write boundaries, revocation, conflicts, exact quantities, har
 source portions, deep-link refresh, responsive layout, native light/dark, keyboard and axe checks.
 Screenshots/traces remain local in ignored test-result directories. Formal accessibility
 certification, a live calendar connector, standalone shell and Flutter are separate work.
+
+## Daily workflow extension (F24)
+
+The navigation contains a searchable household switcher. App entry restores the last accessible
+household ID for the current Nextcloud account/browser; explicit household management remains
+available. Both pretty embedded URLs and their `index.php` aliases retain deep links. Search-query
+updates do not run page focus management. Membership is always rechecked on the server.
+
+Recipe authors are optional. Display quantities trim redundant fractional zeros without changing
+saved input, exact scaling or nutrient precision. Ingredient rows use searchable native selects,
+with household favourites first, inline declaration creation and trailing labelled trash actions.
+Optional JPEG/PNG/WebP images are uploaded through protected household routes and referenced by
+immutable asset ID. Removing the current image preserves historical revisions. Images are limited
+to 5 MiB, 8192 pixels per dimension and 32 million pixels, with 100 MiB/1000 assets per household.
+Active image formats and remote image fetching are not supported. Back up the `images` directory
+with recipes, profiles, plans, membership and the ingredient overlay. A leftover `.image.pending`
+requires inspecting/recovering that write before restarting; never remove a live writer's lock.
+
+The weekly calendar has breakfast, lunch, snack and dinner slots. Selecting a slot opens the
+existing review/apply workflow with that date and meal. Each person can attend or skip independently;
+servings remain explicit. Empty slots represent no planned meal. Week navigation survives opening
+and cancelling an editor, and applying a future meal returns to its week. Existing custom slot
+identifiers remain visible/editable rather than being silently discarded. Skipped-person details
+can be expanded without stretching every calendar row with long names.
+
+The invitation picker calls the installed Nextcloud file-sharing sharee search using the current
+browser session, matching file-sharing account visibility. It selects local people, not groups,
+federated addresses or guessed accounts. Household acceptance and roles remain unchanged.
+
+### Household ingredient API
+
+Under each authorized household domain prefix (or the protected local family API):
+
+- `GET /api/household/ingredients`: merged catalogue, nutrient definitions and overlay `revision`.
+- `POST /api/household/ingredients`: `{ expected_revision, ingredient: { name, language, form,
+  recorded_on, source_url?, annotations? } }`; returns stable `id` and new revision.
+- `PUT /api/household/ingredients/{id}`: `{ expected_revision, annotations }`, where annotations
+  contain `tags`, `components`, `declared_allergens`, `favorite` and `archived`.
+- `DELETE /api/household/ingredients/{id}`: `{ expected_revision }`; archives without deleting history.
+- `GET /api/household/ingredients/{id}/recipes`: latest saved recipes that include this ingredient,
+  directly or through their pinned composition.
+- `POST /api/household/images`: bounded binary body with the actual raster MIME type; returns `id`.
+- `GET /api/household/images/{id}`: authorized raster bytes, fixed MIME type, `nosniff`, `no-store`.
+  Recipe create/update accepts optional `image_id`, referencing an existing household asset.
+
+All shared mutations require writer permission and the existing browser-write marker. Reader
+accounts can inspect the merged catalogue and reverse lookup but cannot mutate annotations or
+assets. Favourites are explicitly shared household annotations. Reference source records remain
+immutable; household annotations never rewrite a primary nutrient record. Archived ingredients
+are hidden from new selection and cannot be newly introduced through the recipe API, while
+existing recipes remain readable/editable with their pinned identity.
+
+Declarations use `source.kind = household_declaration`; a missing source URL is explicit and no
+nutrient value is fabricated. German declarations preserve their entered name/form in German
+translation fields with a neutral English canonical identity. Composition records ingredient
+membership, not inferred mass proportions. Cycles, unknown references and excessive depth fail.
+User-declared allergens are distinct from primary evidence. Profiles additionally accept
+`excluded_tags`; exact case-insensitive matches explicitly block meals, including tags/allergens
+on nested or pinned ingredients. Free-text notes and unmatched descriptive tags never establish
+safety. Current and recipe-pinned positive constraints are both retained during review.
+
+The overlay uses `ingredients.json` and `.ingredients.pending` under the existing private household
+lock, with expected revisions and atomic replacement. Conflicts retain the ingredient editor;
+its explicit reload action refreshes the version for review instead of silently overwriting it.
+Plan checks and durable application hold the same ingredient guard, preventing concurrent tags
+from being skipped between review and save. A separate dietary revision avoids invalidating
+plans when only a favourite/archive annotation changes; older overlays retain their global
+revision as a conservative fallback.
+
+The current F24 test image is `mealshop.local/mealshop:daily-workflows`, selected in the private
+Compose settings. It contains the client assets; no development asset mount is required.
+The final packaged-browser/restart evidence and synthetic-fixture housekeeping are recorded in
+[F24 validation](../../specs/0024-nextcloud-daily-workflows/validation.md).

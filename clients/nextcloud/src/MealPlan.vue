@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, toRaw, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, toRaw, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -13,15 +13,17 @@ import { catalogueSchema, emptySchema, profilesSchema, recipesSchema } from './c
 import { plansSchema, previewSchema } from './planning-api'
 import type { Plan, PlanReview as ReviewValue } from './planning-api'
 import { homes, useTask, loadCatalogue } from './state'
-import { exact, locale, t, explanation } from './i18n'
+import { compactExact, locale, t, explanation } from './i18n'
 import PlanReview from './PlanReview.vue'
+import MealCalendar from './MealCalendar.vue'
 const route = useRoute(),
   home = computed(() => String(route.params.home))
-const writable = computed(() => homes.value.find((h) => h.id === home.value)?.role !== 'reader')
+const writable = computed(() => homes.value.some((h) => h.id === home.value && h.role !== 'reader'))
 const plans = ref<z.infer<typeof plansSchema>>(),
   profiles = ref<z.infer<typeof profilesSchema>>(),
   recipes = ref<z.infer<typeof recipesSchema>>(),
   catalogue = ref<z.infer<typeof catalogueSchema>>()
+const calendarDate = ref(new Date().toLocaleDateString('en-CA'))
 const draft = ref<Plan>(),
   reviewed = ref(false)
 const result = ref<ReviewValue>()
@@ -66,7 +68,7 @@ async function load() {
       api(path(''), plansSchema),
       api(domain(home.value, '/api/household/profiles'), profilesSchema),
       api(domain(home.value, '/api/recipes'), recipesSchema),
-      loadCatalogue(),
+      loadCatalogue(home.value),
     ])
     plans.value = data[0]
     profiles.value = data[1]
@@ -78,11 +80,7 @@ function start(plan?: Plan) {
   draft.value = plan
     ? structuredClone(toRaw(plan))
     : {
-        date: new Intl.DateTimeFormat('en-CA', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-        }).format(new Date()),
+        date: calendarDate.value,
         meal: 'dinner',
         recipe: recipes.value?.recipes[0]
           ? { id: recipes.value.recipes[0].id, revision: recipes.value.recipes[0].revision }
@@ -97,10 +95,20 @@ function start(plan?: Plan) {
   result.value = undefined
   suggestions.value = []
   rejected.value = []
+  void nextTick().then(() => document.getElementById('mealshop-meal-editor-title')?.focus())
+}
+function selectSlot(date: string, meal: string, plan?: Plan) {
+  calendarDate.value = date
+  start(plan)
+  if (draft.value) {
+    draft.value.date = date
+    draft.value.meal = meal
+  }
 }
 function cancelPlan() {
   draft.value = undefined
   result.value = undefined
+  void nextTick().then(() => document.getElementById('mealshop-calendar-title')?.focus())
 }
 function selectedRecipe(event: Event) {
   if (event.target instanceof HTMLSelectElement && draft.value) {
@@ -160,9 +168,12 @@ async function apply() {
         remove: snapshot.remove,
       },
     })
+    calendarDate.value = snapshot.plan.date
     draft.value = undefined
     result.value = undefined
     await load()
+    await nextTick()
+    document.getElementById('mealshop-calendar-title')?.focus()
   })
 }
 async function suggest() {
@@ -238,27 +249,28 @@ onMounted(load)
       </div></template
     ></NcEmptyContent
   >
-  <ul v-if="plans && !draft" class="record-list">
-    <li v-for="plan in plans.meals" :key="`${plan.date}-${plan.meal}`">
-      <div class="inline-row">
-        <strong>{{ plan.date }} · {{ mealLabel(plan.meal) }}</strong
-        ><span
-          >{{ title(plan) }} · {{ t('revision') }} {{ plan.recipe.revision }} · {{ plan.servings }}
-          {{ t('servings') }}</span
-        ><span
-          v-if="
-            plans.review_required_slots.some((s) => s.date === plan.date && s.meal === plan.meal)
-          "
-          >{{ t('reviewRequired') }}</span
-        ><NcButton @click="start(plan)">{{ t('details') }}</NcButton
-        ><NcButton v-if="writable" :disabled="busy" @click="preview(true, plan)">{{
-          t('remove')
-        }}</NcButton>
-      </div>
-    </li>
-  </ul>
+  <MealCalendar
+    v-model:date="calendarDate"
+    v-if="plans && !draft"
+    :meals="plans.meals"
+    :members="profiles?.members ?? []"
+    :title="title"
+    :writable="writable"
+    :disabled="busy || !recipes?.recipes.length || !profiles?.members.length"
+    :review-slots="plans.review_required_slots"
+    @select="selectSlot"
+  />
   <section v-if="draft" class="narrow">
-    <h2>{{ t('newMeal') }}</h2>
+    <NcButton
+      v-if="
+        writable &&
+        plans?.meals.some((plan) => plan.date === draft?.date && plan.meal === draft?.meal)
+      "
+      :disabled="busy"
+      @click="preview(true)"
+      >{{ t('remove') }}</NcButton
+    >
+    <h2 id="mealshop-meal-editor-title" tabindex="-1">{{ t('newMeal') }}</h2>
     <form @submit.prevent="preview(false)">
       <div class="form-row">
         <label class="field"
@@ -266,6 +278,12 @@ onMounted(load)
         ><label class="field"
           >{{ t('meal')
           }}<select v-model="draft.meal">
+            <option
+              v-if="!['breakfast', 'lunch', 'dinner', 'snack'].includes(draft.meal)"
+              :value="draft.meal"
+            >
+              {{ draft.meal }}
+            </option>
             <option
               v-for="meal in ['breakfast', 'lunch', 'dinner', 'snack']"
               :key="meal"
@@ -295,6 +313,7 @@ onMounted(load)
       >
       <fieldset v-if="draft.attendees">
         <legend>{{ t('attendees') }}</legend>
+        <p class="muted">{{ t('attendanceHelp') }}</p>
         <NcCheckboxRadioSwitch
           v-for="member in profiles?.members"
           :key="member.id"
@@ -417,7 +436,7 @@ onMounted(load)
     <h2>{{ t('shopping') }}</h2>
     <ul class="plain-list">
       <li v-for="line in plans.shopping_requirements" :key="line.ingredient_id">
-        {{ names(line.ingredient_id) }}: {{ exact(line.grams) }} g
+        {{ names(line.ingredient_id) }}: {{ compactExact(line.grams) }} g
       </li>
     </ul>
   </section>

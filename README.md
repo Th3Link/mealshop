@@ -2,7 +2,7 @@
 
 Recipes, informed nutrition, shopping and family meal planning. **Early development:** a
 Rust HTTP server includes a curated ingredient catalogue (F02/F23, accepted in PRs #4/#5),
-plus a local recipe authoring/persistence slice (F04/F18, review pending).
+plus local recipe authoring/persistence (F04/F18) and a native Nextcloud client (F22).
 The broader product features below remain planned.
 
 [![CI](https://github.com/Th3Link/mealshop/actions/workflows/ci.yml/badge.svg)](https://github.com/Th3Link/mealshop/actions/workflows/ci.yml)
@@ -32,13 +32,13 @@ with German names: 284 source-backed BLS/USDA profiles and 29 explicitly unknown
 [Data and licences](data/README.md) · [Demo, API and custom catalogue guide](docs/guides/nutrition.md).
 Recipes can be created, saved, loaded and revised using catalogue ingredients; per-serving
 estimates retain their saved source snapshots. The executable stores data in `var/recipes`
-(or `MEALSHOP_RECIPE_DIR`) and requires loopback access until authentication exists.
+(or `MEALSHOP_RECIPE_DIR`) and keeps the default local/demo mode loopback-only. Nextcloud uses the authenticated transport described below.
 [Recipe API, storage and recovery guide](docs/guides/recipes.md).
-Use Ctrl-C for graceful shutdown. A saved recipe can be previewed at another serving count. Optional protected local household profiles use an operator token; see [household setup and limits](docs/guides/household.md). Hosted authentication remains future work. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
+Use Ctrl-C for graceful shutdown. A saved recipe can be previewed at another serving count. Optional protected local household profiles use an operator token; see [household setup and limits](docs/guides/household.md). Standalone hosted authentication remains future work. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
 
 The current browser surface is a pragmatic test demo, not the product UI. It supports German
 and English interface/quantity presentation; untranslated source content stays explicitly original.
-A native Vue 3 Nextcloud client now covers shared-household recipes, profiles, planning and the catalogue ([setup and verification](docs/guides/nextcloud.md), review pending). The standalone Vue shell remains planned ([F22](specs/0022-product-web-clients/specification.md));
+A native Vue 3 Nextcloud client now covers shared-household recipes, profiles, planning and the catalogue ([setup and verification](docs/guides/nextcloud.md)). The standalone Vue shell remains planned ([F22](specs/0022-product-web-clients/specification.md));
 full cross-client localization is tracked in [F21](specs/0021-internationalization/specification.md).
 
 ## Deployment and business model (planned)

@@ -75,6 +75,15 @@ try:
         assert request(name, unix, "/api/households", user="alice", method="POST", data={"name":"Rejected non-JSON"}, mime="text/plain")[0] == 415
         status, body = request(name, unix, "/api/households", user="alice", method="POST", data={"name":"Container verification"})
         assert status == 200 and json.loads(body)["id"].startswith("home-")
+        home = json.loads(body)["id"]
+        prefix = f"/api/households/{home}/domain"
+        declaration = {"expected_revision": 0, "ingredient": {"name": "Container ingredient", "language": "en", "form": "As declared", "recorded_on": "2026-11-09"}}
+        status, body = request(name, unix, prefix + "/api/household/ingredients", user="alice", method="POST", data=declaration)
+        assert status == 201
+        ingredient = json.loads(body)["id"]
+        recipe = {"title": "Container recipe", "language": "en", "servings": 1, "preparation": "as_recorded", "lines": [{"ingredient_id": ingredient, "grams": "1"}], "steps": []}
+        assert request(name, unix, prefix + "/api/recipes", user="alice", method="POST", data=recipe)[0] == 201
+        assert docker("exec", name, "stat", "-c", "%a", f"/data/{home}/household/ingredients.json") == "600"
         status, body = request(name, unix, "/js/mealshop.js", user="alice")
         assert status == 200 and len(body) > 100000
         if unix:

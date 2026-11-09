@@ -1,11 +1,29 @@
 import { ref, shallowRef } from 'vue'
-import { api, errorMessage } from './api'
+import { api, domain, errorMessage } from './api'
 import { homesSchema, catalogueSchema } from './contracts'
 import type { Home } from './contracts'
 export const homes = ref<Home[]>([])
+export const currentUser = ref('')
+export const lastHousehold = ref('')
+export function rememberHousehold(id: string) {
+  if (!currentUser.value || !homes.value.some((home) => home.id === id)) return
+  lastHousehold.value = id
+  try {
+    localStorage.setItem(`mealshop.lastHousehold.${currentUser.value}`, id)
+  } catch {
+    /* In-memory fallback. */
+  }
+}
 export async function loadHomes() {
   const data = await api('/api/households', homesSchema)
   homes.value = data.households
+  currentUser.value = data.user
+  try {
+    const saved = localStorage.getItem(`mealshop.lastHousehold.${data.user}`)
+    lastHousehold.value = data.households.some((home) => home.id === saved) ? (saved ?? '') : ''
+  } catch {
+    if (!data.households.some((home) => home.id === lastHousehold.value)) lastHousehold.value = ''
+  }
   return data
 }
 export function useTask() {
@@ -30,7 +48,8 @@ export function useTask() {
 
 // The ExApp catalogue is immutable for this application build; never cache household data here.
 let catalogueRequest: Promise<import('./contracts').Catalogue> | undefined
-export function loadCatalogue() {
+export function loadCatalogue(home?: string) {
+  if (home) return api(domain(home, '/api/household/ingredients'), catalogueSchema)
   catalogueRequest ??= api('/api/ingredients', catalogueSchema).catch((error) => {
     catalogueRequest = undefined
     throw error

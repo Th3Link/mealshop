@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import { nutritionSchema } from './contracts'
-import { exact, t } from './i18n'
+import { exact, compactExact, t } from './i18n'
 defineProps<{ value: z.infer<typeof nutritionSchema> }>()
 </script>
 <template>
@@ -44,13 +44,17 @@ defineProps<{ value: z.infer<typeof nutritionSchema> }>()
       <div v-for="item in value.ingredients" :key="item.ingredient_id">
         <h3>{{ item.name }}</h3>
         <p>
-          {{ exact(item.grams) }} g · {{ item.source.name }} · {{ item.source.record_id }} ·
+          {{ compactExact(item.grams) }} g · {{ item.source.name }} · {{ item.source.record_id }} ·
           {{ item.source.version }} · {{ item.source.license }}
         </p>
         <p lang="en">{{ item.uncertainty }}</p>
-        <a :href="item.source.url" target="_blank" rel="noopener noreferrer">{{
-          t('openSource')
-        }}</a>
+        <a
+          v-if="item.source.url"
+          :href="item.source.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ t('openSource') }}</a
+        >
       </div>
     </details>
   </section>

@@ -5,9 +5,24 @@ use crate::quantities::Amount;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
+#[derive(Clone, Default, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum SourceKind {
+    #[default]
+    Primary,
+    HouseholdDeclaration,
+}
+impl SourceKind {
+    fn is_primary(&self) -> bool {
+        *self == Self::Primary
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Source {
+    #[serde(default, skip_serializing_if = "SourceKind::is_primary")]
+    pub(crate) kind: SourceKind,
     pub(crate) name: String,
     pub(crate) url: String,
     pub(crate) record_id: String,
@@ -68,6 +83,16 @@ pub(crate) struct Ingredient {
     pub(crate) education: Vec<Education>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub(crate) translations: BTreeMap<String, IngredientText>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) components: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) tags: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) declared_allergens: Vec<String>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub(crate) archived: bool,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub(crate) favorite: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -126,7 +151,49 @@ impl Catalogue {
                 return Err(format!("Duplicate ingredient ID: {}", ingredient.id));
             }
         }
+        result.validate_composition()?;
         Ok(result)
+    }
+    pub(crate) fn closure(&self, ids: &BTreeSet<String>) -> BTreeSet<String> {
+        let mut result = ids.clone();
+        let mut pending: Vec<_> = ids.iter().cloned().collect();
+        while let Some(id) = pending.pop() {
+            if let Some(ingredient) = self.find(&id) {
+                for component in &ingredient.components {
+                    if result.insert(component.clone()) {
+                        pending.push(component.clone());
+                    }
+                }
+            }
+        }
+        result
+    }
+    fn validate_composition(&self) -> Result<(), String> {
+        fn visit(
+            catalogue: &Catalogue,
+            id: &str,
+            stack: &mut BTreeSet<String>,
+            done: &mut BTreeSet<String>,
+        ) -> Result<(), String> {
+            if done.contains(id) {
+                return Ok(());
+            }
+            if stack.len() >= 32 || !stack.insert(id.to_owned()) {
+                return Err("Ingredient composition is cyclic or too deep".to_owned());
+            }
+            let ingredient = catalogue.find(id).ok_or("Unknown composition component")?;
+            for component in &ingredient.components {
+                visit(catalogue, component, stack, done)?;
+            }
+            stack.remove(id);
+            done.insert(id.to_owned());
+            Ok(())
+        }
+        let mut done = BTreeSet::new();
+        for ingredient in &self.ingredients {
+            visit(self, &ingredient.id, &mut BTreeSet::new(), &mut done)?;
+        }
+        Ok(())
     }
 
     pub(crate) fn find(&self, id: &str) -> Option<&Ingredient> {
@@ -148,6 +215,40 @@ impl Ingredient {
             .all(|term| searchable.contains(&term.to_lowercase()))
     }
 
+    fn validate_household_fields(&self) -> Result<(), String> {
+        if self.source.kind == SourceKind::HouseholdDeclaration {
+            if !self.id.starts_with("custom-")
+                || !self.nutrients.is_empty()
+                || !self.education.is_empty()
+            {
+                return Err("Household declarations must retain explicit unknown nutrition and a custom identity".to_owned());
+            }
+            if !self.source.url.is_empty() {
+                https(&self.source.url)?;
+            }
+        } else {
+            https(&self.source.url)?;
+        }
+        if self.components.len() > 100
+            || self.tags.len() > 30
+            || self.declared_allergens.len() > 14
+            || self.components.iter().collect::<BTreeSet<_>>().len() != self.components.len()
+            || self.tags.iter().collect::<BTreeSet<_>>().len() != self.tags.len()
+            || self
+                .declared_allergens
+                .iter()
+                .any(|id| !crate::household::allergen_ids().contains(&id.as_str()))
+        {
+            return Err("Invalid ingredient components, tags or declared allergens".to_owned());
+        }
+        for tag in &self.tags {
+            text(tag)?;
+            if tag.len() > 80 || tag.trim() != tag {
+                return Err("Ingredient tag exceeds 80 bytes".to_owned());
+            }
+        }
+        Ok(())
+    }
     fn validate(&self) -> Result<(), String> {
         if self.id.is_empty()
             || self.id.len() > 100
@@ -199,7 +300,7 @@ impl Ingredient {
                 text(form)?;
             }
         }
-        https(&self.source.url)?;
+        self.validate_household_fields()?;
         for alias in &self.aliases {
             text(alias)?;
         }

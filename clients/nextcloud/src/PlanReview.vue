@@ -5,7 +5,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import Nutrition from './Nutrition.vue'
-import { exact, locale, t, explanation, allergenName } from './i18n'
+import { compactExact, locale, t, explanation, allergenName } from './i18n'
 const props = defineProps<{
   value: PlanReview
   ingredients: Ingredient[]
@@ -93,13 +93,16 @@ function names(id: string) {
       >
         {{ profiles.find((m) => m.id === match.member_id)?.name }} ·
         {{ names(match.ingredient_id) }} · {{ allergenName(match.allergen_id) }} ·
-        <a :href="match.source_url" target="_blank" rel="noopener noreferrer">{{ t('source') }}</a>
+        <span v-if="!match.source_url">{{ t('householdEvidence') }}</span
+        ><a v-else :href="match.source_url" target="_blank" rel="noopener noreferrer">{{
+          t('source')
+        }}</a>
       </p></template
     >
     <h3>{{ t('shopping') }}</h3>
     <ul class="plain-list">
       <li v-for="line in value.preview.shopping_delta" :key="line.ingredient_id">
-        {{ names(line.ingredient_id) }}: {{ exact(line.grams_delta) }} g
+        {{ names(line.ingredient_id) }}: {{ compactExact(line.grams_delta) }} g
       </li>
     </ul>
     <NcCheckboxRadioSwitch v-model="reviewed">{{ t('acknowledge') }}</NcCheckboxRadioSwitch

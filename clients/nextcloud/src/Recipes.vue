@@ -7,7 +7,7 @@ import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
-import { api, domain } from './api'
+import { api, domain, imageUrl } from './api'
 import {
   catalogueSchema,
   nutritionSchema,
@@ -17,21 +17,32 @@ import {
 } from './contracts'
 import type { Recipe } from './contracts'
 import { homes, useTask, loadCatalogue } from './state'
-import { exact, locale, parseGrams, t } from './i18n'
+import { exact, compactExact, locale, parseGrams, t } from './i18n'
+import { mdiPlus, mdiTrashCanOutline } from '@mdi/js'
+import Icon from './Icon.vue'
 import Nutrition from './Nutrition.vue'
 import RecipeQuantity from './RecipeQuantity.vue'
+import IngredientEditor from './IngredientEditor.vue'
 import { conversionsSchema } from './quantity-api'
 import type { LineDraft } from './quantity-api'
 const route = useRoute(),
   router = useRouter()
 const home = computed(() => String(route.params.home))
-const writable = computed(() => homes.value.find((h) => h.id === home.value)?.role !== 'reader')
+const writable = computed(() => homes.value.some((h) => h.id === home.value && h.role !== 'reader'))
 const records = ref<z.infer<typeof recipesSchema>>()
 const selected = ref<z.infer<typeof recipeRecordSchema>>()
 const catalogue = ref<z.infer<typeof catalogueSchema>>()
 const draft = ref<Recipe>()
 const conversions = ref<z.infer<typeof conversionsSchema>>({ entries: [] })
 const lineDrafts = ref<LineDraft[]>([])
+const creatingIngredient = ref<number | null>(null)
+async function ingredientCreated(id: string) {
+  const index = creatingIngredient.value
+  catalogue.value = await loadCatalogue(home.value)
+  if (index !== null && lineDrafts.value[index]) lineDrafts.value[index].ingredient_id = id
+  creatingIngredient.value = null
+  dirty.value = true
+}
 const dirty = ref(false),
   validation = ref(''),
   previewCount = ref(1)
@@ -79,7 +90,10 @@ async function load() {
       return
     }
     if (isEditing) {
-      const data = await Promise.all([loadCatalogue(), api('/api/conversions', conversionsSchema)])
+      const data = await Promise.all([
+        loadCatalogue(home.value),
+        api('/api/conversions', conversionsSchema),
+      ])
       if (generation !== loadGeneration) return
       catalogue.value = data[0]
       conversions.value = data[1]
@@ -136,6 +150,10 @@ function addLine() {
   })
   dirty.value = true
 }
+function createIngredientLine() {
+  addLine()
+  creatingIngredient.value = lineDrafts.value.length - 1
+}
 function removeLine(index: number) {
   lineDrafts.value.splice(index, 1)
   dirty.value = true
@@ -147,6 +165,37 @@ function removeStep(index: number) {
 function addStep() {
   draft.value?.steps.push({ instruction: '', active_seconds: 0, passive_seconds: 0 })
   dirty.value = true
+}
+function removeImage() {
+  if (!draft.value) return
+  draft.value.image_id = null
+  dirty.value = true
+}
+async function uploadImage(event: Event) {
+  if (!(event.target instanceof HTMLInputElement) || !draft.value) return
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  if (
+    file.size > 5 * 1024 * 1024 ||
+    !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+  ) {
+    validation.value = t('imageTooLarge')
+    return
+  }
+  const current = draft.value
+  await run(async () => {
+    const result = await api(request('/api/household/images'), z.object({ id: z.string() }), {
+      method: 'POST',
+      data: file,
+      contentType: file.type,
+    })
+    if (draft.value === current) {
+      current.image_id = result.id
+      dirty.value = true
+      validation.value = ''
+    }
+  })
 }
 async function save() {
   if (busy.value) return
@@ -190,7 +239,6 @@ async function save() {
   }
   if (
     !recipe.title.trim() ||
-    !recipe.author.trim() ||
     !lines.length ||
     lines.some((l) => !l.ingredient_id) ||
     !Number.isInteger(Number(recipe.servings)) ||
@@ -253,9 +301,9 @@ async function scale() {
         <h1 tabindex="-1">{{ t('recipes') }}</h1>
         <p>{{ t('recipeIntro') }}</p>
       </div>
-      <NcButton v-if="writable" variant="primary" :to="`${listPath}/new`">{{
-        t('newRecipe')
-      }}</NcButton>
+      <NcButton v-if="writable" variant="primary" :to="`${listPath}/new`"
+        ><template #icon><Icon :path="mdiPlus" /></template>{{ t('newRecipe') }}</NcButton
+      >
     </header>
     <NcEmptyContent
       v-if="records && !records.recipes.length"
@@ -265,7 +313,15 @@ async function scale() {
     <ul v-if="records" class="record-list">
       <li v-for="record in records.recipes" :key="record.id">
         <RouterLink :to="`${listPath}/${record.id}`"
-          ><div>
+          ><img
+            v-if="record.image_id"
+            :src="imageUrl(home, record.image_id)"
+            alt=""
+            class="recipe-thumbnail"
+            width="64"
+            height="64"
+          />
+          <div>
             <strong :lang="record.language">{{ record.title }}</strong
             ><span>{{ record.servings }} {{ t('servings') }}</span>
           </div>
@@ -282,7 +338,31 @@ async function scale() {
     <NcNoteCard v-if="validation" type="error" role="alert">{{ validation }}</NcNoteCard>
     <form class="narrow" @submit.prevent="save" @input="dirty = true" @change="dirty = true">
       <NcTextField v-model="draft.title" :label="t('title')" required maxlength="200" />
-      <NcTextField v-model="draft.author" :label="t('author')" required maxlength="200" />
+      <NcTextField
+        v-model="draft.author"
+        :label="t('author')"
+        :helper-text="t('optional')"
+        maxlength="200"
+      />
+      <fieldset class="recipe-image-editor">
+        <legend>{{ t('image') }}</legend>
+        <img
+          v-if="draft.image_id"
+          :src="imageUrl(home, draft.image_id)"
+          :alt="draft.title"
+          class="recipe-image"
+        />
+        <label class="field"
+          >{{ t('image')
+          }}<input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            :disabled="busy"
+            @change="uploadImage"
+        /></label>
+        <p class="muted">{{ t('imageHelp') }}</p>
+        <NcButton v-if="draft.image_id" @click="removeImage">{{ t('removeImage') }}</NcButton>
+      </fieldset>
       <div class="form-row">
         <NcTextField
           v-model="draft.servings"
@@ -308,18 +388,23 @@ async function scale() {
         </select></label
       >
       <h2>{{ t('lines') }}</h2>
-      <div v-for="(line, index) in lineDrafts" :key="index">
+      <div v-for="(line, index) in lineDrafts" :key="index" class="recipe-ingredient-row">
         <RecipeQuantity
           :model-value="line"
+          @changed="dirty = true"
           @update:model-value="lineDrafts[index] = $event"
           :index="index"
           :ingredients="catalogue?.ingredients ?? []"
           :conversions="conversions"
           :invalid="Boolean(validation)"
-        /><NcButton :aria-label="`${t('remove')} ${index + 1}`" @click="removeLine(index)">{{
-          t('remove')
-        }}</NcButton>
+        /><NcButton
+          variant="tertiary"
+          :aria-label="`${t('remove')} ${index + 1}`"
+          @click="removeLine(index)"
+          ><template #icon><Icon :path="mdiTrashCanOutline" /></template
+        ></NcButton>
       </div>
+      <NcButton @click="createIngredientLine">{{ t('createInline') }}</NcButton>
       <NcButton :disabled="lineDrafts.length >= 100" @click="addLine">{{ t('addLine') }}</NcButton>
       <h2>{{ t('steps') }}</h2>
       <div v-for="(step, index) in draft.steps" :key="index">
@@ -362,12 +447,19 @@ async function scale() {
       <div>
         <h1 tabindex="-1" :lang="selected.recipe.language">{{ selected.recipe.title }}</h1>
         <p>
-          {{ selected.recipe.author }} · {{ t('revision') }} {{ selected.revision }} ·
-          {{ selected.recipe.servings }} {{ t('servings') }}
+          <template v-if="selected.recipe.author">{{ selected.recipe.author }} · </template
+          >{{ t('revision') }} {{ selected.revision }} · {{ selected.recipe.servings }}
+          {{ t('servings') }}
         </p>
       </div>
       <NcButton v-if="writable" :to="{ query: { edit: '1' } }">{{ t('edit') }}</NcButton>
     </header>
+    <img
+      v-if="selected.recipe.image_id"
+      :src="imageUrl(home, selected.recipe.image_id)"
+      :alt="selected.recipe.title"
+      class="recipe-image"
+    />
     <section>
       <h2>{{ t('lines') }}</h2>
       <label class="field"
@@ -379,7 +471,7 @@ async function scale() {
       >
       <ul class="plain-list">
         <li v-for="(line, index) in scaledLines ?? selected.display_lines" :key="index">
-          {{ exact(line.amount) }} {{ line.unit }} ·
+          {{ compactExact(line.amount) }} {{ line.unit }} ·
           {{
             selected.nutrition.ingredients.find((i) => i.ingredient_id === line.ingredient_id)
               ?.name ?? line.ingredient_id
@@ -416,4 +508,11 @@ async function scale() {
     </form>
     <Nutrition :value="preview ?? selected.nutrition" />
   </template>
+  <IngredientEditor
+    v-if="creatingIngredient !== null && catalogue"
+    :home="home"
+    :catalogue="catalogue"
+    @close="creatingIngredient = null"
+    @saved="ingredientCreated"
+  />
 </template>

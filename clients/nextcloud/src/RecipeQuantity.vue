@@ -2,11 +2,13 @@
 import { computed, watch, toRaw } from 'vue'
 import { z } from 'zod'
 import NcTextField from '@nextcloud/vue/components/NcTextField'
+import IngredientSelect from './IngredientSelect.vue'
 import { locale, exact, parseGrams, t } from './i18n'
 import type { Ingredient } from './contracts'
 import { conversionsSchema } from './quantity-api'
 import type { LineDraft } from './quantity-api'
 const model = defineModel<LineDraft>({ required: true })
+const emit = defineEmits<{ changed: [] }>()
 const props = defineProps<{
   ingredients: Ingredient[]
   conversions: z.infer<typeof conversionsSchema>
@@ -25,6 +27,7 @@ const options = computed(() =>
   ),
 )
 function reset() {
+  emit('changed')
   model.value.evidence = null
   model.value.mode = 'manual'
   model.value.density = ''
@@ -32,6 +35,7 @@ function reset() {
   model.value.invalidFields = []
 }
 function choose() {
+  emit('changed')
   const evidence = options.value.find((e) => e.id === model.value.mode)?.evidence
   if (evidence) {
     model.value.evidence = structuredClone(toRaw(evidence))
@@ -70,20 +74,8 @@ watch(locale, (_, previous) => {
 <template>
   <div class="quantity-line">
     <div class="line">
-      <label class="field"
-        >{{ t('selectIngredient')
-        }}<select
-          v-model="model.ingredient_id"
-          :aria-label="t('selectIngredient')"
-          required
-          @change="reset"
-        >
-          <option value="" disabled>{{ t('selectIngredient') }}</option>
-          <option v-for="i in ingredients" :key="i.id" :value="i.id">
-            {{ i.translations[locale]?.name ?? i.name }}
-          </option>
-        </select></label
-      ><NcTextField
+      <IngredientSelect v-model="model.ingredient_id" :ingredients="ingredients" @change="reset" />
+      <NcTextField
         v-model="model.input"
         :label="model.unit === 'g' ? t('grams') : t('amount')"
         inputmode="decimal"

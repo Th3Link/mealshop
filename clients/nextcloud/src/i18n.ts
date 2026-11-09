@@ -1,6 +1,51 @@
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  reloadSaved: 'Reload saved version',
+  householdEvidence: 'Household declaration',
+  excludedTags: 'Hard excluded ingredient tags',
+  excludedTagsHelp:
+    'Matching tags on ingredients or their components block this person’s meals. One exact tag per line; case is ignored.',
+  optional: 'Optional',
+  addIngredient: 'Create ingredient',
+  ingredientName: 'Ingredient name',
+  ingredientForm: 'Form or product description',
+  tags: 'Tags',
+  tagsHelp: 'One tag per line; descriptive tags do not establish allergy safety.',
+  components: 'Contains ingredients',
+  declaredAllergens: 'Declared allergens',
+  sourceDeclaration: 'Household declaration · nutrition unknown',
+  sourceOptional: 'Source URL (optional, HTTPS)',
+  recordedOn: 'Recorded on',
+  favorite: 'Household favourite',
+  favoritesOnly: 'Favourites only',
+  showArchived: 'Show archived ingredients',
+  archiveIngredient: 'Archive ingredient',
+  restoreIngredient: 'Restore ingredient',
+  archiveHelp:
+    'Archive this ingredient for new selections? Saved recipes and their sources remain available.',
+  ingredientMetadata: 'Tags and composition',
+  recipesUsingIngredient: 'Recipes with this ingredient',
+  noRecipesForIngredient: 'No saved recipes use this ingredient.',
+  image: 'Recipe image',
+  imageHelp: 'JPEG, PNG or WebP; up to 5 MiB. Uploaded privately to this household.',
+  removeImage: 'Remove image',
+  imageTooLarge: 'Choose a supported image up to 5 MiB.',
+  previousWeek: 'Previous week',
+  nextWeek: 'Next week',
+  today: 'Today',
+  emptySlot: 'Plan a meal',
+  eating: 'Eating',
+  skipping: 'Skipping',
+  attendanceHelp:
+    'Select who is eating this meal. Unselected people skip it. Servings remain adjustable.',
+  invitePerson: 'Person to invite',
+  searchPeople: 'Search Nextcloud people',
+  searchPeopleHelp: 'Search follows the same account visibility rules as file sharing.',
+  archived: 'Archived',
+  chooseIngredient: 'Search or select an ingredient',
+  createInline: 'Missing ingredient? Create it here',
+
   timingEstimate: 'Preparation estimate',
   referenceServings: 'Reference servings',
   elapsedSeconds: 'Elapsed time (seconds)',
@@ -172,6 +217,51 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  reloadSaved: 'Gespeicherte Version neu laden',
+  householdEvidence: 'Haushaltsangabe',
+  excludedTags: 'Hart ausgeschlossene Zutaten-Tags',
+  excludedTagsHelp:
+    'Passende Tags an Zutaten oder ihren Bestandteilen blockieren Mahlzeiten für diese Person. Ein exakter Tag pro Zeile; Großschreibung wird ignoriert.',
+  optional: 'Optional',
+  addIngredient: 'Zutat anlegen',
+  ingredientName: 'Name der Zutat',
+  ingredientForm: 'Form oder Produktbeschreibung',
+  tags: 'Tags',
+  tagsHelp: 'Ein Tag pro Zeile; beschreibende Tags bestätigen keine Allergiesicherheit.',
+  components: 'Enthaltene Zutaten',
+  declaredAllergens: 'Deklarierte Allergene',
+  sourceDeclaration: 'Haushaltsangabe · Nährwerte unbekannt',
+  sourceOptional: 'Quellen-URL (optional, HTTPS)',
+  recordedOn: 'Erfasst am',
+  favorite: 'Haushaltsfavorit',
+  favoritesOnly: 'Nur Favoriten',
+  showArchived: 'Archivierte Zutaten anzeigen',
+  archiveIngredient: 'Zutat archivieren',
+  restoreIngredient: 'Zutat wiederherstellen',
+  archiveHelp:
+    'Diese Zutat für neue Auswahlen archivieren? Gespeicherte Rezepte und Quellen bleiben erhalten.',
+  ingredientMetadata: 'Tags und Zusammensetzung',
+  recipesUsingIngredient: 'Rezepte mit dieser Zutat',
+  noRecipesForIngredient: 'Kein gespeichertes Rezept verwendet diese Zutat.',
+  image: 'Rezeptbild',
+  imageHelp: 'JPEG, PNG oder WebP; bis 5 MiB. Wird privat in diesem Haushalt gespeichert.',
+  removeImage: 'Bild entfernen',
+  imageTooLarge: 'Wähle ein unterstütztes Bild bis 5 MiB.',
+  previousWeek: 'Vorherige Woche',
+  nextWeek: 'Nächste Woche',
+  today: 'Heute',
+  emptySlot: 'Mahlzeit planen',
+  eating: 'Isst mit',
+  skipping: 'Setzt aus',
+  attendanceHelp:
+    'Wähle, wer bei dieser Mahlzeit mitisst. Nicht ausgewählte Personen setzen aus. Portionen bleiben anpassbar.',
+  invitePerson: 'Einzuladende Person',
+  searchPeople: 'Nextcloud-Personen suchen',
+  searchPeopleHelp: 'Die Suche verwendet dieselben Sichtbarkeitsregeln wie Dateifreigaben.',
+  archived: 'Archiviert',
+  chooseIngredient: 'Zutat suchen oder auswählen',
+  createInline: 'Zutat fehlt? Hier anlegen',
+
   timingEstimate: 'Geschätzte Zubereitungszeit',
   referenceServings: 'Referenzportionen',
   elapsedSeconds: 'Gesamtdauer (Sekunden)',
@@ -433,4 +523,9 @@ export function explanation(code: string): string {
 export function allergenName(id: string): string {
   const group = groups.find((g) => g.id === id)
   return (locale.value === 'de' ? group?.translations.de : undefined) ?? group?.name ?? id
+}
+
+export function compactExact(value: string | null): string {
+  if (value === null) return t('unknown')
+  return exact(value.includes('.') ? value.replace(/0+$/, '').replace(/\.$/, '') : value)
 }

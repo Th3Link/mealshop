@@ -3,11 +3,14 @@
 mod api;
 pub mod exapp;
 mod household;
+mod ingredient_api;
+mod ingredients;
 mod membership;
 mod nutrition;
 mod planning;
 mod quantities;
 mod recipe_api;
+mod recipe_images;
 mod recipes;
 
 /// Builds the application with the bundled, versioned starter catalogue.
@@ -58,7 +61,7 @@ pub fn household_router(
     directory: impl AsRef<std::path::Path>,
     token: String,
 ) -> Result<axum::Router, String> {
-    household::router(json, directory.as_ref(), token, None, None)
+    household::router(json, directory.as_ref(), token, None, None, None)
 }
 
 /// Builds household routes with operator and optional read-only credentials.
@@ -70,7 +73,7 @@ pub fn household_router_with_reader(
     token: String,
     reader: Option<String>,
 ) -> Result<axum::Router, String> {
-    household::router(json, directory.as_ref(), token, reader, None)
+    household::router(json, directory.as_ref(), token, reader, None, None)
 }
 
 /// Builds recipes, household profiles and protected family meal planning with shared revisions.
@@ -87,14 +90,23 @@ pub fn family_router(
     let recipes = std::sync::Arc::new(std::sync::Mutex::new(recipes::Store::open(
         recipe_directory.as_ref(),
     )?));
+    let ingredients = std::sync::Arc::new(std::sync::Mutex::new(ingredients::Store::open(
+        catalogue.clone(),
+        household_directory.as_ref(),
+    )?));
     let household = household::router(
         json,
         household_directory.as_ref(),
         token,
         reader,
         Some(recipes.clone()),
+        Some(ingredients.clone()),
     )?;
     Ok(api::router(catalogue.clone())
-        .merge(recipe_api::router_shared(catalogue, recipes))
+        .merge(recipe_api::router_shared(
+            ingredients,
+            recipes,
+            Some(household_directory.as_ref().join("images")),
+        ))
         .merge(household))
 }
