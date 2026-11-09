@@ -104,9 +104,20 @@ async fn create_list_restart_and_retrieve_preserve_exact_inputs_and_portion_nutr
     let disk: Value =
         serde_json::from_slice(&fs::read(dir.0.join(format!("{id}-1.json"))).unwrap()).unwrap();
     assert_eq!(disk["schema_version"], 1);
+    let ids: std::collections::BTreeSet<_> = disk["catalogue"]["ingredients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|i| i["id"].as_str().unwrap())
+        .collect();
     assert_eq!(
-        disk["catalogue"]["ingredients"].as_array().unwrap().len(),
-        2
+        ids,
+        std::collections::BTreeSet::from([
+            "oats",
+            "chia",
+            "custom-group-oats",
+            "custom-group-seeds-fibre"
+        ])
     );
     assert_eq!(disk["recipe"]["lines"][0]["grams"], "100.500000");
 }

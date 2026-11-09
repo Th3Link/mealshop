@@ -22,12 +22,12 @@ struct RecipeState {
     images: Option<std::path::PathBuf>,
 }
 
-pub(crate) fn router(catalogue: Catalogue, store: Store) -> Router {
-    router_shared(
-        Arc::new(Mutex::new(crate::ingredients::Store::memory(catalogue))),
+pub(crate) fn router(catalogue: Catalogue, store: Store) -> Result<Router, String> {
+    Ok(router_shared(
+        Arc::new(Mutex::new(crate::ingredients::Store::memory(catalogue)?)),
         Arc::new(Mutex::new(store)),
         None,
-    )
+    ))
 }
 pub(crate) fn router_shared(
     catalogue: crate::ingredients::Shared,

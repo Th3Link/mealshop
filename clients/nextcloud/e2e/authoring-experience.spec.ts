@@ -13,6 +13,15 @@ test('direct ingredient creation, optional constituents and branched preparation
     .getByLabel('Household name', { exact: true })
     .fill(`Browser verification ${Date.now()}`)
   await page.getByRole('button', { name: 'Create household', exact: true }).click()
+  await expect
+    .poll(() =>
+      page.locator('.household-switcher').evaluate((root) => {
+        const name = root.querySelector('.mealshop-selection-name')?.getBoundingClientRect()
+        const input = root.querySelector('.input-field__input')?.getBoundingClientRect()
+        return Boolean(name && input && name.top >= input.top && name.bottom <= input.bottom)
+      }),
+    )
+    .toBe(true)
   await page.getByText('Create recipe', { exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Structured authoring verification')
   await page.getByLabel('Servings', { exact: true }).fill('2')

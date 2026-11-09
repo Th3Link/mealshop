@@ -882,7 +882,7 @@ async fn optional_constituents_aggregate_exactly_and_sorbitol_blocks_pinned_reci
             &app,
             "PUT",
             "/api/household/ingredients/oats",
-            json!({"expected_revision":1,"annotations":{"organization":{}}}),
+            json!({"expected_revision":1,"annotations":{"organization":{"intolerance_triggers":[]}}}),
             false
         )
         .await
@@ -975,4 +975,73 @@ async fn constituent_identity_units_unknowns_and_legacy_values_remain_consistent
         .0,
         StatusCode::UNPROCESSABLE_ENTITY
     );
+}
+
+#[tokio::test]
+async fn older_organization_writes_preserve_unknown_constituents_and_intolerance_fields() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let profile = json!({"mode":"own","values":{},"note":"Test evidence","source_url":"","constituents":{"beta_glucan":{"name":"Beta-glucan","unit":"g","amount":"2"}}});
+    assert_eq!(call(&app,"PUT","/api/household/ingredients/oats",json!({"expected_revision":0,"annotations":{"organization":{"intolerance_triggers":["sorbitol"],"nutrition":profile}}}),false).await.0,StatusCode::OK);
+    let legacy = json!({"expected_revision":1,"annotations":{"favorite":true,"organization":{"nutrition":{"mode":"own","values":{},"note":"Test evidence","source_url":""}}}});
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            legacy,
+            false
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let catalogue = call(&app, "GET", "/api/household/ingredients", Value::Null, true)
+        .await
+        .1;
+    let oats = catalogue["ingredients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["id"] == "oats")
+        .unwrap();
+    assert_eq!(
+        oats["organization"]["intolerance_triggers"],
+        json!(["sorbitol"])
+    );
+    assert_eq!(oats["constituents"]["beta_glucan"]["amount"], "2");
+    assert_eq!(oats["favorite"], true);
+}
+
+#[tokio::test]
+async fn organizational_reverse_lookup_finds_legacy_recipes_without_rewriting_snapshots() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (status,saved)=call(&app,"POST","/api/recipes",json!({"title":"Legacy oats","language":"en","servings":1,"preparation":"as_recorded","lines":[{"ingredient_id":"oats","grams":"100"}],"steps":[]}),false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    drop(app);
+    let path = dir
+        .0
+        .join("recipes")
+        .join(format!("{}-1.json", saved["id"].as_str().unwrap()));
+    let mut legacy: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    let records = legacy["catalogue"]["ingredients"].as_array_mut().unwrap();
+    records.retain(|i| i["organization"]["is_group"] != true);
+    for item in records {
+        item["organization"]["group_id"] = Value::Null;
+    }
+    let bytes = serde_json::to_vec(&legacy).unwrap();
+    fs::write(&path, &bytes).unwrap();
+    let reopened = dir.app();
+    let (status, found) = call(
+        &reopened,
+        "GET",
+        "/api/household/ingredients/custom-group-oats/recipes",
+        Value::Null,
+        true,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(found["recipes"][0]["id"], saved["id"]);
+    assert_eq!(fs::read(path).unwrap(), bytes);
 }

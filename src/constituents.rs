@@ -181,3 +181,9 @@ where
     }
     deserializer.deserialize_map(Entries)
 }
+
+pub(crate) fn optional_unique<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<BTreeMap<String, Declaration>>, D::Error> {
+    unique(deserializer).map(Some)
+}

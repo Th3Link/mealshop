@@ -490,6 +490,7 @@
 
 /* Product form rhythm; component internals retain native Nextcloud focus and theme styles. */
 .mealshop .labeled-field {
+  --default-clickable-area: 44px;
   display: grid;
   gap: 8px;
   min-width: 0;
@@ -499,9 +500,6 @@
 .mealshop .field {
   font-size: 14px;
   line-height: 1.5;
-}
-.mealshop .labeled-field input {
-  min-height: 44px;
 }
 .mealshop .labeled-field input:invalid:not(:user-invalid):not([aria-invalid='true']) {
   border-color: var(--color-border-maxcontrast);
@@ -663,9 +661,6 @@
   }
 }
 
-.mealshop .labeled-field .nc-select.vs--single .vs__selected-options {
-  min-height: 44px;
-}
 .mealshop .ingredient-select .vs__selected .mealshop-selection-name {
   display: block;
   white-space: nowrap;
@@ -673,9 +668,8 @@
   text-overflow: ellipsis;
   max-width: 100%;
 }
-.mealshop .household-switcher .nc-select.vs--single .vs__selected-options,
-.mealshop .household-switcher .input-field__input {
-  min-height: 64px;
+.mealshop .household-switcher {
+  --default-clickable-area: 64px;
 }
 .mealshop .household-switcher .mealshop-selection-name {
   display: -webkit-box;
@@ -700,4 +694,23 @@
 }
 .mealshop .recipe-display-controls .field {
   max-width: 180px;
+}
+.mealshop .ingredient-group-row {
+  background: var(--color-background-hover);
+  border-radius: var(--border-radius);
+}
+.mealshop .ingredient-group-row > a {
+  min-height: 56px;
+}
+
+.mealshop .field > input {
+  min-height: 44px;
+  margin: 0;
+  width: 100%;
+}
+.mealshop .ingredient-group-count {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-maxcontrast);
+  margin-inline-start: 8px;
 }

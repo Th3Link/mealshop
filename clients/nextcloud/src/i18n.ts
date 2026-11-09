@@ -1,7 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
-  noSearchResults: 'No matching ingredients. Try another name.',
+  noSearchResults: 'No matching results. Try another name.',
   createNamed: 'Create ingredient',
   identitySection: 'Ingredient details',
   identityHelp: 'Start with a name and form. Add values and details when you know them.',
@@ -41,6 +41,7 @@ const en = {
   nameRequired: 'Enter a name to continue.',
 
   ingredientGroup: 'Ingredient group',
+  ingredientGroups: 'Groups',
   groupIngredient: 'This is a group',
   noGroup: 'No group',
   nutritionMode: 'Nutrient values per 100 g',
@@ -106,7 +107,6 @@ const en = {
   searchPeopleHelp: 'Search follows the same account visibility rules as file sharing.',
   archived: 'Archived',
   chooseIngredient: 'Search or select an ingredient',
-  createInline: 'Missing ingredient? Create it here',
 
   timingEstimate: 'Preparation estimate',
   referenceServings: 'Reference servings',
@@ -279,7 +279,7 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
-  noSearchResults: 'Keine passenden Zutaten. Versuche einen anderen Namen.',
+  noSearchResults: 'Keine passenden Ergebnisse. Versuche einen anderen Namen.',
   createNamed: 'Zutat anlegen',
   identitySection: 'Angaben zur Zutat',
   identityHelp:
@@ -323,6 +323,7 @@ const de: Record<keyof typeof en, string> = {
   nameRequired: 'Gib einen Namen ein, um fortzufahren.',
 
   ingredientGroup: 'Zutatengruppe',
+  ingredientGroups: 'Gruppen',
   groupIngredient: 'Dies ist eine Gruppe',
   noGroup: 'Keine Gruppe',
   nutritionMode: 'Nährwerte je 100 g',
@@ -389,7 +390,6 @@ const de: Record<keyof typeof en, string> = {
   searchPeopleHelp: 'Die Suche verwendet dieselben Sichtbarkeitsregeln wie Dateifreigaben.',
   archived: 'Archiviert',
   chooseIngredient: 'Zutat suchen oder auswählen',
-  createInline: 'Zutat fehlt? Hier anlegen',
 
   timingEstimate: 'Geschätzte Zubereitungszeit',
   referenceServings: 'Referenzportionen',

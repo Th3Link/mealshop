@@ -8,7 +8,6 @@ defineProps<{ value: z.infer<typeof nutritionSchema> }>()
   <section>
     <h2>{{ t('nutrients') }}</h2>
     <p>{{ t('nutritionLimits') }}</p>
-    <p class="muted">{{ t('original') }}</p>
     <div class="table-scroll">
       <table>
         <thead>
@@ -77,12 +76,12 @@ defineProps<{ value: z.infer<typeof nutritionSchema> }>()
     <details>
       <summary>{{ t('source') }}</summary>
       <div v-for="item in value.ingredients" :key="item.ingredient_id">
-        <h3>{{ item.name }}</h3>
+        <h3>{{ item.translations[locale]?.name ?? item.name }}</h3>
         <p>
           {{ compactExact(item.grams) }} g · {{ item.source.name }} · {{ item.source.record_id }} ·
           {{ item.source.version }} · {{ item.source.license }}
         </p>
-        <p lang="en">{{ item.uncertainty }}</p>
+        <p :lang="item.source.kind === 'primary' ? 'en' : undefined">{{ item.uncertainty }}</p>
         <a
           v-if="item.source.url"
           :href="item.source.url"

@@ -225,7 +225,7 @@ impl Store {
             .collect()
     }
 
-    pub(crate) fn containing(&self, id: &str) -> Vec<Summary> {
+    pub(crate) fn containing(&self, ingredient_ids: &BTreeSet<String>) -> Vec<Summary> {
         let ids: BTreeSet<_> = self
             .records
             .values()
@@ -237,7 +237,10 @@ impl Store {
                     .iter()
                     .map(|line| line.ingredient_id.clone())
                     .collect();
-                record.catalogue.closure(&ingredients).contains(id)
+                !record
+                    .catalogue
+                    .closure(&ingredients)
+                    .is_disjoint(ingredient_ids)
             })
             .map(|record| record.id.as_str())
             .collect();

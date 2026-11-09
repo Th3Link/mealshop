@@ -58,9 +58,9 @@ pub(crate) struct Store {
     writable: bool,
 }
 impl Store {
-    pub(crate) fn memory(mut base: Catalogue) -> Self {
-        crate::ingredient_groups::seed(&mut base);
-        Self {
+    pub(crate) fn memory(mut base: Catalogue) -> Result<Self, String> {
+        crate::ingredient_groups::seed(&mut base)?;
+        Ok(Self {
             effective: base.clone(),
             base,
             document: Document {
@@ -72,10 +72,10 @@ impl Store {
             },
             path: None,
             writable: true,
-        }
+        })
     }
     pub(crate) fn open(base: Catalogue, directory: &Path) -> Result<Self, String> {
-        let mut store = Self::memory(base);
+        let mut store = Self::memory(base)?;
         store.path = Some(directory.join("ingredients.json"));
         if directory.join(".ingredients.pending").exists() {
             return Err("Interrupted ingredient write; recover before startup".to_owned());
@@ -315,6 +315,41 @@ impl Store {
                 .annotations
                 .get(&id)
                 .and_then(|a| a.organization.clone());
+        }
+        if let Some(current) = &mut input.organization {
+            let previous = document
+                .annotations
+                .get(&id)
+                .and_then(|a| a.organization.as_ref())
+                .or_else(|| self.base.find(&id).map(|i| &i.organization));
+            if let Some(previous) = previous {
+                if current.intolerance_triggers.is_none() {
+                    current
+                        .intolerance_triggers
+                        .clone_from(&previous.intolerance_triggers);
+                } else if current
+                    .intolerance_triggers
+                    .as_ref()
+                    .is_some_and(Vec::is_empty)
+                    && previous.intolerance_triggers.is_none()
+                {
+                    current.intolerance_triggers = None;
+                }
+                if let (
+                    crate::ingredient_groups::Nutrition::Own { constituents, .. },
+                    crate::ingredient_groups::Nutrition::Own {
+                        constituents: old, ..
+                    },
+                ) = (&mut current.nutrition, &previous.nutrition)
+                {
+                    if constituents.is_none() {
+                        constituents.clone_from(old);
+                    } else if constituents.as_ref().is_some_and(BTreeMap::is_empty) && old.is_none()
+                    {
+                        *constituents = None;
+                    }
+                }
+            }
         }
         document.annotations.insert(id, input);
         self.save(document, expected)

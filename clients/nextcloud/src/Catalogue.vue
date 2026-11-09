@@ -15,7 +15,7 @@ import { api, domain } from './api'
 import { foldSearch } from './ingredient-search'
 import IngredientEditor from './IngredientEditor.vue'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
-import { mdiPlus, mdiStar, mdiStarOutline } from '@mdi/js'
+import { mdiPlus, mdiStar, mdiStarOutline, mdiChevronRight, mdiChevronDown } from '@mdi/js'
 import Icon from './Icon.vue'
 const route = useRoute(),
   router = useRouter()
@@ -139,6 +139,17 @@ const filtered = computed(() => {
       }) ?? []
   )
 })
+const foodCount = computed(() =>
+  query.value.trim()
+    ? filtered.value.filter((i) => !i.organization.is_group).length
+    : (data.value?.ingredients.filter(
+        (i) =>
+          !i.organization.is_group &&
+          (showArchived.value || !i.archived) &&
+          (!favoritesOnly.value || i.favorite),
+      ).length ?? 0),
+)
+const groupCount = computed(() => filtered.value.filter((i) => i.organization.is_group).length)
 async function load() {
   await run(async () => {
     data.value = await loadCatalogue(String(route.params.home))
@@ -174,7 +185,9 @@ onMounted(load)
         :trailing-button-label="t('clearSearch')"
         @trailing-button-click="query = ''"
       />
-      <p v-if="data" role="status">{{ filtered.length }} {{ t('results') }}</p>
+      <p v-if="data" role="status">
+        {{ t('ingredients') }}: {{ foodCount }} · {{ t('ingredientGroups') }}: {{ groupCount }}
+      </p>
     </div>
   </template>
   <NcNoteCard v-if="error" type="error" role="alert"
@@ -372,10 +385,13 @@ onMounted(load)
           v-for="item in filtered"
           :key="item.id"
           class="ingredient-list-row"
-          :class="{ subtype: item.organization.group_id }"
+          :class="{
+            subtype: item.organization.group_id,
+            'ingredient-group-row': item.organization.is_group,
+          }"
         >
           <NcButton
-            v-if="item.organization.is_group"
+            v-if="item.organization.is_group && !query.trim()"
             variant="tertiary"
             :aria-expanded="expandedGroups.includes(item.id)"
             :aria-label="`${name(item)}: ${t('subtypes')}`"
@@ -384,18 +400,29 @@ onMounted(load)
                 ? expandedGroups.filter((id) => id !== item.id)
                 : [...expandedGroups, item.id]
             "
-            >{{ t('subtypes') }}
-            {{
-              data.ingredients.filter((i) => i.organization.group_id === item.id).length
-            }}</NcButton
-          >
+            ><template #icon
+              ><Icon
+                :path="
+                  expandedGroups.includes(item.id) ? mdiChevronDown : mdiChevronRight
+                " /></template
+          ></NcButton>
           <RouterLink
+            :aria-label="item.organization.is_group ? name(item) : undefined"
             :to="{ path: `/h/${route.params.home}/ingredients/${item.id}`, query: route.query }"
             ><div>
-              <strong>{{ name(item) }}</strong
-              ><span>{{ form(item) }}</span>
+              <strong
+                >{{ name(item)
+                }}<small
+                  v-if="item.organization.is_group"
+                  class="ingredient-group-count"
+                  aria-hidden="true"
+                  >{{
+                    data.ingredients.filter((i) => i.organization.group_id === item.id).length
+                  }}</small
+                ></strong
+              ><span v-if="!item.organization.is_group">{{ form(item) }}</span>
             </div>
-            <span class="source-label"
+            <span v-if="!item.organization.is_group" class="source-label"
               >{{ item.source.name }} <small>{{ item.source.record_id }}</small></span
             ></RouterLink
           >

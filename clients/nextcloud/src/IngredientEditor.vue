@@ -68,6 +68,7 @@ async function reload() {
       allergens.value = [...item.declared_allergens]
     }
   })
+  if (!error.value) changed.value = false
 }
 async function save() {
   await run(async () => {

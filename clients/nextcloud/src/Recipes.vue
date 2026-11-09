@@ -40,7 +40,15 @@ const creatingIngredient = ref<{ index: number; name: string } | null>(null)
 async function ingredientCreated(id: string) {
   const index = creatingIngredient.value?.index
   catalogue.value = await loadCatalogue(home.value)
-  if (index !== undefined && lineDrafts.value[index]) lineDrafts.value[index].ingredient_id = id
+  const line = index === undefined ? undefined : lineDrafts.value[index]
+  if (line) {
+    line.ingredient_id = id
+    line.evidence = null
+    line.mode = 'manual'
+    line.density = ''
+    line.spoon = ''
+    line.invalidFields = []
+  }
   creatingIngredient.value = null
   dirty.value = true
 }
@@ -122,8 +130,8 @@ async function load() {
       draft.value = structuredClone(toRaw(selected.value.recipe))
     }
     lineDrafts.value =
-      draft.value?.lines.map((l, index) => ({
-        id: l.id ?? `line-${index + 1}`,
+      draft.value?.lines.map((l) => ({
+        id: l.id ?? `line-${crypto.randomUUID()}`,
         part_id: l.part_id ?? null,
         ingredient_id: l.ingredient_id,
         input: exact(l.quantity?.amount ?? l.grams),

@@ -287,3 +287,25 @@ optional constituents. No constituent amount or health effect is inferred from a
 its canonical ID to `intolerances`. Explicit presence blocks affected attendees using current and pinned
 composition. The regulated fourteen-allergen data remains unchanged; unselected triggers do not assert
 absence. Back up private data before upgrading and use matching backups for downgrades.
+
+
+### Full catalogue organization (F27)
+
+The versioned `data/ingredient-groups.json` maps all 313 bundled IDs into 73 bilingual organizational
+groups. `python3 scripts/verify_catalogue.py` also verifies this mapping's complete and unique coverage.
+Existing wheat/rye/spelt flour group IDs are retained. Source identities, names, quantities, nutrients and
+allergen mappings remain unchanged; organizational groups start with unknown nutrient values and no
+health declarations. Household overrides may move/ungroup records as before. Historical snapshots are
+not rewritten. Custom replacement catalogues only receive groups for mapped IDs actually present.
+
+Malformed or colliding organizational metadata fails startup. Group metadata is validated separately
+from a custom catalogue's source payload, preserving the existing bounded snapshot-publication checks.
+
+Older organization payloads preserve constituent and intolerance fields they do not know about.
+Explicit empty `constituents: {}` / `intolerance_triggers: []` clears these fields. Favourite changes
+without a semantic dietary change keep the existing review version. This protects already-open older
+clients from silently removing new declarations.
+
+Group reverse lookup includes recipes using current group members as well as pinned historical
+composition/group references, so recipes created before grouping remain discoverable without rewriting
+their source snapshots.

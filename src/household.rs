@@ -513,7 +513,7 @@ pub(crate) fn review_snapshot(
                         }) {
                             excluded.insert(ingredient);
                         }
-                        for trigger in &item.organization.intolerance_triggers {
+                        for trigger in item.organization.intolerance_triggers.iter().flatten() {
                             if m.intolerances.iter().any(|id| {
                                 id.eq_ignore_ascii_case(trigger)
                                     || (trigger == "sorbitol" && id.eq_ignore_ascii_case("sorbit"))

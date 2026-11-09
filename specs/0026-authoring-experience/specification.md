@@ -1,6 +1,6 @@
 # Comfortable native authoring and recipe structure
 
-Status: In progress
+Status: Done
 Origin: Customer screenshots and clarification after PR #19
 
 1. Use native Nextcloud controls with persistent readable labels, clear section hierarchy, consistent input sizes, unclipped selection names and translated empty states. Preserve keyboard/focus, responsive light/dark operation and drafts.

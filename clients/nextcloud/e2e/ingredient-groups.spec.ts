@@ -92,10 +92,7 @@ test('groups, declared nutrient values and explicit subtype inheritance persist'
   await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
   await page.goto(homePath + '/ingredients')
   await page.getByLabel('Search ingredients', { exact: true }).fill(group)
-  await page
-    .getByRole('link', { name: group + ' Flour', exact: false })
-    .first()
-    .click()
+  await page.getByRole('link', { name: group, exact: true }).first().click()
   page.once('dialog', (prompt) => prompt.accept())
   await page.getByRole('button', { name: 'Archive ingredient', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Restore ingredient', exact: true })).toBeVisible()

@@ -16,3 +16,10 @@ Offline catalogue import/verification, reference conversions and allergen verifi
 clippy, licence and advisory gates are retained. This evidence does not establish formal WCAG certification,
 medical benefit, comprehensive intolerance coverage, or a parallel cooking/timer schedule. The broader
 catalogue grouping is deliberately a subsequent slice after these checks.
+
+The first authoring commit fe3c0e7 passed all ten PR CI checks. Subsequent review additionally verifies
+that an older organization payload cannot erase new intolerance/constituent data, that replacing a
+converted ingredient clears its old conversion evidence, and that anonymous legacy lines receive
+collision-resistant IDs. Final combined suite: 58 backend tests and nine embedded browser workflows.
+An inverted dependency-cycle guard and a removed group assignment were both detected by behavioral
+tests; original source restored before rerunning the complete suite.
