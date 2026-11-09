@@ -1,8 +1,17 @@
 # Plan for product web clients
 
-- [ ] Define product UX with the customer; involve a UX/UI agent when requested (AC 5–6).
-- [ ] Validate Nextcloud/AppAPI integration and choose compatible packages (AC 1, 4).
-- [ ] Implement Nextcloud and standalone shells with common domain contracts (AC 1–3).
-- [ ] Verify localized flows, host routing/authentication and deployment packaging (AC 3–4).
+Status: In progress. The Nextcloud client is implemented; the standalone shell remains a separate slice.
 
-No Vue scaffolding or demo design expansion is part of the current change.
+- [x] Record the native Nextcloud UX, role model and acceptance flows in ux-notes.md.
+- [x] Validate installed Nextcloud 35.0.2 and `AppAPI` 35.0.0 contracts; record ADR 0012.
+- [x] Implement authenticated proxy routing, persistent shared households, explicit invitations and owner/editor/reader permissions.
+- [x] Implement native Vue shells, recipes and exact quantities, catalogue, profiles, planning and shopping-list preview/application against existing domain endpoints.
+- [x] Preserve original quantities and pinned source revisions; support exact server-generated g/kg display.
+- [x] Add strict `TypeScript`, runtime API validation, keyed English/German UI and host theme support.
+- [x] Exercise actual Nextcloud browser workflows, conflicts, revocation, responsive bounds and accessibility with Playwright.
+- [x] Package the client and backend in a rootless-compatible container; verify isolated TCP and Unix-socket transports.
+- [x] Complete the final combined verification and record evidence in validation.md.
+- [ ] Deploy the prepared container into the existing test stack after explicit approval of its internal trusted domain. Manual test deployment is already operational.
+- [ ] Implement and verify the standalone shell in its own usable slice (AC 2).
+
+See docs/guides/nextcloud.md for reproducible commands and remaining production deployment limits. Do not treat the product vision, standalone shell, account-lifecycle reconciliation or a complete `HaRP` deployment as verified functionality.

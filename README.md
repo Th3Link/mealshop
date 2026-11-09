@@ -38,7 +38,7 @@ Use Ctrl-C for graceful shutdown. A saved recipe can be previewed at another ser
 
 The current browser surface is a pragmatic test demo, not the product UI. It supports German
 and English interface/quantity presentation; untranslated source content stays explicitly original.
-Product web clients are planned in Vue 3 for Nextcloud and standalone hosting ([F22](specs/0022-product-web-clients/specification.md));
+A native Vue 3 Nextcloud client now covers shared-household recipes, profiles, planning and the catalogue ([setup and verification](docs/guides/nextcloud.md), review pending). The standalone Vue shell remains planned ([F22](specs/0022-product-web-clients/specification.md));
 full cross-client localization is tracked in [F21](specs/0021-internationalization/specification.md).
 
 ## Deployment and business model (planned)

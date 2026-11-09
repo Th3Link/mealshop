@@ -1,6 +1,6 @@
 # Vue 3 product web clients
 
-Status: Draft
+Status: In progress
 Priority: Must
 Origin: Customer (after PR #4 merge, 2026-11-07)
 Milestone: M1
@@ -10,24 +10,30 @@ Use a proper web application inside Nextcloud or on a standalone Mealshop server
 
 ## Acceptance criteria
 1. The Nextcloud client uses Vue 3 and compatible Nextcloud components, respects host
-   navigation/theme/accessibility, and loads assets/API calls correctly through AppAPI/proxy paths.
+   navigation/theme/accessibility, and loads assets/API calls correctly through `AppAPI`/proxy paths.
 2. The standalone server client uses Vue 3 with its own navigation/authentication shell and
    connects to the same domain APIs. Shared code boundaries are chosen from real common needs.
 3. Both clients use F21 language/content/number contracts from the outset; domain calculations
    stay on the Rust/API side and are not copied from the disposable demo.
-4. Supported Nextcloud/AppAPI/Vue component versions, authentication, CSRF/CSP, base paths and
+4. Supported Nextcloud/`AppAPI`/Vue component versions, authentication, CSRF/CSP, base paths and
    deployment packaging are verified against actual installations before claiming compatibility.
 5. The existing framework-free nutrition demo is explicitly a temporary test surface. Extending
    it does not establish product UX or replace either client. Design effort stays minimal there.
 6. Product UX is specified/reviewed before implementation. If significant design work is needed,
    coordinate a dedicated UX/UI agent with the customer instead of expanding the demo design.
 
+## Authorized implementation (2026-11-09)
+Customer requests a native Nextcloud 35 application with complete existing backend workflows,
+not an isolated reference page; shared households with explicit invitations and roles were chosen.
+Build integration/authentication/storage boundaries before domain screens. See ux-notes.md and
+ADR 0012. No placeholders for planned features; a later pass is visual refinement only.
+
 ## Out of scope
-Implementing either Vue client in the current localization/demo-classification change.
-Flutter remains the separate app target in F18. No component library/build tool is selected yet.
+Standalone shell and Flutter are separate deliverables. Unimplemented product-vision features
+are not implied by exposing the existing domain APIs.
 
 ## UX notes
-To be defined before Ready with the customer or a customer-invoked UX/UI agent.
+See [ux-notes.md](ux-notes.md); native Nextcloud hierarchy is customer-mandated.
 
 ## Links
 [ADR 0007](../../docs/adr/0007-localization-and-web-clients.md),

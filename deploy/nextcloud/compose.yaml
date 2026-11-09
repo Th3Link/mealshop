@@ -1,0 +1,29 @@
+name: mealshop-exapp-test
+services:
+  mealshop:
+    image: ${MEALSHOP_IMAGE:-mealshop.local/mealshop:0.1.0}
+    restart: unless-stopped
+    user: "${MEALSHOP_UID:?Set the data owner UID}:${MEALSHOP_GID:?Set the data owner GID}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    env_file:
+      - ${MEALSHOP_ENV_FILE:?Set the absolute path to the private ExApp environment file}
+    ports:
+      - "${MEALSHOP_BIND_ADDR:?Set the internal Docker bridge address}:${APP_PORT:?Set the ExApp port}:${APP_PORT}"
+    volumes:
+      - type: bind
+        source: ${MEALSHOP_DATA_DIR:?Set the dedicated Mealshop data directory}
+        target: /nc_app_mealshop_data
+        bind:
+          create_host_path: false
+    networks:
+      - nextcloud
+networks:
+  nextcloud:
+    external: true
+    name: ${MEALSHOP_NEXTCLOUD_NETWORK:?Set the existing Nextcloud Docker network}

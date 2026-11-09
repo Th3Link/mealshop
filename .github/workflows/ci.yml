@@ -123,3 +123,33 @@ jobs:
           name: mealshop-server-sbom
           path: mealshop-server.spdx.json
           if-no-files-found: error
+  nextcloud-client:
+    name: native Vue client / types, contracts, build and audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients/nextcloud
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: clients/nextcloud/package-lock.json
+      - run: npm install --global npm@12.2.2 --ignore-scripts --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+      - run: npm audit --audit-level=moderate
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mealshop-nextcloud-assets
+          path: clients/nextcloud/dist/
+          if-no-files-found: error
+  exapp-image:
+    name: ExApp image / Rust 1.85 and native Vue assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t mealshop.local/mealshop:ci .

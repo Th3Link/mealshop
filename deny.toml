@@ -5,3 +5,21 @@ multiple-versions = "warn"
 [sources]
 unknown-registry = "deny"
 unknown-git = "deny"
+
+# Exact TLS dependencies introduced by the authenticated Nextcloud OCS client (ADR 0012).
+[[licenses.exceptions]]
+name = "ring"
+version = "0.17.14"
+allow = ["ISC"]
+[[licenses.exceptions]]
+name = "rustls-webpki"
+version = "0.103.16"
+allow = ["ISC"]
+[[licenses.exceptions]]
+name = "untrusted"
+version = "0.9.0"
+allow = ["ISC"]
+[[licenses.exceptions]]
+name = "webpki-roots"
+version = "1.0.10"
+allow = ["CDLA-Permissive-2.0"]

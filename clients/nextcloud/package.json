@@ -1,0 +1,39 @@
+{
+  "name": "@mealshop/nextcloud",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^24.15.0"
+  },
+  "scripts": {
+    "build": "vue-tsc --noEmit && vite build",
+    "check": "vue-tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:e2e": "playwright test",
+    "format:check": "prettier --check \"src/**/*.{ts,vue,css}\" \"tests/**/*.ts\" \"e2e/*.spec.ts\" \"*.ts\""
+  },
+  "dependencies": {
+    "@mdi/js": "^7.4.47",
+    "@nextcloud/axios": "^2.5.2",
+    "@nextcloud/router": "^3.0.1",
+    "@nextcloud/vue": "9.14.1",
+    "vue": "^3.5.24",
+    "vue-router": "^5.4.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@playwright/test": "^1.56.1",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "prettier": "^3.8.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "vitest": "^4.0.8",
+    "vue-tsc": "^3.1.3"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
+  },
+  "packageManager": "npm@12.2.2"
+}

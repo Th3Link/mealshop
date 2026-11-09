@@ -97,3 +97,10 @@ Cross-dimension arithmetic rejects unsupported precision; it never assumes water
 The immutable revision retains this context. Scaling previews normalize from saved grams,
 leaving original inputs/evidence in the source revision. Local demo g/kg preference affects
 mass display only; other users' saved recipes are not rewritten.
+
+## Exact recipe display units
+
+Recipe detail and serving-preview GET requests accept optional `display_unit=g|kg`. The additive
+`display_lines` response contains server-formatted mass amounts and units. Kilograms retain up
+to nine fractional digits to represent normalized micrograms without rounding. This presentation
+does not change the stored source quantity, six-place input bound or nutrient calculation.

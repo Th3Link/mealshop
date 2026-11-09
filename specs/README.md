@@ -29,5 +29,5 @@ New folders take the next free number; keep index/status changes in the same com
 | F19 | [Hosted plans, paid app and recipe marketplace](0019-commercial-service/specification.md) | Draft | Could | M4 |
 | F20 | [Federated recipe and meal-plan exchange](0020-federation/specification.md) | Draft | Could | M5 |
 | F21 | [Internationalization and localized content](0021-internationalization/specification.md) | In progress | Must | M1 |
-| F22 | [Vue 3 product web clients](0022-product-web-clients/specification.md) | Draft | Must | M1 |
+| F22 | [Vue 3 product web clients](0022-product-web-clients/specification.md) | In progress | Must | M1 |
 | F23 | [English-base kitchen ingredient catalogue](0023-kitchen-ingredient-catalogue/specification.md) | Done | Must | M1 |

@@ -237,6 +237,7 @@ async fn preview_apply_rescale_alternative_and_restart_preserve_recipe_and_shopp
     assert_eq!(result["plan"]["recipe"]["revision"], 1);
     let mut edited = recipe("oats");
     edited["lines"][0]["grams"] = json!("200");
+    edited["title"] = json!("Renamed current recipe");
     request(
         &app,
         "PUT",
@@ -245,6 +246,17 @@ async fn preview_apply_rescale_alternative_and_restart_preserve_recipe_and_shopp
         None,
     )
     .await;
+    let listing = request(
+        &app,
+        "GET",
+        "/api/household/mealplan",
+        Value::Null,
+        Some(READER),
+    )
+    .await
+    .1;
+    assert_eq!(listing["recipe_revisions"][0]["title"], "Planning fixture");
+    assert_eq!(listing["recipe_revisions"][0]["revision"], 1);
     assert_eq!(
         preview(&app, p).await["shopping_delta"],
         result["shopping_delta"]
