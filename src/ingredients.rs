@@ -258,6 +258,7 @@ impl Store {
             BTreeMap::new()
         };
         let ingredient = Ingredient {
+            constituents: BTreeMap::new(),
             organization: crate::ingredient_groups::Organization::default(),
             reference_source: None,
             nutrition_inherited_from: None,

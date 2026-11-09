@@ -4,7 +4,7 @@ COPY clients/nextcloud/package*.json ./
 RUN npm install --global npm@12.2.2 --ignore-scripts --no-audit --no-fund
 RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY clients/nextcloud/ ./
-COPY data/allergens.json /build/data/allergens.json
+COPY data/allergens.json data/intolerance-triggers.json /build/data/
 RUN npm run build
 
 FROM rust:1.85-alpine@sha256:4333721398de61f53ccbe53b0b855bcc4bb49e55828e8f652d7a8ac33dd0c118 AS server

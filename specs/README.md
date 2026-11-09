@@ -33,3 +33,5 @@ New folders take the next free number; keep index/status changes in the same com
 | F23 | [English-base kitchen ingredient catalogue](0023-kitchen-ingredient-catalogue/specification.md) | Done | Must | M1 |
 | F24 | [Native Nextcloud daily workflows](0024-nextcloud-daily-workflows/specification.md) | Done | Must | M1 |
 | F25 | [Ingredient groups and nutrition](0025-ingredient-groups/specification.md) | Done | Must | M1 |
+
+| F26 | [Comfortable native authoring](0026-authoring-experience/specification.md) | In progress | Must | M1 |

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcTextField from './LabeledField.vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
@@ -12,6 +12,7 @@ import type { Ingredient } from './contracts'
 import { homes, useTask, loadCatalogue } from './state'
 import { exact, locale, t, allergenName } from './i18n'
 import { api, domain } from './api'
+import { foldSearch } from './ingredient-search'
 import IngredientEditor from './IngredientEditor.vue'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import { mdiPlus, mdiStar, mdiStarOutline } from '@mdi/js'
@@ -125,7 +126,7 @@ const filtered = computed(() => {
         ]
           .join(' ')
           .toLocaleLowerCase()
-        return terms.every((term) => text.includes(term))
+        return terms.every((term) => foldSearch(text).includes(foldSearch(term)))
       })
       .sort((a, b) => {
         const parent = (i: Ingredient) =>
@@ -210,6 +211,9 @@ onMounted(load)
         {{ t('dietClass') }}: {{ t(selected.organization.diet) }} · {{ t('originClass') }}:
         {{ t(selected.organization.origin) }}
       </p>
+      <p v-if="selected.organization.intolerance_triggers.length">
+        {{ t('intoleranceTriggers') }}: {{ t('sorbitol') }}
+      </p>
       <p v-if="selected.nutrition_inherited_from">
         {{ t('inheritedFrom') }}:
         {{
@@ -278,7 +282,10 @@ onMounted(load)
               </tr>
             </thead>
             <tbody>
-              <tr v-for="nutrient in data.nutrient_definitions" :key="nutrient.id">
+              <tr
+                v-for="nutrient in data.nutrient_definitions.filter((n) => n.group !== 'component')"
+                :key="nutrient.id"
+              >
                 <th scope="row" lang="en">
                   {{ nutrient.label }} <small>{{ nutrient.unit }}</small>
                 </th>
@@ -288,6 +295,14 @@ onMounted(load)
               </tr>
             </tbody>
           </table>
+          <template v-if="Object.keys(selected.constituents).length"
+            ><h3>{{ t('foodConstituents') }}</h3>
+            <ul class="plain-list">
+              <li v-for="(c, id) in selected.constituents" :key="id">
+                {{ c.translations[locale] ?? c.name }}: {{ exact(c.amount) }} {{ c.unit }} / 100 g
+              </li>
+            </ul></template
+          >
         </section>
         <section>
           <h2>{{ t('source') }}</h2>

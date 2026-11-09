@@ -3,7 +3,7 @@ import { computed, onMounted, ref, toRaw } from 'vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcTextField from './LabeledField.vue'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
@@ -14,6 +14,7 @@ import type { Member } from './contracts'
 import { homes, loadHomes, useTask, loadCatalogue } from './state'
 import { locale, t } from './i18n'
 import IngredientPicker from './IngredientPicker.vue'
+import intoleranceTriggers from '../../../data/intolerance-triggers.json'
 import NextcloudPersonPicker from './NextcloudPersonPicker.vue'
 const route = useRoute()
 const home = computed(() => String(route.params.home)),
@@ -183,6 +184,16 @@ onMounted(load)
           />
         </label>
         <p class="muted">{{ t('excludedTagsHelp') }}</p>
+        <fieldset>
+          <legend>{{ t('intoleranceTriggers') }}</legend>
+          <NcCheckboxRadioSwitch
+            v-for="trigger in intoleranceTriggers"
+            :key="trigger.id"
+            v-model="member.intolerances"
+            :value="trigger.id"
+            >{{ t('sorbitol') }}</NcCheckboxRadioSwitch
+          >
+        </fieldset>
         <IngredientPicker
           @update:model-value="dirty = true"
           v-model="member.excluded_ingredients"

@@ -15,6 +15,12 @@ const MAX_RECORD_BYTES: u64 = 2_097_152;
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Step {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) part_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) ingredient_line_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) prepared_parts: Vec<String>,
     pub(crate) instruction: String,
     pub(crate) active_seconds: u32,
     pub(crate) passive_seconds: u32,
@@ -23,6 +29,8 @@ pub(crate) struct Step {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Recipe {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) parts: Vec<crate::recipe_structure::Part>,
     pub(crate) title: String,
     pub(crate) language: String,
     #[serde(default)]
@@ -67,6 +75,7 @@ impl Recipe {
         {
             return Err("Use a title of 1–200 bytes and an optional author of at most 200 bytes, language en/de and at most 100 nonempty steps of 4000 bytes with durations up to 604800 seconds".to_owned());
         }
+        crate::recipe_structure::validate(self)?;
         nutrition::calculate(catalogue, &self.calculation()).map(|_| ())
     }
 }

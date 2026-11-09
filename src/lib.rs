@@ -1,6 +1,7 @@
 //! Mealshop ingredient catalogue and nutrition HTTP application.
 
 mod api;
+mod constituents;
 pub mod exapp;
 mod household;
 mod ingredient_api;
@@ -12,6 +13,7 @@ mod planning;
 mod quantities;
 mod recipe_api;
 mod recipe_images;
+mod recipe_structure;
 mod recipes;
 
 /// Builds the application with the bundled, versioned starter catalogue.

@@ -264,3 +264,26 @@ both the effective values and group record, so editing a group changes future ca
 Existing readers remain read-only and all writes keep revision checks and private atomic persistence.
 Back up the whole private data directory before upgrading; a downgrade must use the matching backup
 because older versions do not understand the added organization fields.
+
+
+### Comfortable authoring and optional constituents (F26)
+
+Ingredient creation is offered directly in recipe search results and prefills the searched name. It
+returns to the same quantity row; cancelling or closing a changed dialog requires an explicit discard.
+Compound spellings such as Haferflocken/Hafer Flocken match without substituting another food identity.
+Native selectors retain complete accessible names and the household switcher wraps its selected name.
+
+Own profiles optionally contain `nutrition.constituents`, keyed by stable constituent ID. Each entry has
+`name`, optional `translations`, `unit` (`g`, `mg`, `µg`) and nullable exact `amount` per 100 g. They share
+the profile's required evidence note and optional source URL. Inherited profiles include these declarations.
+The effective ingredient snapshot exposes `constituents`. Saved recipe and serving-estimate responses expose a separate
+`constituents` array with total, per-serving value, known subtotals, status and missing ingredient IDs.
+Unknown is never converted into zero. Built-in beta-glucan/soluble fibre amounts remain readable through
+legacy nutrient keys for existing API/demo callers, but native nutrient entry/results present them as
+optional constituents. No constituent amount or health effect is inferred from another nutrient.
+
+`organization.intolerance_triggers` accepts `sorbitol`. The separate trigger registry is returned alongside
+`groups` as `intolerance_triggers` from the existing allergen API. Selecting a trigger in a profile writes
+its canonical ID to `intolerances`. Explicit presence blocks affected attendees using current and pinned
+composition. The regulated fourteen-allergen data remains unchanged; unselected triggers do not assert
+absence. Back up private data before upgrading and use matching backups for downgrades.

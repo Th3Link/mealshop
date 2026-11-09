@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, watch, toRaw } from 'vue'
 import { z } from 'zod'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcTextField from './LabeledField.vue'
 import IngredientSelect from './IngredientSelect.vue'
 import { locale, exact, parseGrams, t } from './i18n'
 import type { Ingredient } from './contracts'
 import { conversionsSchema } from './quantity-api'
 import type { LineDraft } from './quantity-api'
 const model = defineModel<LineDraft>({ required: true })
-const emit = defineEmits<{ changed: [] }>()
+const emit = defineEmits<{ changed: []; create: [name: string] }>()
 const props = defineProps<{
   ingredients: Ingredient[]
   conversions: z.infer<typeof conversionsSchema>
@@ -74,7 +74,13 @@ watch(locale, (_, previous) => {
 <template>
   <div class="quantity-line">
     <div class="line">
-      <IngredientSelect v-model="model.ingredient_id" :ingredients="ingredients" @change="reset" />
+      <IngredientSelect
+        v-model="model.ingredient_id"
+        :ingredients="ingredients"
+        allow-create
+        @create="emit('create', $event)"
+        @change="reset"
+      />
       <NcTextField
         v-model="model.input"
         :label="model.unit === 'g' ? t('grams') : t('amount')"

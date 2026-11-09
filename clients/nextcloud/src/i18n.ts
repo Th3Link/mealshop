@@ -1,6 +1,45 @@
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  noSearchResults: 'No matching ingredients. Try another name.',
+  createNamed: 'Create ingredient',
+  identitySection: 'Ingredient details',
+  identityHelp: 'Start with a name and form. Add values and details when you know them.',
+  classificationSection: 'Classification and composition',
+  provenanceSection: 'Source and recording',
+  moreNutrients: 'Vitamins and minerals',
+  foodConstituents: 'Additional food constituents',
+  constituentsSummaryHelp:
+    'Declared amounts are added across ingredients. Missing values remain unknown.',
+  constituentsHelp:
+    'Add only constituents you have information about. Amounts are per 100 g; missing values remain unknown.',
+  addConstituent: 'Add constituent',
+  constituentName: 'Constituent name',
+  otherConstituent: 'Other constituent',
+  chooseConstituent: 'Choose constituent',
+  intoleranceTriggers: 'Intolerance triggers',
+  sorbitol: 'Sorbitol',
+  recipeParts: 'Recipe parts',
+  partsHelp: 'Organize preparations into named parts, with their own ingredients and steps.',
+  addPart: 'Add recipe part',
+  partName: 'Part name',
+  mainRecipe: 'Main recipe',
+  belongsTo: 'Recipe part',
+  usesParts: 'Uses prepared recipe parts',
+  stepIngredients: 'Ingredients used in this step',
+  stepParts: 'Prepared parts used in this step',
+  removePartConfirm: 'Remove this part? Its ingredients and steps move to the main recipe.',
+  removePart: 'Remove recipe part',
+  recipeDetails: 'Recipe details',
+  optionalDetails: 'Optional details',
+  saveIngredient: 'Save ingredient',
+  ingredientPending: 'Saving ingredient…',
+  sourceHelp:
+    'Your own values are household declarations. Keep a label or source note so they can be checked later.',
+  allergenHelp: 'Declare known presence. An unselected box does not establish absence.',
+  untitledLine: 'Ingredient row',
+  nameRequired: 'Enter a name to continue.',
+
   ingredientGroup: 'Ingredient group',
   groupIngredient: 'This is a group',
   noGroup: 'No group',
@@ -240,6 +279,49 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  noSearchResults: 'Keine passenden Zutaten. Versuche einen anderen Namen.',
+  createNamed: 'Zutat anlegen',
+  identitySection: 'Angaben zur Zutat',
+  identityHelp:
+    'Beginne mit Name und Form. Werte und weitere Angaben kannst du ergänzen, sobald du sie kennst.',
+  classificationSection: 'Einordnung und Zusammensetzung',
+  provenanceSection: 'Quelle und Erfassung',
+  moreNutrients: 'Vitamine und Mineralstoffe',
+  foodConstituents: 'Weitere Inhaltsstoffe',
+  constituentsSummaryHelp:
+    'Deklarierte Mengen werden über die Zutaten addiert. Fehlende Angaben bleiben unbekannt.',
+  constituentsHelp:
+    'Ergänze nur Stoffe, zu denen dir Angaben vorliegen. Mengen gelten je 100 g; fehlende Werte bleiben unbekannt.',
+  addConstituent: 'Inhaltsstoff hinzufügen',
+  constituentName: 'Name des Inhaltsstoffs',
+  otherConstituent: 'Anderer Inhaltsstoff',
+  chooseConstituent: 'Inhaltsstoff auswählen',
+  intoleranceTriggers: 'Unverträglichkeitsauslöser',
+  sorbitol: 'Sorbit',
+  recipeParts: 'Teilrezepte',
+  partsHelp:
+    'Gliedere Vorbereitungen in benannte Teile mit eigenen Zutaten und Zubereitungsschritten.',
+  addPart: 'Teilrezept hinzufügen',
+  partName: 'Name des Teilrezepts',
+  mainRecipe: 'Hauptrezept',
+  belongsTo: 'Zuordnung zum Teilrezept',
+  usesParts: 'Verwendet vorbereitete Teilrezepte',
+  stepIngredients: 'Zutaten in diesem Schritt',
+  stepParts: 'Vorbereitete Teilrezepte in diesem Schritt',
+  removePartConfirm:
+    'Teilrezept entfernen? Seine Zutaten und Schritte werden ins Hauptrezept verschoben.',
+  removePart: 'Teilrezept entfernen',
+  recipeDetails: 'Angaben zum Rezept',
+  optionalDetails: 'Weitere Angaben',
+  saveIngredient: 'Zutat speichern',
+  ingredientPending: 'Zutat wird gespeichert…',
+  sourceHelp:
+    'Eigene Werte sind Haushaltsangaben. Halte Etikett oder Quelle fest, damit sie später nachvollziehbar bleiben.',
+  allergenHelp:
+    'Gib bekannte Vorkommen an. Ein nicht gesetztes Häkchen bestätigt keine Abwesenheit.',
+  untitledLine: 'Zutatenzeile',
+  nameRequired: 'Gib einen Namen ein, um fortzufahren.',
+
   ingredientGroup: 'Zutatengruppe',
   groupIngredient: 'Dies ist eine Gruppe',
   noGroup: 'Keine Gruppe',
@@ -601,4 +683,9 @@ const nutrientGerman: Record<string, string> = {
 }
 export function nutrientLabel(id: string, original: string): string {
   return locale.value === 'de' ? (nutrientGerman[id] ?? original) : original
+}
+
+export function parseNonnegative(input: string, language = locale.value): string | null {
+  const zero = language === 'de' ? /^0(?:,0{1,6})?$/ : /^0(?:\.0{1,6})?$/
+  return parseGrams(input, language) ?? (zero.test(input) ? input.replace(',', '.') : null)
 }

@@ -1,7 +1,7 @@
 # Product requirements
 
 Origin: customer vision, 2026-11-07. Mealshop is a working name.
-The [feature index](../specs/README.md) maps F01–F25 one-to-one to acceptance contracts.
+The [feature index](../specs/README.md) maps F01–F26 one-to-one to acceptance contracts.
 
 ## Cross-cutting requirements
 - N01: Rust/Axum/Tokio backend and Flutter client; standalone and free Nextcloud `ExApp` deployment.
@@ -39,3 +39,6 @@ remain future work. See [recipe guide](guides/recipes.md).
 
 F25 adds household ingredient groups/subtypes, exact declared nutrients with explicit inheritance,
 and separate dietary/origin declarations; see its acceptance contract. N03 → F25, N04 → F25.
+
+F26 refines native authoring, recipe-owned preparation parts, optional constituents and explicit
+sorbitol intolerance declarations. N03/N04/N09/N10 → F26. Full catalogue grouping follows separately.

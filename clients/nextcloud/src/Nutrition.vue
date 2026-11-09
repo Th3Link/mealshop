@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import { nutritionSchema } from './contracts'
-import { exact, compactExact, t } from './i18n'
+import { exact, compactExact, t, locale, nutrientLabel } from './i18n'
 defineProps<{ value: z.infer<typeof nutritionSchema> }>()
 </script>
 <template>
@@ -19,9 +19,9 @@ defineProps<{ value: z.infer<typeof nutritionSchema> }>()
           </tr>
         </thead>
         <tbody>
-          <tr v-for="n in value.nutrients" :key="n.id">
-            <th scope="row" lang="en">
-              {{ n.label }} <small>{{ n.unit }}</small>
+          <tr v-for="n in value.nutrients.filter((n) => n.group !== 'component')" :key="n.id">
+            <th scope="row">
+              {{ nutrientLabel(n.id, n.label) }} <small>{{ n.unit }}</small>
             </th>
             <td class="numeric">
               {{ exact(n.per_serving)
@@ -38,6 +38,41 @@ defineProps<{ value: z.infer<typeof nutritionSchema> }>()
           </tr>
         </tbody>
       </table>
+    </div>
+    <div v-if="value.constituents.length" class="constituent-summary">
+      <h3>{{ t('foodConstituents') }}</h3>
+      <p class="muted">{{ t('constituentsSummaryHelp') }}</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">{{ t('constituentName') }}</th>
+              <th scope="col" class="numeric">{{ t('perServing') }}</th>
+              <th scope="col" class="numeric">{{ t('total') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="c in value.constituents" :key="c.id">
+              <th scope="row">
+                {{ c.translations[locale] ?? nutrientLabel(c.id, c.label) }}
+                <small>{{ c.unit }}</small>
+              </th>
+              <td class="numeric">
+                {{ exact(c.per_serving)
+                }}<small v-if="c.per_serving === null"
+                  >{{ t('knownSubtotal') }}: {{ exact(c.known_per_serving) }}</small
+                >
+              </td>
+              <td class="numeric">
+                {{ exact(c.total)
+                }}<small v-if="c.total === null"
+                  >{{ t('knownSubtotal') }}: {{ exact(c.known_total) }}</small
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     <details>
       <summary>{{ t('source') }}</summary>

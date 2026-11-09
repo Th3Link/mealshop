@@ -181,6 +181,9 @@ pub(crate) fn router(
             return Err("Unsupported household schema".to_owned());
         }
     }
+    allergen_data["intolerance_triggers"] =
+        serde_json::from_str(include_str!("../data/intolerance-triggers.json"))
+            .map_err(|_| "Invalid intolerance registry")?;
     filter_allergens(&mut allergen_data, &catalogue);
     let ingredients = ingredients.map_or_else(
         || {
@@ -509,6 +512,15 @@ pub(crate) fn review_snapshot(
                                 .any(|excluded| excluded.to_lowercase() == tag.to_lowercase())
                         }) {
                             excluded.insert(ingredient);
+                        }
+                        for trigger in &item.organization.intolerance_triggers {
+                            if m.intolerances.iter().any(|id| {
+                                id.eq_ignore_ascii_case(trigger)
+                                    || (trigger == "sorbitol" && id.eq_ignore_ascii_case("sorbit"))
+                            }) {
+                                excluded.insert(ingredient);
+                                allergen_matches.push(json!({"member_id":m.id,"ingredient_id":ingredient,"allergen_id":trigger,"source_url":null,"source_kind":"household_intolerance_declaration"}));
+                            }
                         }
                         for allergen in &item.declared_allergens {
                             if m.allergen_ids.contains(allergen)

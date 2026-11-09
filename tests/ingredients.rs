@@ -764,3 +764,215 @@ async fn ingredient_profiles_reject_duplicate_values() {
         StatusCode::UNPROCESSABLE_ENTITY
     );
 }
+
+#[tokio::test]
+async fn recipe_parts_preserve_associations_and_reject_cycles_and_unknown_references() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let recipe = json!({"title":"Branched preparation","language":"en","servings":2,"preparation":"as_recorded","parts":[{"id":"preparation","name":"Preparation"},{"id":"main","name":"Final assembly","uses_parts":["preparation"]}],"lines":[{"id":"line-a","part_id":"preparation","ingredient_id":"oats","grams":"100"},{"id":"line-b","part_id":"main","ingredient_id":"oats","grams":"50"}],"steps":[{"instruction":"Prepare","part_id":"preparation","ingredient_line_ids":["line-a"],"active_seconds":5,"passive_seconds":10},{"instruction":"Assemble","part_id":"main","ingredient_line_ids":["line-b"],"prepared_parts":["preparation"],"active_seconds":10,"passive_seconds":0}]});
+    let (status, saved) = call(&app, "POST", "/api/recipes", recipe.clone(), false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(
+        saved["recipe"]["steps"][1]["prepared_parts"],
+        json!(["preparation"])
+    );
+    let scale = call(
+        &app,
+        "GET",
+        &format!(
+            "/api/recipes/{}/scale?servings=4",
+            saved["id"].as_str().unwrap()
+        ),
+        Value::Null,
+        true,
+    )
+    .await
+    .1;
+    assert_eq!(scale["lines"][0]["id"], "line-a");
+    assert_eq!(scale["lines"][0]["grams"], "200.000000");
+    let protein = scale["nutrition"]["nutrients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|n| n["id"] == "energy_kcal")
+        .unwrap();
+    assert_eq!(protein["total"], "1167.00");
+    let mut invalid = Vec::new();
+    let mut cycle = recipe.clone();
+    cycle["parts"][0]["uses_parts"] = json!(["main"]);
+    invalid.push(cycle);
+    let mut step_cycle = recipe.clone();
+    step_cycle["steps"][0]["prepared_parts"] = json!(["main"]);
+    invalid.push(step_cycle);
+    let mut unknown = recipe.clone();
+    unknown["steps"][0]["ingredient_line_ids"] = json!(["missing"]);
+    invalid.push(unknown);
+    let mut duplicate = recipe.clone();
+    duplicate["lines"][1]["id"] = json!("line-a");
+    invalid.push(duplicate);
+    let mut missing_part = recipe.clone();
+    missing_part["lines"][1]["part_id"] = json!("absent");
+    invalid.push(missing_part);
+    for item in invalid {
+        assert_eq!(
+            call(&app, "POST", "/api/recipes", item, false).await.0,
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+    drop(app);
+    let reopened = dir.app();
+    assert_eq!(
+        call(
+            &reopened,
+            "GET",
+            &format!("/api/recipes/{}", saved["id"].as_str().unwrap()),
+            Value::Null,
+            true
+        )
+        .await
+        .1,
+        saved
+    );
+}
+
+#[tokio::test]
+async fn optional_constituents_aggregate_exactly_and_sorbitol_blocks_pinned_recipes() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let update = json!({"expected_revision":0,"annotations":{"organization":{"intolerance_triggers":["sorbitol"],"nutrition":{"mode":"own","note":"Synthetic test packaging","source_url":"","values":{},"constituents":{"beta_glucan":{"name":"Beta-glucan","unit":"g","amount":"4"},"custom-compound":{"name":"Test constituent","unit":"mg","amount":"2.500000"}}}}}});
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            update,
+            false
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let recipe = json!({"title":"Declared constituents","language":"en","servings":2,"preparation":"as_recorded","lines":[{"ingredient_id":"oats","grams":"150"}],"steps":[]});
+    let (status, saved) = call(&app, "POST", "/api/recipes", recipe, false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let constituents = saved["nutrition"]["constituents"].as_array().unwrap();
+    let beta = constituents
+        .iter()
+        .find(|c| c["id"] == "beta_glucan")
+        .unwrap();
+    assert_eq!(beta["total"], "6.00");
+    assert_eq!(beta["per_serving"], "3.00");
+    let compound = constituents
+        .iter()
+        .find(|c| c["id"] == "custom-compound")
+        .unwrap();
+    assert_eq!(compound["total"], "3.75");
+    assert_eq!(compound["unit"], "mg");
+    assert_eq!(compound["per_serving"], "1.88");
+    let profiles = json!({"expected_revision":0,"members":[{"id":"person","name":"Test person","allergies":[],"intolerances":["sorbitol"],"excluded_ingredients":[],"disliked_ingredients":[]}]});
+    assert_eq!(
+        call(&app, "PUT", "/api/household/profiles", profiles, false)
+            .await
+            .0,
+        StatusCode::OK
+    );
+    // Removing a live declaration does not remove the saved recipe's constraint evidence.
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            json!({"expected_revision":1,"annotations":{"organization":{}}}),
+            false
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let plan = json!({"date":"2026-11-09","meal":"lunch","recipe":{"id":saved["id"],"revision":1},"attendees":["person"],"calendar":null,"servings":2,"active_seconds":60,"elapsed_seconds":60,"advance_seconds":0});
+    assert_eq!(
+        call(&app, "POST", "/api/household/mealplan/preview", plan, false)
+            .await
+            .1["feasible"],
+        false
+    );
+    drop(app);
+    let reopened = dir.app();
+    assert_eq!(
+        call(
+            &reopened,
+            "GET",
+            &format!("/api/recipes/{}", saved["id"].as_str().unwrap()),
+            Value::Null,
+            true
+        )
+        .await
+        .1,
+        saved
+    );
+}
+
+#[tokio::test]
+async fn constituent_identity_units_unknowns_and_legacy_values_remain_consistent() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let annotation = json!({"organization":{"nutrition":{"mode":"own","note":"Test evidence","source_url":"","values":{},"constituents":{"test-compound":{"name":"Test compound","unit":"mg","amount":"1"},"beta_glucan":{"name":"Beta-glucan","unit":"g","amount":"2"}}}}});
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            json!({"expected_revision":0,"annotations":annotation}),
+            false
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let (status,record)=call(&app,"POST","/api/recipes",json!({"title":"Partial constituents","language":"en","steps":[],"lines":[{"ingredient_id":"oats","grams":"100"},{"ingredient_id":"wheat-flour-type-405","grams":"100"}],"servings":2,"preparation":"as_recorded"}),false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let partial = &record["nutrition"];
+    let beta = partial["constituents"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "beta_glucan")
+        .unwrap();
+    assert_eq!(beta["total"], Value::Null);
+    assert_eq!(beta["known_total"], "2.00");
+    assert_eq!(beta["status"], "partial");
+    let legacy = partial["nutrients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "beta_glucan")
+        .unwrap();
+    assert_eq!(legacy["known_total"], "2.00");
+    let conflict = json!({"expected_revision":1,"annotations":{"organization":{"nutrition":{"mode":"own","note":"Test evidence","source_url":"","values":{},"constituents":{"test-compound":{"name":"Test compound","unit":"g","amount":"1"}}}}}});
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            "/api/household/ingredients/wheat-flour-type-405",
+            conflict,
+            false
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    let duplicate=br#"{"expected_revision":1,"annotations":{"organization":{"nutrition":{"mode":"own","note":"Test","source_url":"","values":{},"constituents":{"x":{"name":"Test","unit":"g","amount":"1"},"x":{"name":"Test","unit":"g","amount":"2"}}}}}}"#;
+    assert_eq!(
+        raw(
+            &app,
+            "PUT",
+            "/api/household/ingredients/oats",
+            "application/json",
+            duplicate.to_vec(),
+            false
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+}

@@ -11,6 +11,8 @@ pub(crate) struct Organization {
     #[serde(default)]
     pub(crate) is_group: bool,
     #[serde(default)]
+    pub(crate) intolerance_triggers: Vec<String>,
+    #[serde(default)]
     pub(crate) group_id: Option<String>,
     #[serde(default)]
     pub(crate) nutrition: Nutrition,
@@ -27,6 +29,8 @@ pub(crate) enum Nutrition {
     Own {
         #[serde(deserialize_with = "crate::nutrition::catalogue::unique_readings")]
         values: BTreeMap<Nutrient, Reading>,
+        #[serde(default, deserialize_with = "crate::constituents::unique")]
+        constituents: BTreeMap<String, crate::constituents::Declaration>,
         note: String,
         source_url: String,
     },
@@ -55,6 +59,11 @@ pub(crate) fn resolve(catalogue: &mut Catalogue, revision: u64) -> Result<(), St
     let original = catalogue.clone();
     for item in &mut catalogue.ingredients {
         let org = &item.organization;
+        if org.intolerance_triggers.len() > 1
+            || org.intolerance_triggers.iter().any(|id| id != "sorbitol")
+        {
+            return Err("Unsupported intolerance trigger".to_owned());
+        }
         if org.is_group && org.group_id.is_some() {
             return Err("A group cannot itself be a subtype".to_owned());
         }
@@ -76,16 +85,23 @@ pub(crate) fn resolve(catalogue: &mut Catalogue, revision: u64) -> Result<(), St
                 (&p.organization.nutrition, Some(p.id.clone()))
             }
         };
-        let (values, note, url) = match profile {
+        let (values, constituents, note, url) = match profile {
             Nutrition::Own {
                 values,
                 note,
                 source_url,
-            } => (values.clone(), note.clone(), source_url.clone()),
+                constituents,
+            } => (
+                values.clone(),
+                constituents.clone(),
+                note.clone(),
+                source_url.clone(),
+            ),
             Nutrition::Reference => {
                 let p = parent.ok_or("Missing group")?;
                 (
                     p.nutrients.clone(),
+                    p.constituents.clone(),
                     format!(
                         "Explicit household inheritance from {} ({})",
                         p.id, p.source.version
@@ -117,6 +133,21 @@ pub(crate) fn resolve(catalogue: &mut Catalogue, revision: u64) -> Result<(), St
         };
         item.education.clear();
         item.nutrients = values;
+        item.constituents = constituents;
+        for (id, nutrient) in [
+            ("beta_glucan", Nutrient::BetaGlucan),
+            ("soluble_fibre", Nutrient::SolubleFibre),
+        ] {
+            if let Some(declaration) = item.constituents.get(id) {
+                item.nutrients.insert(
+                    nutrient,
+                    Reading {
+                        amount: declaration.amount.clone(),
+                        uncertainty: item.uncertainty.clone(),
+                    },
+                );
+            }
+        }
         item.uncertainty = note;
         item.nutrition_inherited_from = inherited;
     }
@@ -146,6 +177,7 @@ pub(crate) fn seed(catalogue: &mut Catalogue) {
         name.clone_into(&mut group.name);
         "Ingredient group".clone_into(&mut group.form);
         group.nutrients.clear();
+        group.constituents.clear();
         group.education.clear();
         group.aliases.clear();
         group.components.clear();
