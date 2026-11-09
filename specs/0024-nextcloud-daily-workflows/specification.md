@@ -1,6 +1,6 @@
 # Native Nextcloud daily workflows
 
-Status: In progress
+Status: Done
 Origin: Customer, 2026-11-09, after PR #15 merge
 
 ## Acceptance contract

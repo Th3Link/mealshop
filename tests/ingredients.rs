@@ -245,6 +245,38 @@ async fn declarations_archive_reverse_lookup_and_composite_constraints_survive_r
 }
 
 #[tokio::test]
+async fn jpeg_and_webp_uploads_retain_exact_private_bytes() {
+    use base64::{Engine, engine::general_purpose::STANDARD};
+    let dir = Directory::new();
+    let app = dir.app();
+    for (mime, encoded) in [
+        (
+            "image/jpeg",
+            "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAADAAIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDmaKKK9M84/9k=",
+        ),
+        (
+            "image/webp",
+            "UklGRjQAAABXRUJQVlA4ICgAAACQAQCdASoCAAMAAUAmJYgCdLoAA5gA/vBTH+j64RZGX9CjZRJ1AAAA",
+        ),
+    ] {
+        let image = STANDARD.decode(encoded).unwrap();
+        let (status, value) = raw(
+            &app,
+            "POST",
+            "/api/household/images",
+            mime,
+            image.clone(),
+            false,
+        )
+        .await;
+        assert_eq!(status, StatusCode::CREATED);
+        let uploaded: Value = serde_json::from_slice(&value).unwrap();
+        let path = format!("/api/household/images/{}", uploaded["id"].as_str().unwrap());
+        assert_eq!(raw(&app, "GET", &path, "", vec![], true).await.1, image);
+    }
+}
+
+#[tokio::test]
 async fn private_images_reject_active_content_and_preserve_immutable_references() {
     use base64::{Engine, engine::general_purpose::STANDARD};
     let dir = Directory::new();

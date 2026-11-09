@@ -32,7 +32,7 @@ with German names: 284 source-backed BLS/USDA profiles and 29 explicitly unknown
 [Data and licences](data/README.md) · [Demo, API and custom catalogue guide](docs/guides/nutrition.md).
 Recipes can be created, saved, loaded and revised using catalogue ingredients; per-serving
 estimates retain their saved source snapshots. The executable stores data in `var/recipes`
-(or `MEALSHOP_RECIPE_DIR`) and requires loopback access until authentication exists.
+(or `MEALSHOP_RECIPE_DIR`) and keeps the default local/demo mode loopback-only. Nextcloud uses the authenticated transport described below.
 [Recipe API, storage and recovery guide](docs/guides/recipes.md).
 Use Ctrl-C for graceful shutdown. A saved recipe can be previewed at another serving count. Optional protected local household profiles use an operator token; see [household setup and limits](docs/guides/household.md). Standalone hosted authentication remains future work. Tests: `cargo test --locked`. Full gate: [development guide](docs/guides/development.md).
 

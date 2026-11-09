@@ -1,10 +1,11 @@
 # Daily workflow validation
 
-Status: In progress; packaged-image and restart verification complete, PR CI pending.
+Status: Done; implemented and verified on the supplied test instance.
 
-- Rust acceptance suite: 48 passed, including optional author/restart, household declarations,
+- Rust acceptance suite: 49 passed, including optional author/restart, household declarations,
   composition cycles, isolation, archive, reverse lookup, private raster assets and pinned hard
   allergen/tag exclusions, concurrent tag/plan application and legacy-overlay loading. New archives are also rejected when introduced through recipe writes.
+- Real JPEG and WebP fixtures additionally passed upload/private byte round trips; PNG, invalid active content, oversized dimensions and immutable references remain covered.
 - Strict client type checking and five unit tests passed. Compact decimal display retains exact
   numeric value and does not modify source precision or the six-decimal input contract.
 - Real Nextcloud 35.0.2/AppAPI 35.0.0 browser suite: five tests passed together (approximately 1.5 minutes).
@@ -42,6 +43,9 @@ ownership/data retained by the dedicated test account; four admin households rem
 with unrecognised profile names, recipe titles or other members were excluded from this cleanup.
 No existing Nextcloud data reset or AGENTS.md changes.
 
-Repository gates and client audit passed locally. Remote CI is tracked in the feature PR and
-must complete before review is declared ready. These checks do not establish formal WCAG
+Repository gates and client audit passed locally. Core implementation commit ce6e2e1 passed
+all ten GitHub CI checks, including image/transport tests, client types/build/audit, Rust quality
+and coverage, MSRV, both build profiles, licences, advisories, SBOM and metrics. Final evidence
+and additional JPEG/WebP fixtures use the same enforced gates; current-head results are tracked
+in [PR #18](https://github.com/Th3Link/mealshop/pull/18). These checks do not establish formal WCAG
 certification, a live calendar provider or nutrient composition for household declarations.
