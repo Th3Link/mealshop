@@ -20,4 +20,3 @@ require their own implementation and evidence. No implementation of those client
    it does not establish product UX or replace either client. Design effort stays minimal there.
 6. Product UX is specified/reviewed before implementation. If significant design work is needed,
    coordinate a dedicated UX/UI agent with the customer instead of expanding the demo design.
-

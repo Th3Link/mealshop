@@ -22,4 +22,3 @@ require their own implementation and evidence. No implementation of those client
    Localizable errors/warnings use stable codes plus parameters, not parsing of English prose.
 6. Translation coverage, fallback, locale switching, search and exact decimal boundaries have
    focused checks; nutrition calculations and original source provenance are unchanged.
-
