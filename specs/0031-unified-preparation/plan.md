@@ -12,3 +12,5 @@
 Status is intentionally In progress until all acceptance evidence exists. Device integration is outside this slice.
 
 Native implementation is written, but the three browser-dependent tasks remain unchecked until the host can be exercised. See validation.md for exact evidence and blockers.
+
+Local deployment: the matching final image passed isolated TCP/Unix smoke checks, then replaced the local test container after a complete private backup. Container health is green. Draft PR #27 is open; native browser acceptance remains the merge blocker.

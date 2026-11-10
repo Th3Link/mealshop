@@ -9,7 +9,7 @@ Status: In progress — native browser acceptance is not verified.
 - `cargo nextest run --workspace --locked` with local test sockets allowed: 88 tests passed, zero skipped.
 - Native Vue typecheck and production build: passed. Locked Node 24 container: `npm run format:check`, `npm test` (14 passed) and `npm audit --audit-level=moderate` (zero vulnerabilities) passed. The host Node 26 cannot run `npm ci` under the required engine; the container supplies the declared runtime without weakening engine checks.
 - Licence gate: passed. `RustSec` audit: passed after allowing its cache lock/update.
-- `docker build -t mealshop.local/mealshop:unified-preparation .` passed. `python3 scripts/test_exapp_container.py --image mealshop.local/mealshop:unified-preparation` passed for TCP and Unix sockets; isolated lifecycle, assets, auth/CSRF, private storage and cooking review. The native host still requires the final local image refresh and browser acceptance.
+- `docker build -t mealshop.local/mealshop:unified-preparation .` passed. `python3 scripts/test_exapp_container.py --image mealshop.local/mealshop:unified-preparation` passed for TCP and Unix sockets; isolated lifecycle, assets, auth/CSRF, private storage and cooking review. The final backend correction was rebuilt using the already compiled, matching Rust builder cache; the final image was smoke-tested again over both transports before the local update. Browser acceptance remains open.
 
 ## Behavioral coverage
 Recipe API tests preserve exact temperature spelling through revision persistence, scaling and restart, reject duplicates, and keep mass intact. Planning API tests preserve production-once requirements, day allocation movement, over-allocation/duplicate/slot-conflict rejection and restart. Cooking tests demonstrate a 07:00 calendar anchor followed by an actual 07:08 start and a 07:53 deadline; moving to the next action acknowledges only elapsed passive waits.
@@ -21,3 +21,8 @@ GitHub authentication was confirmed outside the restricted sandbox. Browser acce
 
 ## Code review before draft PR
 Checked exact values and unit boundaries, legacy defaults, household authorization/revisions, bounded allocations, persistence, dependency cycles and shared shopping provenance. Corrected empty-allocation fallback, edits that could change production identity, review visibility inside the sidebar, stale review markers on allocated days, draft replacement and recipe-part collapse while typing. Recipe-derived completion starts passive time even when active work has a planning estimate. No dependency or crate was added. Browser verification remains a merge blocker.
+
+## Local test deployment
+The local Nextcloud test instance was updated after a graceful stop and a complete private backup of the dedicated Mealshop data directory. The backup remains under ignored `var/nextcloud/backups/`. The existing private environment was retained; only its image reference changed. The new container reported `healthy`. No real household was used as a synthetic test fixture or rewritten for acceptance. The deployed functional source is commit `751f96f`, image `920e1fdecec2`; later commits may only update evidence. Browser acceptance is still blocked by the closed transport.
+
+CI for the implementation commit passed Rust fmt/clippy/nextest/coverage, MSRV, licence check, SBOM, debug/release builds, binary metrics and native client format/contracts/build/audit. The remaining remote image/advisory jobs were still running when this evidence was recorded; no all-green remote CI claim is made.
