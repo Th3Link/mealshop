@@ -86,7 +86,7 @@ test('multipart mealprep keeps exact temperatures, one production, allocations a
   let form = page.locator('.mealplan-details')
   await form.getByLabel('Date', { exact: true }).fill('2026-11-11')
   await form.locator('select').first().selectOption('preparation')
-  await form.getByLabel('Servings', { exact: true }).fill('4')
+  await form.getByLabel('Production servings', { exact: true }).fill('4')
   await form.getByRole('button', { name: 'Prepare', exact: true }).click()
   await form.getByLabel('Preparation time', { exact: true }).fill('07:00')
   for (const date of ['2026-11-12', '2026-11-13']) {

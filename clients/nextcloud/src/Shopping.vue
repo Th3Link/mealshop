@@ -177,7 +177,9 @@ async function checkItem(key: string, checked: boolean) {
   message.value = `${item?.translations[locale.value] ?? item?.name ?? ''} · ${t(checked ? 'shoppingMarkedBought' : 'shoppingRestored')}`
   if (focused) {
     await nextTick()
-    const next = open.value[Math.min(Math.max(index, 0), open.value.length - 1)]
+    const next = checked
+      ? open.value[Math.min(Math.max(index, 0), open.value.length - 1)]
+      : open.value.find((item) => item.key === key)
     const target = next
       ? document.querySelector<HTMLInputElement>(`[data-item-key="${CSS.escape(next.key)}"] input`)
       : document.querySelector<HTMLElement>('#mealshop-purchased > summary')
@@ -277,7 +279,6 @@ onMounted(load)
         <NcButton
           variant="tertiary"
           :aria-label="t(shoppingMode ? 'shoppingManage' : 'shoppingMode')"
-          :aria-pressed="shoppingMode"
           :disabled="busy || manualChanged || recipeDirty || shopDirty || productDirty"
           @click="shoppingMode = !shoppingMode"
           ><template #icon><Icon :path="mdiTune" /></template

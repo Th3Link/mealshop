@@ -126,9 +126,6 @@ function start(plan?: Plan) {
   suggestions.value = []
   rejected.value = []
   initialDraft.value = JSON.stringify(draft.value)
-  void nextTick().then(() =>
-    document.querySelector<HTMLElement>('.mealplan-sidebar .app-sidebar-header__mainname')?.focus(),
-  )
   return true
 }
 function selectSlot(date: string, meal: string, plan?: Plan) {
@@ -272,11 +269,14 @@ watch(
   },
   { deep: true },
 )
+function focusReview() {
+  if (result.value) document.getElementById('mealshop-review-title')?.focus()
+}
 watch(result, async (value) => {
   reviewed.value = false
   if (value) {
     await nextTick()
-    document.getElementById('mealshop-review-title')?.focus()
+    focusReview()
   }
 })
 onMounted(load)
@@ -335,6 +335,7 @@ onMounted(load)
     v-if="draft"
     class="mealplan-sidebar"
     :name="t(editingExisting ? 'editMeal' : 'newMeal')"
+    @opened="focusReview"
     @close="cancelPlan"
   >
     <NcAppSidebarTab id="meal-details" :name="t('details')"
@@ -426,7 +427,7 @@ onMounted(load)
             <NcTextField
               v-model="draft.servings"
               type="number"
-              :label="t('servings')"
+              :label="t('productionServings')"
               min="1"
               max="1000000"
               step="1"

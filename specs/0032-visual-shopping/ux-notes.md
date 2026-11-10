@@ -6,7 +6,9 @@ patterns with native Nextcloud checkboxes, buttons, dialog, colors and fonts. Us
 icons are decorative category cues from explicit linked ingredient metadata, never dietary declarations.
 An unlinked item has the generic basket icon. Quantities remain exact and visibly qualified by unit.
 
-Keep tile labels wrapping and the whole checkbox area tappable. Use at least 44px controls and 8px gaps.
+Keep tile labels wrapping to two lines and the whole checkbox area tappable. Full names remain in
+accessible labels, desktop titles and item details; exact quantities are never truncated. Use at least
+44px controls and 8px gaps.
 Move provenance and shop controls into a named dialog, leaving a separate, labelled details action on
 each tile. Keep details reachable in shopping mode. A search is a cached derived view; it never changes
 shopping data or order. Clear the search before reordering a shop so hidden items cannot be dropped.

@@ -66,7 +66,10 @@ function label(item: Shopping['items'][number]) {
         ><span class="shopping-tile__body"
           ><Icon :path="shoppingIcon(item, ingredients)" class="shopping-tile__illustration" /><span
             class="shopping-tile__caption"
-            >{{ item.translations[locale] ?? item.name }}<span class="visually-hidden"> · </span>
+            ><span class="shopping-tile__name" :title="item.translations[locale] ?? item.name">{{
+              item.translations[locale] ?? item.name
+            }}</span
+            ><span class="visually-hidden"> · </span>
             <span class="shopping-tile__quantity"
               >{{ compactExact(isPurchased(item) ? item.purchased : item.remaining) }}
               {{

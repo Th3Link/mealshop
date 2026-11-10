@@ -203,7 +203,7 @@ test('household defaults, focused search, inline composites, private images, fav
     const checkbox = attendance.nth(index)
     if ((await checkbox.isChecked()) !== (index === 0)) await checkbox.press('Space')
   }
-  await page.getByLabel('Servings', { exact: true }).fill('1')
+  await page.getByLabel('Production servings', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
   await page
     .getByText('I reviewed the unknown dietary data and serving/time uncertainty.', { exact: true })
@@ -229,7 +229,7 @@ test('household defaults, focused search, inline composites, private images, fav
   }
   await page.setViewportSize({ width: 1440, height: 1000 })
   await slot.getByRole('button').click()
-  const skipper=page.getByRole('checkbox',{name:`Test skipper ${stamp}`,exact:true})
+  const skipper = page.getByRole('checkbox', { name: `Test skipper ${stamp}`, exact: true })
   await expect(skipper).not.toBeChecked()
   await skipper.focus()
   await page.keyboard.press('Space')

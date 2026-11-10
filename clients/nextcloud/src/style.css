@@ -794,6 +794,14 @@
 .mealshop .shopping-tile__caption {
   font-weight: 600;
   overflow-wrap: anywhere;
+  width: 100%;
+}
+.mealshop .shopping-tile__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  min-height: 2.8em;
 }
 .mealshop .shopping-tile__quantity {
   display: block;

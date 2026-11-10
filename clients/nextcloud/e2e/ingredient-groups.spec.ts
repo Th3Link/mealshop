@@ -107,6 +107,18 @@ test('groups, declared nutrient values and explicit subtype inheritance persist'
     /custom-/,
   )
   await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Edit ingredient', exact: true })).toBeFocused()
+  await page.getByRole('button', { name: 'Edit ingredient', exact: true }).click()
+  await dialog.getByText('Tags and composition', { exact: true }).click()
+  await dialog.getByLabel('Tags', { exact: true }).fill('unsaved-test-tag')
+  page.once('dialog', (prompt) => void prompt.dismiss())
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(dialog.getByLabel('Tags', { exact: true })).toHaveValue('unsaved-test-tag')
+  page.once('dialog', (prompt) => void prompt.accept())
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Edit ingredient', exact: true })).toBeFocused()
   expect(errors).toEqual([])
   await page.screenshot({
     path: 'test-results/ingredient-inheritance.png',

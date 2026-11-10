@@ -36,6 +36,8 @@ const components = ref([...(props.ingredient?.components ?? [])])
 const allergens = ref([...(props.ingredient?.declared_allergens ?? [])])
 const { busy, error, run, errorMessage } = useTask()
 const changed = ref(false)
+const fields = ref<HTMLFieldSetElement>()
+const savedId = ref<string>()
 useUnsavedChanges(() => changed.value || Boolean(props.parentDirty))
 watch(
   [name, form, source, recorded, tags, components, allergens, organization],
@@ -44,8 +46,13 @@ watch(
   },
   { deep: true },
 )
-function close() {
-  if (!busy.value && (!changed.value || window.confirm(t('unsaved')))) emit('close')
+function canClose() {
+  return !busy.value && (!changed.value || window.confirm(t('unsaved')))
+}
+function closed(open: boolean) {
+  if (open) return
+  if (savedId.value !== undefined) emit('saved', savedId.value)
+  else emit('close')
 }
 function revealInvalid(event: Event) {
   if (event.target instanceof HTMLElement) {
@@ -74,6 +81,7 @@ async function reload() {
   if (!error.value) changed.value = false
 }
 async function save() {
+  if (busy.value || !fields.value?.form?.reportValidity()) return false
   await run(async () => {
     const annotations = {
       organization: organization.value,
@@ -114,8 +122,9 @@ async function save() {
       },
     )
     changed.value = false
-    emit('saved', result.id ?? props.ingredient?.id ?? '')
+    savedId.value = result.id ?? props.ingredient?.id ?? ''
   })
+  return !error.value
 }
 </script>
 <template>
@@ -123,10 +132,22 @@ async function save() {
     size="large"
     content-classes="mealshop ingredient-dialog"
     :name="ingredient ? t('editIngredient') : t('addIngredient')"
-    @close="close"
+    is-form
+    :no-close="busy || changed"
+    :buttons="[
+      { label: t('cancel'), disabled: busy, callback: canClose },
+      {
+        label: busy ? t('ingredientPending') : t('save'),
+        variant: 'primary',
+        type: 'submit',
+        disabled: busy,
+        callback: save,
+      },
+    ]"
+    @update:open="closed"
   >
-    <form class="ingredient-editor" @submit.prevent="save" @invalid.capture="revealInvalid">
-      <fieldset class="editor-fields" :disabled="busy">
+    <div class="ingredient-editor" @invalid.capture="revealInvalid">
+      <fieldset ref="fields" class="editor-fields" :disabled="busy">
         <NcNoteCard v-if="error" type="error" role="alert"
           >{{ errorMessage(error)
           }}<NcButton :disabled="busy" @click="reload">{{ t('reloadSaved') }}</NcButton></NcNoteCard
@@ -199,13 +220,7 @@ async function save() {
             /></label>
           </div>
         </details>
-        <div class="actions editor-actions">
-          <NcButton :disabled="busy" @click="close">{{ t('cancel') }}</NcButton
-          ><NcButton variant="primary" type="submit" :disabled="busy">{{
-            busy ? t('ingredientPending') : t('save')
-          }}</NcButton>
-        </div>
       </fieldset>
-    </form>
+    </div>
   </NcDialog>
 </template>

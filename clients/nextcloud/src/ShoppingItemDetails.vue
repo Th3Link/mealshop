@@ -34,8 +34,8 @@ function assign(event: Event) {
     :name="item.translations[locale] ?? item.name"
     class="mealshop shopping-detail-dialog"
     size="normal"
+    :buttons="[{ label: t('shoppingClose') }]"
     @update:open="!$event && emit('close')"
-    @close="emit('close')"
     ><section class="shopping-detail-section">
       <h3>{{ t('shoppingContributions') }}</h3>
       <div v-for="part in item.contributions" :key="part.source_id">
@@ -108,8 +108,5 @@ function assign(event: Event) {
         <p v-if="orderingDisabled" class="muted">{{ t('shoppingClearToOrder') }}</p>
       </div>
     </section>
-    <template #actions
-      ><NcButton @click="emit('close')">{{ t('shoppingClose') }}</NcButton></template
-    ></NcDialog
-  >
+  </NcDialog>
 </template>
