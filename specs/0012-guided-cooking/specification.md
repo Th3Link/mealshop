@@ -1,6 +1,6 @@
 # Guided cooking and preset timers
 
-Status: Draft
+Status: Done
 Priority: Must
 Origin: Customer
 Milestone: M2
@@ -22,3 +22,5 @@ UI flows, accessibility, empty/error states and user review points must be speci
 
 ## Links
 Requirement: [F12](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
+
+Acceptance evidence: [validation.md](validation.md).

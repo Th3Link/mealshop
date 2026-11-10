@@ -2,7 +2,8 @@
 
 - F04/F18 starts bounded local recipe file persistence. Auth, rate limiting, Git/SQL adapters,
   product-client integration remain open. No shared/hosted access is implemented.
-- Validate actual Nextcloud `AppAPI` support and Flutter offline/notification behaviour (F18/F12).
+- Native Nextcloud `AppAPI` cooking/reminders are verified in F12/F13. Flutter offline/notification
+  behaviour and a published production deployment remain future F18 work.
 - F02 originally supplied frozen CC0 USDA oats/chia values. F23 adds the curated BLS/USDA kitchen catalogue.
   Broader coverage, provider refresh, density, cooking yield/retention and component measurements
   remain future work (F02/F03); psyllium composition is deliberately unknown.

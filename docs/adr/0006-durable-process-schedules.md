@@ -14,3 +14,8 @@ A transient in-app countdown cannot survive restarts or multi-day schedules. A s
 
 ## Consequences and open questions
 Notification providers, offline authority, retries and daylight-saving semantics need tests. Fermentation duration and notification delivery remain uncertain; no guaranteed outcome or safety claim.
+
+## Native Nextcloud implementation
+F12/F13 delivery decisions and acceptance evidence are now recorded in
+[ADR 0016](0016-durable-cooking-and-civil-time.md). This earlier shared proposal remains
+open for brewing, other clients and notification transports outside that verified scope.
