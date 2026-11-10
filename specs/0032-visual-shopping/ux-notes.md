@@ -12,6 +12,7 @@ accessible labels, desktop titles and item details; exact quantities are never t
 Move provenance and shop controls into a named dialog, leaving a separate, labelled details action on
 each tile. Keep details reachable in shopping mode. A search is a cached derived view; it never changes
 shopping data or order. Clear the search before reordering a shop so hidden items cannot be dropped.
+Tiles stay inert until the native detail dialog finishes closing, including its final transition frame.
 
 Search sits above the tiles. Its add action pre-fills only the item label and reveals a compact inline
 form with the existing explicit quantity/unit fields and optional confirmed ingredient link. Enter and

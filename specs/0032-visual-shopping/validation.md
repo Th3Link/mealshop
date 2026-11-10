@@ -25,6 +25,10 @@ controls. No optimistic purchase acknowledgement is used. The installed-containe
 19 tests; after the final label-only refinement, all four existing shopping contracts and the
 visual/localization test passed. German status labels additionally remain on one line at the narrowest
 three-column width, 360px.
+Background tiles remain inert through the native dialog's complete close lifecycle. The shopping
+workflow immediately reopens item details after shop assignment/filtering, guarding against a new
+open request being lost during the close transition. Learning consent waits for the actual enabled
+checkbox and confirms its saved checked state before starting a session.
 
 ## Checks and measured cost
 Repository/client gates passed: 88 Rust tests, 16 client tests, strict types/build/format, licences and
@@ -32,8 +36,8 @@ both dependency audits. Unit tests cover exact zero versus a remaining microgram
 matching, stable identity/order and neutral unlinked icons. Temporarily inverting the zero predicate
 makes the new test fail; the original was restored before verification.
 
-Locked JavaScript is 1,367,464 bytes versus 1,354,731 in the original PR #27 image. The same Python
-gzip level 9 with zero mtime gives 419,981 versus 415,154 bytes (+4,827 bytes). This measures bundle
+Locked JavaScript is 1,367,492 bytes versus 1,354,731 in the original PR #27 image. The same Python
+gzip level 9 with zero mtime gives 419,997 versus 415,154 bytes (+4,843 bytes). This measures bundle
 size, not page-load improvement. No dependency, crate, endpoint or persisted model was added.
 Search and ingredient lookup are computed from existing data.
 

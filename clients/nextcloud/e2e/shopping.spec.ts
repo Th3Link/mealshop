@@ -181,9 +181,14 @@ test('shop preferences, fallback, manual ordering and consented history work in 
   await details.getByRole('button', { name: 'Close', exact: true }).click()
   await expect(page.locator('.shopping-items > li').first()).toContainText('Test kitchen cloth')
   await page.getByRole('button', { name: 'Use learned/default order', exact: true }).click()
-  await settings
-    .getByText('Learn check-off order locally in this household', { exact: true })
-    .click()
+  const learning = settings.getByRole('checkbox', {
+    name: 'Learn check-off order locally in this household',
+    exact: true,
+  })
+  await expect(learning).toBeEnabled()
+  await learning.focus()
+  await page.keyboard.press('Space')
+  await expect(learning).toBeChecked()
   await page.getByRole('button', { name: 'Start shopping session', exact: true }).click()
   await expect(oats.getByRole('checkbox')).toBeEnabled()
   await oats.locator('.checkbox-radio-switch__text').click()

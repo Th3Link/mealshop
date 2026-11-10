@@ -50,7 +50,7 @@ function label(item: Shopping['items'][number]) {
 }
 </script>
 <template>
-  <ul class="shopping-items">
+  <ul class="shopping-items" :inert="Boolean(selectedKey)">
     <li
       v-for="item in items"
       :key="item.key"
