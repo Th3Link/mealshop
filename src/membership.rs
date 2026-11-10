@@ -77,6 +77,10 @@ pub(crate) struct Membership {
     writable: bool,
 }
 impl Membership {
+    pub(crate) fn household_ids(&self) -> Vec<String> {
+        self.data.homes.iter().map(|h| h.id.clone()).collect()
+    }
+
     pub(crate) fn open(root: &Path) -> Result<Self, String> {
         let mut builder = fs::DirBuilder::new();
         builder.recursive(true);

@@ -27,6 +27,8 @@ pub struct Config {
     pub secret: String,
     /// Trusted server-side Nextcloud base URL, including any installation prefix.
     pub nextcloud_url: String,
+    /// Browser-visible Nextcloud base URL for notification links; defaults to `nextcloud_url`.
+    pub public_url: Option<String>,
     /// Dedicated persistent directory; never an existing local single-household store.
     pub directory: PathBuf,
     /// Directory containing the built Vite IIFE and stylesheet.
@@ -39,6 +41,7 @@ struct App {
     enabled: AtomicBool,
     catalogue: Router,
     client: reqwest::Client,
+    cooking_worker: Mutex<Option<tokio::task::AbortHandle>>,
 }
 type Shared = Arc<App>;
 struct Failure(StatusCode, &'static str);
@@ -77,6 +80,21 @@ fn authenticated(app: &App, request: &Request) -> Option<String> {
     }
     Some(user.to_owned())
 }
+fn validate_public_url(config: &Config) -> Result<(), String> {
+    if let Some(public) = &config.public_url {
+        let url = reqwest::Url::parse(public).map_err(|_| "Invalid public Nextcloud URL")?;
+        if !matches!(url.scheme(), "http" | "https")
+            || url.host_str().is_none()
+            || !url.username().is_empty()
+            || url.password().is_some()
+            || url.query().is_some()
+            || url.fragment().is_some()
+        {
+            return Err("Invalid public Nextcloud URL".to_owned());
+        }
+    }
+    Ok(())
+}
 /// Builds the isolated `AppAPI` application. Local demo and unowned APIs are not published.
 /// # Errors
 /// Returns an actionable configuration or storage error; a second writer is rejected.
@@ -111,6 +129,7 @@ pub async fn router(config: Config) -> Result<Router, String> {
             ));
         }
     }
+    validate_public_url(&config)?;
     let membership = Membership::open(&config.directory)?;
     let app = Arc::new(App {
         config,
@@ -118,6 +137,7 @@ pub async fn router(config: Config) -> Result<Router, String> {
         routers: Mutex::new(BTreeMap::new()),
         enabled: AtomicBool::new(false),
         catalogue: crate::router()?,
+        cooking_worker: Mutex::new(None),
         client: reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::none())
             .timeout(std::time::Duration::from_secs(15))
@@ -157,6 +177,7 @@ pub async fn router(config: Config) -> Result<Router, String> {
                 .to_owned(),
         );
     }
+    cooking::start(&app);
     Ok(Router::new()
         .route("/heartbeat", get(|| async { Json(json!({"status":"ok"})) }))
         .route("/enabled", put(enabled))
@@ -433,6 +454,7 @@ fn read_action(method: &axum::http::Method, path: &str) -> bool {
                     | "/api/household/mealplan/suggestions"
                     | "/api/nutrition/calculate"
                     | "/api/quantities/convert"
+                    | "/api/household/cooking/preview"
             ))
 }
 async fn dispatch(State(app): State<Shared>, request: Request) -> Response {
@@ -521,9 +543,41 @@ async fn dispatch_household(
     if role == Role::Reader && !read_action(request.method(), domain) {
         return reply(StatusCode::FORBIDDEN, "household_read_only");
     }
+    let router = match household_router(app.clone(), id.to_owned()).await {
+        Ok(router) => router,
+        Err(code) => return reply(StatusCode::SERVICE_UNAVAILABLE, code),
+    };
+    let target = request
+        .uri()
+        .query()
+        .map_or_else(|| domain.to_owned(), |q| format!("{domain}?{q}"));
+    let Ok(uri) = target.parse::<Uri>() else {
+        return reply(StatusCode::BAD_REQUEST, "invalid_request");
+    };
+    *request.uri_mut() = uri;
+    let Ok(token) = format!("Bearer {}", app.config.secret).parse() else {
+        return reply(StatusCode::SERVICE_UNAVAILABLE, "request_failed");
+    };
+    request.headers_mut().insert(header::AUTHORIZATION, token);
+    request.headers_mut().remove(header::COOKIE);
+    request.extensions_mut().insert(crate::cooking::Actor {
+        user: actor,
+        notifications_available: true,
+    });
+    let mut response = router
+        .oneshot(request)
+        .await
+        .unwrap_or_else(|_| reply(StatusCode::SERVICE_UNAVAILABLE, "request_failed"));
+    response.headers_mut().insert(
+        header::CACHE_CONTROL,
+        header::HeaderValue::from_static("no-store"),
+    );
+    response
+}
+
+async fn household_router(app: Shared, home_id: String) -> Result<Router, &'static str> {
     let owned_app = app.clone();
-    let home_id = id.to_owned();
-    let router = tokio::task::spawn_blocking(move || {
+    let result = tokio::task::spawn_blocking(move || {
         let mut routers = owned_app
             .routers
             .lock()
@@ -543,31 +597,20 @@ async fn dispatch_household(
         Ok::<_, String>(router)
     })
     .await;
-    let Ok(Ok(router)) = router else {
-        return reply(StatusCode::SERVICE_UNAVAILABLE, "household_storage_failed");
-    };
-    let target = request
-        .uri()
-        .query()
-        .map_or_else(|| domain.to_owned(), |q| format!("{domain}?{q}"));
-    let Ok(uri) = target.parse::<Uri>() else {
-        return reply(StatusCode::BAD_REQUEST, "invalid_request");
-    };
-    *request.uri_mut() = uri;
-    let Ok(token) = format!("Bearer {}", app.config.secret).parse() else {
-        return reply(StatusCode::SERVICE_UNAVAILABLE, "request_failed");
-    };
-    request.headers_mut().insert(header::AUTHORIZATION, token);
-    request.headers_mut().remove(header::COOKIE);
-    let mut response = router
-        .oneshot(request)
-        .await
-        .unwrap_or_else(|_| reply(StatusCode::SERVICE_UNAVAILABLE, "request_failed"));
-    response.headers_mut().insert(
-        header::CACHE_CONTROL,
-        header::HeaderValue::from_static("no-store"),
-    );
-    response
+    result
+        .map_err(|_| "household_storage_failed")?
+        .map_err(|_| "household_storage_failed")
+}
+
+mod cooking;
+impl Drop for App {
+    fn drop(&mut self) {
+        if let Ok(slot) = self.cooking_worker.get_mut() {
+            if let Some(handle) = slot.take() {
+                handle.abort();
+            }
+        }
+    }
 }
 
 #[cfg(test)]

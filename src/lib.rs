@@ -2,6 +2,7 @@
 
 mod api;
 mod constituents;
+mod cooking;
 pub mod exapp;
 mod household;
 mod ingredient_api;
