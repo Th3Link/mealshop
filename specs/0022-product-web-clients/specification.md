@@ -1,40 +1,26 @@
-# Vue 3 product web clients
+# Native Nextcloud Vue client
 
-Status: In progress
+Status: Done
 Priority: Must
-Origin: Customer (after PR #4 merge, 2026-11-07)
+Origin: Customer-approved Nextcloud scope separation, 2026-11-10
 Milestone: M1
 
 ## User value
-Use a proper web application inside Nextcloud or on a standalone Mealshop server.
+Use the implemented Mealshop workflows inside the real Nextcloud 35 host.
 
 ## Acceptance criteria
-1. The Nextcloud client uses Vue 3 and compatible Nextcloud components, respects host
-   navigation/theme/accessibility, and loads assets/API calls correctly through `AppAPI`/proxy paths.
-2. The standalone server client uses Vue 3 with its own navigation/authentication shell and
-   connects to the same domain APIs. Shared code boundaries are chosen from real common needs.
-3. Both clients use F21 language/content/number contracts from the outset; domain calculations
-   stay on the Rust/API side and are not copied from the disposable demo.
-4. Supported Nextcloud/`AppAPI`/Vue component versions, authentication, CSRF/CSP, base paths and
-   deployment packaging are verified against actual installations before claiming compatibility.
-5. The existing framework-free nutrition demo is explicitly a temporary test surface. Extending
-   it does not establish product UX or replace either client. Design effort stays minimal there.
-6. Product UX is specified/reviewed before implementation. If significant design work is needed,
-   coordinate a dedicated UX/UI agent with the customer instead of expanding the demo design.
+1. Vue 3 with compatible Nextcloud components respects host navigation, themes and accessibility; assets and typed API calls use embedded and `AppAPI` proxy paths.
+2. Shared household ownership, invitations and editor/reader roles protect the actual implemented recipes, ingredients, profiles, planning and shopping workflows.
+3. The Nextcloud client uses F21 locale/content/quantity contracts; Rust remains the calculation boundary.
+4. Supported versions, authentication, CSRF/CSP, base paths and rootless container TCP/Unix transports have actual integration evidence.
+5. Product UX is specified and reviewed before implementation. The framework-free `src/web/` remains a disposable test demo.
 
-## Authorized implementation (2026-11-09)
-Customer requests a native Nextcloud 35 application with complete existing backend workflows,
-not an isolated reference page; shared households with explicit invitations and roles were chosen.
-Build integration/authentication/storage boundaries before domain screens. See ux-notes.md and
-ADR 0012. No placeholders for planned features; a later pass is visual refinement only.
+## Scope decision
+The customer explicitly approved closing the shipped Nextcloud portion.
+[F30](../0030-standalone-vue-client/specification.md) preserves the original six acceptance criteria verbatim,
+including the unimplemented standalone shell and cross-client contracts. Flutter deployment remains open in F18/F29.
+A complete `HaRP` deployment and arbitrary reverse-proxy topologies are not claimed as tested.
 
-## Out of scope
-Standalone shell and Flutter are separate deliverables. Unimplemented product-vision features
-are not implied by exposing the existing domain APIs.
-
-## UX notes
-See [ux-notes.md](ux-notes.md); native Nextcloud hierarchy is customer-mandated.
-
-## Links
-[ADR 0007](../../docs/adr/0007-localization-and-web-clients.md),
-[F21](../0021-internationalization/specification.md), [F18](../0018-storage-deployment/specification.md).
+## Evidence and UX
+[plan.md](plan.md), [validation.md](validation.md), [ux-notes.md](ux-notes.md),
+[ADR 0012](../../docs/adr/0012-nextcloud-shared-households.md), [setup guide](../../docs/guides/nextcloud.md).

@@ -732,3 +732,37 @@
 .mealshop .editor-actions .button-vue {
   max-width: 100%;
 }
+
+.mealshop .shopping-items {
+  padding: 0;
+  list-style: none;
+}
+.mealshop .shopping-items > li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .shopping-items .checkbox-radio-switch {
+  --default-clickable-area: 48px;
+  width: 100%;
+}
+.mealshop .shopping-items details {
+  margin-block: 0 8px;
+  padding-inline-start: 48px;
+}
+
+.mealshop .barcode-camera video {
+  display: block;
+  width: 100%;
+  max-height: 280px;
+  border-radius: var(--border-radius-large);
+}
+.mealshop .shopping-settings {
+  margin-block: 24px;
+}
+.mealshop .shopping-filter {
+  max-width: 640px;
+  margin-block: 16px;
+}
+.mealshop .product-dialog fieldset {
+  min-width: 0;
+}

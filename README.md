@@ -38,8 +38,8 @@ Use Ctrl-C for graceful shutdown. A saved recipe can be previewed at another ser
 
 The current browser surface is a pragmatic test demo, not the product UI. It supports German
 and English interface/quantity presentation; untranslated source content stays explicitly original.
-A native Vue 3 Nextcloud client now covers shared-household recipes, profiles, planning and the catalogue ([setup and verification](docs/guides/nextcloud.md)). The standalone Vue shell remains planned ([F22](specs/0022-product-web-clients/specification.md));
-full cross-client localization is tracked in [F21](specs/0021-internationalization/specification.md).
+A native Vue 3 Nextcloud client now covers shared-household recipes, profiles, planning and the catalogue ([setup and verification](docs/guides/nextcloud.md)). The standalone Vue shell remains planned ([F30](specs/0030-standalone-vue-client/specification.md));
+full cross-client localization is tracked in [F29](specs/0029-cross-client-localization/specification.md).
 
 ## Deployment and business model (planned)
 Rust/Tokio/Axum server, standalone or as a Nextcloud `ExApp`; Flutter client connecting to an
@@ -62,3 +62,8 @@ to use, modify or redistribute the software under that licence.
 Protected family planning links saved recipe revisions with household constraints, preparation
 budgets and consented calendar attendance imports. Changes have an explicit shopping-quantity
 preview before apply. See the [family planning guide](docs/guides/meal-planning.md).
+
+Native household shopping lists now preserve recipe/plan contributions and purchased receipts.
+Choose shops, set manual order or opt into local session learning; packaged products support manual
+GTIN entry, optional supported-camera scanning and consented Open Food Facts lookup.
+[Shopping guide](docs/guides/shopping.md) · [acceptance evidence](specs/0006-shopping-list/validation.md).

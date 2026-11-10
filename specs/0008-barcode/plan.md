@@ -1,13 +1,11 @@
-# Plan for Barcode scanning and product matching
+# Delivery plan: products and barcode entry
 
-## Affected modules
-To be selected when the feature becomes Ready; no placeholder crates.
+- [x] AC1: optional native scanning, local product resolution and complete manual entry.
+- [x] AC2: validated GTIN, separate package quantity and explicit generic-ingredient confirmation.
+- [x] AC3: manual flow survives denied camera and failed network lookup.
+- [x] AC4: per-request external consent; retained attribution/licence/retrieved/modified dates and original provider label.
 
-## Tasks
-- [ ] Design and implement the behaviour for AC 1; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 2; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 3; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 4; add acceptance evidence.
-
-## Validation
-Before implementation, derive acceptance tests from each numbered criterion. Include failure cases, household authorization and quantity/provenance checks where applicable. Record commands and results here at delivery.
+## Evidence
+See [combined validation](../0006-shopping-list/validation.md). Backend acceptance contracts are in
+`tests/shopping.rs`, provider/GTIN boundary tests in `src/shopping/lookup.rs`, native browser flows
+in `clients/nextcloud/e2e/shopping.spec.ts`.

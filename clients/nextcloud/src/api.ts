@@ -1,7 +1,7 @@
 import axios, { isAxiosError } from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { z } from 'zod'
-import { t, explanation } from './i18n'
+import { t, knownExplanation } from './i18n'
 export class ApiError extends Error {
   constructor(
     readonly code: string,
@@ -14,15 +14,8 @@ export function errorMessage(error: unknown): string {
   if (!(error instanceof ApiError)) return t('error')
   if (error.status === 401) return t('unauthorized')
   if (error.status === 403) return t('forbidden')
-  if (
-    [
-      'membership_capacity',
-      'owner_transfer_required',
-      'already_member',
-      'recipe_revision_not_found',
-    ].includes(error.code)
-  )
-    return explanation(error.code)
+  const localized = knownExplanation(error.code)
+  if (localized) return localized
   if (error.status === 409) return t('conflict')
   if (error.status === 503 || error.status === 507) return t('storage')
   if (error.status === 400 || error.status === 422) return t('invalid')

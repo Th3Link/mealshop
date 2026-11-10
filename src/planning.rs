@@ -65,6 +65,45 @@ pub(crate) struct PlanStore {
     writable: bool,
 }
 impl PlanStore {
+    pub(crate) fn shopping_recipes(
+        &self,
+        revision: u64,
+        slots: &[crate::shopping::sources::MealSlot],
+    ) -> Result<Vec<crate::shopping::sources::MealSelection>, &'static str> {
+        if revision != self.data.revision {
+            return Err("shopping_revision_conflict");
+        }
+        if slots.len() > 100
+            || slots
+                .iter()
+                .map(|s| (&s.date, &s.meal))
+                .collect::<BTreeSet<_>>()
+                .len()
+                != slots.len()
+        {
+            return Err("shopping_plan_invalid");
+        }
+        slots
+            .iter()
+            .map(|slot| {
+                let plan = self
+                    .data
+                    .meals
+                    .iter()
+                    .find(|p| p.date == slot.date && p.meal == slot.meal)
+                    .ok_or("shopping_plan_invalid")?;
+                Ok(crate::shopping::sources::MealSelection {
+                    date: plan.date.clone(),
+                    meal: plan.meal.clone(),
+                    recipe: crate::shopping::sources::Selection {
+                        recipe_id: plan.recipe.id.clone(),
+                        revision: plan.recipe.revision,
+                        servings: plan.servings,
+                    },
+                })
+            })
+            .collect()
+    }
     pub(crate) fn open(directory: &Path) -> Result<Self, String> {
         let path = directory.join("mealplan.json");
         if directory.join(".mealplan.pending").exists() {

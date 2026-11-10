@@ -1,6 +1,9 @@
+import { shoppingEnglish, shoppingGerman } from './shopping-messages'
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  originalLanguage: 'Original language',
+  ...shoppingEnglish,
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
   changesSaved: 'Changes saved.',
@@ -288,6 +291,8 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  originalLanguage: 'Originalsprache',
+  ...shoppingGerman,
   searchRecipes: 'Rezepte suchen',
   resetFilters: 'Filter zurücksetzen',
   changesSaved: 'Änderungen gespeichert.',
@@ -585,10 +590,11 @@ const de: Record<keyof typeof en, string> = {
   accessHelp:
     'Besitzer verwalten Zugriffe. Bearbeiter ändern Rezepte, Profile und Pläne. Leser können diese ansehen, exportieren und prüfen.',
 }
+export function normalizeLocale(value: string): 'en' | 'de' {
+  return value.toLowerCase().split(/[-_]/)[0] === 'de' ? 'de' : 'en'
+}
 export const locale = ref<'en' | 'de'>(
-  typeof document !== 'undefined' && document.documentElement.lang.toLowerCase().startsWith('de')
-    ? 'de'
-    : 'en',
+  normalizeLocale(typeof document !== 'undefined' ? document.documentElement.lang : 'en'),
 )
 try {
   const saved = localStorage.getItem('mealshop.locale')
@@ -621,6 +627,43 @@ export function parseGrams(input: string, language = locale.value): string | nul
   return atoms > 0n && atoms <= 1000000000000000n ? canonical : null
 }
 const explanations: Record<string, { en: string; de: string }> = {
+  shopping_barcode_invalid: {
+    en: 'Enter a valid EAN/UPC/GTIN including check digit.',
+    de: 'Gib einen gültigen EAN/UPC/GTIN mit Prüfziffer ein.',
+  },
+  shopping_match_required: {
+    en: 'Confirm the ingredient match before saving.',
+    de: 'Bestätige die Zutatenzuordnung vor dem Speichern.',
+  },
+  shopping_candidate_expired: {
+    en: 'The lookup result expired. Look up the barcode again.',
+    de: 'Das Suchergebnis ist abgelaufen. Schlage den Barcode erneut nach.',
+  },
+  shopping_product_invalid: {
+    en: 'Review the product name, package quantity and package count.',
+    de: 'Prüfe Produktname, Packungsmenge und Packungsanzahl.',
+  },
+  shopping_product_not_found: {
+    en: 'Save this product before adding packages.',
+    de: 'Speichere dieses Produkt vor dem Hinzufügen der Packungen.',
+  },
+  shopping_lookup_consent_required: {
+    en: 'Confirm consent for this external barcode request.',
+    de: 'Bestätige die Zustimmung zu dieser externen Barcode-Anfrage.',
+  },
+  shopping_lookup_throttled: {
+    en: 'Wait a few seconds before another barcode lookup.',
+    de: 'Warte einige Sekunden vor einer weiteren Barcode-Suche.',
+  },
+  shopping_lookup_unavailable: {
+    en: 'The provider is unavailable. Enter the product manually.',
+    de: 'Der Anbieter ist nicht erreichbar. Erfasse das Produkt manuell.',
+  },
+  shopping_lookup_invalid: {
+    en: 'The provider returned unusable data. Enter the product manually.',
+    de: 'Der Anbieter hat unbrauchbare Daten geliefert. Erfasse das Produkt manuell.',
+  },
+
   dietary_exclusion: {
     en: 'An attendee has a hard dietary exclusion for this recipe.',
     de: 'Für eine mitessende Person enthält dieses Rezept einen harten Ernährungsausschluss.',
@@ -653,6 +696,38 @@ const explanations: Record<string, { en: string; de: string }> = {
     en: 'This person already belongs to the household.',
     de: 'Diese Person gehört bereits zum Haushalt.',
   },
+  shopping_shop_invalid: {
+    en: 'Choose an existing shop and distinct first/second choices. Finish an active session before removing its shop.',
+    de: 'Wähle ein vorhandenes Geschäft und unterschiedliche erste/zweite Wahl. Beende einen laufenden Einkauf vor dem Entfernen des Geschäfts.',
+  },
+  shopping_session_invalid: {
+    en: 'Enable local learning, select a shop and finish the active session before starting another.',
+    de: 'Aktiviere lokales Lernen, wähle ein Geschäft und beende den laufenden Einkauf vor dem nächsten.',
+  },
+  shopping_quantity_invalid: {
+    en: 'Use a positive exact quantity up to 1,000,000,000 base g, ml or pieces per contribution.',
+    de: 'Verwende eine positive exakte Menge bis 1.000.000.000 g, ml oder Stück je Beitrag.',
+  },
+  shopping_request_invalid: {
+    en: 'Review the item name, quantity and selected source.',
+    de: 'Prüfe den Artikelnamen, die Menge und die ausgewählte Quelle.',
+  },
+  shopping_source_not_found: {
+    en: 'This list source is no longer available. Reload and review the list.',
+    de: 'Diese Listenquelle ist nicht mehr verfügbar. Lade die Liste neu und prüfe sie.',
+  },
+  shopping_plan_invalid: {
+    en: 'The selected meal slots are no longer current. Reload and review the selection.',
+    de: 'Die ausgewählten Mahlzeiten sind nicht mehr aktuell. Lade sie neu und prüfe die Auswahl.',
+  },
+  shopping_capacity: {
+    en: 'The shopping storage limit has been reached. Contact the operator before adding more entries.',
+    de: 'Die Speichergrenze der Einkaufsliste ist erreicht. Kontaktiere den Betreiber vor weiteren Einträgen.',
+  },
+  shopping_label_invalid: {
+    en: 'Enter an item name up to 200 bytes.',
+    de: 'Gib einen Artikelnamen mit höchstens 200 Bytes ein.',
+  },
   membership_capacity: {
     en: 'The household or membership limit has been reached.',
     de: 'Die Grenze für Haushalte oder Mitgliedschaften wurde erreicht.',
@@ -662,8 +737,11 @@ const explanations: Record<string, { en: string; de: string }> = {
     de: 'Die gewählte Rezeptversion ist nicht verfügbar. Wähle eine vorhandene Version.',
   },
 }
+export function knownExplanation(code: string): string | undefined {
+  return explanations[code]?.[locale.value]
+}
 export function explanation(code: string): string {
-  return explanations[code]?.[locale.value] ?? t('reviewRequired')
+  return knownExplanation(code) ?? t('reviewRequired')
 }
 
 export function allergenName(id: string): string {
@@ -705,4 +783,37 @@ export function nutrientLabel(id: string, original: string): string {
 export function parseNonnegative(input: string, language = locale.value): string | null {
   const zero = language === 'de' ? /^0(?:,0{1,6})?$/ : /^0(?:\.0{1,6})?$/
   return parseGrams(input, language) ?? (zero.test(input) ? input.replace(',', '.') : null)
+}
+
+export function servingCount(count: number): string {
+  const unit =
+    locale.value === 'de'
+      ? count === 1
+        ? 'Portion'
+        : 'Portionen'
+      : count === 1
+        ? 'serving'
+        : 'servings'
+  return `${new Intl.NumberFormat(locale.value).format(count)} ${unit}`
+}
+export function mealName(value: string): string {
+  return value === 'breakfast' || value === 'lunch' || value === 'snack' || value === 'dinner'
+    ? t(value)
+    : value
+}
+export function calendarDate(value: string): string {
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }).format(
+    new Date(`${value}T12:00:00`),
+  )
+}
+
+export function timestamp(seconds: number): string {
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(seconds * 1000),
+  )
+}
+export function shoppingUnit(unit: string, amount: string): string {
+  return unit === 'piece'
+    ? t(/^0*1(?:\.0+)?$/.test(amount) ? 'shoppingPiece' : 'shoppingPieces')
+    : unit
 }

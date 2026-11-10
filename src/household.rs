@@ -70,6 +70,7 @@ pub(crate) struct Household {
     pub(crate) store: Mutex<Store>,
     pub(crate) recipes: Option<Arc<Mutex<crate::recipes::Store>>>,
     pub(crate) plans: Mutex<crate::planning::PlanStore>,
+    pub(crate) shopping: Mutex<crate::shopping::Store>,
     pub(crate) images: PathBuf,
     pub(crate) catalogue: crate::ingredients::Shared,
     pub(crate) allergen_data: serde_json::Value,
@@ -197,6 +198,7 @@ pub(crate) fn router(
         recipes,
         images: directory.join("images"),
         plans: Mutex::new(plans),
+        shopping: Mutex::new(crate::shopping::Store::open(directory)?),
         token,
         reader_token,
         allergen_data,
@@ -210,6 +212,7 @@ pub(crate) fn router(
     Ok(Router::new()
         .route("/api/household/allergens", get(allergens))
         .merge(crate::planning::routes())
+        .merge(crate::shopping::routes())
         .merge(crate::ingredient_api::routes())
         .merge(crate::recipe_images::routes())
         .route("/api/household/profiles", get(read).put(write))

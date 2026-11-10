@@ -1,3 +1,4 @@
+import { openFixture } from './fixtures'
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 test('groups, declared nutrient values and explicit subtype inheritance persist', async ({
@@ -12,7 +13,7 @@ test('groups, declared nutrient values and explicit subtype inheritance persist'
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click()
-  await page.locator('.record-list').getByRole('link').last().click()
+  await openFixture(page, 'authoring-experience.spec.ts')
   await page.getByRole('link', { name: 'Ingredients', exact: true }).click()
   await page.getByLabel('Search ingredients', { exact: true }).fill('Wheat flour')
   await expect(page.locator('.record-list')).toContainText('Wheat flour')

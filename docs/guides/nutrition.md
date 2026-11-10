@@ -97,7 +97,7 @@ See [starter data provenance](../../data/README.md) and
 
 ## Demo versus product UI
 The customer classified this surface as a pragmatic demo. Keep design effort minimal.
-Nextcloud/standalone product shells are F22 (Vue 3); Flutter is separate in F18.
+Nextcloud/standalone product shells are F22/F30 (Vue 3); Flutter is separate in F18.
 F21 starts with German/English demo messages, starter names and exact decimal presentation.
 Source uncertainty and educational text remain explicitly original-language until reviewed
 translations are available. UI language does not change nutrient IDs, units, source facts or

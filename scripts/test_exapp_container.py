@@ -84,11 +84,27 @@ try:
         recipe = {"title": "Container recipe", "language": "en", "servings": 1, "preparation": "as_recorded", "lines": [{"ingredient_id": ingredient, "grams": "1"}], "steps": []}
         assert request(name, unix, prefix + "/api/recipes", user="alice", method="POST", data=recipe)[0] == 201
         assert docker("exec", name, "stat", "-c", "%a", f"/data/{home}/household/ingredients.json") == "600"
+        shopping = prefix + "/api/household/shopping"
+        def shopping_change(revision, command):
+            status, body = request(name, unix, shopping, user="alice", method="POST", data={"expected_revision":revision,"command":command})
+            assert status == 200, body
+            return json.loads(body)
+        shopping_change(0, {"operation":"save_shop","name":"Container shop"})
+        result = shopping_change(1, {"operation":"add_manual","label":"Container ingredient","ingredient_id":ingredient,"quantity":{"amount":"0.100001","unit":"kg"}})
+        assert result["items"][0]["remaining"] == "100.001000"
+        result = shopping_change(2, {"operation":"check","key":result["items"][0]["key"],"checked":True})
+        assert result["items"][0]["purchased"] == "100.001000"
+        product = {"barcode":"034000470693","name":"Container product","brand":"","label_quantity":"100 g","quantity":{"amount":"100","unit":"g"},"ingredient_id":ingredient,"match_confirmed":True}
+        shopping_change(3, {"operation":"save_product","product":product})
+        result = shopping_change(4, {"operation":"add_product","barcode":product["barcode"],"packages":2})
+        assert result["items"][0]["remaining"] == "200.000000"
+        assert result["items"][0]["purchased"] == "100.001000"
+        assert docker("exec", name, "stat", "-c", "%a", f"/data/{home}/household/shopping.json") == "600"
         status, body = request(name, unix, "/js/mealshop.js", user="alice")
         assert status == 200 and len(body) > 100000
         if unix:
             assert docker("exec", name, "stat", "-c", "%a", "/tmp/frpc.toml") == "600"
-        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF and private storage")
+        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products and storage")
 finally:
     for container in reversed(containers):
         subprocess.run(["docker", "stop", "--time", "10", container], capture_output=True)

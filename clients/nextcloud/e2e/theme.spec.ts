@@ -1,3 +1,4 @@
+import { openFixture } from './fixtures'
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 test('native system light/dark themes, reduced motion and keyboard focus', async ({ page }) => {
@@ -6,7 +7,7 @@ test('native system light/dark themes, reduced motion and keyboard focus', async
   await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click({ timeout: 30000 })
-  await page.locator('.record-list').getByRole('link').last().click()
+  await openFixture(page, 'authoring-experience.spec.ts')
   await page.getByRole('link', { name: 'Ingredients', exact: true }).click()
   await page.getByLabel('Search ingredients', { exact: true }).fill('oats')
   await page.locator('.record-list').getByRole('link').first().click()

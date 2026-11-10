@@ -1,3 +1,4 @@
+import { recordFixture } from './fixtures'
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 test('direct ingredient creation, optional constituents and branched preparation retain their context', async ({
@@ -13,6 +14,7 @@ test('direct ingredient creation, optional constituents and branched preparation
     .getByLabel('Household name', { exact: true })
     .fill(`Browser verification ${Date.now()}`)
   await page.getByRole('button', { name: 'Create household', exact: true }).click()
+  await recordFixture(page, 'authoring-experience.spec.ts')
   await expect
     .poll(() =>
       page.locator('.household-switcher').evaluate((root) => {

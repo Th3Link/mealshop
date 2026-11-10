@@ -24,3 +24,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0013: Household ingredient declarations and recipe images](0013-household-ingredients-and-images.md)
 
 - [0014: Recipe-owned parts and optional constituents](0014-recipe-parts-and-constituents.md)
+
+- [0015: shopping provenance, shop order and product boundaries](0015-shopping-provenance-and-local-learning.md)

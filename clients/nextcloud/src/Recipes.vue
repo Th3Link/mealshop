@@ -17,7 +17,7 @@ import {
 } from './contracts'
 import type { Recipe } from './contracts'
 import { homes, useTask, loadCatalogue } from './state'
-import { exact, locale, parseGrams, t } from './i18n'
+import { servingCount, exact, locale, parseGrams, t } from './i18n'
 import { mdiPlus } from '@mdi/js'
 import Icon from './Icon.vue'
 import { foldSearch } from './ingredient-search'
@@ -367,7 +367,11 @@ async function scale() {
           />
           <div>
             <strong :lang="record.language">{{ record.title }}</strong
-            ><span>{{ record.servings }} {{ t('servings') }}</span>
+            ><span>{{ servingCount(record.servings) }}</span
+            ><span v-if="record.language !== locale" class="muted"
+              >{{ t('originalLanguage') }}:
+              {{ record.language === 'de' ? 'Deutsch' : 'English' }}</span
+            >
           </div>
           <span>{{ t('revision') }} {{ record.revision }}</span></RouterLink
         >
@@ -475,10 +479,14 @@ async function scale() {
     <header class="page-header">
       <div>
         <h1 tabindex="-1" :lang="selected.recipe.language">{{ selected.recipe.title }}</h1>
+        <p v-if="selected.recipe.language !== locale" class="muted">
+          {{ t('originalLanguage') }}:
+          {{ selected.recipe.language === 'de' ? 'Deutsch' : 'English' }}
+        </p>
         <p>
           <template v-if="selected.recipe.author">{{ selected.recipe.author }} · </template
-          >{{ t('revision') }} {{ selected.revision }} · {{ selected.recipe.servings }}
-          {{ t('servings') }}
+          >{{ t('revision') }} {{ selected.revision }} ·
+          {{ servingCount(selected.recipe.servings) }}
         </p>
       </div>
       <NcButton v-if="writable" :to="{ query: { ...route.query, edit: '1' } }">{{

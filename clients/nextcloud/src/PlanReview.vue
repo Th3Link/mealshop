@@ -5,7 +5,15 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import Nutrition from './Nutrition.vue'
-import { compactExact, locale, t, explanation, allergenName } from './i18n'
+import {
+  servingCount,
+  calendarDate,
+  compactExact,
+  locale,
+  t,
+  explanation,
+  allergenName,
+} from './i18n'
 const props = defineProps<{
   value: PlanReview
   ingredients: Ingredient[]
@@ -26,8 +34,8 @@ function names(id: string) {
   <section>
     <h2 id="mealshop-review-title" tabindex="-1">{{ t('review') }}</h2>
     <p>
-      {{ value.plan.date }} · {{ mealTitle }} · {{ recipeTitle }} · {{ value.plan.servings }}
-      {{ t('servings') }}
+      {{ calendarDate(value.plan.date) }} · {{ mealTitle }} · {{ recipeTitle }} ·
+      {{ servingCount(value.plan.servings) }}
     </p>
     <p>
       {{ t('attendees') }}:

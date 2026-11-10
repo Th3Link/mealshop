@@ -1,14 +1,12 @@
-# Plan for Preferred shops and learned shopping order
+# Delivery plan: shops and optional order learning
 
-## Affected modules
-To be selected when the feature becomes Ready; no placeholder crates.
+- [x] AC1: persistent named shops, per-ingredient first/second choices and keyboard/touch manual order.
+- [x] AC2: explicit opt-in completed sessions; corrections invalidate session observations.
+- [x] AC3: at least three valid multi-item sessions before learned order; manual overrides win.
+- [x] AC4: assignment/fallback changes only metadata, preserving quantities and source snapshots.
+- [x] AC5: inspect/discard/reset/disable sessions independently of shopping data.
 
-## Tasks
-- [ ] Design and implement the behaviour for AC 1; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 2; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 3; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 4; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 5; add acceptance evidence.
-
-## Validation
-Before implementation, derive acceptance tests from each numbered criterion. Include failure cases, household authorization and quantity/provenance checks where applicable. Record commands and results here at delivery.
+## Evidence
+See [combined validation](../0006-shopping-list/validation.md). Backend acceptance contracts are in
+`tests/shopping.rs`, provider/GTIN boundary tests in `src/shopping/lookup.rs`, native browser flows
+in `clients/nextcloud/e2e/shopping.spec.ts`.

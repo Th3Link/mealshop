@@ -1,6 +1,6 @@
 # Preferred shops and learned shopping order
 
-Status: Draft
+Status: Done
 Priority: Should
 Origin: Customer
 Milestone: M2

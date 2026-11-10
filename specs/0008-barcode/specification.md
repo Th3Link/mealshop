@@ -1,6 +1,6 @@
 # Barcode scanning and product matching
 
-Status: Draft
+Status: Done
 Priority: Could
 Origin: Customer
 Milestone: M3
