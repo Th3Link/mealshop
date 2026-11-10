@@ -74,6 +74,7 @@ async fn run_exapp() -> Result<(), Box<dyn Error>> {
     let config = mealshop_server::exapp::Config {
         secret: std::env::var("APP_SECRET")?,
         nextcloud_url: std::env::var("NEXTCLOUD_URL")?,
+        public_url: std::env::var("MEALSHOP_PUBLIC_NEXTCLOUD_URL").ok(),
         directory: std::env::var("APP_PERSISTENT_STORAGE")?.into(),
         assets: std::env::var("MEALSHOP_ASSET_DIR")
             .unwrap_or_else(|_| "clients/nextcloud/dist".to_owned())

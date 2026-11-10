@@ -324,3 +324,9 @@ Individual dependent specs require their authoring/Nextcloud setup spec first; m
 closed instead of opening the last household. Never point tests at customer-owned households.
 Archive confirmed fixtures after stopping the sole writer, taking a complete private backup and checking
 that retained customer files are byte-identical. Test reports and the fixture ledger remain ignored.
+
+## Cooking and baking
+
+The household Cooking & baking view and recipe entry point implement F12/F13; see the
+[cooking guide](cooking.md). Configure `MEALSHOP_PUBLIC_NEXTCLOUD_URL` when the server-side
+Nextcloud URL is internal, so notification links use the browser-visible installation.

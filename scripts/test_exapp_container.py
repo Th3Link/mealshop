@@ -81,8 +81,10 @@ try:
         status, body = request(name, unix, prefix + "/api/household/ingredients", user="alice", method="POST", data=declaration)
         assert status == 201
         ingredient = json.loads(body)["id"]
-        recipe = {"title": "Container recipe", "language": "en", "servings": 1, "preparation": "as_recorded", "lines": [{"ingredient_id": ingredient, "grams": "1"}], "steps": []}
-        assert request(name, unix, prefix + "/api/recipes", user="alice", method="POST", data=recipe)[0] == 201
+        recipe = {"title": "Container recipe", "language": "en", "servings": 1, "preparation": "as_recorded", "lines": [{"ingredient_id": ingredient, "grams": "1"}], "steps": [{"instruction":"Prepare container fixture","active_seconds":1,"passive_seconds":60}]}
+        status, body = request(name, unix, prefix + "/api/recipes", user="alice", method="POST", data=recipe)
+        assert status == 201, body
+        recipe_id = json.loads(body)["id"]
         assert docker("exec", name, "stat", "-c", "%a", f"/data/{home}/household/ingredients.json") == "600"
         shopping = prefix + "/api/household/shopping"
         def shopping_change(revision, command):
@@ -104,7 +106,20 @@ try:
         assert status == 200 and len(body) > 100000
         if unix:
             assert docker("exec", name, "stat", "-c", "%a", "/tmp/frpc.toml") == "600"
-        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products and storage")
+        code, body = request(name, unix, prefix + "/api/household/cooking/template?recipe_id=" + recipe_id + "&revision=1&servings=3&timezone=Europe%2FBerlin", user="alice")
+        assert code == 200, body
+        draft = json.loads(body)["draft"]
+        code, body = request(name, unix, prefix + "/api/household/cooking/preview", user="alice", method="POST", data={"expected_revision": 0, "proposal": {"kind": "create", "draft": draft}})
+        assert code == 200, body
+        review = json.loads(body)
+        code, body = request(name, unix, prefix + "/api/household/cooking", user="alice", method="POST", data={"expected_revision": 0, "command": {"operation": "apply", "preview_id": review["preview_id"], "reviewed": True}})
+        assert code == 200, body
+        cooking_id = json.loads(body)["run_id"]
+        code, body = request(name, unix, prefix + "/api/household/cooking/" + cooking_id, user="alice")
+        assert code == 200 and json.loads(body)["run"]["schedule"] == review["run"]["schedule"], body
+        code, body = request(name, unix, prefix + "/api/household/cooking/internal", user="alice", method="POST", data={"operation": "claim"})
+        assert code == 403, body
+        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review and storage")
 finally:
     for container in reversed(containers):
         subprocess.run(["docker", "stop", "--time", "10", container], capture_output=True)

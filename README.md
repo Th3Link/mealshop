@@ -67,3 +67,8 @@ Native household shopping lists now preserve recipe/plan contributions and purch
 Choose shops, set manual order or opt into local session learning; packaged products support manual
 GTIN entry, optional supported-camera scanning and consented Open Food Facts lookup.
 [Shopping guide](docs/guides/shopping.md) · [acceptance evidence](specs/0006-shopping-list/validation.md).
+
+Native guided cooking now saves independent preset timers and reviewed multi-day baking schedules.
+Personal Nextcloud reminders retain delivery uncertainty and deadlines across restart.
+[Cooking guide](docs/guides/cooking.md) · [F12 evidence](specs/0012-guided-cooking/validation.md) ·
+[F13 evidence](specs/0013-bread-schedules/validation.md).

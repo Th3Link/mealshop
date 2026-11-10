@@ -1,9 +1,11 @@
+import { cookingEnglish, cookingGerman, cookingExplanations } from './cooking-messages'
 import { shoppingEnglish, shoppingGerman } from './shopping-messages'
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
   originalLanguage: 'Original language',
   ...shoppingEnglish,
+  ...cookingEnglish,
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
   changesSaved: 'Changes saved.',
@@ -291,6 +293,7 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  ...cookingGerman,
   originalLanguage: 'Originalsprache',
   ...shoppingGerman,
   searchRecipes: 'Rezepte suchen',
@@ -627,6 +630,7 @@ export function parseGrams(input: string, language = locale.value): string | nul
   return atoms > 0n && atoms <= 1000000000000000n ? canonical : null
 }
 const explanations: Record<string, { en: string; de: string }> = {
+  ...cookingExplanations,
   shopping_barcode_invalid: {
     en: 'Enter a valid EAN/UPC/GTIN including check digit.',
     de: 'Gib einen gültigen EAN/UPC/GTIN mit Prüfziffer ein.',

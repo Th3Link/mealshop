@@ -1,6 +1,6 @@
 # Multi-day bread, rolls and pizza scheduling
 
-Status: Draft
+Status: Done
 Priority: Should
 Origin: Customer
 Milestone: M3
@@ -22,3 +22,5 @@ UI flows, accessibility, empty/error states and user review points must be speci
 
 ## Links
 Requirement: [F13](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
+
+Acceptance evidence: [validation.md](validation.md).

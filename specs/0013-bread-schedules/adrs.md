@@ -4,3 +4,5 @@
 
 ## Feature-local decisions
 2026-11-07: Acceptance criteria capture the customer vision; unspecified implementation choices remain proposals. No future feature is implemented by this bootstrap.
+
+- [ADR 0016](../../docs/adr/0016-durable-cooking-and-civil-time.md): shared instance/timer/schedule model, explicit civil-time resolution and durable delivery states.

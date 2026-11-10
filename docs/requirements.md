@@ -54,3 +54,7 @@ barcode product capture. N03/N04/N09/N10 apply. F21/F22 close only the delivered
 by explicit customer decision. F29/F30 retain the complete original cross-client acceptance contracts
 unchanged; standalone/Flutter localization, versioned content translations and standalone shell remain open.
 N09 → F21/F29; N10 → F22/F30/F18.
+
+F12/F13 deliver native Nextcloud guided cooking and reviewed multi-day baking with durable UTC deadlines,
+IANA/DST resolution and personal `AppAPI` reminders. N03/N04/N07/N09/N10 apply; accepted delivery is not
+guaranteed device delivery. See [cooking guide](guides/cooking.md) and ADR 0016.

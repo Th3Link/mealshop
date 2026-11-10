@@ -766,3 +766,107 @@
 .mealshop .product-dialog fieldset {
   min-width: 0;
 }
+
+/* Cooking uses the host's colors, type and controls. Time and schedule carry the hierarchy. */
+.mealshop .cooking-view {
+  max-width: 1040px;
+}
+.mealshop .cooking-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0;
+}
+.mealshop .cooking-timeline > li {
+  padding: 20px 0 24px 20px;
+  border-inline-start: 3px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .cooking-timeline > li:has(.cooking-countdown) {
+  border-inline-start-color: var(--color-primary-element);
+}
+.mealshop .cooking-countdown {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.6rem;
+  line-height: 1.4;
+  margin-block: 12px;
+}
+.mealshop .cooking-countdown .muted {
+  font-size: 1rem;
+}
+.mealshop .cooking-state {
+  font-weight: 600;
+}
+.mealshop .cooking-duration {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 0.6fr);
+  gap: 8px;
+  align-items: end;
+  min-width: 0;
+}
+.mealshop .cooking-stage-editor {
+  border-block-end: 1px solid var(--color-border);
+  padding-block: 8px 16px;
+}
+.mealshop .cooking-stage-editor summary {
+  padding-block: 12px;
+}
+.mealshop .cooking-stage-editor .editor-fields {
+  margin-block-start: 16px;
+}
+.mealshop .cooking-local-time {
+  border: 0;
+  padding: 0;
+  margin: 16px 0;
+  min-width: 0;
+}
+.mealshop .cooking-local-time legend {
+  font-weight: 600;
+  margin-block-end: 8px;
+}
+.mealshop .cooking-review dd,
+.mealshop .cooking-review p,
+.mealshop .cooking-timeline p {
+  overflow-wrap: anywhere;
+}
+.mealshop .cooking-ingredients,
+.mealshop .cooking-notifications {
+  padding-block: 16px;
+  border-block: 1px solid var(--color-border);
+}
+.mealshop .cooking-ingredients li {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+.mealshop .cooking-ingredients strong {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mealshop .cooking-notifications li {
+  padding-block: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .cooking-management {
+  margin-block: 24px;
+}
+.mealshop .cooking-runs a {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 8px;
+  min-height: 64px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-main-text);
+}
+.mealshop .cooking-runs a:hover {
+  background: var(--color-background-hover);
+}
+.mealshop .cooking-runs a strong:first-child {
+  font-size: 1.15rem;
+}
+.mealshop .cooking-timeline .section-heading h3 {
+  margin: 0 0 8px;
+}
+.mealshop .cooking-timeline details {
+  margin-block: 12px 0;
+}
