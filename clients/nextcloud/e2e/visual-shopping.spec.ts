@@ -90,8 +90,24 @@ test('visual shopping keeps search, exact entry, check-off undo and failed write
     .locator('.shopping-items>li')
     .filter({ has: page.getByRole('checkbox', { name: /Test kitchen cloth/ }) })
   await expect(cloth.getByRole('checkbox')).toBeEnabled()
-  await cloth.locator('.shopping-tile__body').click()
+  let releaseSave: (() => void) | undefined
+  const pendingSave = new Promise<void>((resolve) => {
+    releaseSave = resolve
+  })
+  await page.route('**/api/household/shopping', async (route) => {
+    if (route.request().method() === 'POST') await pendingSave
+    await route.continue()
+  })
+  const beforeSave = await cloth.boundingBox()
+  try {
+    await cloth.locator('.shopping-tile__body').click()
+    await expect(cloth.getByRole('checkbox')).toBeDisabled()
+    expect((await cloth.boundingBox())?.y).toBe(beforeSave?.y)
+  } finally {
+    releaseSave?.()
+  }
   await expect(page.locator('#mealshop-purchased>summary')).toBeVisible()
+  await page.unroute('**/api/household/shopping')
   await page.reload()
   await expect(page.getByRole('button', { name: 'Undo', exact: true })).toHaveCount(0)
   await page.locator('#mealshop-purchased>summary').click()

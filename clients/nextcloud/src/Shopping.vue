@@ -242,7 +242,7 @@ useUnsavedChanges(
 onMounted(load)
 </script>
 <template>
-  <div class="shopping-view">
+  <div class="shopping-view" :aria-busy="busy">
     <header class="page-header">
       <div>
         <h1 tabindex="-1">{{ t('shoppingList') }}</h1>
@@ -264,7 +264,7 @@ onMounted(load)
       >{{ errorMessage(error)
       }}<NcButton :disabled="busy" @click="load">{{ t('retry') }}</NcButton></NcNoteCard
     >
-    <NcLoadingIcon v-if="busy" :aria-label="t('loading')" />
+    <NcLoadingIcon v-if="busy && !data" :aria-label="t('loading')" />
     <template v-if="data">
       <div class="shopping-discovery">
         <div id="mealshop-shopping-search">
@@ -291,7 +291,9 @@ onMounted(load)
         }}</NcButton>
       </div>
       <div class="shopping-feedback">
-        <p role="status">{{ message || (writable ? t('shoppingTapHint') : '') }}</p>
+        <p role="status">
+          {{ busy ? t('saving') : message || (writable ? t('shoppingTapHint') : '') }}
+        </p>
         <NcButton
           v-if="lastCheck && writable"
           :disabled="busy"
