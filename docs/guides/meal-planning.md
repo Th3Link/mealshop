@@ -86,7 +86,7 @@ snapshot, then verify protected plan export, nutrition and shopping quantities. 
 edit files while the application is running. Network filesystems and cross-platform crash
 behaviour are not validated; Linux local filesystems are the initial target.
 
-## Production and mealprep allocations (F31, implementation in progress)
+## Production and mealprep allocations (F31)
 
 A saved plan's `servings` is the production count. Optional `allocations` contains date, meal and
 positive whole serving count for each eating day. The total cannot exceed production; fewer

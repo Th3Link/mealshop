@@ -120,7 +120,7 @@ checks count each measured ingredient line once. They do not infer the yield of 
 a parallel cooking schedule. Saved records pin all associations and source values; older flat records
 remain supported. Current APIs do not link independently saved recipes as nested references.
 
-## Structured preparation instructions (F31, implementation in progress)
+## Structured preparation instructions (F31)
 
 Recipe ingredient lines optionally carry `extensions`. The initial variant is:
 ```json

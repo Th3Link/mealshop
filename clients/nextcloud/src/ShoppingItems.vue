@@ -81,7 +81,7 @@ function label(item: Shopping['items'][number]) {
       >
       <div class="shopping-tile__footer">
         <span class="shopping-tile__state"
-          >{{ t(isPurchased(item) ? 'shoppingBought' : 'shoppingToBuy')
+          >{{ t(isPurchased(item) ? 'shoppingBoughtState' : 'shoppingOpenState')
           }}<template v-if="!isPurchased(item) && !/^0(?:\.0+)?$/.test(item.purchased)">
             · {{ t('shoppingBought') }}: {{ compactExact(item.purchased) }}
             {{ shoppingUnit(item.unit, item.purchased) }}

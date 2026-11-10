@@ -1,6 +1,6 @@
 # Visual household shopping
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer request and supplied Bring reference, 2026-11-10.
 Milestone: M2
@@ -20,3 +20,4 @@ The reference supplies interaction direction, not brand colors, illustrations, f
 
 ## Links
 Implementation: [plan.md](plan.md). Interaction contract: [ux-notes.md](ux-notes.md). Decisions: [adrs.md](adrs.md).
+Acceptance evidence: [validation.md](validation.md). Actual browser screenshots: [screens/](screens/README.md).

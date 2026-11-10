@@ -150,5 +150,31 @@ test('visual shopping keeps search, exact entry, check-off undo and failed write
       .analyze()
     expect(axe.violations).toEqual([])
   }
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.getByLabel('Language', { exact: true }).selectOption('de')
+  await expect(page.getByRole('heading', { name: 'Einkaufsliste', exact: true })).toBeVisible()
+  for (const width of [1440, 768, 390, 360, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    expect(
+      await page
+        .locator('.shopping-tile__state')
+        .evaluateAll((states) =>
+          states.every(
+            (state) =>
+              state.getBoundingClientRect().height <=
+              parseFloat(getComputedStyle(state).lineHeight) + 1,
+          ),
+        ),
+    ).toBe(true)
+    await page.screenshot({
+      path: `test-results/native-shopping-german-${width}.png`,
+      animations: 'disabled',
+    })
+  }
+  const germanAudit = await new AxeBuilder({ page })
+    .include('.mealshop')
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .analyze()
+  expect(germanAudit.violations).toEqual([])
   expect(errors).toEqual([])
 })

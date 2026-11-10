@@ -63,10 +63,12 @@ Protected family planning links saved recipe revisions with household constraint
 budgets and consented calendar attendance imports. Changes have an explicit shopping-quantity
 preview before apply. See the [family planning guide](docs/guides/meal-planning.md).
 
-Native household shopping lists now preserve recipe/plan contributions and purchased receipts.
+Native household shopping lists offer searchable item tiles, inline exact-quantity entry and last-check
+undo while preserving recipe/plan contributions and purchased receipts in item details.
 Choose shops, set manual order or opt into local session learning; packaged products support manual
 GTIN entry, optional supported-camera scanning and consented Open Food Facts lookup.
-[Shopping guide](docs/guides/shopping.md) · [acceptance evidence](specs/0006-shopping-list/validation.md).
+[Shopping guide](docs/guides/shopping.md) · [source/provenance evidence](specs/0006-shopping-list/validation.md) ·
+[visual shopping](specs/0032-visual-shopping/specification.md).
 
 Native guided cooking now saves independent preset timers and reviewed multi-day baking schedules.
 Personal Nextcloud reminders retain delivery uncertainty and deadlines across restart.

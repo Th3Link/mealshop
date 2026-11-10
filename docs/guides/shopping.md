@@ -2,6 +2,22 @@
 
 Open **Shopping list** inside a household. Readers inspect; owners/editors change it.
 
+## Finding and checking goods
+The list opens in shopping mode. Open goods appear as compact, named tiles with exact quantities;
+tap a tile or focus its checkbox and press Space to check it off. Purchased goods remain under the
+**Purchased** disclosure and can be unchecked. Text and checkboxes accompany color. Category icons
+come only from explicitly linked ingredient metadata; unlinked goods use a neutral basket.
+
+**Find an item** filters canonical and translated names without changing saved data or order. Long
+names wrap to two lines; their complete names remain accessible and visible in item details. Press
+Enter in search or choose **Add item** to enter an explicit quantity/unit inline. A name never selects
+an ingredient automatically. Saving returns focus to search; failed writes retain the draft. The last
+confirmed check/uncheck exposes **Undo** until another mutation or reload replaces that context.
+
+Each tile has a separate **Item details** action for full provenance, receipts and shop actions.
+**Manage list**, beside search, reveals recipe/meal-plan sources, shops, products and history controls.
+Clear search before changing a shop's item order; a filtered subset cannot replace the full order.
+
 ## Sources and purchases
 Add goods with exact g/kg/ml/l/piece quantities, optionally linked to an ingredient. Select a saved
 recipe revision/servings, or explicitly choose meal-plan slots. Updating that selection replaces only
@@ -9,7 +25,7 @@ meal-plan contributions. Identical ingredient IDs/base dimensions aggregate; mas
 never merge. Inspect **Recipes and contributions** for original purchased receipts. Source edits/removal
 change only outstanding requirements. Undo reverses purchases without resurrecting removed requirements.
 Purchases belong to their source; excess amounts are not reassigned automatically to another recipe.
-**Shopping mode** hides management and retains large check-off targets; **Manage list** restores editing.
+**Shopping mode** returns to the focused list while retaining item details and large check-off targets.
 
 ## Shops and learning
 Create/rename/remove shops and set ingredient first/second choices under **Shops and shopping order**.

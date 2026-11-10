@@ -1,28 +1,49 @@
-# F31 validation evidence
+# F31 acceptance evidence
 
-Status: In progress — native browser acceptance is not verified.
+Status: Done — accepted native Nextcloud scope.
 
-## Completed checks
-- Import catalogue check and offline verifier: passed (313 ingredient IDs, 284 source profiles, 29 identity-only records).
-- Node i18n test: passed.
-- `cargo fmt --all --check` and `cargo clippy --workspace --all-targets --locked -- -D warnings`: passed; regenerate/check embedded documentation after evidence updates.
-- `cargo nextest run --workspace --locked` with local test sockets allowed: 88 tests passed, zero skipped.
-- Native Vue typecheck and production build: passed. Locked Node 24 container: `npm run format:check`, `npm test` (14 passed) and `npm audit --audit-level=moderate` (zero vulnerabilities) passed. The host Node 26 cannot run `npm ci` under the required engine; the container supplies the declared runtime without weakening engine checks.
-- Licence gate: passed. `RustSec` audit: passed after allowing its cache lock/update.
-- `docker build -t mealshop.local/mealshop:unified-preparation .` passed. `python3 scripts/test_exapp_container.py --image mealshop.local/mealshop:unified-preparation` passed for TCP and Unix sockets; isolated lifecycle, assets, auth/CSRF, private storage and cooking review. The final backend correction was rebuilt using the already compiled, matching Rust builder cache; the final image was smoke-tested again over both transports before the local update. Browser acceptance remains open.
+Target: actual Nextcloud 35.0.2 / `AppAPI` 35.0.0, native Vue 3 client and protected Rust backend.
+Approved PNGs in screens/ remain design references, separate from actual browser screenshots.
 
-## Behavioral coverage
-Recipe API tests preserve exact temperature spelling through revision persistence, scaling and restart, reject duplicates, and keep mass intact. Planning API tests preserve production-once requirements, day allocation movement, over-allocation/duplicate/slot-conflict rejection and restart. Cooking tests demonstrate a 07:00 calendar anchor followed by an actual 07:08 start and a 07:53 deadline; moving to the next action acknowledges only elapsed passive waits.
+| AC | Observable evidence |
+|---|---|
+| 1 | `e2e/unified-preparation.spec.ts` creates preparation and eating allocations in one calendar and opens the linked cooking schedule. Existing daily/calendar tests cover flat meals and skipped attendees. |
+| 2 | Four portions are produced once, allocated two per eating day, then moved without duplicating the synchronized `100.000002 g`. Planning API tests cover restart, empty allocations, over-allocation, duplicate/occupied slots, revisions and immutable shopping provenance. |
+| 3 | Native authoring tests create ingredient/step groups with stable prepared-part references, retain the parent draft during inline ingredient creation, then reopen the saved revision. |
+| 4 | API tests preserve exact original Celsius spelling through save/reopen, scaling and restart, rejecting malformed/duplicate/unsupported extensions. The browser saves, edits and reads `60.000001 °C` in cooking without changing mass or identity. |
+| 5 | API tests anchor planned work at 07:00 but start a 45-minute wait from actual 07:08 completion, ending at 07:53. The browser starts a one-second wait after work with a 120-second estimate, then advances the dependent part without a readiness assessment. Independent timers, offline/reload recovery and multi-day scheduling remain covered. |
+| 6 | Nine approved concept PNGs are retained. Actual embedded workflows, API tests, client checks and the repository gate provide implementation evidence. |
 
-## Unresolved verification
-The in-app browser failed to initialize, then reported a closed browser transport and no available browser. A fresh tab attempt also failed. No substitute browser automation was used. Therefore no new visual, responsive, accessibility, sidebar-focus or end-to-end Nextcloud acceptance is claimed. Approved drawings in screens/ are design references, not evidence of working UI. Do not mark this feature Done or merge before those checks pass.
+## Checks and native review
+Catalogue import/verifier, conversion/allergen verifiers and Node i18n passed. Rust formatting,
+workspace Clippy with warnings denied, 88 nextest tests (zero skipped), licence policy, `RustSec`
+audit and strict rustdoc passed. Locked Node 24.15 / npm 12.2.2 client formatting, strict Vue/`TypeScript`
+build, 16 unit tests and npm audit (zero vulnerabilities) passed. The full installed-container embedded suite
+passed all 19 tests. The final shopping-only label refinement separately passed the four existing
+shopping contracts and its visual/localization test. Rootless container smoke tests
+passed for TCP and Unix sockets: lifecycle, assets, auth/CSRF, private shopping/products and cooking.
 
-GitHub authentication was confirmed outside the restricted sandbox. Browser acceptance remains an external blocker, not evidence of a successful launch.
+The sidebar has one native title, distinct production/allocation labels and focus after its opening
+transition. A completed preview receives focus. Native dialogs use their close lifecycle, draft
+protection and connected invoker focus restoration. The timer regression explicitly holds an old
+background response, proving pause refresh before that response returns rather than using a speed
+threshold. Reviewed precision/provenance, legacy defaults, household authorization/revisions,
+bounded allocations, source stability, dependency cycles, persistence and production-once shopping.
+No dependency or crate was added.
 
-## Code review before draft PR
-Checked exact values and unit boundaries, legacy defaults, household authorization/revisions, bounded allocations, persistence, dependency cycles and shared shopping provenance. Corrected empty-allocation fallback, edits that could change production identity, review visibility inside the sidebar, stale review markers on allocated days, draft replacement and recipe-part collapse while typing. Recipe-derived completion starts passive time even when active work has a planning estimate. No dependency or crate was added. Browser verification remains a merge blocker.
+## Operations and limits
+An actual container restart preserved authenticated API snapshots, cooking deadlines/timer states and
+35 persisted files (11 memberships, one referenced image). Verified fixture archival then retained both
+customer memberships and their eight files byte-for-byte against the initial PR #27 backup. The final repeat passed; only ledger/content-verified synthetic
+households and their identified reminders are archived. Both customer households remain active, with
+monotonic IDs preserved. The final documentation-only image rebuild retains verified frontend bytes
+and is checked before handoff. Complete private backups and the original functional image remain available.
+Never run host/container writers concurrently or use customer households as acceptance fixtures.
 
-## Local test deployment
-The local Nextcloud test instance was updated after a graceful stop and a complete private backup of the dedicated Mealshop data directory. The backup remains under ignored `var/nextcloud/backups/`. The existing private environment was retained; only its image reference changed. The new container reported `healthy`. No real household was used as a synthetic test fixture or rewritten for acceptance. The deployed functional source is commit `751f96f`, image `920e1fdecec2`; later commits may only update evidence. Browser acceptance is still blocked by the closed transport.
+One shared attendee list conservatively applies to all eating allocations. Calendar anchors are
+planned reminders; author temperatures and elapsed waits establish neither device measurements nor
+food readiness. Physical scale/heater integration, guaranteed device alerts and standalone/Flutter
+clients remain outside this slice. Remote CI must pass on the exact PR head before handoff.
 
-CI for the implementation commit passed Rust fmt/clippy/nextest/coverage, MSRV, licence check, SBOM, debug/release builds, binary metrics and native client format/contracts/build/audit. The remaining remote image/advisory jobs were still running when this evidence was recorded; no all-green remote CI claim is made.
+Actual [calendar/cooking screenshots](verification/README.md) were reviewed; an additional read-only
+calendar check passed four widths and the WCAG-tagged axe audit.

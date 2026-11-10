@@ -1,6 +1,8 @@
 # Unified meal planning, preparation and ingredient extensions
 
-Status: In progress
+Status: Done
+Priority: Must
+Milestone: M2
 Origin: Customer-approved visual concepts, 2026-11-10; implementation explicitly authorized.
 
 ## Acceptance contract
@@ -16,3 +18,6 @@ No scale driver, device discovery, remote heating control or promised device pro
 
 ## Reference acceptance examples
 Brotkruste: four prepared parts feed the main dough; water can retain 150 g plus a declared 60 °C target. Initial sourdough/brühstück/oat preparations start together; a calendar anchor schedules continuing with spelt at 07:00. Curry: four portions produced once Wednesday, two allocated Thursday and two Friday. Empty/unassigned production portions remain visible.
+
+Implementation evidence: [validation.md](validation.md). Actual browser screenshots are in
+[verification/](verification/README.md); approved drawings remain in [screens/](screens/README.md).

@@ -8,7 +8,7 @@ An unlinked item has the generic basket icon. Quantities remain exact and visibl
 
 Keep tile labels wrapping to two lines and the whole checkbox area tappable. Full names remain in
 accessible labels, desktop titles and item details; exact quantities are never truncated. Use at least
-44px controls and 8px gaps.
+44px check-off targets and 8px gaps; retain the host's native action controls.
 Move provenance and shop controls into a named dialog, leaving a separate, labelled details action on
 each tile. Keep details reachable in shopping mode. A search is a cached derived view; it never changes
 shopping data or order. Clear the search before reordering a shop so hidden items cannot be dropped.

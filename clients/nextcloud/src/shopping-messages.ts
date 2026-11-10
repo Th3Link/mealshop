@@ -1,5 +1,7 @@
 export const shoppingEnglish = {
   shoppingTapHint: 'Tap an item to mark it purchased.',
+  shoppingOpenState: 'Open',
+  shoppingBoughtState: 'Bought',
   shoppingClose: 'Done',
   shoppingSearch: 'Find an item',
   shoppingSearchHint: 'What do you need to buy?',
@@ -126,6 +128,8 @@ export const shoppingEnglish = {
 }
 export const shoppingGerman: Record<keyof typeof shoppingEnglish, string> = {
   shoppingTapHint: 'Tippe auf einen Artikel, um ihn abzuhaken.',
+  shoppingOpenState: 'Offen',
+  shoppingBoughtState: 'Gekauft',
   shoppingSearch: 'Artikel finden',
   shoppingSearchHint: 'Was möchtest du einkaufen?',
   shoppingNoMatches: 'Keine passenden Artikel auf dieser Liste.',
