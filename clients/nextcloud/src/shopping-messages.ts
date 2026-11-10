@@ -1,4 +1,16 @@
 export const shoppingEnglish = {
+  shoppingClose: 'Close',
+  shoppingSearch: 'Find an item',
+  shoppingSearchHint: 'What do you need to buy?',
+  shoppingNoMatches: 'No matching items in this list.',
+  shoppingItemDetails: 'Item details',
+  shoppingAlreadyBought: 'already purchased',
+  shoppingMarkedBought: 'Marked as purchased',
+  shoppingRestored: 'Moved back to the list',
+  shoppingUndo: 'Undo',
+  shoppingUndoDone: 'Purchase action undone.',
+  shoppingClearToOrder: 'Clear the search to reorder the complete shop list.',
+
   barcodePermission:
     'Choose camera permission in your browser, or stop and enter the barcode manually.',
   shoppingPiece: 'piece',
@@ -112,6 +124,18 @@ export const shoppingEnglish = {
     'Remove the outstanding contribution? Purchased quantities and other sources remain.',
 }
 export const shoppingGerman: Record<keyof typeof shoppingEnglish, string> = {
+  shoppingSearch: 'Artikel finden',
+  shoppingSearchHint: 'Was möchtest du einkaufen?',
+  shoppingNoMatches: 'Keine passenden Artikel auf dieser Liste.',
+  shoppingItemDetails: 'Artikeldetails',
+  shoppingAlreadyBought: 'bereits gekauft',
+  shoppingMarkedBought: 'Als gekauft markiert',
+  shoppingRestored: 'Wieder auf der Liste',
+  shoppingUndo: 'Rückgängig',
+  shoppingUndoDone: 'Einkaufsaktion rückgängig gemacht.',
+  shoppingClearToOrder: 'Leere die Suche, um die vollständige Ladenliste zu sortieren.',
+  shoppingClose: 'Schließen',
+
   barcodePermission:
     'Wähle die Kamerafreigabe im Browser oder stoppe und gib den Barcode manuell ein.',
   shoppingPiece: 'Stück',

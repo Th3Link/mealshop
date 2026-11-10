@@ -733,21 +733,142 @@
   max-width: 100%;
 }
 
+/* Shopping tiles retain native checkbox semantics and host theme tokens. */
 .mealshop .shopping-items {
   padding: 0;
   list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+  gap: 12px;
 }
 .mealshop .shopping-items > li {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--color-border);
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-large);
+  background: var(--color-primary-element-light);
+  display: flex;
+  flex-direction: column;
 }
-.mealshop .shopping-items .checkbox-radio-switch {
+.mealshop .shopping-items .shopping-tile {
   --default-clickable-area: 48px;
   width: 100%;
+  margin: 0;
+  flex: 1;
 }
-.mealshop .shopping-items details {
-  margin-block: 0 8px;
-  padding-inline-start: 48px;
+.mealshop .shopping-tile .checkbox-radio-switch__content {
+  position: relative;
+  padding: 20px 12px 16px;
+  width: 100%;
+  height: 100%;
+  min-height: 148px;
+  border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
+}
+.mealshop .shopping-tile .checkbox-content__wrapper {
+  min-width: 0;
+  width: 100%;
+}
+.mealshop .shopping-tile .checkbox-content__text {
+  display: block;
+  width: 100%;
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.4;
+}
+.mealshop .shopping-tile .checkbox-content__icon {
+  position: absolute;
+  inset-inline-end: 8px;
+  top: 8px;
+}
+.mealshop .shopping-tile__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  text-align: center;
+}
+.mealshop .shopping-tile__illustration {
+  width: 36px;
+  height: 36px;
+  color: var(--color-primary-element);
+}
+.mealshop .shopping-tile__caption {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.mealshop .shopping-tile__quantity {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+}
+.mealshop .shopping-tile__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  padding-inline: 12px 4px;
+  min-height: 48px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-main-background);
+  border-radius: 0 0 var(--border-radius-large) var(--border-radius-large);
+}
+.mealshop .shopping-tile__state {
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.mealshop .shopping-items > .shopping-item--purchased {
+  background: var(--color-background-hover);
+}
+.mealshop .shopping-item--purchased .shopping-tile__illustration {
+  color: var(--color-success-text, var(--color-main-text));
+}
+.mealshop .shopping-tile:focus-within {
+  outline: 3px solid var(--color-primary-element);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-large);
+}
+.mealshop .shopping-items > li:has(.shopping-tile:hover:not(.checkbox-radio-switch--disabled)) {
+  border-color: var(--color-primary-element);
+}
+.mealshop .shopping-discovery {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-block: 16px;
+}
+.mealshop .shopping-discovery > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+.mealshop .shopping-feedback {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 44px;
+}
+.mealshop .shopping-feedback p {
+  margin: 0;
+}
+.mealshop .shopping-entry {
+  padding-block: 16px;
+  border-block: 1px solid var(--color-border);
+}
+.mealshop .shopping-count {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .shopping-detail-section {
+  margin-block: 16px;
+}
+@media (max-width: 480px) {
+  .mealshop .shopping-items {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
 }
 
 .mealshop .barcode-camera video {
