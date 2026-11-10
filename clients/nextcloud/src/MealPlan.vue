@@ -272,6 +272,11 @@ watch(
 function focusReview() {
   if (result.value) document.getElementById('mealshop-review-title')?.focus()
 }
+function focusSidebar() {
+  if (result.value) focusReview()
+  else
+    document.querySelector<HTMLElement>('.mealplan-sidebar .app-sidebar-header__mainname')?.focus()
+}
 watch(result, async (value) => {
   reviewed.value = false
   if (value) {
@@ -335,7 +340,7 @@ onMounted(load)
     v-if="draft"
     class="mealplan-sidebar"
     :name="t(editingExisting ? 'editMeal' : 'newMeal')"
-    @opened="focusReview"
+    @opened="focusSidebar"
     @close="cancelPlan"
   >
     <NcAppSidebarTab id="meal-details" :name="t('details')"

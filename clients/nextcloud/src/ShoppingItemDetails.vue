@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nextTick } from 'vue'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import ShoppingOrigin from './ShoppingOrigin.vue'
@@ -20,6 +21,14 @@ const emit = defineEmits<{
   command: [command: ShoppingCommand]
   move: [delta: number]
 }>()
+const returnFocus =
+  document.activeElement instanceof HTMLElement ? document.activeElement : undefined
+async function closed(open: boolean) {
+  if (open) return
+  emit('close')
+  await nextTick()
+  if (returnFocus?.isConnected) returnFocus.focus()
+}
 function assign(event: Event) {
   if (event.target instanceof HTMLSelectElement)
     emit('command', {
@@ -34,8 +43,9 @@ function assign(event: Event) {
     :name="item.translations[locale] ?? item.name"
     class="mealshop shopping-detail-dialog"
     size="normal"
+    :set-return-focus="returnFocus"
     :buttons="[{ label: t('shoppingClose') }]"
-    @update:open="!$event && emit('close')"
+    @update:open="closed"
     ><section class="shopping-detail-section">
       <h3>{{ t('shoppingContributions') }}</h3>
       <div v-for="part in item.contributions" :key="part.source_id">

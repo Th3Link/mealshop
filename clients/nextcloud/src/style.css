@@ -757,13 +757,15 @@
 }
 .mealshop .shopping-tile .checkbox-radio-switch__content {
   position: relative;
-  padding: 16px 8px 12px;
+  padding: 32px 8px 12px;
   width: 100%;
+  max-width: none;
   height: 100%;
   min-height: 128px;
   border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
 }
 .mealshop .shopping-tile .checkbox-content__wrapper {
+  flex: 1 1 0;
   min-width: 0;
   width: 100%;
 }
@@ -775,6 +777,7 @@
   line-height: 1.4;
 }
 .mealshop .shopping-tile .checkbox-content__icon {
+  margin: 0;
   position: absolute;
   inset-inline-end: 8px;
   top: 8px;

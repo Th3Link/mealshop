@@ -86,11 +86,12 @@ test('visual shopping keeps search, exact entry, check-off undo and failed write
   await expect(roll.getByRole('checkbox')).not.toBeChecked()
   await page.unroute('**/api/household/shopping')
   await page.getByRole('button', { name: 'Try again', exact: true }).click()
-  await page
+  const cloth = page
     .locator('.shopping-items>li')
     .filter({ has: page.getByRole('checkbox', { name: /Test kitchen cloth/ }) })
-    .locator('.shopping-tile__body')
-    .click()
+  await expect(cloth.getByRole('checkbox')).toBeEnabled()
+  await cloth.locator('.shopping-tile__body').click()
+  await expect(page.locator('#mealshop-purchased>summary')).toBeVisible()
   await page.reload()
   await expect(page.getByRole('button', { name: 'Undo', exact: true })).toHaveCount(0)
   await page.locator('#mealshop-purchased>summary').click()
@@ -110,6 +111,22 @@ test('visual shopping keeps search, exact entry, check-off undo and failed write
       expect(await page.locator('.workspace').evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(
         true,
       )
+      expect(
+        await page.locator('.shopping-items>li').evaluateAll((tiles) =>
+          tiles.every((tile) => {
+            const label = tile.querySelector('.checkbox-radio-switch__content'),
+              icon = tile.querySelector('.shopping-tile__illustration')?.getBoundingClientRect(),
+              check = tile.querySelector('.checkbox-content__icon')?.getBoundingClientRect()
+            return (
+              label !== null &&
+              label.scrollWidth <= label.clientWidth &&
+              icon !== undefined &&
+              check !== undefined &&
+              (icon.right <= check.left || icon.left >= check.right || icon.top >= check.bottom)
+            )
+          }),
+        ),
+      ).toBe(true)
     }
     const axe = await new AxeBuilder({ page })
       .include('.mealshop')

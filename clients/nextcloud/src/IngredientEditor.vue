@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcTextField from './LabeledField.vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -38,6 +38,8 @@ const { busy, error, run, errorMessage } = useTask()
 const changed = ref(false)
 const fields = ref<HTMLFieldSetElement>()
 const savedId = ref<string>()
+const returnFocus =
+  document.activeElement instanceof HTMLElement ? document.activeElement : undefined
 useUnsavedChanges(() => changed.value || Boolean(props.parentDirty))
 watch(
   [name, form, source, recorded, tags, components, allergens, organization],
@@ -49,10 +51,12 @@ watch(
 function canClose() {
   return !busy.value && (!changed.value || window.confirm(t('unsaved')))
 }
-function closed(open: boolean) {
+async function closed(open: boolean) {
   if (open) return
   if (savedId.value !== undefined) emit('saved', savedId.value)
   else emit('close')
+  await nextTick()
+  if (returnFocus?.isConnected) returnFocus.focus()
 }
 function revealInvalid(event: Event) {
   if (event.target instanceof HTMLElement) {
@@ -133,6 +137,7 @@ async function save() {
     content-classes="mealshop ingredient-dialog"
     :name="ingredient ? t('editIngredient') : t('addIngredient')"
     is-form
+    :set-return-focus="returnFocus"
     :no-close="busy || changed"
     :buttons="[
       { label: t('cancel'), disabled: busy, callback: canClose },
