@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcTextField from './LabeledField.vue'
 import Icon from './Icon.vue'
@@ -20,6 +20,15 @@ const props = defineProps<{
   invalid: boolean
 }>()
 const emit = defineEmits<{ changed: []; create: [index: number, name: string] }>()
+const openParts = ref(new Set<string>())
+const sections = computed(() => [
+  ...(!recipe.value.parts.length ||
+  lines.value.some((line) => !line.part_id) ||
+  recipe.value.steps.some((step) => !step.part_id)
+    ? [{ id: null, name: t('mainRecipe') }]
+    : []),
+  ...recipe.value.parts,
+])
 const partOptions = computed(() =>
   recipe.value.parts.map((p) => ({ id: p.id, label: p.name || t('partName') })),
 )
@@ -35,10 +44,10 @@ const ingredientOptions = computed(() =>
       : [],
   ),
 )
-function addLine() {
+function addLine(partId: string | null = null) {
   lines.value.push({
     id: `line-${crypto.randomUUID()}`,
-    part_id: null,
+    part_id: partId,
     ingredient_id: '',
     input: '1',
     unit: 'g',
@@ -58,13 +67,19 @@ function removeLine(index: number) {
   emit('changed')
 }
 function addPart() {
-  recipe.value.parts.push({ id: `part-${crypto.randomUUID()}`, name: '', uses_parts: [] })
+  const id = `part-${crypto.randomUUID()}`
+  recipe.value.parts.push({ id, name: '', uses_parts: [], starts_after: [] })
+  openParts.value.add(id)
   emit('changed')
 }
 function removePart(id: string) {
   if (!window.confirm(t('removePartConfirm'))) return
   recipe.value.parts = recipe.value.parts.filter((p) => p.id !== id)
-  for (const p of recipe.value.parts) p.uses_parts = p.uses_parts.filter((ref) => ref !== id)
+  openParts.value.delete(id)
+  for (const p of recipe.value.parts) {
+    p.uses_parts = p.uses_parts.filter((ref) => ref !== id)
+    p.starts_after = p.starts_after?.filter((ref) => ref !== id)
+  }
   for (const line of lines.value) if (line.part_id === id) line.part_id = null
   for (const step of recipe.value.steps) {
     if (step.part_id === id) step.part_id = null
@@ -76,12 +91,12 @@ function removeStep(index: number) {
   recipe.value.steps.splice(index, 1)
   emit('changed')
 }
-function addStep() {
+function addStep(partId: string | null = null) {
   recipe.value.steps.push({
     instruction: '',
     active_seconds: 0,
     passive_seconds: 0,
-    part_id: null,
+    part_id: partId,
     ingredient_line_ids: [],
     prepared_parts: [],
   })
@@ -89,81 +104,114 @@ function addStep() {
 }
 </script>
 <template>
-  <section class="editor-section">
-    <div class="section-heading">
-      <div>
-        <h2>{{ t('recipeParts') }}</h2>
-        <p class="muted">{{ t('partsHelp') }}</p>
-      </div>
-      <NcButton :disabled="recipe.parts.length >= 30" @click="addPart"
-        ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addPart') }}</NcButton
+  <section
+    v-for="part in sections"
+    :key="part.id ?? 'main'"
+    class="editor-section recipe-part-content"
+  >
+    <component
+      :is="recipe.parts.length ? 'details' : 'div'"
+      :open="part.id === null || openParts.has(part.id) || recipe.parts.length === 1"
+      class="part-editor"
+    >
+      <summary v-if="recipe.parts.length">{{ part.name || t('partName') }}</summary>
+      <template v-if="part.id !== null">
+        <div class="part-heading">
+          <NcTextField
+            :model-value="part.name"
+            :label="t('partName')"
+            required
+            maxlength="200"
+            @update:model-value="
+              recipe.parts.forEach((p) => {
+                if (p.id === part.id) p.name = String($event)
+              })
+            "
+          />
+          <NcButton variant="tertiary" :aria-label="t('removePart')" @click="removePart(part.id)"
+            ><template #icon><Icon :path="mdiTrashCanOutline" /></template
+          ></NcButton>
+        </div>
+        <RecipeReferences
+          :model-value="recipe.parts.find((p) => p.id === part.id)?.uses_parts ?? []"
+          :label="t('usesParts')"
+          :options="partOptions.filter((p) => p.id !== part.id)"
+          @update:model-value="
+            recipe.parts.forEach((p) => {
+              if (p.id === part.id) p.uses_parts = $event
+            })
+          "
+        />
+        <RecipeReferences
+          :model-value="recipe.parts.find((p) => p.id === part.id)?.starts_after ?? []"
+          :label="t('startsAfterParts')"
+          :options="partOptions.filter((p) => p.id !== part.id)"
+          @update:model-value="
+            recipe.parts.forEach((p) => {
+              if (p.id === part.id) p.starts_after = $event
+            })
+          "
+        />
+      </template>
+      <h2>{{ t('lines') }}</h2>
+      <div
+        v-for="entry in lines
+          .map((line, index) => ({ line, index }))
+          .filter((e) => (e.line.part_id ?? null) === part.id)"
+        :key="entry.line.id ?? entry.index"
+        class="ingredient-entry"
       >
-    </div>
-    <fieldset v-for="(part, index) in recipe.parts" :key="part.id" class="recipe-part">
-      <legend>{{ t('recipeParts') }} {{ index + 1 }}</legend>
-      <div class="part-heading">
-        <NcTextField v-model="part.name" :label="t('partName')" required maxlength="200" /><NcButton
-          variant="tertiary"
-          :aria-label="`${t('removePart')} ${index + 1}`"
-          @click="removePart(part.id)"
-          ><template #icon><Icon :path="mdiTrashCanOutline" /></template
-        ></NcButton>
+        <div class="recipe-ingredient-row">
+          <RecipeQuantity
+            :model-value="entry.line"
+            :index="entry.index"
+            :ingredients="catalogue.ingredients"
+            :conversions="conversions"
+            :invalid="invalid"
+            @update:model-value="lines[entry.index] = $event"
+            @changed="emit('changed')"
+            @create="emit('create', entry.index, $event)"
+          />
+          <NcButton
+            variant="tertiary"
+            :aria-label="`${t('remove')} ${entry.index + 1}`"
+            @click="removeLine(entry.index)"
+            ><template #icon><Icon :path="mdiTrashCanOutline" /></template
+          ></NcButton>
+        </div>
+        <details v-if="recipe.parts.length">
+          <summary>{{ t('moveToPart') }}</summary>
+          <label class="field"
+            >{{ t('belongsTo')
+            }}<select v-model="entry.line.part_id">
+              <option :value="null">{{ t('mainRecipe') }}</option>
+              <option v-for="p in recipe.parts" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select></label
+          >
+        </details>
       </div>
-      <RecipeReferences
-        v-model="part.uses_parts"
-        :label="t('usesParts')"
-        :options="partOptions.filter((p) => p.id !== part.id)"
+      <NcButton :disabled="lines.length >= 100" @click="addLine(part.id)"
+        ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addLine') }}</NcButton
+      >
+      <h2>{{ t('steps') }}</h2>
+      <RecipeStepEditor
+        v-for="entry in recipe.steps
+          .map((step, index) => ({ step, index }))
+          .filter((e) => e.step.part_id === part.id)"
+        :key="entry.index"
+        :model-value="entry.step"
+        @update:model-value="recipe.steps[entry.index] = $event"
+        :index="entry.index"
+        :parts="partOptions"
+        :ingredients="ingredientOptions"
+        @remove="removeStep(entry.index)"
       />
-    </fieldset>
-  </section>
-  <section class="editor-section">
-    <h2>{{ t('lines') }}</h2>
-    <div v-for="(line, index) in lines" :key="line.id ?? index" class="ingredient-entry">
-      <div class="recipe-ingredient-row">
-        <RecipeQuantity
-          :model-value="line"
-          :index="index"
-          :ingredients="catalogue.ingredients"
-          :conversions="conversions"
-          :invalid="invalid"
-          @update:model-value="lines[index] = $event"
-          @changed="emit('changed')"
-          @create="emit('create', index, $event)"
-        /><NcButton
-          variant="tertiary"
-          :aria-label="`${t('remove')} ${index + 1}`"
-          @click="removeLine(index)"
-          ><template #icon><Icon :path="mdiTrashCanOutline" /></template
-        ></NcButton>
-      </div>
-      <label v-if="recipe.parts.length" class="field part-assignment"
-        >{{ t('belongsTo')
-        }}<select v-model="line.part_id">
-          <option :value="null">{{ t('mainRecipe') }}</option>
-          <option v-for="part in recipe.parts" :key="part.id" :value="part.id">
-            {{ part.name || t('partName') }}
-          </option>
-        </select></label
+      <NcButton :disabled="recipe.steps.length >= 100" @click="addStep(part.id)"
+        ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addStep') }}</NcButton
       >
-    </div>
-    <NcButton :disabled="lines.length >= 100" @click="addLine"
-      ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addLine') }}</NcButton
-    >
+    </component>
   </section>
-  <section class="editor-section">
-    <h2>{{ t('steps') }}</h2>
-    <RecipeStepEditor
-      v-for="(step, index) in recipe.steps"
-      :key="index"
-      :model-value="step"
-      @update:model-value="recipe.steps[index] = $event"
-      :index="index"
-      :parts="partOptions"
-      :ingredients="ingredientOptions"
-      @remove="removeStep(index)"
-    />
-    <NcButton :disabled="recipe.steps.length >= 100" @click="addStep"
-      ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addStep') }}</NcButton
-    >
-  </section>
+  <NcButton :disabled="recipe.parts.length >= 30" @click="addPart"
+    ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addPart') }}</NcButton
+  >
 </template>

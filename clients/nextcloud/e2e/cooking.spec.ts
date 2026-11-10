@@ -29,12 +29,24 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
   await page.getByLabel('Grams', { exact: true }).fill('100.000001')
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('1. Instruction', { exact: true }).fill('Prepare test dough')
-  await page.getByLabel('Active time (seconds)', { exact: true }).fill('1')
-  await page.getByLabel('Waiting time (seconds)', { exact: true }).fill('10')
+  await page.getByRole('combobox', { name: 'Active work · Unit', exact: true }).selectOption('1')
+  await page.getByLabel('Active work', { exact: true }).fill('1')
+  await page
+    .getByRole('combobox', { name: 'Rest or waiting time · Unit', exact: true })
+    .selectOption('1')
+  await page.getByLabel('Rest or waiting time', { exact: true }).fill('10')
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('2. Instruction', { exact: true }).fill('Bake test dough')
-  await page.getByLabel('Active time (seconds)', { exact: true }).nth(1).fill('2')
-  await page.getByLabel('Waiting time (seconds)', { exact: true }).nth(1).fill('20')
+  await page
+    .getByRole('combobox', { name: 'Active work · Unit', exact: true })
+    .nth(1)
+    .selectOption('1')
+  await page.getByLabel('Active work', { exact: true }).nth(1).fill('2')
+  await page
+    .getByRole('combobox', { name: 'Rest or waiting time · Unit', exact: true })
+    .nth(1)
+    .selectOption('1')
+  await page.getByLabel('Rest or waiting time', { exact: true }).nth(1).fill('20')
   await page.getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Cooking acceptance recipe', exact: true }),

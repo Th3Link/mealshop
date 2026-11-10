@@ -1,3 +1,4 @@
+import { ingredientExtensionSchema } from './quantity-api'
 import { z } from 'zod'
 import { quantitySchema, evidenceSchema } from './quantity-api'
 export const roleSchema = z.enum(['owner', 'editor', 'reader'])
@@ -167,6 +168,7 @@ export const recipePartSchema = z.object({
   id: z.string(),
   name: z.string(),
   uses_parts: z.array(z.string()).default([]),
+  starts_after: z.array(z.string()).optional(),
 })
 export const recipeSchema = z.object({
   parts: z.array(recipePartSchema).default([]),
@@ -181,6 +183,7 @@ export const recipeSchema = z.object({
       id: z.string().optional(),
       part_id: z.string().nullable().optional(),
       ingredient_id: z.string(),
+      extensions: z.array(ingredientExtensionSchema).max(1).optional(),
       grams: z.string(),
       quantity: quantitySchema.optional(),
       conversion: evidenceSchema.optional(),
@@ -194,6 +197,7 @@ export const recipeSchema = z.object({
       instruction: z.string(),
       active_seconds: z.number().int(),
       passive_seconds: z.number().int(),
+      passive_max_seconds: z.number().int().optional(),
     }),
   ),
 })

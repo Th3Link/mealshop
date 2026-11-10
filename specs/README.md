@@ -12,6 +12,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 
 | Requirement | Feature | Priority | Milestone |
 |---|---|---|---|
+| F31 | [Unified preparation, mealprep and ingredient extensions](0031-unified-preparation/specification.md) | Must | M2 |
 | F18 | [Storage adapters, Nextcloud `ExApp` and Flutter](0018-storage-deployment/specification.md) | Must | M1 |
 
 ## Draft

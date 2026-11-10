@@ -6,6 +6,7 @@ mod cooking;
 pub mod exapp;
 mod household;
 mod ingredient_api;
+mod ingredient_extensions;
 mod ingredient_groups;
 mod ingredients;
 mod membership;

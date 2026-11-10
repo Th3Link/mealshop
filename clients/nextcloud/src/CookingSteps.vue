@@ -103,8 +103,13 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
         </p>
         <p v-if="step.timer.state === 'pending'" class="muted">
           {{ t('cookPreset') }}:
-          {{ duration(step.stage.active_seconds + step.stage.passive_seconds) }} ·
-          {{ t('cookPlannedStart') }}:
+          {{
+            duration(
+              (step.stage.start_after_work ? 0 : step.stage.active_seconds) +
+                step.stage.passive_seconds,
+            )
+          }}
+          · {{ t('cookPlannedStart') }}:
           {{
             localDate(run.schedule.find((s) => s.id === step.stage.id)?.start ?? now, run.timezone)
           }}
@@ -133,7 +138,10 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
               t(
                 step.stage.active_seconds + step.stage.passive_seconds === 0
                   ? 'cookCompleteStep'
-                  : 'cookStartStep',
+                  : (step.stage.start_after_work || step.stage.active_seconds === 0) &&
+                      step.stage.passive_seconds > 0
+                    ? 'finishAndWait'
+                    : 'cookStartStep',
               )
             }}</NcButton
           ><NcButton

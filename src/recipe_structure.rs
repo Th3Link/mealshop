@@ -9,6 +9,8 @@ pub(crate) struct Part {
     pub(crate) name: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub(crate) uses_parts: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) starts_after: Vec<String>,
 }
 fn valid_id(id: &str) -> bool {
     !id.is_empty()
@@ -50,7 +52,11 @@ pub(crate) fn validate(recipe: &Recipe) -> Result<(), String> {
         .map(|p| {
             (
                 p.id.as_str(),
-                p.uses_parts.iter().map(String::as_str).collect(),
+                p.uses_parts
+                    .iter()
+                    .chain(&p.starts_after)
+                    .map(String::as_str)
+                    .collect(),
             )
         })
         .collect();
@@ -91,7 +97,13 @@ pub(crate) fn validate(recipe: &Recipe) -> Result<(), String> {
         }
     }
     for part in &recipe.parts {
-        if part.uses_parts.len() > 30
+        if part.starts_after.len() > 30
+            || part.starts_after.iter().collect::<BTreeSet<_>>().len() != part.starts_after.len()
+            || part
+                .starts_after
+                .iter()
+                .any(|id| !parts.contains(id.as_str()))
+            || part.uses_parts.len() > 30
             || part.uses_parts.iter().collect::<BTreeSet<_>>().len() != part.uses_parts.len()
             || part
                 .uses_parts

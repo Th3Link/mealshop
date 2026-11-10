@@ -87,3 +87,18 @@ verified complete household backup. Back up membership, recipe revisions and all
 Limits: 100 saved sessions, 100 input stages/200 expanded occurrences per session, 2,000 reminder records
 per household, 4 MiB store, 20 actor-bound cached reviews. Remove completed/cancelled sessions and their
 reminder history to free capacity. No standalone/Flutter shell or external calendar integration is added.
+
+## Calendar anchors and completion-triggered waits (F31)
+
+Stages optionally have `start_at` as a local date/time, IANA timezone and DST fold choice.
+The server resolves and preserves the calendar anchor; ambiguous or nonexistent local times
+cannot silently become different instants. Calendar reminders do not prevent an earlier actual
+completion. Explicit reviewed delays still retain their separate `not_before` constraint. Multiple independent stages can share an anchor.
+New recipe-derived stages with waiting time carry `start_after_work: true`: the completion
+action starts only their passive timer from the actual click. Active work remains an estimate
+for calendar planning, so 2 minutes of estimated mixing plus 45 minutes waiting still means a
+07:08 completion starts a timer until 07:53. Legacy/custom stages default to the existing timed
+active-and-passive behavior. Starting the next step acknowledges elapsed waiting timers;
+paused timers and timers still counting active work require their existing explicit transitions.
+This acknowledges elapsed time, not physical readiness or food safety. No timer is automatically
+started by a scheduled notification, and no separate sourdough assessment is required.

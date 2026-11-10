@@ -87,7 +87,8 @@ test('household defaults, focused search, inline composites, private images, fav
   expect((await uploaded).status()).toBe(201)
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('1. Instruction', { exact: true }).fill('Mix and serve.')
-  await page.getByLabel('Active time (seconds)', { exact: true }).fill('60')
+  await page.getByRole('combobox', { name: 'Active work · Unit', exact: true }).selectOption('1')
+  await page.getByLabel('Active work', { exact: true }).fill('60')
   await page.getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
   const recipePath = new URL(page.url()).pathname

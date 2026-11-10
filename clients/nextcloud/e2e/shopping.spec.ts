@@ -31,7 +31,8 @@ test('shopping quantities, purchased provenance, recipe rescaling and selected p
   await page.getByLabel('Grams', { exact: true }).fill('100.000001')
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('1. Instruction', { exact: true }).fill('Prepare test recipe.')
-  await page.getByLabel('Active time (seconds)', { exact: true }).fill('60')
+  await page.getByRole('combobox', { name: 'Active work · Unit', exact: true }).selectOption('1')
+  await page.getByLabel('Active work', { exact: true }).fill('60')
   await page.getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Shopping acceptance recipe', exact: true }),

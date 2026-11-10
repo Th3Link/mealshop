@@ -117,6 +117,35 @@ pub(crate) enum TimerAction {
     Resume,
     Complete,
 }
+fn acknowledge_elapsed_dependencies(
+    run: &mut Run,
+    index: usize,
+    now: i64,
+) -> Result<(), &'static str> {
+    let dependencies = run.steps[index].stage.dependencies.clone();
+    for parent in run
+        .steps
+        .iter_mut()
+        .filter(|s| dependencies.contains(&s.stage.id))
+    {
+        if let Timer::Running {
+            started_at,
+            deadline,
+            ..
+        } = parent.timer
+        {
+            if parent.stage.timer_active_seconds() == 0 && deadline <= now {
+                parent.timer = Timer::Completed {
+                    started_at: Some(started_at),
+                    completed_at: deadline,
+                };
+                parent.generation = parent.generation.checked_add(1).ok_or("cooking_capacity")?;
+            }
+        }
+    }
+
+    Ok(())
+}
 pub(crate) fn timer(
     data: &mut Data,
     run_id: &str,
@@ -126,11 +155,14 @@ pub(crate) fn timer(
 ) -> Result<(), &'static str> {
     let run = data.run_mut(run_id)?;
     let index = super::source::ensure_ready(run, step_id, now)?;
+    if matches!(action, TimerAction::Start) && matches!(run.steps[index].timer, Timer::Pending) {
+        acknowledge_elapsed_dependencies(run, index, now)?;
+    }
     let step = &mut run.steps[index];
     let started = super::source::started(&step.timer);
     step.timer = match (action, &step.timer) {
         (TimerAction::Start, Timer::Pending) => {
-            if step.stage.seconds() == 0 {
+            if step.stage.timer_seconds() == 0 {
                 Timer::Completed {
                     started_at: Some(now),
                     completed_at: now,
@@ -138,8 +170,8 @@ pub(crate) fn timer(
             } else {
                 Timer::Running {
                     started_at: now,
-                    active_until: time::add(now, i64::from(step.stage.active_seconds))?,
-                    deadline: time::add(now, step.stage.seconds())?,
+                    active_until: time::add(now, i64::from(step.stage.timer_active_seconds()))?,
+                    deadline: time::add(now, step.stage.timer_seconds())?,
                 }
             }
         }

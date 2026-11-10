@@ -178,7 +178,16 @@ pub(crate) fn schedule(
     for &index in &sorted {
         let step = &run.steps[index];
         let mut ready = now;
-        let mut start = base[index].max(now).max(step.not_before.unwrap_or(now));
+        let anchor = step
+            .stage
+            .start_at
+            .as_ref()
+            .map(super::time::LocalTime::resolve)
+            .transpose()?;
+        let mut start = base[index]
+            .max(now)
+            .max(step.not_before.unwrap_or(now))
+            .max(anchor.unwrap_or(now));
         for dependency in &step.stage.dependencies {
             let previous = times[*positions
                 .get(dependency.as_str())
@@ -317,6 +326,8 @@ mod tests {
     };
     fn stage(id: &str, dependencies: Vec<String>, active: u32, passive: u32) -> Stage {
         Stage {
+            start_after_work: false,
+            start_at: None,
             id: id.to_owned(),
             origin: StageOrigin::Custom {
                 note: "Test preparation".to_owned(),
@@ -337,6 +348,7 @@ mod tests {
     }
     fn run(stages: &[Stage], target: LocalTime, now: i64) -> Run {
         Run {
+            plan_slot: None,
             id: "cook-1".to_owned(),
             name: "Dough schedule".to_owned(),
             kind: Kind::Bread,
@@ -356,6 +368,54 @@ mod tests {
             schedule: vec![],
             subscriptions: BTreeMap::new(),
         }
+    }
+    #[test]
+    fn calendar_anchor_and_actual_completion_preserve_passive_deadlines() {
+        let anchor = LocalTime {
+            local: "2026-11-11T07:00".into(),
+            timezone: "Europe/Berlin".into(),
+            fold: Fold::Reject,
+        };
+        let at = anchor.resolve().unwrap();
+        let mut mix = stage("mix", vec![], 120, 2700);
+        mix.start_after_work = true;
+        mix.start_at = Some(anchor.clone());
+        let next = stage("main", vec!["mix".into()], 0, 2700);
+        let mut value = run(&[mix, next], anchor, at - 3600);
+        value.kind = Kind::Cooking;
+        value.target = None;
+        value.schedule = schedule(&value, at - 3600, None).unwrap().schedule;
+        assert_eq!(value.steps[0].not_before, None);
+        assert_eq!(value.schedule[0].start, at);
+        let mut data = crate::cooking::model::Data::default();
+        data.runs.push(value);
+        assert!(super::super::source::ensure_ready(&data.runs[0], "mix-1", at - 1).is_ok());
+        operations::timer(&mut data, "cook-1", "mix-1", TimerAction::Start, at + 480).unwrap();
+        assert!(
+            matches!(data.runs[0].steps[0].timer, Timer::Running { deadline, .. } if deadline == at + 480 + 2700)
+        );
+        assert!(
+            operations::timer(
+                &mut data,
+                "cook-1",
+                "main-1",
+                TimerAction::Start,
+                at + 480 + 2699
+            )
+            .is_err()
+        );
+        operations::timer(
+            &mut data,
+            "cook-1",
+            "main-1",
+            TimerAction::Start,
+            at + 480 + 2700,
+        )
+        .unwrap();
+        assert!(data.runs[0].steps[0].timer.complete());
+        assert!(
+            matches!(data.runs[0].steps[1].timer, Timer::Running { started_at, deadline, .. } if started_at == at + 480 + 2700 && deadline == started_at + 2700)
+        );
     }
     #[test]
     fn dependency_windows_cycles_and_dst_use_absolute_elapsed_time() {

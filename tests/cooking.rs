@@ -155,7 +155,8 @@ async fn concurrent_named_timers_preserve_pause_deadlines_sources_and_restart() 
     let deadline = running["run"]["steps"][0]["timer"]["deadline"]
         .as_i64()
         .unwrap();
-    assert_eq!(deadline - started, 90);
+    assert_eq!(deadline - started, 60);
+    assert_eq!(running["run"]["steps"][0]["timer"]["active_until"], started);
     assert_eq!(running["run"]["steps"][1]["timer"]["state"], "running");
     command(
         &app,
@@ -383,5 +384,49 @@ async fn multiday_replans_save_the_reviewed_deadlines_and_keep_delays_across_lat
         .await
         .0,
         StatusCode::FORBIDDEN
+    );
+}
+
+#[tokio::test]
+async fn multipart_recipe_templates_preserve_parallel_parts_wait_ranges_and_merge_dependencies() {
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    let input = json!({
+        "title":"Multipart preparation contract","language":"en","servings":1,"preparation":"as_recorded",
+        "parts":[
+            {"id":"sourdough","name":"Sourdough"},
+            {"id":"scald","name":"Scald"},
+            {"id":"oats","name":"Oat soaker"},
+            {"id":"spelt","name":"Spelt soaker","starts_after":["sourdough"]},
+            {"id":"dough","name":"Main dough","uses_parts":["sourdough","scald","oats","spelt"]}
+        ],
+        "lines":[{"ingredient_id":"oats","grams":"200","part_id":"oats"}],
+        "steps":[
+            {"part_id":"sourdough","instruction":"Mix starter","active_seconds":120,"passive_seconds":36000,"passive_max_seconds":50400},
+            {"part_id":"scald","instruction":"Prepare scald","active_seconds":0,"passive_seconds":0},
+            {"part_id":"oats","instruction":"Prepare oat soaker","active_seconds":0,"passive_seconds":0},
+            {"part_id":"spelt","instruction":"Mix spelt soaker","active_seconds":120,"passive_seconds":2700},
+            {"part_id":"dough","instruction":"Combine prepared parts","active_seconds":0,"passive_seconds":2700}
+        ]
+    });
+    let (status, saved) = request(&app, "POST", "/api/recipes", input.clone(), None).await;
+    assert_eq!(status, StatusCode::CREATED, "{saved}");
+    let draft = template(&app, saved["id"].as_str().unwrap()).await;
+    for index in 0..3 {
+        assert_eq!(draft["stages"][index]["dependencies"], json!([]));
+    }
+    assert_eq!(draft["stages"][0]["name"], "Sourdough");
+    assert_eq!(draft["stages"][0]["passive_max_seconds"], 50400);
+    assert_eq!(draft["stages"][3]["start_after_work"], true);
+    assert_eq!(draft["stages"][3]["dependencies"], json!(["s1"]));
+    assert_eq!(
+        draft["stages"][4]["dependencies"],
+        json!(["s1", "s2", "s3", "s4"])
+    );
+    let mut cycle = input;
+    cycle["parts"][0]["starts_after"] = json!(["dough"]);
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", cycle, None).await.0,
+        StatusCode::UNPROCESSABLE_ENTITY
     );
 }

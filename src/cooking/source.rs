@@ -29,6 +29,7 @@ pub(crate) fn template(
     for (i, step) in record.recipe.steps.iter().enumerate() {
         let id = format!("s{}", i + 1);
         let key = step.part_id.as_deref();
+        let first_in_part = !previous.contains_key(&key);
         let mut dependencies = vec![];
         if let Some(previous) = previous.insert(key, id.clone()) {
             dependencies.push(previous);
@@ -38,6 +39,7 @@ pub(crate) fn template(
             dependencies.extend(
                 part.uses_parts
                     .iter()
+                    .chain(&part.starts_after)
                     .filter_map(|id| last_part.get(id.as_str()).cloned()),
             );
         }
@@ -55,7 +57,14 @@ pub(crate) fn template(
             }
             name.push(c);
         }
+        if first_in_part {
+            if let Some(part) = key.and_then(|id| record.recipe.parts.iter().find(|p| p.id == id)) {
+                name.clone_from(&part.name);
+            }
+        }
         stages.push(Stage {
+            start_after_work: step.passive_seconds > 0,
+            start_at: None,
             id,
             origin: StageOrigin::RecipeStep { index: i },
             name,
@@ -64,7 +73,7 @@ pub(crate) fn template(
             active_seconds: step.active_seconds,
             passive_seconds: step.passive_seconds,
             passive_min_seconds: step.passive_seconds,
-            passive_max_seconds: step.passive_seconds,
+            passive_max_seconds: step.passive_max_seconds.unwrap_or(step.passive_seconds),
             equipment: vec![],
             lead_seconds: 300,
             repeat: 1,
@@ -73,6 +82,7 @@ pub(crate) fn template(
         });
     }
     let draft = Draft {
+        plan_slot: None,
         recipe_id: record.id.clone(),
         recipe_revision: record.revision,
         servings,
@@ -104,6 +114,13 @@ fn validate(draft: &Draft, record: &Record) -> Result<(), &'static str> {
     }
     for stage in &draft.stages {
         stage.validate()?;
+        if stage
+            .start_at
+            .as_ref()
+            .is_some_and(|value| value.timezone != draft.timezone)
+        {
+            return Err("cooking_timezone_invalid");
+        }
         if let StageOrigin::RecipeStep { index } = stage.origin {
             if record.recipe.steps.get(index).is_none() {
                 return Err("cooking_stage_invalid");
@@ -119,6 +136,7 @@ pub(crate) fn create(
 ) -> Result<(Run, plan::Proposal), &'static str> {
     validate(&draft, record)?;
     let mut run = Run {
+        plan_slot: draft.plan_slot,
         id: String::new(),
         name: draft.name,
         kind: draft.kind,
@@ -153,7 +171,7 @@ pub(crate) fn ingredients(
     let lines=record.recipe.lines.iter().map(|line| {
         let ingredient=record.catalogue.find(&line.ingredient_id).ok_or("unknown_ingredient")?;
         let grams=line.grams.0.scaled(servings,record.recipe.servings).map_err(|_|"cooking_quantity_invalid")?;
-        Ok(serde_json::json!({"ingredient_id":line.ingredient_id,"name":ingredient.name,"translations":ingredient.translations,"grams":grams,"original_quantity":line.quantity,"part_id":line.part_id}))
+        Ok(serde_json::json!({"ingredient_id":line.ingredient_id,"name":ingredient.name,"translations":ingredient.translations,"grams":grams,"original_quantity":line.quantity,"part_id":line.part_id,"extensions":line.extensions}))
     }).collect::<Result<Vec<_>,&'static str>>()?;
     Ok(serde_json::json!(lines))
 }
@@ -169,7 +187,7 @@ pub(crate) fn ensure_ready(run: &Run, id: &str, now: i64) -> Result<usize, &'sta
     if !run.steps[index].stage.dependencies.iter().all(|id| {
         run.steps
             .iter()
-            .any(|s| s.stage.id == *id && s.timer.complete())
+            .any(|s| s.stage.id == *id && completed_or_wait_end(s).is_some_and(|at| at <= now))
     }) {
         return Err("cooking_dependencies_incomplete");
     }
@@ -200,10 +218,23 @@ pub(crate) fn available_at(
             .iter()
             .find(|s| &s.stage.id == id)
             .ok_or("cooking_dependencies_invalid")?;
-        let Timer::Completed { completed_at, .. } = dependency.timer else {
+        let Some(completed_at) = completed_or_wait_end(dependency) else {
             return Ok(None);
         };
         earliest = earliest.max(time::add(completed_at, i64::from(step.lag_seconds))?);
     }
     Ok(Some(earliest))
+}
+
+// Advancing acknowledges an elapsed passive timer, not physical food readiness.
+pub(crate) fn completed_or_wait_end(step: &super::model::Step) -> Option<i64> {
+    match step.timer {
+        Timer::Completed { completed_at, .. } => Some(completed_at),
+        Timer::Running { deadline, .. }
+            if step.stage.timer_active_seconds() == 0 && step.stage.passive_seconds > 0 =>
+        {
+            Some(deadline)
+        }
+        _ => None,
+    }
 }

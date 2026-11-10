@@ -24,6 +24,8 @@ pub(crate) struct Step {
     pub(crate) instruction: String,
     pub(crate) active_seconds: u32,
     pub(crate) passive_seconds: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) passive_max_seconds: Option<u32>,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -71,6 +73,8 @@ impl Recipe {
                 !text(&s.instruction, 4000)
                     || s.active_seconds > 604_800
                     || s.passive_seconds > 604_800
+                    || s.passive_max_seconds
+                        .is_some_and(|max| max < s.passive_seconds || max > 604_800)
             })
         {
             return Err("Use a title of 1–200 bytes and an optional author of at most 200 bytes, language en/de and at most 100 nonempty steps of 4000 bytes with durations up to 604800 seconds".to_owned());

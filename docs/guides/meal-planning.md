@@ -85,3 +85,26 @@ a recovery copy, preserve all recipe revisions referenced by plans, restore a va
 snapshot, then verify protected plan export, nutrition and shopping quantities. Do not directly
 edit files while the application is running. Network filesystems and cross-platform crash
 behaviour are not validated; Linux local filesystems are the initial target.
+
+## Production and mealprep allocations (F31, implementation in progress)
+
+A saved plan's `servings` is the production count. Optional `allocations` contains date, meal and
+positive whole serving count for each eating day. The total cannot exceed production; fewer
+allocated portions leave the remainder unallocated. An explicit empty array means no eating days
+are assigned. Omitting allocations preserves the existing single-slot behavior. The root date/meal remains the stable production identity during edits,
+including when an eating day is moved. One shared attendee list applies conservatively to every
+allocation; existing hard exclusions and profile revisions still apply.
+
+Optional `preparation` contains a date and HH:MM time. Preparation must not follow an eating day.
+The native calendar shows these in the same week as meals. Explicit preparation-only entries use
+meal `preparation`, with no invented attendees; assigning actual eating days requires attendees
+and the usual dietary review. Shopping requirements count production once. Selecting two eating
+days of the same production exports one canonical source to shopping. Removing the entry removes
+all its allocations; the native review explains the resulting shopping delta.
+
+Opening cooking from a saved entry pins its recipe and production count and records a checked
+`plan_slot` origin. Root stages inherit the chosen calendar preparation time; individual stage
+anchors can be edited in the reviewed cooking draft. Saved active stage times appear in the
+meal-plan calendar and link to their cooking session. Preparation-only metadata does not itself
+promise notification delivery: create/review the durable cooking session and explicitly subscribe.
+Changes to a meal plan do not silently rewrite an already reviewed cooking session.

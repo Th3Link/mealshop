@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { quantitySchema } from './quantity-api'
+import { quantitySchema, ingredientExtensionSchema } from './quantity-api'
 export const localTimeSchema = z.object({
   local: z.string(),
   timezone: z.string(),
@@ -8,6 +8,8 @@ export const localTimeSchema = z.object({
 export type LocalTime = z.infer<typeof localTimeSchema>
 export const kindSchema = z.enum(['cooking', 'bread', 'rolls', 'pizza', 'baguette'])
 export const stageSchema = z.object({
+  start_after_work: z.boolean().optional(),
+  start_at: localTimeSchema.nullable().optional(),
   id: z.string(),
   origin: z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('recipe_step'), index: z.number().int() }),
@@ -27,7 +29,9 @@ export const stageSchema = z.object({
   uncertainty: z.string(),
 })
 export type Stage = z.infer<typeof stageSchema>
+export const planSlotSchema = z.object({ date: z.string(), meal: z.string() })
 export const draftSchema = z.object({
+  plan_slot: planSlotSchema.nullable().optional(),
   recipe_id: z.string(),
   recipe_revision: z.number().int(),
   servings: z.number().int(),
@@ -84,6 +88,7 @@ const timingSchema = z.object({
   latest: z.number().int(),
 })
 export const runSchema = z.object({
+  plan_slot: planSlotSchema.nullable().optional(),
   id: z.string(),
   name: z.string(),
   kind: kindSchema,
@@ -162,6 +167,10 @@ export const cookingListSchema = z.object({
       timezone: z.string(),
       status: z.enum(['active', 'completed', 'cancelled']),
       created_at: z.number().int(),
+      plan_slot: planSlotSchema.nullable().optional(),
+      calendar_entries: z
+        .array(z.object({ step_id: z.string(), at: z.number().int(), name: z.string().nullable() }))
+        .optional(),
       running: z.number().int(),
       overdue: z.number().int(),
       next: z
@@ -182,6 +191,7 @@ export const cookingDetailSchema = z.object({
       translations: z.record(z.string(), z.object({ name: z.string() })),
       grams: z.string(),
       original_quantity: quantitySchema.nullable(),
+      extensions: z.array(ingredientExtensionSchema).optional(),
       part_id: z.string().nullable(),
     }),
   ),
@@ -215,8 +225,7 @@ export type PlanChange =
   | { kind: 'delay'; step_id: string; start_after: LocalTime }
   | { kind: 'timer'; step_id: string; deadline: LocalTime }
 export type Proposal =
-  | { kind: 'create'; draft: CookingDraft }
-  | { kind: 'replan'; run_id: string; change: PlanChange }
+  { kind: 'create'; draft: CookingDraft } | { kind: 'replan'; run_id: string; change: PlanChange }
 export type CookingCommand =
   | { operation: 'apply'; preview_id: string; reviewed: boolean }
   | {

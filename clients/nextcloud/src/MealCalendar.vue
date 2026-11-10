@@ -4,9 +4,13 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import { mdiChevronLeft, mdiChevronRight, mdiPlus } from '@mdi/js'
 import Icon from './Icon.vue'
 import { locale, t } from './i18n'
+import type { CookingList } from './cooking-api'
+import { localInput } from './cooking-format'
 import type { Plan } from './planning-api'
 const props = defineProps<{
   meals: Plan[]
+  runs: CookingList['runs']
+  home: string
   members: { id: string; name: string }[]
   title: (plan: Plan) => string
   writable: boolean
@@ -21,8 +25,8 @@ const anchor = computed({
     selectedDate.value = iso(value)
   },
 })
-const slots = ['breakfast', 'lunch', 'snack', 'dinner'] satisfies Array<
-  'breakfast' | 'lunch' | 'snack' | 'dinner'
+const slots = ['preparation', 'breakfast', 'lunch', 'snack', 'dinner'] satisfies Array<
+  'preparation' | 'breakfast' | 'lunch' | 'snack' | 'dinner'
 >
 const iso = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -39,6 +43,7 @@ const days = computed(() => {
   const extraSlots = [
     ...new Set(
       props.meals
+        .flatMap((plan) => plan.allocations ?? [plan])
         .filter(
           (plan) =>
             plan.date >= iso(monday) &&
@@ -55,13 +60,36 @@ const days = computed(() => {
       cells: [
         ...slots.map((slot) => ({
           slot,
-          label: t(slot),
-          plan: props.meals.find((item) => item.date === iso(date) && item.meal === slot),
+          label: slot === 'preparation' ? t('prepareSlot') : t(slot),
+          plan: props.meals.find((item) =>
+            item.allocations
+              ? item.allocations.some((a) => a.date === iso(date) && a.meal === slot)
+              : item.date === iso(date) &&
+                item.meal === slot &&
+                !(slot === 'preparation' && item.preparation),
+          ),
+          preparations:
+            slot === 'preparation'
+              ? props.meals.filter(
+                  (p) =>
+                    (p.preparation?.date ?? (p.allocations?.length === 0 ? p.date : '')) ===
+                      iso(date) &&
+                    !props.runs.some(
+                      (r) =>
+                        r.status === 'active' &&
+                        r.plan_slot?.date === p.date &&
+                        r.plan_slot?.meal === p.meal,
+                    ),
+                )
+              : [],
         })),
         ...extraSlots.map((slot) => ({
           slot,
           label: slot,
-          plan: props.meals.find((plan) => plan.date === iso(date) && plan.meal === slot),
+          preparations: [],
+          plan: props.meals.find((plan) =>
+            (plan.allocations ?? [plan]).some((a) => a.date === iso(date) && a.meal === slot),
+          ),
         })),
       ],
       iso: iso(date),
@@ -119,15 +147,53 @@ function people(plan: Plan, present: boolean) {
           :data-meal="cell.slot"
         >
           <h4>{{ cell.label }}</h4>
+          <template v-if="cell.slot === 'preparation'">
+            <template v-for="run in runs.filter((r) => r.status === 'active')" :key="run.id">
+              <div
+                v-for="entry in (run.calendar_entries ?? []).filter(
+                  (e) => localInput(e.at, run.timezone).slice(0, 10) === day.iso,
+                )"
+                :key="entry.step_id"
+                class="calendar-preparation"
+              >
+                <strong>{{ run.name }}</strong>
+                <p>{{ localInput(entry.at, run.timezone).slice(11, 16) }} · {{ entry.name }}</p>
+                <NcButton :to="`/h/${home}/cooking/${run.id}`">{{ t('details') }}</NcButton>
+              </div>
+            </template>
+          </template>
+          <div
+            v-for="prep in cell.preparations"
+            :key="`${prep.date}-${prep.meal}`"
+            class="calendar-preparation"
+          >
+            <strong>{{ title(prep) }}</strong>
+            <p>{{ prep.preparation?.time }} · {{ prep.servings }} {{ t('servings') }}</p>
+            <p v-if="prep.allocations?.length === 0" class="muted">{{ t('unallocated') }}</p>
+            <NcButton :disabled="disabled" @click="emit('select', prep.date, prep.meal, prep)">{{
+              t('details')
+            }}</NcButton>
+          </div>
           <template v-if="cell.plan">
             <strong>{{ title(cell.plan) }}</strong>
+            <p>
+              {{
+                cell.plan.allocations?.find((a) => a.date === day.iso && a.meal === cell.slot)
+                  ?.servings ?? cell.plan.servings
+              }}
+              {{ t('servings') }}
+            </p>
             <p>{{ t('eating') }}: {{ people(cell.plan, true).join(', ') }}</p>
             <details v-if="people(cell.plan, false).length" class="meal-skips">
               <summary>{{ t('skipping') }}: {{ people(cell.plan, false).length }}</summary>
               <p>{{ people(cell.plan, false).join(', ') }}</p>
             </details>
             <p
-              v-if="reviewSlots.some((item) => item.date === day.iso && item.meal === cell.slot)"
+              v-if="
+                reviewSlots.some(
+                  (item) => item.date === cell.plan?.date && item.meal === cell.plan?.meal,
+                )
+              "
               class="muted"
             >
               {{ t('reviewRequired') }}

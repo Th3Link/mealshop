@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import NcButton from '@nextcloud/vue/components/NcButton'
-import NcTextField from './LabeledField.vue'
+import CookingDuration from './CookingDuration.vue'
 import RecipeReferences from './RecipeReferences.vue'
 import Icon from './Icon.vue'
 import { mdiTrashCanOutline } from '@mdi/js'
@@ -40,22 +40,17 @@ const emit = defineEmits<{ remove: [] }>()
       :options="parts.filter((p) => p.id !== step.part_id)"
     />
     <div class="form-row">
-      <NcTextField
-        v-model="step.active_seconds"
-        type="number"
-        :label="t('activeSeconds')"
-        min="0"
-        max="604800"
-        step="1"
-      /><NcTextField
-        v-model="step.passive_seconds"
-        type="number"
-        :label="t('passiveSeconds')"
-        min="0"
-        max="604800"
-        step="1"
-      />
+      <CookingDuration v-model="step.active_seconds" :label="t('cookActiveDuration')" />
+      <CookingDuration v-model="step.passive_seconds" :label="t('cookPassiveDuration')" />
     </div>
+    <details>
+      <summary>{{ t('waitingRange') }}</summary>
+      <CookingDuration
+        :model-value="step.passive_max_seconds ?? step.passive_seconds"
+        :label="t('maximumWait')"
+        @update:model-value="step.passive_max_seconds = $event"
+      />
+    </details>
     <NcButton
       variant="tertiary"
       :aria-label="`${t('remove')} ${t('instruction')} ${index + 1}`"
