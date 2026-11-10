@@ -8,6 +8,7 @@ import Recipes from './Recipes.vue'
 import Household from './Household.vue'
 import MealPlan from './MealPlan.vue'
 import Shopping from './Shopping.vue'
+import Cooking from './Cooking.vue'
 import { loadHomes, lastHousehold, rememberHousehold } from './state'
 import './style.css'
 const generatedBase = generateUrl('/apps/app_api/embedded/mealshop/main')
@@ -27,6 +28,7 @@ const router = createRouter({
     { path: '/h/:home/household', component: Household },
     { path: '/h/:home/plan', component: MealPlan },
     { path: '/h/:home/shopping', component: Shopping },
+    { path: '/h/:home/cooking/:id?', component: Cooking },
     { path: '/:pathMatch(.*)*', redirect: '/households' },
   ],
 })

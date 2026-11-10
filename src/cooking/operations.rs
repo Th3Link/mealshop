@@ -125,7 +125,7 @@ pub(crate) fn timer(
     now: i64,
 ) -> Result<(), &'static str> {
     let run = data.run_mut(run_id)?;
-    let index = super::source::ensure_ready(run, step_id)?;
+    let index = super::source::ensure_ready(run, step_id, now)?;
     let step = &mut run.steps[index];
     let started = super::source::started(&step.timer);
     step.timer = match (action, &step.timer) {

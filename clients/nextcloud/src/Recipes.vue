@@ -508,6 +508,14 @@ async function scale() {
         </select></label
       >
     </section>
+    <NcButton
+      v-if="writable && selected.recipe.steps.length"
+      :to="{
+        path: `/h/${home}/cooking/new`,
+        query: { recipe: selected.id, revision: selected.revision, servings: previewCount },
+      }"
+      >{{ t('cookNew') }}</NcButton
+    >
     <RecipeContents :record="selected" :lines="scaledLines ?? selected.display_lines" />
     <form class="inline-row" @submit.prevent="scale">
       <NcTextField

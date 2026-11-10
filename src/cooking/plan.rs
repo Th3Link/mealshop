@@ -193,7 +193,7 @@ pub(crate) fn schedule(
                 start = start.max(at);
             }
         }
-        let (start, active_until, finish) = actual_timing(step, start, &mut warnings)?;
+        let (start, active_until, finish) = actual_timing(step, start, now, &mut warnings)?;
         times[index] = Some(Timing {
             id: step.stage.id.clone(),
             start,
@@ -239,6 +239,7 @@ pub(crate) fn schedule(
 fn actual_timing(
     step: &Step,
     start: i64,
+    now: i64,
     warnings: &mut Vec<Warning>,
 ) -> Result<(i64, i64, i64), &'static str> {
     Ok(match step.timer {
@@ -262,9 +263,9 @@ fn actual_timing(
                 steps: vec![step.stage.id.clone()],
             });
             (
-                start,
-                time::add(start, i64::from(active_remaining))?,
-                time::add(start, i64::from(remaining))?,
+                now,
+                time::add(now, i64::from(active_remaining))?,
+                time::add(now, i64::from(remaining))?,
             )
         }
         Timer::Completed {
@@ -497,6 +498,82 @@ mod tests {
         );
         a.dependencies = vec!["one".to_owned()];
         assert_eq!(order(&[a]), Err("cooking_dependencies_invalid"));
+    }
+    #[test]
+    fn repeated_steps_enforce_waits_after_actual_completion_and_explicit_start_delays() {
+        let now = 1_800_000_000;
+        let target = LocalTime {
+            local: "2027-10-31T08:00".to_owned(),
+            timezone: "UTC".to_owned(),
+            fold: Fold::Reject,
+        };
+        let mut repeated = stage("fold", vec![], 10, 20);
+        repeated.repeat = 2;
+        repeated.wait_between_seconds = 3600;
+        let mut run = run(&[repeated], target, now);
+        run.schedule = schedule(&run, now, None).unwrap().schedule;
+        let mut data = crate::cooking::model::Data {
+            next_id: 2,
+            runs: vec![run],
+            ..Default::default()
+        };
+        operations::timer(&mut data, "cook-1", "fold-1", TimerAction::Start, now).unwrap();
+        operations::timer(
+            &mut data,
+            "cook-1",
+            "fold-1",
+            TimerAction::Complete,
+            now + 30,
+        )
+        .unwrap();
+        assert_eq!(
+            operations::timer(&mut data, "cook-1", "fold-2", TimerAction::Start, now + 30),
+            Err("cooking_wait_not_elapsed")
+        );
+        data.runs[0].steps[1].not_before = Some(now + 4000);
+        assert_eq!(
+            operations::timer(
+                &mut data,
+                "cook-1",
+                "fold-2",
+                TimerAction::Start,
+                now + 3630
+            ),
+            Err("cooking_wait_not_elapsed")
+        );
+        operations::timer(
+            &mut data,
+            "cook-1",
+            "fold-2",
+            TimerAction::Start,
+            now + 4000,
+        )
+        .unwrap();
+    }
+    #[test]
+    fn paused_projection_resumes_now_even_with_a_future_baking_target() {
+        let now = 1_800_000_000;
+        let target = LocalTime {
+            local: "2027-10-31T08:00".to_owned(),
+            timezone: "Europe/Berlin".to_owned(),
+            fold: Fold::Reject,
+        };
+        let mut run = run(&[stage("one", vec![], 10, 20)], target, now);
+        run.steps[0].timer = Timer::Paused {
+            started_at: now - 100,
+            paused_at: now - 90,
+            active_remaining: 5,
+            remaining: 20,
+        };
+        let proposed = schedule(&run, now, None).unwrap();
+        assert_eq!(proposed.schedule[0].start, now);
+        assert_eq!(proposed.schedule[0].finish, now + 20);
+        assert!(
+            proposed
+                .warnings
+                .iter()
+                .any(|w| w.code == "cooking_paused_projection")
+        );
     }
     #[test]
     fn overdue_pause_resume_does_not_restart_a_timer_duration() {

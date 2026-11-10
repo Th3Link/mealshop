@@ -13,6 +13,7 @@ import {
   mdiAccountGroupOutline,
   mdiHomeOutline,
   mdiBasketOutline,
+  mdiChefHat,
 } from '@mdi/js'
 import Icon from './Icon.vue'
 import HouseholdSwitcher from './HouseholdSwitcher.vue'
@@ -24,10 +25,11 @@ const links = [
   { key: 'recipes', icon: mdiBookOpenPageVariantOutline },
   { key: 'plan', icon: mdiCalendarMonthOutline },
   { key: 'shoppingList', icon: mdiBasketOutline },
+  { key: 'cookingSessions', icon: mdiChefHat },
   { key: 'ingredients', icon: mdiCarrot },
   { key: 'household', icon: mdiAccountGroupOutline },
 ] satisfies {
-  key: 'recipes' | 'plan' | 'ingredients' | 'household' | 'shoppingList'
+  key: 'recipes' | 'plan' | 'ingredients' | 'household' | 'shoppingList' | 'cookingSessions'
   icon: string
 }[]
 onMounted(() => {
@@ -46,7 +48,7 @@ onMounted(() => {
           v-for="item in home ? links : []"
           :key="item.key"
           :name="t(item.key)"
-          :to="`/h/${home?.id}/${item.key === 'shoppingList' ? 'shopping' : item.key}`"
+          :to="`/h/${home?.id}/${item.key === 'shoppingList' ? 'shopping' : item.key === 'cookingSessions' ? 'cooking' : item.key}`"
           ><template #icon><Icon :path="item.icon" /></template
         ></NcAppNavigationItem>
       </template>

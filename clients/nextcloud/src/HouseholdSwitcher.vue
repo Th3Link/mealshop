@@ -23,7 +23,7 @@ function switchHome(value: unknown) {
   if (!result.success || !homes.value.some((home) => home.id === result.data.id)) return
   const section = route.path.split('/')[3]
   void router.push(
-    `/h/${result.data.id}/${['recipes', 'ingredients', 'plan', 'household', 'shopping'].includes(section ?? '') ? section : 'recipes'}`,
+    `/h/${result.data.id}/${['recipes', 'ingredients', 'plan', 'household', 'shopping', 'cooking'].includes(section ?? '') ? section : 'recipes'}`,
   )
 }
 </script>

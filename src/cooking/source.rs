@@ -157,7 +157,7 @@ pub(crate) fn ingredients(
     }).collect::<Result<Vec<_>,&'static str>>()?;
     Ok(serde_json::json!(lines))
 }
-pub(crate) fn ensure_ready(run: &Run, id: &str) -> Result<usize, &'static str> {
+pub(crate) fn ensure_ready(run: &Run, id: &str, now: i64) -> Result<usize, &'static str> {
     if run.status != RunState::Active {
         return Err("cooking_run_inactive");
     }
@@ -173,6 +173,11 @@ pub(crate) fn ensure_ready(run: &Run, id: &str) -> Result<usize, &'static str> {
     }) {
         return Err("cooking_dependencies_incomplete");
     }
+    if matches!(run.steps[index].timer, Timer::Pending)
+        && available_at(run, &run.steps[index])?.is_some_and(|at| at > now)
+    {
+        return Err("cooking_wait_not_elapsed");
+    }
     Ok(index)
 }
 pub(crate) fn started(timer: &Timer) -> Option<i64> {
@@ -180,4 +185,25 @@ pub(crate) fn started(timer: &Timer) -> Option<i64> {
         Timer::Running { started_at, .. } | Timer::Paused { started_at, .. } => Some(started_at),
         _ => None,
     }
+}
+
+pub(crate) fn available_at(
+    run: &Run,
+    step: &super::model::Step,
+) -> Result<Option<i64>, &'static str> {
+    let mut earliest = run
+        .created_at
+        .max(step.not_before.unwrap_or(run.created_at));
+    for id in &step.stage.dependencies {
+        let dependency = run
+            .steps
+            .iter()
+            .find(|s| &s.stage.id == id)
+            .ok_or("cooking_dependencies_invalid")?;
+        let Timer::Completed { completed_at, .. } = dependency.timer else {
+            return Ok(None);
+        };
+        earliest = earliest.max(time::add(completed_at, i64::from(step.lag_seconds))?);
+    }
+    Ok(Some(earliest))
 }

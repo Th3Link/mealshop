@@ -4,7 +4,7 @@ use super::{
     time,
 };
 use serde_json::{Value, json};
-pub(crate) fn run(value: &Run, actor: &super::Actor) -> Result<Value, &'static str> {
+pub(crate) fn run(value: &Run, actor: &super::Actor, now: i64) -> Result<Value, &'static str> {
     let mut body = serde_json::to_value(value).map_err(|_| "cooking_storage_failed")?;
     if let Some(map) = body.as_object_mut() {
         map.remove("subscriptions");
@@ -20,15 +20,17 @@ pub(crate) fn run(value: &Run, actor: &super::Actor) -> Result<Value, &'static s
             .iter()
             .map(|step| {
                 let mut body = serde_json::to_value(step).map_err(|_| "cooking_storage_failed")?;
-                body["ready"] =
-                    json!(
-                        value.status == RunState::Active
-                            && matches!(step.timer, Timer::Pending)
-                            && step.stage.dependencies.iter().all(|id| value
-                                .steps
-                                .iter()
-                                .any(|s| s.stage.id == *id && s.timer.complete()))
-                    );
+                let available = if matches!(step.timer, Timer::Pending) {
+                    super::source::available_at(value, step)?
+                } else {
+                    None
+                };
+                body["available_at"] = json!(available);
+                body["ready"] = json!(
+                    value.status == RunState::Active
+                        && matches!(step.timer, Timer::Pending)
+                        && available.is_some_and(|at| at <= now)
+                );
                 Ok(body)
             })
             .collect::<Result<Vec<_>, &'static str>>()?
@@ -37,7 +39,7 @@ pub(crate) fn run(value: &Run, actor: &super::Actor) -> Result<Value, &'static s
 }
 pub(crate) fn prepared(value: &Prepared, actor: &super::Actor) -> Result<Value, &'static str> {
     Ok(
-        json!({"preview_id":value.preview_id,"revision":value.revision,"expires_at":value.expires_at,"run":run(&value.run,actor)?,"previous":value.previous.as_ref().map(|r|run(r,actor)).transpose()?,"proposal":value.proposal}),
+        json!({"preview_id":value.preview_id,"revision":value.revision,"expires_at":value.expires_at,"run":run(&value.run,actor,time::now()?)?,"previous":value.previous.as_ref().map(|r|run(r,actor,time::now()?)).transpose()?,"proposal":value.proposal}),
     )
 }
 pub(crate) fn list(data: &Data, actor: &super::Actor, now: i64) -> Value {
@@ -75,6 +77,6 @@ pub(crate) fn detail(
         })
         .collect::<Result<Vec<_>, &'static str>>()?;
     Ok(
-        json!({"revision":data.revision,"server_now":now,"notification_transport":actor.notifications_available,"run":run(data.run(id)?,actor)?,"notices":notices,"ingredients":ingredients}),
+        json!({"revision":data.revision,"server_now":now,"notification_transport":actor.notifications_available,"run":run(data.run(id)?,actor,now)?,"notices":notices,"ingredients":ingredients}),
     )
 }
