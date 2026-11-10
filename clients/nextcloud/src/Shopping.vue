@@ -17,7 +17,7 @@ import type { z } from 'zod'
 import { api, domain } from './api'
 import { homes, loadCatalogue, useTask } from './state'
 import { locale, t } from './i18n'
-import { mdiPlus, mdiMagnify, mdiUndo } from '@mdi/js'
+import { mdiPlus, mdiUndo, mdiTune } from '@mdi/js'
 import Icon from './Icon.vue'
 import { matchingShoppingItems, isPurchased } from './shopping-display'
 import ShoppingItems from './ShoppingItems.vue'
@@ -43,7 +43,7 @@ const ingredientMap = computed(
   () => new Map((catalogue.value?.ingredients ?? []).map((item) => [item.id, item])),
 )
 const matching = computed(() => matchingShoppingItems(filtered.value, query.value))
-const shoppingMode = ref(false),
+const shoppingMode = ref(true),
   selectedShop = ref('all'),
   shopDirty = ref(false)
 const filtered = computed(
@@ -79,6 +79,7 @@ watch(
   },
 )
 async function load() {
+  lastCheck.value = undefined
   await run(async () => {
     const [list, foods, recipeList, planList] = await Promise.all([
       api(domain(home.value, '/api/household/shopping'), shoppingSchema),
@@ -239,201 +240,213 @@ useUnsavedChanges(
 onMounted(load)
 </script>
 <template>
-  <header class="page-header">
-    <div>
-      <h1 tabindex="-1">{{ t('shoppingList') }}</h1>
-      <p>{{ t('shoppingIntro') }}</p>
-    </div>
-    <div class="actions">
-      <NcButton
-        v-if="writable && data"
-        variant="primary"
-        :disabled="busy || adding"
-        @click="startManual"
-        ><template #icon><Icon :path="mdiPlus" /></template>{{ t('shoppingAddManual') }}</NcButton
-      >
-      <NcButton
-        v-if="data?.items.length"
-        :variant="shoppingMode ? 'primary' : 'secondary'"
-        :aria-pressed="shoppingMode"
-        :disabled="busy || manualChanged || recipeDirty || shopDirty || productDirty"
-        @click="shoppingMode = !shoppingMode"
-        >{{ t(shoppingMode ? 'shoppingManage' : 'shoppingMode') }}</NcButton
-      >
-    </div>
-  </header>
-  <NcNoteCard v-if="error" type="error" role="alert"
-    >{{ errorMessage(error)
-    }}<NcButton :disabled="busy" @click="load">{{ t('retry') }}</NcButton></NcNoteCard
-  >
-  <NcLoadingIcon v-if="busy" :aria-label="t('loading')" />
-  <div class="shopping-feedback">
-    <p role="status">{{ message }}</p>
-    <NcButton v-if="lastCheck && writable" :disabled="busy" variant="tertiary" @click="undoCheck"
-      ><template #icon><Icon :path="mdiUndo" /></template>{{ t('shoppingUndo') }}</NcButton
-    >
-  </div>
-  <template v-if="data">
-    <div class="shopping-discovery">
-      <div id="mealshop-shopping-search">
-        <NcTextField
-          v-model="query"
-          :label="t('shoppingSearch')"
-          :placeholder="t('shoppingSearchHint')"
-          type="search"
-          @keydown.enter.prevent="writable && startManual()"
-          ><template #trailing-button-icon><Icon :path="mdiMagnify" /></template
-        ></NcTextField>
+  <div class="shopping-view">
+    <header class="page-header">
+      <div>
+        <h1 tabindex="-1">{{ t('shoppingList') }}</h1>
+        <p v-if="!shoppingMode">{{ t('shoppingIntro') }}</p>
       </div>
-      <NcButton v-if="query" variant="tertiary" @click="clearSearch">{{
-        t('resetFilters')
-      }}</NcButton>
-    </div>
-    <p v-if="query && !matching.length" role="status">
-      {{ t('shoppingNoMatches')
-      }}<NcButton v-if="writable" :disabled="busy || adding" @click="startManual"
-        >{{ t('shoppingAddManual') }}: {{ query }}</NcButton
-      >
-    </p>
-    <NcEmptyContent
-      v-if="!data.items.length"
-      :name="t('shoppingEmpty')"
-      :description="t('shoppingEmptyHelp')"
-    />
-    <div v-if="data.shops.entries.length" class="shopping-filter">
-      <label class="field"
-        >{{ t('shopFilter')
-        }}<select :aria-label="t('shopFilter')" v-model="selectedShop" :disabled="busy">
-          <option value="all">{{ t('shopAll') }}</option>
-          <option value="none">{{ t('shopUnassigned') }}</option>
-          <option v-for="shop in data.shops.entries" :key="shop.id" :value="shop.id">
-            {{ shop.name }}
-          </option>
-        </select></label
-      >
-      <div v-if="writable && data.shops.learning" class="actions">
-        <template v-if="activeSession"
-          ><p role="status">
-            {{ t('shopSessionActive') }}:
-            {{ data.shops.entries.find((s) => s.id === activeSession?.shop_id)?.name }}
-          </p>
-          <NcButton
-            :disabled="busy"
-            @click="command({ operation: 'finish_session', id: activeSession.id, discard: false })"
-            >{{ t('shopFinish') }}</NcButton
-          ><NcButton
-            :disabled="busy"
-            @click="command({ operation: 'finish_session', id: activeSession.id, discard: true })"
-            >{{ t('shopDiscard') }}</NcButton
-          ></template
-        >
+      <div class="actions">
         <NcButton
-          v-else
-          :disabled="busy || selectedShop === 'all' || selectedShop === 'none'"
-          @click="command({ operation: 'start_session', shop_id: selectedShop })"
-          >{{ t('shopStart') }}</NcButton
+          v-if="writable && data && !adding"
+          :aria-label="t('shoppingAddManual')"
+          variant="primary"
+          :disabled="busy || adding"
+          @click="startManual"
+          ><template #icon><Icon :path="mdiPlus" /></template
+          ><span class="shopping-add-label">{{ t('shoppingAddManual') }}</span></NcButton
         >
       </div>
-      <NcButton
-        v-if="
-          writable &&
-          selectedShop !== 'all' &&
-          selectedShop !== 'none' &&
-          data.shops.manual_order[selectedShop]?.length
-        "
-        :disabled="busy"
-        @click="command({ operation: 'order', shop_id: selectedShop, keys: [] })"
-        >{{ t('shopClearOrder') }}</NcButton
-      >
-      <p v-if="!filtered.length">{{ t('shopEmptyList') }}</p>
-    </div>
-    <section v-if="writable && adding" class="narrow shopping-entry">
-      <h2 id="mealshop-manual-title" tabindex="-1">
-        {{ t(manualId ? 'shoppingEditItem' : 'shoppingAddManual') }}
-      </h2>
-      <form ref="manualForm" @submit.prevent="add" @keydown.esc.prevent="cancelManual">
-        <fieldset class="editor-fields" :disabled="busy">
-          <NcTextField v-model="label" :label="t('name')" required maxlength="200" />
-          <details>
-            <summary>{{ t('shoppingLinkIngredient') }}</summary>
-            <IngredientSelect
-              v-model="ingredient"
-              :ingredients="catalogue?.ingredients ?? []"
-              :allow-create="false"
-            />
-          </details>
-          <ShoppingQuantityInput v-model="quantity" :disabled="busy" /><NcButton
-            type="submit"
-            variant="primary"
-            :disabled="busy || !label.trim() || !quantity.amount"
-            >{{ t(manualId ? 'save' : 'shoppingAddManual') }}</NcButton
+    </header>
+    <NcNoteCard v-if="error" type="error" role="alert"
+      >{{ errorMessage(error)
+      }}<NcButton :disabled="busy" @click="load">{{ t('retry') }}</NcButton></NcNoteCard
+    >
+    <NcLoadingIcon v-if="busy" :aria-label="t('loading')" />
+    <template v-if="data">
+      <div class="shopping-discovery">
+        <div id="mealshop-shopping-search">
+          <NcTextField
+            v-model="query"
+            :label="t('shoppingSearch')"
+            :placeholder="t('shoppingSearchHint')"
+            type="search"
+            @keydown.enter.prevent="writable && startManual()"
+          />
+        </div>
+        <NcButton
+          variant="tertiary"
+          :aria-label="t(shoppingMode ? 'shoppingManage' : 'shoppingMode')"
+          :aria-pressed="shoppingMode"
+          :disabled="busy || manualChanged || recipeDirty || shopDirty || productDirty"
+          @click="shoppingMode = !shoppingMode"
+          ><template #icon><Icon :path="mdiTune" /></template
+          ><span class="shopping-mode-text">{{
+            t(shoppingMode ? 'shoppingManage' : 'shoppingMode')
+          }}</span></NcButton
+        >
+        <NcButton v-if="query" variant="tertiary" @click="clearSearch">{{
+          t('resetFilters')
+        }}</NcButton>
+      </div>
+      <div class="shopping-feedback">
+        <p role="status">{{ message || (writable ? t('shoppingTapHint') : '') }}</p>
+        <NcButton
+          v-if="lastCheck && writable"
+          :disabled="busy"
+          variant="tertiary"
+          @click="undoCheck"
+          ><template #icon><Icon :path="mdiUndo" /></template>{{ t('shoppingUndo') }}</NcButton
+        >
+      </div>
+      <p v-if="query && !matching.length" role="status">
+        {{ t('shoppingNoMatches')
+        }}<NcButton v-if="writable" :disabled="busy || adding" @click="startManual"
+          >{{ t('shoppingAddManual') }}: {{ query }}</NcButton
+        >
+      </p>
+      <NcEmptyContent
+        v-if="!data.items.length"
+        :name="t('shoppingEmpty')"
+        :description="t('shoppingEmptyHelp')"
+      />
+      <div v-if="data.shops.entries.length" class="shopping-filter">
+        <label class="field"
+          >{{ t('shopFilter')
+          }}<select :aria-label="t('shopFilter')" v-model="selectedShop" :disabled="busy">
+            <option value="all">{{ t('shopAll') }}</option>
+            <option value="none">{{ t('shopUnassigned') }}</option>
+            <option v-for="shop in data.shops.entries" :key="shop.id" :value="shop.id">
+              {{ shop.name }}
+            </option>
+          </select></label
+        >
+        <div v-if="writable && data.shops.learning" class="actions">
+          <template v-if="activeSession"
+            ><p role="status">
+              {{ t('shopSessionActive') }}:
+              {{ data.shops.entries.find((s) => s.id === activeSession?.shop_id)?.name }}
+            </p>
+            <NcButton
+              :disabled="busy"
+              @click="
+                command({ operation: 'finish_session', id: activeSession.id, discard: false })
+              "
+              >{{ t('shopFinish') }}</NcButton
+            ><NcButton
+              :disabled="busy"
+              @click="command({ operation: 'finish_session', id: activeSession.id, discard: true })"
+              >{{ t('shopDiscard') }}</NcButton
+            ></template
           >
-          <NcButton v-if="manualId || manualChanged" :disabled="busy" @click="cancelManual">{{
-            t('cancel')
-          }}</NcButton>
-        </fieldset>
-      </form>
-    </section>
-    <section v-if="open.length">
-      <h2>
-        {{ t('shoppingToBuy') }}
-        <span class="shopping-count" aria-hidden="true">{{ open.length }}</span>
-      </h2>
-      <ShoppingItems
-        :items="open"
-        :ingredients="ingredientMap"
-        :ordering-disabled="!!query.trim()"
-        :writable="writable"
+          <NcButton
+            v-else
+            :disabled="busy || selectedShop === 'all' || selectedShop === 'none'"
+            @click="command({ operation: 'start_session', shop_id: selectedShop })"
+            >{{ t('shopStart') }}</NcButton
+          >
+        </div>
+        <NcButton
+          v-if="
+            writable &&
+            selectedShop !== 'all' &&
+            selectedShop !== 'none' &&
+            data.shops.manual_order[selectedShop]?.length
+          "
+          :disabled="busy"
+          @click="command({ operation: 'order', shop_id: selectedShop, keys: [] })"
+          >{{ t('shopClearOrder') }}</NcButton
+        >
+        <p v-if="!filtered.length">{{ t('shopEmptyList') }}</p>
+      </div>
+      <section v-if="writable && adding" class="narrow shopping-entry">
+        <h2 id="mealshop-manual-title" tabindex="-1">
+          {{ t(manualId ? 'shoppingEditItem' : 'shoppingAddManual') }}
+        </h2>
+        <form ref="manualForm" @submit.prevent="add" @keydown.esc.prevent="cancelManual">
+          <fieldset class="editor-fields" :disabled="busy">
+            <NcTextField v-model="label" :label="t('name')" required maxlength="200" />
+            <details>
+              <summary>{{ t('shoppingLinkIngredient') }}</summary>
+              <IngredientSelect
+                v-model="ingredient"
+                :ingredients="catalogue?.ingredients ?? []"
+                :allow-create="false"
+              />
+            </details>
+            <ShoppingQuantityInput v-model="quantity" :disabled="busy" /><NcButton
+              type="submit"
+              variant="primary"
+              :disabled="busy || !label.trim() || !quantity.amount"
+              >{{ t(manualId ? 'save' : 'shoppingAddManual') }}</NcButton
+            >
+            <NcButton v-if="manualId || manualChanged" :disabled="busy" @click="cancelManual">{{
+              t('cancel')
+            }}</NcButton>
+          </fieldset>
+        </form>
+      </section>
+      <section v-if="open.length">
+        <h2>
+          {{ t('shoppingToBuy') }}
+          <span class="shopping-count" aria-hidden="true">{{ open.length }}</span>
+        </h2>
+        <ShoppingItems
+          :items="open"
+          :ingredients="ingredientMap"
+          :ordering-disabled="!!query.trim()"
+          :writable="writable"
+          :busy="busy"
+          :shops="data.shops"
+          :selected-shop="selectedShop"
+          @command="command"
+          @check="checkItem"
+        />
+      </section>
+      <details v-if="purchased.length" id="mealshop-purchased">
+        <summary>{{ t('shoppingBought') }} · {{ purchased.length }}</summary>
+        <ShoppingItems
+          :items="purchased"
+          :ingredients="ingredientMap"
+          :ordering-disabled="!!query.trim()"
+          :writable="writable"
+          :busy="busy"
+          :shops="data.shops"
+          :selected-shop="selectedShop"
+          @command="command"
+          @check="checkItem"
+        />
+      </details>
+      <ShoppingProduct
+        v-if="catalogue && writable && !shoppingMode"
+        :data="data"
+        :catalogue="catalogue"
         :busy="busy"
-        :shops="data.shops"
-        :selected-shop="selectedShop"
-        @command="command"
-        @check="checkItem"
+        :perform="command"
+        :lookup="lookupProduct"
+        :error="error"
+        @dirty="productDirty = $event"
       />
-    </section>
-    <details v-if="purchased.length" id="mealshop-purchased">
-      <summary>{{ t('shoppingBought') }} · {{ purchased.length }}</summary>
-      <ShoppingItems
-        :items="purchased"
-        :ingredients="ingredientMap"
-        :ordering-disabled="!!query.trim()"
-        :writable="writable"
+      <ShoppingShops
+        v-if="catalogue && !shoppingMode"
+        :data="data"
+        :catalogue="catalogue"
         :busy="busy"
-        :shops="data.shops"
-        :selected-shop="selectedShop"
-        @command="command"
-        @check="checkItem"
+        :writable="writable"
+        :perform="command"
+        @dirty="shopDirty = $event"
       />
-    </details>
-    <ShoppingProduct
-      v-if="catalogue && writable && !shoppingMode"
-      :data="data"
-      :catalogue="catalogue"
-      :busy="busy"
-      :perform="command"
-      :lookup="lookupProduct"
-      :error="error"
-      @dirty="productDirty = $event"
-    />
-    <ShoppingShops
-      v-if="catalogue && !shoppingMode"
-      :data="data"
-      :catalogue="catalogue"
-      :busy="busy"
-      :writable="writable"
-      :perform="command"
-      @dirty="shopDirty = $event"
-    />
-    <ShoppingSources
-      v-if="recipes && plans && !shoppingMode"
-      :data="data"
-      :recipes="recipes"
-      :plans="plans"
-      :busy="busy"
-      :writable="writable"
-      :perform="command"
-      @dirty="recipeDirty = $event"
-      @manual="editManual"
-    />
-  </template>
+      <ShoppingSources
+        v-if="recipes && plans && !shoppingMode"
+        :data="data"
+        :recipes="recipes"
+        :plans="plans"
+        :busy="busy"
+        :writable="writable"
+        :perform="command"
+        @dirty="recipeDirty = $event"
+        @manual="editManual"
+      />
+    </template>
+  </div>
 </template>

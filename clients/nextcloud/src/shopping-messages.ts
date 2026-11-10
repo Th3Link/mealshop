@@ -1,5 +1,6 @@
 export const shoppingEnglish = {
-  shoppingClose: 'Close',
+  shoppingTapHint: 'Tap an item to mark it purchased.',
+  shoppingClose: 'Done',
   shoppingSearch: 'Find an item',
   shoppingSearchHint: 'What do you need to buy?',
   shoppingNoMatches: 'No matching items in this list.',
@@ -124,6 +125,7 @@ export const shoppingEnglish = {
     'Remove the outstanding contribution? Purchased quantities and other sources remain.',
 }
 export const shoppingGerman: Record<keyof typeof shoppingEnglish, string> = {
+  shoppingTapHint: 'Tippe auf einen Artikel, um ihn abzuhaken.',
   shoppingSearch: 'Artikel finden',
   shoppingSearchHint: 'Was möchtest du einkaufen?',
   shoppingNoMatches: 'Keine passenden Artikel auf dieser Liste.',
@@ -134,7 +136,7 @@ export const shoppingGerman: Record<keyof typeof shoppingEnglish, string> = {
   shoppingUndo: 'Rückgängig',
   shoppingUndoDone: 'Einkaufsaktion rückgängig gemacht.',
   shoppingClearToOrder: 'Leere die Suche, um die vollständige Ladenliste zu sortieren.',
-  shoppingClose: 'Schließen',
+  shoppingClose: 'Fertig',
 
   barcodePermission:
     'Wähle die Kamerafreigabe im Browser oder stoppe und gib den Barcode manuell ein.',

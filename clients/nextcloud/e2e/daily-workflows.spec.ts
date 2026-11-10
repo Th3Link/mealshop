@@ -229,7 +229,11 @@ test('household defaults, focused search, inline composites, private images, fav
   }
   await page.setViewportSize({ width: 1440, height: 1000 })
   await slot.getByRole('button').click()
-  await page.getByText(`Test skipper ${stamp}`, { exact: true }).click()
+  const skipper=page.getByRole('checkbox',{name:`Test skipper ${stamp}`,exact:true})
+  await expect(skipper).not.toBeChecked()
+  await skipper.focus()
+  await page.keyboard.press('Space')
+  await expect(skipper).toBeChecked()
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Apply reviewed plan', exact: true }),

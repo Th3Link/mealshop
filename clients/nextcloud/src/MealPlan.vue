@@ -126,7 +126,9 @@ function start(plan?: Plan) {
   suggestions.value = []
   rejected.value = []
   initialDraft.value = JSON.stringify(draft.value)
-  void nextTick().then(() => document.getElementById('mealshop-meal-editor-title')?.focus())
+  void nextTick().then(() =>
+    document.querySelector<HTMLElement>('.mealplan-sidebar .app-sidebar-header__mainname')?.focus(),
+  )
   return true
 }
 function selectSlot(date: string, meal: string, plan?: Plan) {
@@ -331,6 +333,7 @@ onMounted(load)
   />
   <NcAppSidebar
     v-if="draft"
+    class="mealplan-sidebar"
     :name="t(editingExisting ? 'editMeal' : 'newMeal')"
     @close="cancelPlan"
   >
@@ -345,9 +348,6 @@ onMounted(load)
           @click="preview(true)"
           >{{ t('remove') }}</NcButton
         >
-        <h2 id="mealshop-meal-editor-title" tabindex="-1">
-          {{ t(editingExisting ? 'editMeal' : 'newMeal') }}
-        </h2>
         <NcButton
           v-if="editingExisting"
           :to="{
@@ -369,7 +369,7 @@ onMounted(load)
           <fieldset
             class="editor-fields"
             :disabled="busy"
-            aria-labelledby="mealshop-meal-editor-title"
+            :aria-label="t(editingExisting ? 'editMeal' : 'newMeal')"
           >
             <div v-if="!editingExisting" class="form-row">
               <label class="field"

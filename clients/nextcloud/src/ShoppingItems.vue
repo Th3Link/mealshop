@@ -66,7 +66,7 @@ function label(item: Shopping['items'][number]) {
         ><span class="shopping-tile__body"
           ><Icon :path="shoppingIcon(item, ingredients)" class="shopping-tile__illustration" /><span
             class="shopping-tile__caption"
-            >{{ item.translations[locale] ?? item.name }} ·
+            >{{ item.translations[locale] ?? item.name }}<span class="visually-hidden"> · </span>
             <span class="shopping-tile__quantity"
               >{{ compactExact(isPurchased(item) ? item.purchased : item.remaining) }}
               {{
@@ -80,9 +80,9 @@ function label(item: Shopping['items'][number]) {
         <span class="shopping-tile__state"
           >{{ t(isPurchased(item) ? 'shoppingBought' : 'shoppingToBuy')
           }}<template v-if="!isPurchased(item) && !/^0(?:\.0+)?$/.test(item.purchased)">
-            · {{ compactExact(item.purchased) }} {{ shoppingUnit(item.unit, item.purchased) }}
-            {{ t('shoppingAlreadyBought') }}</template
-          ></span
+            · {{ t('shoppingBought') }}: {{ compactExact(item.purchased) }}
+            {{ shoppingUnit(item.unit, item.purchased) }}
+          </template></span
         ><NcButton
           variant="tertiary"
           :aria-label="`${t('shoppingItemDetails')}: ${item.translations[locale] ?? item.name}`"
