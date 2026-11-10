@@ -73,8 +73,8 @@ defineProps<{ value: z.infer<typeof nutritionSchema> }>()
         </table>
       </div>
     </div>
-    <details>
-      <summary>{{ t('source') }}</summary>
+    <div class="nutrition-sources">
+      <h3>{{ t('source') }}</h3>
       <div v-for="item in value.ingredients" :key="item.ingredient_id">
         <h3>{{ item.translations[locale]?.name ?? item.name }}</h3>
         <p>
@@ -90,6 +90,6 @@ defineProps<{ value: z.infer<typeof nutritionSchema> }>()
           >{{ t('openSource') }}</a
         >
       </div>
-    </details>
+    </div>
   </section>
 </template>

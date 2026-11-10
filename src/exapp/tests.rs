@@ -188,6 +188,19 @@ async fn authenticated_households_enforce_invitation_roles_revocation_and_isolat
         .0,
         StatusCode::FORBIDDEN
     );
+    let homemade = json!({"title":"Reader must not write","language":"en","servings":1,"preparation":"as_recorded","parts":[{"id":"prep","name":"Preparation"}],"lines":[{"ingredient_id":"oats","grams":"1","prepared_part":"prep"},{"ingredient_id":"chia","grams":"1","part_id":"prep"}],"steps":[{"instruction":"Prepare","part_id":"prep","active_seconds":0,"passive_seconds":0}]});
+    assert_eq!(
+        call(
+            &app,
+            Some("bob"),
+            "POST",
+            &format!("{path}/domain/api/recipes"),
+            homemade
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
     assert_eq!(
         call(
             &app,

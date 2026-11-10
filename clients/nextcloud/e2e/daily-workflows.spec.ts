@@ -80,7 +80,6 @@ test('household defaults, focused search, inline composites, private images, fav
     (response) =>
       response.url().endsWith('/api/household/images') && response.request().method() === 'POST',
   )
-  await page.getByText('Optional details', { exact: true }).click()
   await page
     .locator('input[type=file]')
     .setInputFiles({ name: 'test-image.png', mimeType: 'image/png', buffer: png })

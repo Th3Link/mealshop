@@ -115,8 +115,9 @@ Unknown/duplicate references and part dependency cycles fail before saving. A st
 references also participate in cycle checks. The native editor moves removed parts' lines/steps to the
 main recipe and clears references after confirmation.
 
-Parts organize one flat ingredient list. Nutrition, serving previews, shopping requirements and dietary
-checks count each measured ingredient line once. They do not infer the yield of an empty part or create
+Parts organize one flat ingredient list. Nutrition, serving previews and shopping requirements count
+each measured base input once; finished homemade output references are excluded. Dietary checks retain
+all identities conservatively. They do not infer the yield of an empty part or create
 a parallel cooking schedule. Saved records pin all associations and source values; older flat records
 remain supported. Current APIs do not link independently saved recipes as nested references.
 
@@ -140,3 +141,30 @@ new fields. Back up the entire data directory before upgrading; old binaries can
 new fields after new revisions have been saved.
 
 The existing JSON is a possible future intelligent-scale input, not a device integration API.
+
+## Compact authoring and homemade inputs (F33)
+
+The native Nextcloud editor keeps parts, instructions and metadata open. Ingredients and instructions
+sit beside one another on wide screens and stack on small screens. Ingredient headers appear once;
+row controls retain accessible names. The row's **+** menu adds an optional temperature, moves a line
+or selects **Prepare at home**. Ingredient creation remains inside the searchable selector.
+
+Preparing a line creates a named part with a blank base ingredient and instruction to complete.
+The output line gains `prepared_part: "part-id"`; the referenced part must have instructions and
+measured inputs, directly or through other consumed parts. Declare the finished mass explicitly.
+No mass loss, recipe, yield or conversion is inferred from a name such as toasted bread.
+One output per producing part is supported, with combined cycle validation. Independent saved
+recipes are not nested in this model. Legacy lines without `prepared_part` remain purchases.
+
+The output identity, original quantity, extensions and pinned source remain saved, displayed and
+scaled. Only measured base lines enter nutrient/constituent calculations, shopping and meal-plan
+deltas, once each. Homemade calculations report `cooking_unmodelled`; values do not claim a cooked
+yield. Dietary review checks both finished identities and inputs, preserving hard exclusions and
+unknowns. Cooking waits for the producing part. Stateless nutrition rejects unresolved preparations.
+Detail/scale `display_lines` additionally expose each frozen ingredient's name and translations.
+
+**Use purchased ingredient** confirms removal of a simple preparation's inputs and steps; cancelling
+preserves everything. Removing its output asks the same question. Shared/nested preparations must
+have dependencies resolved first. Removing an ordinary part still moves its contents to the main
+recipe. Save uses the existing immutable revision/conflict checks. Back up complete data before
+installation; rollback restores the matching prior image and data together (ADR 0018).

@@ -28,15 +28,11 @@ test('direct ingredient creation, optional constituents and branched preparation
   await page.getByLabel('Recipe title', { exact: true }).fill('Structured authoring verification')
   await page.getByLabel('Servings', { exact: true }).fill('2')
   await page.getByRole('button', { name: 'Add recipe part', exact: true }).click()
-  await page.getByLabel('Part name', { exact: true }).fill('Preparation')
+  await page.getByRole('textbox', { name: 'Part name', exact: true }).fill('Preparation')
   await page.getByRole('button', { name: 'Add recipe part', exact: true }).click()
-  await page.getByLabel('Part name', { exact: true }).nth(1).fill('Assembly')
-  const preparation = page
-    .locator('.part-editor')
-    .filter({ has: page.locator('summary').filter({ hasText: /^Preparation$/ }) })
-  const assembly = page
-    .locator('.part-editor')
-    .filter({ has: page.locator('summary').filter({ hasText: /^Assembly$/ }) })
+  await page.getByRole('textbox', { name: 'Part name', exact: true }).nth(1).fill('Assembly')
+  const preparation = page.getByRole('region', { name: 'Preparation', exact: true })
+  const assembly = page.getByRole('region', { name: 'Assembly', exact: true })
   await preparation.getByRole('button', { name: 'Add ingredient', exact: true }).click()
   await page.getByRole('combobox', { name: 'Choose ingredient', exact: true }).fill('haferflocken')
   await expect(page.getByRole('option', { name: 'Oat flakes', exact: true })).toBeVisible()
@@ -90,9 +86,6 @@ test('direct ingredient creation, optional constituents and branched preparation
   await page.getByLabel('1. Instruction', { exact: true }).fill('Prepare the first part.')
   let step = page.locator('.step-editor').first()
   await step
-    .getByRole('combobox', { name: 'Recipe part', exact: true })
-    .selectOption({ label: 'Preparation' })
-  await step
     .getByRole('combobox', { name: 'Ingredients used in this step', exact: true })
     .fill('Oat flakes')
   await page.getByRole('option', { name: '1. Oat flakes', exact: true }).click()
@@ -100,9 +93,6 @@ test('direct ingredient creation, optional constituents and branched preparation
   await assembly.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('2. Instruction', { exact: true }).fill('Assemble the prepared parts.')
   step = page.locator('.step-editor').nth(1)
-  await step
-    .getByRole('combobox', { name: 'Recipe part', exact: true })
-    .selectOption({ label: 'Assembly' })
   await step
     .getByRole('combobox', { name: 'Prepared parts used in this step', exact: true })
     .fill('Preparation')
@@ -125,7 +115,9 @@ test('direct ingredient creation, optional constituents and branched preparation
     animations: 'disabled',
   })
   await page.getByText('Edit recipe', { exact: true }).click()
-  await expect(page.getByLabel('Part name', { exact: true }).first()).toHaveValue('Preparation')
+  await expect(page.getByRole('textbox', { name: 'Part name', exact: true }).first()).toHaveValue(
+    'Preparation',
+  )
   await expect(page.locator('.step-editor').nth(1)).toContainText('Preparation')
   for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 1000 })

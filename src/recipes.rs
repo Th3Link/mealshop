@@ -52,11 +52,20 @@ fn text(value: &str, max: usize) -> bool {
 }
 
 impl Recipe {
+    pub(crate) fn input_lines(&self) -> impl Iterator<Item = &nutrition::RecipeLine> {
+        self.lines
+            .iter()
+            .filter(|line| line.prepared_part.is_none())
+    }
     pub(crate) fn calculation(&self) -> Calculation {
         Calculation {
-            lines: self.lines.clone(),
+            lines: self.input_lines().cloned().collect(),
             servings: self.servings,
-            preparation: self.preparation,
+            preparation: if self.lines.iter().any(|line| line.prepared_part.is_some()) {
+                nutrition::Preparation::CookingUnmodelled
+            } else {
+                self.preparation
+            },
         }
     }
 
@@ -69,6 +78,8 @@ impl Recipe {
                 .is_some_and(|id| !crate::recipe_images::valid_id(id))
             || !matches!(self.language.as_str(), "en" | "de")
             || self.steps.len() > 100
+            || self.lines.is_empty()
+            || self.lines.len() > 100
             || self.steps.iter().any(|s| {
                 !text(&s.instruction, 4000)
                     || s.active_seconds > 604_800
@@ -80,6 +91,13 @@ impl Recipe {
             return Err("Use a title of 1–200 bytes and an optional author of at most 200 bytes, language en/de and at most 100 nonempty steps of 4000 bytes with durations up to 604800 seconds".to_owned());
         }
         crate::recipe_structure::validate(self)?;
+        for line in self
+            .lines
+            .iter()
+            .filter(|line| line.prepared_part.is_some())
+        {
+            nutrition::validate_line(catalogue, line)?;
+        }
         nutrition::calculate(catalogue, &self.calculation()).map(|_| ())
     }
 }

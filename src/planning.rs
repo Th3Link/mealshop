@@ -367,7 +367,7 @@ fn load_recipe(store: &Store, p: &Plan) -> Result<Record, &'static str> {
 }
 fn masses(record: &Record, servings: u32) -> Result<BTreeMap<String, u128>, &'static str> {
     let mut result = BTreeMap::new();
-    for line in &record.recipe.lines {
+    for line in record.recipe.input_lines() {
         let atoms = line
             .grams
             .0

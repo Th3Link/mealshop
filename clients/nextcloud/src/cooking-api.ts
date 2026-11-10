@@ -193,6 +193,7 @@ export const cookingDetailSchema = z.object({
       original_quantity: quantitySchema.nullable(),
       extensions: z.array(ingredientExtensionSchema).optional(),
       part_id: z.string().nullable(),
+      prepared_part_name: z.string().nullable().optional(),
     }),
   ),
 })

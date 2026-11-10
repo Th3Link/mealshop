@@ -126,7 +126,11 @@ enum DisplayUnit {
     G,
     Kg,
 }
-fn display_lines(lines: &[nutrition::RecipeLine], unit: DisplayUnit) -> serde_json::Value {
+fn display_lines(
+    lines: &[nutrition::RecipeLine],
+    unit: DisplayUnit,
+    catalogue: &Catalogue,
+) -> serde_json::Value {
     json!(
         lines
             .iter()
@@ -138,7 +142,8 @@ fn display_lines(lines: &[nutrition::RecipeLine], unit: DisplayUnit) -> serde_js
                         format!("{}.{:09}", atoms / 1_000_000_000, atoms % 1_000_000_000)
                     }
                 };
-                json!({"ingredient_id":line.ingredient_id,"amount":amount,"unit":unit})
+                let ingredient = catalogue.find(&line.ingredient_id);
+                json!({"ingredient_id":line.ingredient_id,"amount":amount,"unit":unit,"name":ingredient.map(|i|&i.name),"translations":ingredient.map(|i|&i.translations)})
             })
             .collect::<Vec<_>>()
     )
@@ -155,7 +160,7 @@ fn response(
         [(header::CACHE_CONTROL, "no-store")],
         Json(json!({
             "id":record.id,"revision":record.revision,"recipe":record.recipe,
-            "nutrition":nutrition,"display_lines":display_lines(&record.recipe.lines,display_unit),
+            "nutrition":nutrition,"display_lines":display_lines(&record.recipe.lines,display_unit,&record.catalogue),
         })),
     )
         .into_response())
@@ -255,27 +260,23 @@ async fn scale(
     }
     let record = blocking(state, move |store, _| store.get(&id, query.revision)).await?;
     let original = record.recipe.servings;
-    let mut calculation = record.recipe.calculation();
-    for line in &mut calculation.lines {
+    let mut lines = record.recipe.lines.clone();
+    for line in &mut lines {
         line.grams.0 = line
             .grams
             .0
             .scaled(query.servings, original)
             .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
-    }
-    // Preview lines are normalized masses; original inputs remain in the saved revision.
-    for line in &mut calculation.lines {
         line.quantity = None;
         line.conversion = None;
     }
-    calculation.servings = query.servings;
     let nutrition = nutrition::scaled_nutrition(
         &record.catalogue,
         &record.recipe.calculation(),
         query.servings,
     )
     .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
-    Ok(([(header::CACHE_CONTROL,"no-store")], Json(json!({"id":record.id,"revision":record.revision,"original_servings":original,"servings":query.servings,"lines":calculation.lines,"display_lines":display_lines(&calculation.lines,query.display_unit),"nutrition":nutrition,"rounding":"grams: nearest 0.000001 g, half up; nutrition: exact original serving ratio before display rounding"}))).into_response())
+    Ok(([(header::CACHE_CONTROL,"no-store")], Json(json!({"id":record.id,"revision":record.revision,"original_servings":original,"servings":query.servings,"lines":lines,"display_lines":display_lines(&lines,query.display_unit,&record.catalogue),"nutrition":nutrition,"rounding":"grams: nearest 0.000001 g, half up; nutrition: exact original serving ratio before display rounding"}))).into_response())
 }
 
 fn validate_image(state: &RecipeState, recipe: &Recipe) -> Result<(), ApiError> {

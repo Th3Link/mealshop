@@ -70,6 +70,11 @@ GTIN entry, optional supported-camera scanning and consented Open Food Facts loo
 [Shopping guide](docs/guides/shopping.md) · [source/provenance evidence](specs/0006-shopping-list/validation.md) ·
 [visual shopping](specs/0032-visual-shopping/specification.md).
 
+Native recipe reading/editing uses compact, always-open parts and ingredient plus actions.
+Explicit homemade ingredients keep their finished quantities while measured base inputs alone feed
+nutrition and shopping. [Recipe guide](docs/guides/recipes.md) ·
+[F33 contract](specs/0033-compact-recipe-preparation/specification.md).
+
 Native guided cooking now saves independent preset timers and reviewed multi-day baking schedules.
 Personal Nextcloud reminders retain delivery uncertainty and deadlines across restart.
 [Cooking guide](docs/guides/cooking.md) · [F12 evidence](specs/0012-guided-cooking/validation.md) ·

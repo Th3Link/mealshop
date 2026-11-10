@@ -102,3 +102,8 @@ active-and-passive behavior. Starting the next step acknowledges elapsed waiting
 paused timers and timers still counting active work require their existing explicit transitions.
 This acknowledges elapsed time, not physical readiness or food safety. No timer is automatically
 started by a scheduled notification, and no separate sourdough assessment is required.
+
+For explicit homemade recipe lines (F33), the first consuming stage waits for the producing
+part's final stage, even when instructions were authored in a different array order. Ingredient
+reads retain `prepared_part` and `prepared_part_name`; the native view labels these as homemade.
+No yield or replacement ingredients are inferred.

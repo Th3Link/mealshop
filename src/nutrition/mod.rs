@@ -11,6 +11,8 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Serialize)]
 pub(crate) struct RecipeLine {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) prepared_part: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub(crate) extensions: Vec<crate::ingredient_extensions::Extension>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -29,6 +31,7 @@ impl<'de> Deserialize<'de> for RecipeLine {
         #[derive(Deserialize)]
         #[serde(deny_unknown_fields)]
         struct Input {
+            prepared_part: Option<String>,
             #[serde(default)]
             extensions: Vec<crate::ingredient_extensions::Extension>,
             id: Option<String>,
@@ -62,6 +65,7 @@ impl<'de> Deserialize<'de> for RecipeLine {
                 .ok_or_else(|| serde::de::Error::custom("quantity_required"))?
         };
         Ok(Self {
+            prepared_part: input.prepared_part,
             extensions: input.extensions,
             id: input.id,
             part_id: input.part_id,
@@ -127,6 +131,26 @@ pub(crate) struct Estimate {
     warning_codes: Vec<&'static str>,
 }
 
+pub(crate) fn validate_line<'a>(
+    catalogue: &'a Catalogue,
+    line: &RecipeLine,
+) -> Result<&'a catalogue::Ingredient, String> {
+    if line.grams.0.atoms() == 0 {
+        return Err("Ingredient mass must be positive".to_owned());
+    }
+    let ingredient = catalogue
+        .find(&line.ingredient_id)
+        .ok_or_else(|| format!("Unknown ingredient: {}", line.ingredient_id))?;
+    if line.conversion.as_ref().is_some_and(|e| {
+        e.form != ingredient.form
+            || e.source_record_id
+                .as_ref()
+                .is_some_and(|id| id != &ingredient.source.record_id)
+    }) {
+        return Err("conversion_state_mismatch".to_owned());
+    }
+    Ok(ingredient)
+}
 pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<Estimate, String> {
     if recipe.lines.is_empty()
         || recipe.lines.len() > 100
@@ -135,22 +159,15 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
     {
         return Err("Use 1–100 ingredient lines and 1–1000000 integer servings".to_owned());
     }
+    if recipe.lines.iter().any(|line| line.prepared_part.is_some()) {
+        return Err(
+            "Resolve homemade ingredient parts through a saved recipe before calculating nutrition"
+                .to_owned(),
+        );
+    }
     let mut ingredients = Vec::with_capacity(recipe.lines.len());
     for line in &recipe.lines {
-        if line.grams.0.atoms() == 0 {
-            return Err("Ingredient mass must be positive".to_owned());
-        }
-        let ingredient = catalogue
-            .find(&line.ingredient_id)
-            .ok_or_else(|| format!("Unknown ingredient: {}", line.ingredient_id))?;
-        if line.conversion.as_ref().is_some_and(|e| {
-            e.form != ingredient.form
-                || e.source_record_id
-                    .as_ref()
-                    .is_some_and(|id| id != &ingredient.source.record_id)
-        }) {
-            return Err("conversion_state_mismatch".to_owned());
-        }
+        let ingredient = validate_line(catalogue, line)?;
         ingredients.push((ingredient, &line.grams));
     }
     let nutrients = Nutrient::ALL

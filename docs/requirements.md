@@ -63,3 +63,7 @@ F31 records the customer-approved unified Nextcloud meal/preparation calendar, m
 
 F32 refines household shopping discovery, item tiles, exact quantity entry and check-off/undo within
 the native Nextcloud shell, following the supplied Bring interaction reference. N03/N04/N09/N10 apply.
+
+F33 refines recipe reading/editing against the approved screens: compact always-open composition,
+optional plus actions and explicit homemade outputs with measured base inputs. N03/N04/N07/N09/N10
+apply. See [F33](../specs/0033-compact-recipe-preparation/specification.md) and ADR 0018.

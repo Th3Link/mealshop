@@ -182,6 +182,7 @@ export const recipeSchema = z.object({
     z.object({
       id: z.string().optional(),
       part_id: z.string().nullable().optional(),
+      prepared_part: z.string().nullable().optional(),
       ingredient_id: z.string(),
       extensions: z.array(ingredientExtensionSchema).max(1).optional(),
       grams: z.string(),
@@ -204,6 +205,11 @@ export const recipeSchema = z.object({
 export const displayLinesSchema = z.array(
   z.object({
     ingredient_id: z.string(),
+    name: z.string().nullable().optional(),
+    translations: z
+      .record(z.string(), z.object({ name: z.string() }))
+      .nullable()
+      .optional(),
     amount: z
       .string()
       .max(40)

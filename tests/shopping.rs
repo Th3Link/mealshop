@@ -567,3 +567,91 @@ async fn barcode_products_keep_packages_match_consent_and_purchased_snapshots_se
         data
     );
 }
+
+#[tokio::test]
+async fn homemade_ingredients_purchase_only_inputs_and_keep_dietary_and_cooking_guards() {
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    let recipe_body = json!({"title":"Homemade fixture","language":"en","servings":2,"preparation":"as_recorded","parts":[{"id":"prep","name":"Input preparation"}],"lines":[{"id":"output","ingredient_id":"oats","grams":"60.000001","prepared_part":"prep"},{"id":"input","ingredient_id":"chia","grams":"100.000001","part_id":"prep"}],"steps":[{"instruction":"Use the prepared component","active_seconds":1,"passive_seconds":0},{"part_id":"prep","instruction":"Prepare the fictional input","active_seconds":1,"passive_seconds":0}]});
+    let (status, recipe) =
+        request_path(&app, "POST", "/api/recipes", recipe_body, Some(OWNER)).await;
+    assert_eq!(status, StatusCode::CREATED, "{recipe}");
+    let bought = command(
+        &app,
+        0,
+        json!({"operation":"add_recipe","recipe":{"recipe_id":recipe["id"],"revision":1,"servings":4}}),
+    )
+    .await;
+    assert_eq!(bought["items"].as_array().unwrap().len(), 1);
+    assert_eq!(bought["items"][0]["ingredient_id"], "chia");
+    assert_eq!(bought["items"][0]["remaining"], "200.000002");
+    let template_path = format!(
+        "/api/household/cooking/template?recipe_id={}&revision=1&servings=4&timezone=Europe%2FBerlin",
+        recipe["id"].as_str().unwrap()
+    );
+    let (status, template) =
+        request_path(&app, "GET", &template_path, Value::Null, Some(OWNER)).await;
+    assert_eq!(status, StatusCode::OK, "{template}");
+    assert_eq!(
+        template["draft"]["stages"][0]["dependencies"],
+        json!(["s2"])
+    );
+    let plan = json!({"date":"2026-11-11","meal":"lunch","recipe":{"id":recipe["id"],"revision":1},"attendees":["one"],"calendar":null,"servings":4,"active_seconds":86400,"elapsed_seconds":86400,"advance_seconds":2_592_000});
+    for (revision, excluded) in [(0, "oats"), (1, "chia")] {
+        let profile = json!({"id":"one","name":"Test diner","allergies":[],"intolerances":[],"allergen_ids":[],"excluded_ingredients":[excluded],"disliked_ingredients":[]});
+        assert_eq!(
+            request_path(
+                &app,
+                "PUT",
+                "/api/household/profiles",
+                json!({"expected_revision":revision,"members":[profile]}),
+                Some(OWNER)
+            )
+            .await
+            .0,
+            StatusCode::OK
+        );
+        let (_, preview) = request_path(
+            &app,
+            "POST",
+            "/api/household/mealplan/preview",
+            plan.clone(),
+            Some(OWNER),
+        )
+        .await;
+        assert_eq!(preview["feasible"], false, "{preview}");
+        assert_eq!(request_path(&app,"POST","/api/household/mealplan/apply",json!({"plan":plan,"expected_revision":0,"profile_revision":revision+1,"reviewed":true}),Some(OWNER)).await.0,StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let profile = json!({"id":"one","name":"Test diner","allergies":[],"intolerances":[],"allergen_ids":[],"excluded_ingredients":[],"disliked_ingredients":[]});
+    assert_eq!(
+        request_path(
+            &app,
+            "PUT",
+            "/api/household/profiles",
+            json!({"expected_revision":2,"members":[profile]}),
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let (status, applied) = request_path(
+        &app,
+        "POST",
+        "/api/household/mealplan/apply",
+        json!({"plan":plan,"expected_revision":0,"profile_revision":3,"reviewed":true}),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{applied}");
+    let synced = command(&app,1,json!({"operation":"sync_plan","plan_revision":1,"slots":[{"date":"2026-11-11","meal":"lunch"}]})).await;
+    assert_eq!(synced["items"].as_array().unwrap().len(), 1);
+    assert_eq!(synced["items"][0]["ingredient_id"], "chia");
+    assert_eq!(synced["items"][0]["remaining"], "400.000004");
+    let again = command(&app,2,json!({"operation":"sync_plan","plan_revision":1,"slots":[{"date":"2026-11-11","meal":"lunch"}]})).await;
+    assert_eq!(again["items"], synced["items"]);
+    drop(app);
+    let reopened = dir.app().unwrap();
+    let (_, list) = request(&reopened, "GET", Value::Null, Some(OWNER)).await;
+    assert_eq!(list["items"], synced["items"]);
+}
