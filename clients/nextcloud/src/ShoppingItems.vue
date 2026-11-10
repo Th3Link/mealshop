@@ -1,125 +1,112 @@
 <script setup lang="ts">
+import { computed, ref, watch, nextTick } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
-import ShoppingOrigin from './ShoppingOrigin.vue'
+import { mdiDotsHorizontal } from '@mdi/js'
+import Icon from './Icon.vue'
+import ShoppingItemDetails from './ShoppingItemDetails.vue'
 import { compactExact, shoppingUnit, locale, t } from './i18n'
+import { isPurchased, shoppingIcon } from './shopping-display'
 import type { Shopping, ShoppingCommand } from './shopping-api'
+import type { Ingredient } from './contracts'
 const props = defineProps<{
   items: Shopping['items']
   writable: boolean
   busy: boolean
   shops: Shopping['shops']
   selectedShop: string
+  ingredients: ReadonlyMap<string, Ingredient>
+  orderingDisabled: boolean
 }>()
 const emit = defineEmits<{
   check: [key: string, checked: boolean]
   command: [command: ShoppingCommand]
 }>()
-function assign(key: string, event: Event) {
-  if (event.target instanceof HTMLSelectElement)
-    emit('command', { operation: 'assign_shop', key, shop_id: event.target.value || null })
-}
-function move(index: number, delta: number) {
+const selectedKey = ref<string>(),
+  selected = computed(() => props.items.find((item) => item.key === selectedKey.value)),
+  selectedIndex = computed(() => props.items.findIndex((item) => item.key === selectedKey.value))
+watch(selected, (item, previous) => {
+  if (!item && previous) {
+    selectedKey.value = undefined
+    void nextTick(() =>
+      document.querySelector<HTMLInputElement>('#mealshop-shopping-search input')?.focus(),
+    )
+  }
+})
+function move(delta: number) {
   const keys = props.items.map((i) => i.key),
-    other = index + delta
-  const key = keys[index],
+    index = selectedIndex.value,
+    other = index + delta,
+    key = keys[index],
     adjacent = keys[other]
-  if (!props.selectedShop || key === undefined || adjacent === undefined) return
+  if (props.orderingDisabled || index < 0 || key === undefined || adjacent === undefined) return
   keys[index] = adjacent
   keys[other] = key
   emit('command', { operation: 'order', shop_id: props.selectedShop, keys })
 }
-const zero = (value: string) => /^0(?:\.0+)?$/.test(value)
+function label(item: Shopping['items'][number]) {
+  const amount = isPurchased(item) ? item.purchased : item.remaining
+  return `${item.translations[locale.value] ?? item.name} · ${compactExact(amount)} ${shoppingUnit(item.unit, amount)}`
+}
 </script>
 <template>
-  <ul class="shopping-items">
-    <li v-for="(item, index) in items" :key="item.key" :data-item-key="item.key">
+  <ul class="shopping-items" :inert="Boolean(selectedKey)">
+    <li
+      v-for="item in items"
+      :key="item.key"
+      :data-item-key="item.key"
+      :class="{ 'shopping-item--purchased': isPurchased(item) }"
+    >
       <NcCheckboxRadioSwitch
-        :model-value="zero(item.remaining)"
+        class="shopping-tile"
+        :model-value="isPurchased(item)"
         :disabled="busy || !writable"
-        @update:model-value="emit('check', item.key, zero(item.remaining) ? false : true)"
-        >{{ item.translations[locale] ?? item.name }} ·
-        {{ compactExact(zero(item.remaining) ? item.purchased : item.remaining) }}
-        {{
-          shoppingUnit(item.unit, zero(item.remaining) ? item.purchased : item.remaining)
-        }}</NcCheckboxRadioSwitch
+        :aria-label="label(item)"
+        @update:model-value="emit('check', item.key, !isPurchased(item))"
+        ><span class="shopping-tile__body"
+          ><Icon :path="shoppingIcon(item, ingredients)" class="shopping-tile__illustration" /><span
+            class="shopping-tile__caption"
+            ><span class="shopping-tile__name" :title="item.translations[locale] ?? item.name">{{
+              item.translations[locale] ?? item.name
+            }}</span
+            ><span class="visually-hidden"> · </span>
+            <span class="shopping-tile__quantity"
+              >{{ compactExact(isPurchased(item) ? item.purchased : item.remaining) }}
+              {{
+                shoppingUnit(item.unit, isPurchased(item) ? item.purchased : item.remaining)
+              }}</span
+            ></span
+          ></span
+        ></NcCheckboxRadioSwitch
       >
-      <p v-if="!zero(item.remaining) && !zero(item.purchased)" class="muted">
-        {{ t('shoppingBought') }}: {{ compactExact(item.purchased) }}
-        {{ shoppingUnit(item.unit, item.purchased) }}
-      </p>
-      <details v-if="shops.entries.length">
-        <summary>
-          {{ shops.entries.find((s) => s.id === item.shop_id)?.name ?? t('shopUnassigned') }}
-        </summary>
-        <p>
-          {{
-            t(
-              (
-                {
-                  manual: 'shopManual',
-                  learned: 'shopLearned',
-                  uncertain: 'shopUncertain',
-                  default: 'shopDefault',
-                } as const
-              )[item.order_basis],
-            )
-          }}
-          · {{ t('shopSamples') }}: {{ item.samples }}
-        </p>
-        <label class="field"
-          >{{ t('shopAssign')
-          }}<select
-            :aria-label="t('shopAssign')"
-            :value="item.shop_id ?? ''"
-            :disabled="busy || !writable"
-            @change="assign(item.key, $event)"
-          >
-            <option value="">{{ t('shopUnassigned') }}</option>
-            <option v-for="shop in shops.entries" :key="shop.id" :value="shop.id">
-              {{ shop.name }}
-            </option>
-          </select></label
-        >
-        <div v-if="writable" class="actions">
-          <NcButton
-            v-if="item.fallback_shop_id"
-            :disabled="busy"
-            @click="
-              emit('command', {
-                operation: 'assign_shop',
-                key: item.key,
-                shop_id: item.fallback_shop_id,
-              })
-            "
-            >{{ t('shopFallback') }}:
-            {{ shops.entries.find((s) => s.id === item.fallback_shop_id)?.name }}</NcButton
-          ><template v-if="selectedShop && selectedShop !== 'all' && selectedShop !== 'none'"
-            ><NcButton :disabled="busy || index === 0" @click="move(index, -1)">{{
-              t('shopMoveUp')
-            }}</NcButton
-            ><NcButton :disabled="busy || index === items.length - 1" @click="move(index, 1)">{{
-              t('shopMoveDown')
-            }}</NcButton></template
-          >
-        </div>
-      </details>
-      <details>
-        <summary>{{ t('shoppingContributions') }}</summary>
-        <div v-for="part in item.contributions" :key="part.source_id">
-          <ShoppingOrigin :origin="part.origin" />
-          <p>
-            {{ t('shoppingRequired') }}: {{ compactExact(part.required) }} ·
-            {{ t('shoppingBought') }}: {{ compactExact(part.purchased) }}
-            {{ item.unit === 'piece' ? t('shoppingPieces') : item.unit }}
-          </p>
-          <p v-for="(receipt, index) in part.receipts" :key="index">
-            {{ t('shoppingBought') }}: {{ compactExact(receipt.amount) }}
-            {{ item.unit === 'piece' ? t('shoppingPieces') : item.unit }} ·
-            <ShoppingOrigin :origin="receipt.origin" />
-          </p>
-        </div>
-      </details>
+      <div class="shopping-tile__footer">
+        <span class="shopping-tile__state"
+          >{{ t(isPurchased(item) ? 'shoppingBoughtState' : 'shoppingOpenState')
+          }}<template v-if="!isPurchased(item) && !/^0(?:\.0+)?$/.test(item.purchased)">
+            · {{ t('shoppingBought') }}: {{ compactExact(item.purchased) }}
+            {{ shoppingUnit(item.unit, item.purchased) }}
+          </template></span
+        ><NcButton
+          variant="tertiary"
+          :aria-label="`${t('shoppingItemDetails')}: ${item.translations[locale] ?? item.name}`"
+          @click="selectedKey = item.key"
+          ><template #icon><Icon :path="mdiDotsHorizontal" /></template
+        ></NcButton>
+      </div>
     </li>
   </ul>
+  <ShoppingItemDetails
+    v-if="selected"
+    :item="selected"
+    :shops="shops"
+    :selected-shop="selectedShop"
+    :busy="busy"
+    :writable="writable"
+    :first="selectedIndex === 0"
+    :last="selectedIndex === items.length - 1"
+    :ordering-disabled="orderingDisabled"
+    @close="selectedKey = undefined"
+    @command="emit('command', $event)"
+    @move="move"
+  />
 </template>

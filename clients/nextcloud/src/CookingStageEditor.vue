@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcTextField from './LabeledField.vue'
 import RecipeReferences from './RecipeReferences.vue'
+import CookingLocalTime from './CookingLocalTime.vue'
+import { localInput, zone } from './cooking-format'
 import CookingDuration from './CookingDuration.vue'
 import type { Stage } from './cooking-api'
 import { duration } from './cooking-format'
@@ -67,6 +69,26 @@ function passive(value: number) {
         :label="t('cookDependencies')"
         :options="props.options.filter((s) => s.id !== stage.id)"
       />
+      <CookingLocalTime
+        v-if="stage.start_at"
+        v-model="stage.start_at"
+        :label="t('preparationTime')"
+      />
+      <NcButton
+        v-if="!stage.start_at"
+        variant="tertiary"
+        @click="
+          stage.start_at = {
+            local: localInput(Math.floor(Date.now() / 1000), zone()),
+            timezone: zone(),
+            fold: 'reject',
+          }
+        "
+        >{{ t('preparationTime') }}</NcButton
+      >
+      <NcButton v-else variant="tertiary" @click="stage.start_at = undefined"
+        >{{ t('remove') }} {{ t('preparationTime') }}</NcButton
+      >
       <details>
         <summary>{{ t('cookStageAdvanced') }}</summary>
         <div class="editor-fields">

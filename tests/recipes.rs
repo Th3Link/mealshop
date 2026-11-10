@@ -600,3 +600,34 @@ async fn author_is_optional_and_missing_attribution_stays_empty_after_restart() 
     let path = format!("/api/recipes/{}", saved["id"].as_str().unwrap());
     assert_eq!(request(&reopened, "GET", &path, Value::Null).await.1, saved);
 }
+
+#[tokio::test]
+async fn ingredient_temperature_round_trips_without_scaling_and_rejects_duplicates() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let extension = json!({"type":"temperature","value":"60.00","unit":"celsius","original_input":"60,00 °C","provenance":"recipe_author"});
+    let mut input = recipe();
+    input["lines"][0]["extensions"] = json!([extension]);
+    let (status, saved) = request(&app, "POST", "/api/recipes", input.clone()).await;
+    assert_eq!(status, StatusCode::CREATED, "{saved}");
+    let path = format!("/api/recipes/{}", saved["id"].as_str().unwrap());
+    let scaled = request(
+        &app,
+        "GET",
+        &format!("{path}/scale?servings=4"),
+        Value::Null,
+    )
+    .await
+    .1;
+    assert_eq!(scaled["lines"][0]["extensions"], json!([extension]));
+    input["lines"][0]["extensions"] = json!([extension, extension]);
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", input).await.0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    drop(app);
+    let app = dir.app();
+    let read = request(&app, "GET", &path, Value::Null).await.1;
+    assert_eq!(read["recipe"]["lines"][0]["extensions"], json!([extension]));
+    assert_eq!(read["recipe"]["lines"][0]["grams"], "100.500000");
+}

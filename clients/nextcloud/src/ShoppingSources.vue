@@ -181,13 +181,25 @@ async function remove(id: string) {
           v-model="slots"
           :value="`${p.date}|${p.meal}`"
           @update:model-value="mark"
-          >{{ calendarDate(p.date) }} · {{ mealName(p.meal) }} ·
+          >{{ calendarDate(p.preparation?.date ?? p.date) }} ·
+          {{ p.allocations ? t('prepareSlot') : mealName(p.meal) }} ·
           {{
             plans.recipe_revisions.find(
               (r) => r.id === p.recipe.id && r.revision === p.recipe.revision,
             )?.title ?? p.recipe.id
           }}
-          · {{ servingCount(p.servings) }}</NcCheckboxRadioSwitch
+          · {{ servingCount(p.servings) }}
+          <span v-if="p.allocations" class="muted">
+            ·
+            {{
+              p.allocations
+                .map(
+                  (a) =>
+                    `${calendarDate(a.date)} · ${mealName(a.meal)} · ${servingCount(a.servings)}`,
+                )
+                .join('; ') || t('unallocated')
+            }}
+          </span></NcCheckboxRadioSwitch
         >
       </fieldset>
       <div class="actions">

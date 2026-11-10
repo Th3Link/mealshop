@@ -8,6 +8,7 @@ import Nutrition from './Nutrition.vue'
 import {
   servingCount,
   calendarDate,
+  mealName,
   compactExact,
   locale,
   t,
@@ -34,8 +35,19 @@ function names(id: string) {
   <section>
     <h2 id="mealshop-review-title" tabindex="-1">{{ t('review') }}</h2>
     <p>
-      {{ calendarDate(value.plan.date) }} · {{ mealTitle }} · {{ recipeTitle }} ·
+      {{ calendarDate(value.plan.preparation?.date ?? value.plan.date) }} ·
+      {{ value.plan.allocations ? t('prepareSlot') : mealTitle }} · {{ recipeTitle }} ·
       {{ servingCount(value.plan.servings) }}
+    </p>
+    <p v-if="value.plan.preparation">
+      {{ t('preparationTime') }}: {{ value.plan.preparation.time }}
+    </p>
+    <p v-if="value.plan.allocations">
+      {{
+        value.plan.allocations
+          .map((a) => `${calendarDate(a.date)} · ${mealName(a.meal)} · ${servingCount(a.servings)}`)
+          .join('; ') || t('unallocated')
+      }}
     </p>
     <p>
       {{ t('attendees') }}:

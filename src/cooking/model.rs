@@ -23,6 +23,10 @@ pub(crate) enum StageOrigin {
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Stage {
+    #[serde(default)]
+    pub(crate) start_after_work: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) start_at: Option<LocalTime>,
     pub(crate) id: String,
     pub(crate) origin: StageOrigin,
     pub(crate) name: String,
@@ -39,7 +43,24 @@ pub(crate) struct Stage {
     pub(crate) uncertainty: String,
 }
 impl Stage {
+    pub(crate) fn timer_active_seconds(&self) -> u32 {
+        if self.start_after_work {
+            0
+        } else {
+            self.active_seconds
+        }
+    }
+    pub(crate) fn timer_seconds(&self) -> i64 {
+        i64::from(self.timer_active_seconds()) + i64::from(self.passive_seconds)
+    }
     pub(crate) fn validate(&self) -> Result<(), &'static str> {
+        if self
+            .start_at
+            .as_ref()
+            .is_some_and(|value| value.resolve().is_err())
+        {
+            return Err("cooking_time_invalid");
+        }
         if !id(&self.id)
             || !text(&self.name, 200)
             || !text(&self.instruction, 4000)
@@ -90,7 +111,15 @@ pub(crate) struct RecipeRef {
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
+pub(crate) struct PlanSlot {
+    pub(crate) date: String,
+    pub(crate) meal: String,
+}
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct Draft {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) plan_slot: Option<PlanSlot>,
     pub(crate) recipe_id: String,
     pub(crate) recipe_revision: u64,
     pub(crate) servings: u32,
@@ -172,6 +201,8 @@ pub(crate) enum Permission {
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Run {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) plan_slot: Option<PlanSlot>,
     pub(crate) id: String,
     pub(crate) name: String,
     pub(crate) kind: Kind,

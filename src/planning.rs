@@ -37,7 +37,24 @@ struct Calendar {
 }
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
+struct Allocation {
+    date: String,
+    meal: String,
+    servings: u32,
+}
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct Preparation {
+    date: String,
+    time: String,
+}
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 struct Plan {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    allocations: Option<Vec<Allocation>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    preparation: Option<Preparation>,
     date: String,
     meal: String,
     recipe: RecipeRef,
@@ -65,6 +82,23 @@ pub(crate) struct PlanStore {
     writable: bool,
 }
 impl PlanStore {
+    pub(crate) fn cooking_source(
+        &self,
+        date: &str,
+        meal: &str,
+        recipe: &str,
+        revision: u64,
+        servings: u32,
+    ) -> bool {
+        self.data.meals.iter().any(|p| {
+            p.date == date
+                && p.meal == meal
+                && p.recipe.id == recipe
+                && p.recipe.revision == revision
+                && p.servings == servings
+        })
+    }
+
     pub(crate) fn shopping_recipes(
         &self,
         revision: u64,
@@ -83,16 +117,23 @@ impl PlanStore {
         {
             return Err("shopping_plan_invalid");
         }
-        slots
-            .iter()
-            .map(|slot| {
-                let plan = self
-                    .data
-                    .meals
-                    .iter()
-                    .find(|p| p.date == slot.date && p.meal == slot.meal)
-                    .ok_or("shopping_plan_invalid")?;
-                Ok(crate::shopping::sources::MealSelection {
+        let mut seen = BTreeSet::new();
+        let mut result = Vec::new();
+        for slot in slots {
+            let plan = self
+                .data
+                .meals
+                .iter()
+                .find(|p| p.date == slot.date && p.meal == slot.meal)
+                .or_else(|| {
+                    self.data
+                        .meals
+                        .iter()
+                        .find(|p| includes(p, &slot.date, &slot.meal))
+                })
+                .ok_or("shopping_plan_invalid")?;
+            if seen.insert((&plan.date, &plan.meal)) {
+                result.push(crate::shopping::sources::MealSelection {
                     date: plan.date.clone(),
                     meal: plan.meal.clone(),
                     recipe: crate::shopping::sources::Selection {
@@ -100,10 +141,12 @@ impl PlanStore {
                         revision: plan.recipe.revision,
                         servings: plan.servings,
                     },
-                })
-            })
-            .collect()
+                });
+            }
+        }
+        Ok(result)
     }
+
     pub(crate) fn open(directory: &Path) -> Result<Self, String> {
         let path = directory.join("mealplan.json");
         if directory.join(".mealplan.pending").exists() {
@@ -136,6 +179,7 @@ impl PlanStore {
                 return Err("Duplicate meal slot".to_owned());
             }
         }
+        validate_meals(&data.meals).map_err(str::to_owned)?;
         Ok(Self {
             path,
             data,
@@ -208,7 +252,67 @@ pub(crate) fn date(value: &str) -> bool {
     };
     year > 0 && day > 0 && day <= max
 }
+fn slots(p: &Plan) -> Vec<(&str, &str)> {
+    if let Some(allocations) = &p.allocations {
+        allocations
+            .iter()
+            .map(|a| (a.date.as_str(), a.meal.as_str()))
+            .collect()
+    } else {
+        vec![(&p.date, &p.meal)]
+    }
+}
+fn includes(p: &Plan, date: &str, meal: &str) -> bool {
+    slots(p).contains(&(date, meal))
+}
+fn validate_meals(meals: &[Plan]) -> Result<(), &'static str> {
+    let mut occupied = BTreeSet::new();
+    for p in meals {
+        validate(p)?;
+        for slot in slots(p) {
+            if !occupied.insert(slot) {
+                return Err("meal_slot_conflict");
+            }
+        }
+    }
+    Ok(())
+}
 fn validate(p: &Plan) -> Result<(), &'static str> {
+    let allocations = p.allocations.as_deref().unwrap_or_default();
+    if allocations.len() > 100 {
+        return Err("invalid_meal_allocations");
+    }
+    let mut allocated = 0u64;
+    let mut unique = BTreeSet::new();
+    for a in allocations {
+        if !date(&a.date)
+            || a.meal.is_empty()
+            || a.meal.len() > 40
+            || !a.meal.bytes().all(|b| b.is_ascii_lowercase() || b == b'_')
+            || a.servings == 0
+            || !unique.insert((&a.date, &a.meal))
+        {
+            return Err("invalid_meal_allocations");
+        }
+        allocated += u64::from(a.servings);
+    }
+    if allocated > u64::from(p.servings) {
+        return Err("meal_allocations_exceed_production");
+    }
+    if let Some(prep) = &p.preparation {
+        let valid_time = prep.time.is_ascii()
+            && prep.time.len() == 5
+            && prep.time.as_bytes().get(2) == Some(&b':')
+            && prep.time[..2].parse::<u8>().is_ok_and(|h| h < 24)
+            && prep.time[3..].parse::<u8>().is_ok_and(|m| m < 60);
+        if !date(&prep.date)
+            || !valid_time
+            || slots(p).iter().any(|(date, _)| *date < prep.date.as_str())
+        {
+            return Err("invalid_preparation_time");
+        }
+    }
+
     if !date(&p.date)
         || p.meal.is_empty()
         || p.meal.len() > 40
@@ -241,7 +345,8 @@ fn validate(p: &Plan) -> Result<(), &'static str> {
         .as_ref()
         .or(p.calendar.as_ref().map(|c| &c.member_ids))
         .ok_or("attendees_required")?;
-    if attendees.is_empty()
+    if (attendees.is_empty() && !slots(p).is_empty() && p.meal != "preparation")
+        || (attendees.is_empty() && !allocations.is_empty())
         || attendees.len() > 100
         || attendees.iter().collect::<BTreeSet<_>>().len() != attendees.len()
     {
@@ -287,23 +392,35 @@ fn preview(
     ingredients: &crate::ingredients::Store,
 ) -> Result<Value, &'static str> {
     validate(p)?;
+    let mut proposed = plans
+        .meals
+        .iter()
+        .filter(|old| old.date != p.date || old.meal != p.meal)
+        .cloned()
+        .collect::<Vec<_>>();
+    proposed.push(p.clone());
+    validate_meals(&proposed)?;
     let record = load_recipe(store, p)?;
     let people = attendees(p);
-    let review = household::review_snapshot(
-        state,
-        profiles,
-        &Evaluation {
-            member_ids: people.clone(),
-            ingredient_ids: record
-                .recipe
-                .lines
-                .iter()
-                .map(|l| l.ingredient_id.clone())
-                .collect(),
-        },
-        ingredients,
-        Some(&record.catalogue),
-    )?;
+    let review = if people.is_empty() {
+        json!({"status":"review_required","excluded_ingredients":[],"allergen_matches":[],"review_notes":[],"disliked_ingredients":[],"unknown_ingredients":[],"warning_codes":["attendees_not_assigned"]})
+    } else {
+        household::review_snapshot(
+            state,
+            profiles,
+            &Evaluation {
+                member_ids: people.clone(),
+                ingredient_ids: record
+                    .recipe
+                    .lines
+                    .iter()
+                    .map(|l| l.ingredient_id.clone())
+                    .collect(),
+            },
+            ingredients,
+            Some(&record.catalogue),
+        )?
+    };
     let active: u64 = record
         .recipe
         .steps
@@ -487,6 +604,7 @@ async fn apply(
                     Some(household::allergen_version(state, ingredients));
                 meals.push(plan);
             }
+            validate_meals(&meals)?;
             if meals.len() > 100 {
                 return Err("mealplan_capacity");
             }
@@ -619,4 +737,67 @@ async fn remove_preview(
 
 fn signed_atoms(atoms: u128) -> Result<i128, &'static str> {
     i128::try_from(atoms).map_err(|_| "quantity_overflow")
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod production_tests {
+    use super::*;
+    #[test]
+    fn selecting_two_consumption_days_exports_one_production_to_shopping() {
+        let data: Plans = serde_json::from_value(json!({"schema_version":1,"revision":7,"meals":[{"date":"2026-11-12","meal":"lunch","recipe":{"id":"recipe-00000001","revision":1},"attendees":["person"],"calendar":null,"servings":4,"active_seconds":600,"elapsed_seconds":3600,"advance_seconds":0,"allocations":[{"date":"2026-11-12","meal":"lunch","servings":2},{"date":"2026-11-13","meal":"lunch","servings":2}]}]})).unwrap();
+        validate_meals(&data.meals).unwrap();
+        let store = PlanStore {
+            path: PathBuf::new(),
+            data,
+            writable: true,
+        };
+        let slots = [
+            crate::shopping::sources::MealSlot {
+                date: "2026-11-12".into(),
+                meal: "lunch".into(),
+            },
+            crate::shopping::sources::MealSlot {
+                date: "2026-11-13".into(),
+                meal: "lunch".into(),
+            },
+        ];
+        let selections = store.shopping_recipes(7, &slots).unwrap();
+        assert_eq!(selections.len(), 1);
+        assert_eq!(selections[0].recipe.servings, 4);
+        assert!(store.shopping_recipes(6, &slots).is_err());
+    }
+
+    #[test]
+    fn explicit_empty_allocations_retain_production_without_consumption_slots() {
+        let legacy = json!({"date":"2026-11-12","meal":"lunch","recipe":{"id":"recipe-00000001","revision":1},"attendees":[],"calendar":null,"servings":4,"active_seconds":600,"elapsed_seconds":3600,"advance_seconds":0});
+        let mut plan: Plan = serde_json::from_value(legacy).unwrap();
+        assert!(validate(&plan).is_err());
+        plan.allocations = Some(Vec::new());
+        validate(&plan).unwrap();
+        assert_eq!(slots(&plan), [] as [(&str, &str); 0]);
+        let saved = serde_json::to_value(&plan).unwrap();
+        assert_eq!(saved["allocations"], json!([]));
+        let reopened: Plan = serde_json::from_value(saved).unwrap();
+        assert_eq!(slots(&reopened), [] as [(&str, &str); 0]);
+        let store = PlanStore {
+            path: PathBuf::new(),
+            data: Plans {
+                schema_version: 1,
+                revision: 1,
+                meals: vec![reopened],
+            },
+            writable: true,
+        };
+        let selections = store
+            .shopping_recipes(
+                1,
+                &[crate::shopping::sources::MealSlot {
+                    date: "2026-11-12".into(),
+                    meal: "lunch".into(),
+                }],
+            )
+            .unwrap();
+        assert_eq!(selections[0].recipe.servings, 4);
+    }
 }

@@ -35,3 +35,8 @@ synthetic provider records establish fallback/data handling, not universal optic
 The previous 36 confirmed browser households were archived with a complete private backup. Customer
 files were retained byte-identically. New fixtures have a private ID ledger plus content checks;
 unrecognized/customer content is excluded. No credentials/private household content enter the PR.
+
+## Native tile refinement (F32)
+The existing source/quantity/permission contracts remain intact. Searchable native tiles, exact inline
+entry, check/undo, item details and their real embedded acceptance are recorded in
+[F32 validation](../0032-visual-shopping/validation.md). No endpoint or persisted model changed.

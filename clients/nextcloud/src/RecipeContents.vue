@@ -46,7 +46,12 @@ function lineName(id: string) {
         :key="entry.index"
       >
         {{ compactExact(entry.line.amount) }} {{ entry.line.unit }} · {{ ingredient(entry.index)
-        }}<small v-if="record.recipe.lines[entry.index]?.quantity">
+        }}<span
+          v-for="extension in record.recipe.lines[entry.index]?.extensions ?? []"
+          :key="extension.type"
+        >
+          · {{ t('ingredientTemperature') }}: {{ exact(extension.value) }} °C</span
+        ><small v-if="record.recipe.lines[entry.index]?.quantity">
           · {{ t('originalInput') }}:
           {{ exact(record.recipe.lines[entry.index]?.quantity?.amount ?? null) }}
           {{ record.recipe.lines[entry.index]?.quantity?.unit }}</small

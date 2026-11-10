@@ -2,6 +2,10 @@ import { z } from 'zod'
 import { nutritionSchema } from './contracts'
 import { reviewSchema } from './review'
 export const planSchema = z.object({
+  allocations: z
+    .array(z.object({ date: z.string(), meal: z.string(), servings: z.number().int().positive() }))
+    .optional(),
+  preparation: z.object({ date: z.string(), time: z.string() }).nullable().optional(),
   date: z.string(),
   meal: z.string(),
   recipe: z.object({ id: z.string(), revision: z.number().int() }),

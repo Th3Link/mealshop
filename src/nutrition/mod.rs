@@ -11,6 +11,8 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Serialize)]
 pub(crate) struct RecipeLine {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) extensions: Vec<crate::ingredient_extensions::Extension>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -27,6 +29,8 @@ impl<'de> Deserialize<'de> for RecipeLine {
         #[derive(Deserialize)]
         #[serde(deny_unknown_fields)]
         struct Input {
+            #[serde(default)]
+            extensions: Vec<crate::ingredient_extensions::Extension>,
             id: Option<String>,
             part_id: Option<String>,
             ingredient_id: String,
@@ -35,6 +39,8 @@ impl<'de> Deserialize<'de> for RecipeLine {
             conversion: Option<crate::quantities::ConversionEvidence>,
         }
         let input = Input::deserialize(deserializer)?;
+        crate::ingredient_extensions::validate(&input.extensions)
+            .map_err(serde::de::Error::custom)?;
         let grams = if let Some(q) = &input.quantity {
             let result = q
                 .grams(&input.ingredient_id, input.conversion.as_ref())
@@ -56,6 +62,7 @@ impl<'de> Deserialize<'de> for RecipeLine {
                 .ok_or_else(|| serde::de::Error::custom("quantity_required"))?
         };
         Ok(Self {
+            extensions: input.extensions,
             id: input.id,
             part_id: input.part_id,
             ingredient_id: input.ingredient_id,

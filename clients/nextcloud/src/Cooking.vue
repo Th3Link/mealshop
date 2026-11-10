@@ -273,6 +273,9 @@ const stateKeys = {
             <li v-for="(line, index) in detail.ingredients" :key="index">
               <span>{{ line.translations[locale]?.name ?? line.name }}</span
               ><strong>{{ exact(line.grams) }} g</strong>
+              <span v-for="extension in line.extensions ?? []" :key="extension.type">
+                · {{ exact(extension.value) }} °C</span
+              >
             </li>
           </ul>
           <p class="muted">{{ t('cookPinnedIngredients') }}</p>

@@ -66,13 +66,13 @@ test('profile and meal drafts survive rejected discard and household switching',
   await expect(name).toHaveValue(original)
   await page.getByRole('link', { name: 'Meal plan', exact: true }).click()
   await page.getByRole('button', { name: 'Plan a meal', exact: true }).click()
-  await page.getByLabel('Servings', { exact: true }).fill('7')
+  await page.getByLabel('Production servings', { exact: true }).fill('7')
   page.once('dialog', (dialog) => void dialog.dismiss())
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
-  await expect(page.getByLabel('Servings', { exact: true })).toHaveValue('7')
+  await expect(page.getByLabel('Production servings', { exact: true })).toHaveValue('7')
   page.once('dialog', (dialog) => void dialog.accept())
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
-  await expect(page.getByLabel('Servings', { exact: true })).toHaveCount(0)
+  await expect(page.getByLabel('Production servings', { exact: true })).toHaveCount(0)
   const existing = page.getByRole('button', { name: /^View details/ }).first()
   await existing.click()
   await expect(page.getByRole('heading', { name: 'Meal details', exact: true })).toBeFocused()
@@ -86,7 +86,12 @@ test('profile and meal drafts survive rejected discard and household switching',
   })
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
   try {
-    await expect(page.getByLabel('Servings', { exact: true })).toBeDisabled()
+    await expect(page.getByLabel('Production servings', { exact: true })).toBeDisabled()
+    await expect(
+      page
+        .getByRole('group', { name: 'Eat on', exact: true })
+        .getByLabel('Servings', { exact: true }),
+    ).toBeDisabled()
     await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeDisabled()
   } finally {
     release?.()

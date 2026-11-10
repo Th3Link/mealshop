@@ -87,7 +87,8 @@ test('household defaults, focused search, inline composites, private images, fav
   expect((await uploaded).status()).toBe(201)
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('1. Instruction', { exact: true }).fill('Mix and serve.')
-  await page.getByLabel('Active time (seconds)', { exact: true }).fill('60')
+  await page.getByRole('combobox', { name: 'Active work · Unit', exact: true }).selectOption('1')
+  await page.getByLabel('Active work', { exact: true }).fill('60')
   await page.getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
   const recipePath = new URL(page.url()).pathname
@@ -192,6 +193,7 @@ test('household defaults, focused search, inline composites, private images, fav
   })
   const slot = page.locator(`.meal-slot[data-date="${today}"][data-meal=lunch]`)
   await slot.getByRole('button').click()
+  await expect(page.getByRole('heading', { name: 'Plan a meal', exact: true })).toBeFocused()
   await page
     .getByRole('combobox', { name: 'Recipes', exact: true })
     .selectOption({ label: `${title} · Revision 1` })
@@ -200,9 +202,13 @@ test('household defaults, focused search, inline composites, private images, fav
     .getByRole('checkbox')
   for (let index = 0; index < (await attendance.count()); index++) {
     const checkbox = attendance.nth(index)
-    if ((await checkbox.isChecked()) !== (index === 0)) await checkbox.press('Space')
+    if ((await checkbox.isChecked()) !== (index === 0)) {
+      await checkbox.focus()
+      await page.keyboard.press('Space')
+    }
+    await expect(checkbox).toBeChecked({ checked: index === 0 })
   }
-  await page.getByLabel('Servings', { exact: true }).fill('1')
+  await page.getByLabel('Production servings', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
   await page
     .getByText('I reviewed the unknown dietary data and serving/time uncertainty.', { exact: true })
@@ -228,7 +234,11 @@ test('household defaults, focused search, inline composites, private images, fav
   }
   await page.setViewportSize({ width: 1440, height: 1000 })
   await slot.getByRole('button').click()
-  await page.getByText(`Test skipper ${stamp}`, { exact: true }).click()
+  const skipper = page.getByRole('checkbox', { name: `Test skipper ${stamp}`, exact: true })
+  await expect(skipper).not.toBeChecked()
+  await skipper.focus()
+  await page.keyboard.press('Space')
+  await expect(skipper).toBeChecked()
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Apply reviewed plan', exact: true }),

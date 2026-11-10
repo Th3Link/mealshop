@@ -3,6 +3,27 @@ import { shoppingEnglish, shoppingGerman } from './shopping-messages'
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  finishAndWait: 'Done · start waiting time',
+  moveToPart: 'Move to recipe part',
+  production: 'Prepare once',
+  productionServings: 'Production servings',
+  timeLimits: 'Limit available time',
+  prepareSlot: 'Prepare',
+  allocations: 'Eat on',
+  unallocated: 'Eating days not assigned',
+  addEatingDay: 'Add eating day',
+  allocatedPortions: 'Allocated portions',
+  productionHelp:
+    'Ingredients are counted once for the production serving count. Removing this entry removes all its eating days.',
+  preparationTime: 'Preparation time',
+  prepareOnly: 'Prepare without assigned diners',
+  startsAfterParts: 'Start after prepared parts',
+  waitingRange: 'Waiting time range',
+  maximumWait: 'Longest waiting time',
+  ingredientTemperature: 'Temperature (°C)',
+  addTemperature: 'Add temperature',
+  temperatureError:
+    'Enter a temperature between −273.15 and 1000 °C with up to six decimal places.',
   originalLanguage: 'Original language',
   ...shoppingEnglish,
   ...cookingEnglish,
@@ -258,9 +279,9 @@ const en = {
   dinner: 'Dinner',
   snack: 'Snack',
   attendees: 'Attendees',
-  activeBudget: 'Active time available (seconds)',
-  elapsedBudget: 'Elapsed time available (seconds)',
-  advanceBudget: 'Advance preparation available (seconds)',
+  activeBudget: 'Active time available',
+  elapsedBudget: 'Elapsed time available',
+  advanceBudget: 'Advance preparation available',
   suggestions: 'Find suitable recipes',
   review: 'Review meal',
   apply: 'Apply reviewed plan',
@@ -293,7 +314,29 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  finishAndWait: 'Fertig · Ruhezeit starten',
+  moveToPart: 'In Rezeptteil verschieben',
+  production: 'Einmal zubereiten',
+  productionServings: 'Zubereitete Portionen',
+  timeLimits: 'Verfügbare Zeit begrenzen',
+  prepareSlot: 'Vorbereiten',
+  allocations: 'Essen am',
+  unallocated: 'Esstage noch nicht zugeordnet',
+  addEatingDay: 'Essenstag ergänzen',
+  allocatedPortions: 'Verplante Portionen',
+  productionHelp:
+    'Zutaten werden einmal für die Zubereitungsmenge gerechnet. Entfernen löscht diesen Eintrag mit allen Essenstagen.',
+  preparationTime: 'Vorbereitungszeit',
+  prepareOnly: 'Ohne zugeordnete Personen vorbereiten',
+  startsAfterParts: 'Nach vorbereiteten Teilen beginnen',
+  waitingRange: 'Zeitspanne der Ruhezeit',
+  maximumWait: 'Längste Ruhezeit',
+
   ...cookingGerman,
+  ingredientTemperature: 'Temperatur (°C)',
+  addTemperature: 'Temperatur ergänzen',
+  temperatureError:
+    'Gib eine Temperatur zwischen −273,15 und 1000 °C mit bis zu sechs Nachkommastellen ein.',
   originalLanguage: 'Originalsprache',
   ...shoppingGerman,
   searchRecipes: 'Rezepte suchen',
@@ -554,9 +597,9 @@ const de: Record<keyof typeof en, string> = {
   dinner: 'Abendessen',
   snack: 'Zwischenmahlzeit',
   attendees: 'Mitessende',
-  activeBudget: 'Verfügbare Arbeitszeit (Sekunden)',
-  elapsedBudget: 'Verfügbare Gesamtdauer (Sekunden)',
-  advanceBudget: 'Verfügbare Vorbereitungszeit (Sekunden)',
+  activeBudget: 'Verfügbare Arbeitszeit',
+  elapsedBudget: 'Verfügbare Gesamtdauer',
+  advanceBudget: 'Verfügbare Vorbereitungszeit',
   suggestions: 'Passende Rezepte finden',
   review: 'Mahlzeit prüfen',
   apply: 'Geprüften Plan übernehmen',
@@ -630,6 +673,31 @@ export function parseGrams(input: string, language = locale.value): string | nul
   return atoms > 0n && atoms <= 1000000000000000n ? canonical : null
 }
 const explanations: Record<string, { en: string; de: string }> = {
+  meal_allocations_exceed_production: {
+    en: 'Allocate no more portions than you prepare. Increase production or reduce eating-day portions.',
+    de: 'Verplane höchstens so viele Portionen, wie du zubereitest. Erhöhe die Zubereitungsmenge oder reduziere die Essenstage.',
+  },
+  invalid_meal_allocations: {
+    en: 'Choose distinct eating days/meals and positive whole serving counts.',
+    de: 'Wähle unterschiedliche Tage/Mahlzeiten und positive ganze Portionszahlen.',
+  },
+  meal_slot_conflict: {
+    en: 'Another preparation already uses an eating slot. Choose another day or meal.',
+    de: 'Ein anderer Eintrag belegt bereits einen Essenstermin. Wähle einen anderen Tag oder eine andere Mahlzeit.',
+  },
+  invalid_preparation_time: {
+    en: 'Choose a valid preparation date and time, no later than the eating days.',
+    de: 'Wähle einen gültigen Vorbereitungstag mit Uhrzeit, spätestens am ersten Essenstag.',
+  },
+  cooking_plan_source_changed: {
+    en: 'The meal-plan recipe or production count changed. Reopen cooking from the saved plan.',
+    de: 'Rezept oder Zubereitungsmenge im Speiseplan haben sich geändert. Öffne die Zubereitung erneut aus dem gespeicherten Plan.',
+  },
+  attendees_not_assigned: {
+    en: 'Preparation has no assigned diners. Review dietary constraints before assigning eating days.',
+    de: 'Der Vorbereitung sind keine Personen zugeordnet. Prüfe die Ernährungseinschränkungen vor dem Zuordnen von Essenstagen.',
+  },
+
   ...cookingExplanations,
   shopping_barcode_invalid: {
     en: 'Enter a valid EAN/UPC/GTIN including check digit.',

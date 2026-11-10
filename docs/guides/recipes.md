@@ -119,3 +119,24 @@ Parts organize one flat ingredient list. Nutrition, serving previews, shopping r
 checks count each measured ingredient line once. They do not infer the yield of an empty part or create
 a parallel cooking schedule. Saved records pin all associations and source values; older flat records
 remain supported. Current APIs do not link independently saved recipes as nested references.
+
+## Structured preparation instructions (F31)
+
+Recipe ingredient lines optionally carry `extensions`. The initial variant is:
+```json
+{"type":"temperature","value":"60.00","unit":"celsius","original_input":"60,00 °C","provenance":"recipe_author"}
+```
+The exact signed decimal is bounded to -273.15 through 1000 Celsius with at most six decimal places.
+The original author input is retained, independently of UI locale. At most one temperature target
+is accepted per line; unsupported types/units/provenance, duplicate extensions and numeric JSON
+values are rejected. Missing extensions remain absent. This is a preparation instruction, not a
+measurement, conversion or guarantee. Scaling a recipe changes ingredient masses but never this
+temperature. Revisions, recipe reads, scaling and cooking ingredient responses preserve it.
+
+Parts additionally accept `starts_after` references distinct from consumed `uses_parts` references.
+Both graphs are checked together for cycles. A step can retain `passive_max_seconds` alongside its
+minimum/default `passive_seconds`; cooking templates preserve the range. Legacy records need no
+new fields. Back up the entire data directory before upgrading; old binaries cannot read these
+new fields after new revisions have been saved.
+
+The existing JSON is a possible future intelligent-scale input, not a device integration API.

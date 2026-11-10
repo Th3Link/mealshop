@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, watch, toRaw } from 'vue'
+import { computed, watch, toRaw, ref } from 'vue'
 import { z } from 'zod'
 import NcTextField from './LabeledField.vue'
 import IngredientSelect from './IngredientSelect.vue'
-import { locale, exact, parseGrams, t } from './i18n'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import { locale, exact, parseGrams, parseNonnegative, t } from './i18n'
 import type { Ingredient } from './contracts'
 import { conversionsSchema } from './quantity-api'
 import type { LineDraft } from './quantity-api'
@@ -26,13 +27,69 @@ const options = computed(() =>
       e.evidence.source_record_id === ingredient.value?.source.record_id,
   ),
 )
+const temperature = computed(() => model.value.extensions?.find((e) => e.type === 'temperature'))
+const temperatureInput = ref('')
+watch(
+  () => temperature.value?.value,
+  (value) => {
+    temperatureInput.value = value ? exact(value) : ''
+  },
+  { immediate: true },
+)
+const invalidTemperature = ref(model.value.invalidFields.includes('temperature'))
+watch(locale, () => {
+  if (!invalidTemperature.value && temperature.value)
+    temperatureInput.value = exact(temperature.value.value)
+})
+function updateTemperature(value: string | number) {
+  temperatureInput.value = String(value)
+  const negative = temperatureInput.value.startsWith('-')
+  const parsed = parseNonnegative(
+    negative ? temperatureInput.value.slice(1) : temperatureInput.value,
+  )
+  const canonical = parsed ? `${negative ? '-' : ''}${parsed}` : null
+  invalidTemperature.value = !canonical || Number(canonical) < -273.15 || Number(canonical) > 1000
+  model.value.invalidFields = model.value.invalidFields.filter((key) => key !== 'temperature')
+  if (invalidTemperature.value) model.value.invalidFields.push('temperature')
+  else if (canonical)
+    model.value.extensions = [
+      {
+        type: 'temperature',
+        value: canonical,
+        unit: 'celsius',
+        original_input: `${temperatureInput.value} °C`,
+        provenance: 'recipe_author',
+      },
+    ]
+  emit('changed')
+}
+function addTemperature() {
+  model.value.extensions = [
+    {
+      type: 'temperature',
+      value: '',
+      unit: 'celsius',
+      original_input: '',
+      provenance: 'recipe_author',
+    },
+  ]
+  invalidTemperature.value = true
+  model.value.invalidFields.push('temperature')
+  emit('changed')
+}
+function removeTemperature() {
+  model.value.extensions = []
+  model.value.invalidFields = model.value.invalidFields.filter((key) => key !== 'temperature')
+  invalidTemperature.value = false
+  emit('changed')
+}
 function reset() {
   emit('changed')
   model.value.evidence = null
   model.value.mode = 'manual'
   model.value.density = ''
   model.value.spoon = ''
-  model.value.invalidFields = []
+  model.value.invalidFields = model.value.invalidFields.filter((key) => key === 'temperature')
 }
 function choose() {
   emit('changed')
@@ -103,6 +160,18 @@ watch(locale, (_, previous) => {
         </select></label
       >
     </div>
+    <div v-if="temperature" class="ingredient-extension">
+      <NcTextField
+        :model-value="temperatureInput"
+        :label="t('ingredientTemperature')"
+        inputmode="decimal"
+        :error="invalidTemperature"
+        :helper-text="invalidTemperature ? t('temperatureError') : undefined"
+        @update:model-value="updateTemperature"
+      />
+      <NcButton variant="tertiary" @click="removeTemperature">{{ t('remove') }}</NcButton>
+    </div>
+    <NcButton v-else variant="tertiary" @click="addTemperature">{{ t('addTemperature') }}</NcButton>
     <template v-if="!mass"
       ><p class="muted">{{ t('conversionHelp') }}</p>
       <label class="field"

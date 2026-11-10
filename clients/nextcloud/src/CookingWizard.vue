@@ -10,7 +10,7 @@ import CookingReview from './CookingReview.vue'
 import { api, domain } from './api'
 import { useTask } from './state'
 import { recipesSchema } from './contracts'
-import { templateSchema } from './cooking-api'
+import { planSlotSchema, templateSchema } from './cooking-api'
 import type { CookingDraft, CookingPreview, Proposal } from './cooking-api'
 import { localInput, zone } from './cooking-format'
 import { t } from './i18n'
@@ -62,6 +62,24 @@ async function template() {
       templateSchema,
     )
     draft.value = data.draft
+    if (typeof route.query.plan_date === 'string' && typeof route.query.plan_meal === 'string') {
+      draft.value.plan_slot = planSlotSchema.parse({
+        date: route.query.plan_date,
+        meal: route.query.plan_meal,
+      })
+    }
+    if (
+      typeof route.query.preparation === 'string' &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(route.query.preparation)
+    ) {
+      for (const stage of draft.value.stages)
+        if (!stage.dependencies.length)
+          stage.start_at = {
+            local: route.query.preparation,
+            timezone: draft.value.timezone,
+            fold: 'reject',
+          }
+    }
   })
 }
 async function preview() {

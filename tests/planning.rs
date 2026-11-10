@@ -545,3 +545,103 @@ async fn missing_timings_and_storage_failures_never_silently_apply() {
         .is_err()
     );
 }
+
+#[tokio::test]
+async fn mealprep_allocates_across_days_but_counts_production_once_after_restart() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (good, _) = setup(&app).await;
+    let mut p = plan(&good);
+    p["preparation"] = json!({"date":"2026-11-08","time":"17:30"});
+    p["allocations"] = json!([{ "date":"2026-11-09","meal":"dinner","servings":2 },{ "date":"2026-11-10","meal":"lunch","servings":2 }]);
+    let result = preview(&app, p.clone()).await;
+    assert_eq!(result["feasible"], true);
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/apply",
+            apply(&result, &p),
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let listed = request(
+        &app,
+        "GET",
+        "/api/household/mealplan",
+        Value::Null,
+        Some(READER),
+    )
+    .await
+    .1;
+    assert_eq!(
+        listed["shopping_requirements"],
+        json!([{"ingredient_id":"oats","grams":"200.000000"}])
+    );
+    let mut moved = p.clone();
+    moved["allocations"][1]["date"] = json!("2026-11-11");
+    assert_eq!(preview(&app, moved).await["shopping_delta"], json!([]));
+    let mut over = p.clone();
+    over["allocations"][1]["servings"] = json!(3);
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/preview",
+            over,
+            Some(READER)
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    let mut duplicate = p.clone();
+    duplicate["allocations"][1] = duplicate["allocations"][0].clone();
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/preview",
+            duplicate,
+            Some(READER)
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    let mut clash = plan(&good);
+    clash["date"] = json!("2026-11-10");
+    clash["meal"] = json!("lunch");
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/preview",
+            clash,
+            Some(READER)
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    drop(app);
+    let app = dir.app();
+    let reopened = request(
+        &app,
+        "GET",
+        "/api/household/mealplan",
+        Value::Null,
+        Some(READER),
+    )
+    .await
+    .1;
+    assert_eq!(reopened["meals"][0]["allocations"], p["allocations"]);
+    assert_eq!(reopened["meals"][0]["preparation"], p["preparation"]);
+    assert_eq!(
+        reopened["shopping_requirements"],
+        listed["shopping_requirements"]
+    );
+}

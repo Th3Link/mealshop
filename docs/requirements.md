@@ -1,7 +1,7 @@
 # Product requirements
 
 Origin: customer vision, 2026-11-07. Mealshop is a working name.
-The [feature index](../specs/README.md) maps F01–F30 one-to-one to acceptance contracts.
+The [feature index](../specs/README.md) maps F01–F32 one-to-one to acceptance contracts.
 
 ## Cross-cutting requirements
 - N01: Rust/Axum/Tokio backend and Flutter client; standalone and free Nextcloud `ExApp` deployment.
@@ -58,3 +58,8 @@ N09 → F21/F29; N10 → F22/F30/F18.
 F12/F13 deliver native Nextcloud guided cooking and reviewed multi-day baking with durable UTC deadlines,
 IANA/DST resolution and personal `AppAPI` reminders. N03/N04/N07/N09/N10 apply; accepted delivery is not
 guaranteed device delivery. See [cooking guide](guides/cooking.md) and ADR 0016.
+
+F31 records the customer-approved unified Nextcloud meal/preparation calendar, mealprep allocations, multipart authoring and typed ingredient-line extensions for future device consumption. N03/N07/N09/N10 apply; see specs/0031-unified-preparation. Implementation status is tracked there.
+
+F32 refines household shopping discovery, item tiles, exact quantity entry and check-off/undo within
+the native Nextcloud shell, following the supplied Bring interaction reference. N03/N04/N09/N10 apply.

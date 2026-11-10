@@ -155,6 +155,7 @@ async function load() {
       draft.value?.lines.map((l) => ({
         id: l.id ?? `line-${crypto.randomUUID()}`,
         part_id: l.part_id ?? null,
+        extensions: structuredClone(toRaw(l.extensions ?? [])),
         ingredient_id: l.ingredient_id,
         input: exact(l.quantity?.amount ?? l.grams),
         unit: l.quantity?.unit ?? 'g',
@@ -213,11 +214,14 @@ async function save() {
   for (const line of lineDrafts.value) {
     const amount = parseGrams(line.input)
     if (!amount || line.invalidFields.length) {
-      validation.value = t('quantityError')
+      validation.value = t(
+        line.invalidFields.includes('temperature') ? 'temperatureError' : 'quantityError',
+      )
       return
     }
     if (line.unit === 'g' || line.unit === 'kg') {
       lines.push({
+        extensions: structuredClone(toRaw(line.extensions ?? [])),
         id: line.id,
         part_id: line.part_id,
         ingredient_id: line.ingredient_id,
@@ -244,6 +248,7 @@ async function save() {
       evidence.millilitres_per_spoon = spoon
     }
     lines.push({
+      extensions: structuredClone(toRaw(line.extensions ?? [])),
       id: line.id,
       part_id: line.part_id,
       ingredient_id: line.ingredient_id,

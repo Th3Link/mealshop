@@ -29,12 +29,24 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
   await page.getByLabel('Grams', { exact: true }).fill('100.000001')
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('1. Instruction', { exact: true }).fill('Prepare test dough')
-  await page.getByLabel('Active time (seconds)', { exact: true }).fill('1')
-  await page.getByLabel('Waiting time (seconds)', { exact: true }).fill('10')
+  await page.getByRole('combobox', { name: 'Active work · Unit', exact: true }).selectOption('1')
+  await page.getByLabel('Active work', { exact: true }).fill('1')
+  await page
+    .getByRole('combobox', { name: 'Rest or waiting time · Unit', exact: true })
+    .selectOption('1')
+  await page.getByLabel('Rest or waiting time', { exact: true }).fill('10')
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
   await page.getByLabel('2. Instruction', { exact: true }).fill('Bake test dough')
-  await page.getByLabel('Active time (seconds)', { exact: true }).nth(1).fill('2')
-  await page.getByLabel('Waiting time (seconds)', { exact: true }).nth(1).fill('20')
+  await page
+    .getByRole('combobox', { name: 'Active work · Unit', exact: true })
+    .nth(1)
+    .selectOption('1')
+  await page.getByLabel('Active work', { exact: true }).nth(1).fill('2')
+  await page
+    .getByRole('combobox', { name: 'Rest or waiting time · Unit', exact: true })
+    .nth(1)
+    .selectOption('1')
+  await page.getByLabel('Rest or waiting time', { exact: true }).nth(1).fill('20')
   await page.getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Cooking acceptance recipe', exact: true }),
@@ -65,14 +77,19 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
   await first.getByRole('button', { name: 'Start step: Prepare test dough', exact: true }).click()
   await expect(first.getByRole('button', { name: 'Pause', exact: true })).toBeEnabled()
   await second.getByRole('button', { name: 'Start step: Bake test dough', exact: true }).click()
+  await expect(second.getByRole('button', { name: 'Pause', exact: true })).toBeEnabled()
   // A timer action must refresh immediately even if an older background read is still in flight.
   let heldPoll = false,
-    finishedPoll = false
+    finishedPoll = false,
+    releasePoll: (() => void) | undefined
+  const pendingPoll = new Promise<void>((resolve) => {
+    releasePoll = resolve
+  })
   const slowPoll = async (route: import('@playwright/test').Route) => {
     if (route.request().method() === 'GET' && !heldPoll) {
       const response = await route.fetch()
       heldPoll = true
-      await new Promise((resolve) => setTimeout(resolve, 2500))
+      await pendingPoll
       await route.fulfill({ response })
       finishedPoll = true
     } else await route.continue()
@@ -80,10 +97,13 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
   const detailPattern = `**/api/household/cooking/${new URL(detailUrl).pathname.split('/').at(-1)}`
   await page.route(detailPattern, slowPoll)
   await expect.poll(() => heldPoll, { timeout: 8000 }).toBe(true)
-  await first.getByRole('button', { name: 'Pause', exact: true }).click()
-  await expect(first.getByRole('button', { name: 'Resume', exact: true })).toBeVisible({
-    timeout: 2000,
-  })
+  try {
+    await first.getByRole('button', { name: 'Pause', exact: true }).click()
+    await expect(first.getByRole('button', { name: 'Resume', exact: true })).toBeVisible()
+    expect(finishedPoll).toBe(false)
+  } finally {
+    releasePoll?.()
+  }
   await expect.poll(() => finishedPoll, { timeout: 5000 }).toBe(true)
   await expect(first.getByRole('button', { name: 'Resume', exact: true })).toBeVisible()
   await page.unroute(detailPattern, slowPoll)
