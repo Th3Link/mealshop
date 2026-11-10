@@ -193,6 +193,7 @@ test('household defaults, focused search, inline composites, private images, fav
   })
   const slot = page.locator(`.meal-slot[data-date="${today}"][data-meal=lunch]`)
   await slot.getByRole('button').click()
+  await expect(page.getByRole('heading', { name: 'Plan a meal', exact: true })).toBeFocused()
   await page
     .getByRole('combobox', { name: 'Recipes', exact: true })
     .selectOption({ label: `${title} · Revision 1` })
@@ -201,7 +202,11 @@ test('household defaults, focused search, inline composites, private images, fav
     .getByRole('checkbox')
   for (let index = 0; index < (await attendance.count()); index++) {
     const checkbox = attendance.nth(index)
-    if ((await checkbox.isChecked()) !== (index === 0)) await checkbox.press('Space')
+    if ((await checkbox.isChecked()) !== (index === 0)) {
+      await checkbox.focus()
+      await page.keyboard.press('Space')
+    }
+    await expect(checkbox).toBeChecked({ checked: index === 0 })
   }
   await page.getByLabel('Production servings', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
