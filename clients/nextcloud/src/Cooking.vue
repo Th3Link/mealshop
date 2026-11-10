@@ -60,8 +60,8 @@ function anchorTime(seconds: number) {
   anchorSeconds = seconds
   now.value = seconds
 }
-async function refresh() {
-  if (creating.value || polling) return
+async function refresh(force = false) {
+  if (creating.value || (polling && !force)) return
   polling = true
   const request = ++generation,
     target = id.value
@@ -90,7 +90,7 @@ async function refresh() {
       loaded.value = true
     }
   } finally {
-    polling = false
+    if (request === generation) polling = false
   }
 }
 async function command(value: CookingCommand) {
@@ -99,6 +99,7 @@ async function command(value: CookingCommand) {
   if (revision === undefined) return false
   const result = await run(async () => {
     ++generation
+    polling = false
     const result = await api(domain(home.value, '/api/household/cooking'), cookingMutationSchema, {
       method: 'POST',
       data: { expected_revision: revision, command: value },
@@ -108,17 +109,17 @@ async function command(value: CookingCommand) {
       dirty.value = false
       await router.push(base.value)
     }
-    await refresh()
+    await refresh(true)
     announcement.value = t('changesSaved')
     return result
   })
+  if (!result) await refresh(true)
   return !!result
 }
-async function preview(proposal: Proposal, revision: number) {
+async function preview(proposal: Proposal) {
   return run(async () => {
-    if (proposal.kind === 'create')
-      revision = (await api(domain(home.value, '/api/household/cooking'), cookingListSchema))
-        .revision
+    const revision = (await api(domain(home.value, '/api/household/cooking'), cookingListSchema))
+      .revision
     return api(domain(home.value, '/api/household/cooking/preview'), previewSchema, {
       method: 'POST',
       data: { expected_revision: revision, proposal },
@@ -129,6 +130,7 @@ async function apply(value: CookingPreview) {
   if (disabled.value) return false
   const result = await run(async () => {
     ++generation
+    polling = false
     return api(domain(home.value, '/api/household/cooking'), cookingMutationSchema, {
       method: 'POST',
       data: {
@@ -137,12 +139,15 @@ async function apply(value: CookingPreview) {
       },
     })
   })
-  if (!result) return false
+  if (!result) {
+    await refresh(true)
+    return false
+  }
   dirty.value = false
   replan.value = undefined
   if (result.run_id && id.value !== result.run_id)
     await router.push(`${base.value}/${result.run_id}`)
-  else await refresh()
+  else await refresh(true)
   announcement.value = t('changesSaved')
   await nextTick()
   document.getElementById('cooking-title')?.focus()
@@ -170,6 +175,7 @@ async function removeRun() {
     await command({ operation: 'remove', run_id: detail.value.run.id })
 }
 watch(id, () => {
+  polling = false
   ++generation
   detail.value = undefined
   list.value = undefined
@@ -224,7 +230,7 @@ const stateKeys = {
     <NcNoteCard v-if="error" type="error" role="alert">{{ taskError(error) }}</NcNoteCard
     ><NcNoteCard v-if="readError" type="error" role="alert"
       >{{ errorMessage(readError) }}
-      <NcButton :disabled="busy" @click="refresh">{{ t('retry') }}</NcButton></NcNoteCard
+      <NcButton :disabled="busy" @click="refresh(true)">{{ t('retry') }}</NcButton></NcNoteCard
     ><NcNoteCard v-if="offline && detail" type="warning">{{ t('cookOffline') }}</NcNoteCard>
     <CookingWizard
       v-if="creating && writable"
@@ -251,7 +257,6 @@ const stateKeys = {
         v-if="replan"
         :key="`${replan.kind}:${replan.stepId}`"
         :run="detail.run"
-        :revision="detail.revision"
         :step-id="replan.stepId"
         :kind="replan.kind"
         :disabled="disabled"

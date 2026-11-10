@@ -18,7 +18,7 @@ import type { z } from 'zod'
 const props = defineProps<{
   home: string
   disabled: boolean
-  preview: (proposal: Proposal, revision: number) => Promise<CookingPreview | undefined>
+  preview: (proposal: Proposal) => Promise<CookingPreview | undefined>
   apply: (preview: CookingPreview) => Promise<boolean>
 }>()
 const emit = defineEmits<{ dirty: [value: boolean] }>()
@@ -27,7 +27,6 @@ const route = useRoute(),
   selected = ref(''),
   servings = ref(1),
   draft = ref<CookingDraft>(),
-  revision = ref(0),
   review = ref<CookingPreview>(),
   reviewed = ref(false)
 const { busy, error, run, errorMessage } = useTask()
@@ -63,7 +62,6 @@ async function template() {
       templateSchema,
     )
     draft.value = data.draft
-    revision.value = data.revision
   })
 }
 async function preview() {
@@ -76,7 +74,7 @@ async function preview() {
     step.repeat = Number(step.repeat)
     if (step.repeat === 1) step.wait_between_seconds = 0
   }
-  review.value = await props.preview({ kind: 'create', draft: value }, revision.value)
+  review.value = await props.preview({ kind: 'create', draft: value })
   reviewed.value = false
   if (review.value) {
     await nextTick()

@@ -65,7 +65,28 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
   await first.getByRole('button', { name: 'Start step: Prepare test dough', exact: true }).click()
   await expect(first.getByRole('button', { name: 'Pause', exact: true })).toBeEnabled()
   await second.getByRole('button', { name: 'Start step: Bake test dough', exact: true }).click()
+  // A timer action must refresh immediately even if an older background read is still in flight.
+  let heldPoll = false,
+    finishedPoll = false
+  const slowPoll = async (route: import('@playwright/test').Route) => {
+    if (route.request().method() === 'GET' && !heldPoll) {
+      const response = await route.fetch()
+      heldPoll = true
+      await new Promise((resolve) => setTimeout(resolve, 2500))
+      await route.fulfill({ response })
+      finishedPoll = true
+    } else await route.continue()
+  }
+  const detailPattern = `**/api/household/cooking/${new URL(detailUrl).pathname.split('/').at(-1)}`
+  await page.route(detailPattern, slowPoll)
+  await expect.poll(() => heldPoll, { timeout: 8000 }).toBe(true)
   await first.getByRole('button', { name: 'Pause', exact: true }).click()
+  await expect(first.getByRole('button', { name: 'Resume', exact: true })).toBeVisible({
+    timeout: 2000,
+  })
+  await expect.poll(() => finishedPoll, { timeout: 5000 }).toBe(true)
+  await expect(first.getByRole('button', { name: 'Resume', exact: true })).toBeVisible()
+  await page.unroute(detailPattern, slowPoll)
   await expect(first).toContainText('Paused')
   await expect(second.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
   await page.reload()
@@ -114,6 +135,23 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
   await expect(page.locator('.cooking-timeline > li')).toHaveCount(2)
   await page.getByRole('button', { name: 'Change desired finish', exact: true }).click()
   await page.getByLabel('Local date and time', { exact: true }).fill('2027-11-01T08:00')
+  // Another tab changes domain revision while this draft stays open. A fresh review must retain input.
+  const concurrent = await context.newPage()
+  await concurrent.goto(page.url())
+  await concurrent.getByText('Reminders and delivery', { exact: true }).click()
+  const subscribed = concurrent.waitForResponse(
+    (r) => r.request().method() === 'POST' && r.url().endsWith('/api/household/cooking'),
+  )
+  await concurrent
+    .getByText('Send Nextcloud reminders to me for this session', { exact: true })
+    .click()
+  expect((await subscribed).ok()).toBe(true)
+  await concurrent.close()
+  await page.bringToFront()
+  await expect(page.getByLabel('Local date and time', { exact: true })).toHaveValue(
+    '2027-11-01T08:00',
+  )
+
   await page.getByRole('button', { name: 'Review schedule', exact: true }).click()
   await expect(page.locator('.cooking-review')).toContainText('Previous start')
   await page

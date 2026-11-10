@@ -8,12 +8,11 @@ import type { CookingRun, CookingPreview, PlanChange, Proposal, LocalTime } from
 import { t } from './i18n'
 const props = defineProps<{
   run: CookingRun
-  revision: number
   stepId?: string
   kind: 'target' | 'delay' | 'timer'
   disabled: boolean
   now: number
-  preview: (proposal: Proposal, revision: number) => Promise<CookingPreview | undefined>
+  preview: (proposal: Proposal) => Promise<CookingPreview | undefined>
   apply: (preview: CookingPreview) => Promise<boolean>
 }>()
 const emit = defineEmits<{ close: []; dirty: [value: boolean] }>()
@@ -31,8 +30,7 @@ const value = ref<LocalTime>(
       },
 )
 const review = ref<CookingPreview>(),
-  reviewed = ref(false),
-  base = props.revision
+  reviewed = ref(false)
 async function preview() {
   emit('dirty', true)
   const change: PlanChange =
@@ -41,7 +39,7 @@ async function preview() {
       : props.kind === 'delay'
         ? { kind: 'delay', step_id: props.stepId ?? '', start_after: value.value }
         : { kind: 'timer', step_id: props.stepId ?? '', deadline: value.value }
-  review.value = await props.preview({ kind: 'replan', run_id: props.run.id, change }, base)
+  review.value = await props.preview({ kind: 'replan', run_id: props.run.id, change })
   reviewed.value = false
   if (review.value) {
     await nextTick()
