@@ -29,7 +29,7 @@ struct Registry {
     next_id: u64,
     homes: Vec<Home>,
 }
-fn valid_user(user: &str) -> bool {
+pub(crate) fn valid_user(user: &str) -> bool {
     !user.is_empty() && user.len() <= 255 && !user.chars().any(char::is_control)
 }
 impl Registry {
@@ -77,6 +77,23 @@ pub(crate) struct Membership {
     writable: bool,
 }
 impl Membership {
+    pub(crate) fn owner(&self, id: &str) -> Option<&str> {
+        self.data
+            .homes
+            .iter()
+            .find(|h| h.id == id)?
+            .members
+            .iter()
+            .find(|(_, role)| **role == Role::Owner)
+            .map(|(user, _)| user.as_str())
+    }
+    pub(crate) fn name(&self, id: &str) -> Option<&str> {
+        self.data
+            .homes
+            .iter()
+            .find(|h| h.id == id)
+            .map(|h| h.name.as_str())
+    }
     pub(crate) fn household_ids(&self) -> Vec<String> {
         self.data.homes.iter().map(|h| h.id.clone()).collect()
     }

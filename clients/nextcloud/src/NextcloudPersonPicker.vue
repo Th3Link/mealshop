@@ -8,7 +8,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { z } from 'zod'
 import { t } from './i18n'
 const model = defineModel<string>({ required: true })
-const props = defineProps<{ excluded: string[] }>()
+const props = defineProps<{ excluded: string[]; label?: string; disabled?: boolean }>()
 const id = useId()
 const personSchema = z.object({
   label: z.string(),
@@ -86,16 +86,17 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <div class="labeled-field">
-    <label :for="id">{{ t('invitePerson') }}</label>
+    <label :for="id">{{ props.label ?? t('invitePerson') }}</label>
     <NcSelect
       :input-id="id"
       label-outside
-      :input-label="t('invitePerson')"
+      :input-label="props.label ?? t('invitePerson')"
       :placeholder="t('searchPeople')"
       :model-value="selected"
       :options="options"
       :filterable="false"
       :loading="loading"
+      :disabled="props.disabled"
       label="label"
       @search="search"
       @update:model-value="select"

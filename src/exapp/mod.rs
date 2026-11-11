@@ -37,6 +37,7 @@ pub struct Config {
 struct App {
     config: Config,
     membership: Mutex<Membership>,
+    library: Mutex<crate::library::Store>,
     routers: Mutex<BTreeMap<String, Router>>,
     enabled: AtomicBool,
     catalogue: Router,
@@ -131,9 +132,11 @@ pub async fn router(config: Config) -> Result<Router, String> {
     }
     validate_public_url(&config)?;
     let membership = Membership::open(&config.directory)?;
+    let library = crate::library::Store::open(&config.directory)?;
     let app = Arc::new(App {
         config,
         membership: Mutex::new(membership),
+        library: Mutex::new(library),
         routers: Mutex::new(BTreeMap::new()),
         enabled: AtomicBool::new(false),
         catalogue: crate::router()?,
@@ -181,6 +184,8 @@ pub async fn router(config: Config) -> Result<Router, String> {
     Ok(Router::new()
         .route("/heartbeat", get(|| async { Json(json!({"status":"ok"})) }))
         .route("/enabled", put(enabled))
+        .merge(library::routes())
+        .merge(sharing::routes())
         .route("/api/households", get(list).post(create))
         .route("/api/households/{id}", get(detail))
         .route("/api/households/{id}/invitations", post(invite))
@@ -603,6 +608,8 @@ async fn household_router(app: Shared, home_id: String) -> Result<Router, &'stat
 }
 
 mod cooking;
+mod library;
+mod sharing;
 impl Drop for App {
     fn drop(&mut self) {
         if let Ok(slot) = self.cooking_worker.get_mut() {
@@ -616,3 +623,15 @@ impl Drop for App {
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::too_many_lines)]
 mod tests;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod library_tests;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod sharing_tests;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod sharing_collection_tests;

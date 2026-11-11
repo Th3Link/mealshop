@@ -79,6 +79,79 @@ fn nutrient<'a>(body: &'a Value, id: &str) -> &'a Value {
 }
 
 #[tokio::test]
+async fn imported_origin_is_sticky_and_preserves_revision_history() {
+    let directory = Directory::new();
+    let app = directory.app();
+    let mut imported = recipe();
+    imported["origin"] =
+        json!({"kind":"imported","source_url":"https://example.org/original-recipe"});
+    let (status, first) = request(&app, "POST", "/api/recipes", imported.clone()).await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(first["recipe"]["origin"], imported["origin"]);
+    let id = first["id"].as_str().unwrap();
+    let path = format!("/api/recipes/{id}");
+    for invalid_origin in [
+        Value::Null,
+        json!({"kind":"owned"}),
+        json!({"kind":"imported","source_url":"https://example.org/other"}),
+    ] {
+        let mut edited = imported.clone();
+        if invalid_origin.is_null() {
+            edited.as_object_mut().unwrap().remove("origin");
+        } else {
+            edited["origin"] = invalid_origin;
+        }
+        assert_eq!(
+            request(
+                &app,
+                "PUT",
+                &path,
+                json!({"expected_revision":1,"recipe":edited})
+            )
+            .await
+            .0,
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+    imported["title"] = json!("Revised imported recipe");
+    assert_eq!(
+        request(
+            &app,
+            "PUT",
+            &path,
+            json!({"expected_revision":1,"recipe":imported})
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    drop(app);
+    let reopened = directory.app();
+    assert_eq!(
+        request(&reopened, "GET", &format!("{path}?revision=1"), Value::Null)
+            .await
+            .1,
+        first
+    );
+    let latest = request(&reopened, "GET", &path, Value::Null).await.1;
+    assert_eq!(latest["revision"], 2);
+    assert_eq!(latest["recipe"]["origin"], first["recipe"]["origin"]);
+    for url in [
+        "javascript:alert(1)",
+        "http://example.org/recipe",
+        "https://user:secret@example.org/recipe",
+        "https://",
+    ] {
+        let mut invalid = recipe();
+        invalid["origin"] = json!({"kind":"imported","source_url":url});
+        assert_eq!(
+            request(&reopened, "POST", "/api/recipes", invalid).await.0,
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+}
+
+#[tokio::test]
 async fn create_list_restart_and_retrieve_preserve_exact_inputs_and_portion_nutrition() {
     let dir = Directory::new();
     let app = dir.app();

@@ -1,7 +1,7 @@
 use super::*;
 use axum::body::Body;
-const SECRET: &str = "test-appapi-secret-with-at-least-32-characters";
-async fn call(
+pub(super) const SECRET: &str = "test-appapi-secret-with-at-least-32-characters";
+pub(super) async fn call(
     app: &Router,
     user: Option<&str>,
     method: &str,

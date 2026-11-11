@@ -20,7 +20,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 |---|---|---|---|
 | F29 | [Cross-client localization and versioned content translations](0029-cross-client-localization/specification.md) | Must | M1 |
 | F30 | [Standalone Vue client and cross-client integration](0030-standalone-vue-client/specification.md) | Must | M1 |
-| F05 | [Recipe sharing and collections](0005-sharing-collections/specification.md) | Must | M2 |
 | F11 | [Cooking history and online preference learning](0011-recommendation-feedback/specification.md) | Should | M2 |
 | F15 | [Inventory and shopping offers](0015-inventory-offers/specification.md) | Should | M3 |
 | F16 | [Customer-operated recipe link import](0016-recipe-import/specification.md) | Should | M3 |
@@ -46,6 +45,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F26 | [Comfortable native authoring](0026-authoring-experience/specification.md) | Must | M1 |
 | F27 | [Complete catalogue organization](0027-catalogue-organization/specification.md) | Must | M1 |
 | F28 | [Native usability review](0028-native-usability-review/specification.md) | Must | M1 |
+| F05 | [Recipe sharing and collections](0005-sharing-collections/specification.md) | Must | M2 |
 | F06 | [Shopping lists and recipe provenance](0006-shopping-list/specification.md) | Must | M2 |
 | F07 | [Preferred shops and learned shopping order](0007-shops-order-learning/specification.md) | Should | M2 |
 | F10 | [Family meal planning and calendar attendance](0010-meal-planning/specification.md) | Must | M2 |

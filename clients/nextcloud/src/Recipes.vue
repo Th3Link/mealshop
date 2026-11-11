@@ -25,6 +25,8 @@ import { useUnsavedChanges } from './useUnsavedChanges'
 import Nutrition from './Nutrition.vue'
 import RecipeStructureEditor from './RecipeStructureEditor.vue'
 import RecipeContents from './RecipeContents.vue'
+import RecipeOriginEditor from './RecipeOriginEditor.vue'
+import ShareControls from './ShareControls.vue'
 import IngredientEditor from './IngredientEditor.vue'
 import { conversionsSchema } from './quantity-api'
 import type { LineDraft } from './quantity-api'
@@ -34,6 +36,16 @@ const home = computed(() => String(route.params.home))
 const writable = computed(() => homes.value.some((h) => h.id === home.value && h.role !== 'reader'))
 const records = ref<z.infer<typeof recipesSchema>>()
 const selected = ref<z.infer<typeof recipeRecordSchema>>()
+const latestRevision = ref<number>()
+const historical = computed(() =>
+  Boolean(
+    selected.value &&
+    latestRevision.value !== undefined &&
+    selected.value.revision !== latestRevision.value,
+  ),
+)
+const sourceOrigin = computed(() => selected.value?.sharing_origin ?? selected.value?.recipe.origin)
+const owner = computed(() => homes.value.some((h) => h.id === home.value && h.role === 'owner'))
 const catalogue = ref<z.infer<typeof catalogueSchema>>()
 const draft = ref<Recipe>()
 const conversions = ref<z.infer<typeof conversionsSchema>>({ entries: [] })
@@ -54,7 +66,9 @@ async function ingredientCreated(id: string) {
   creatingIngredient.value = null
   dirty.value = true
 }
-const editing = computed(() => route.params.id === 'new' || route.query.edit === '1')
+const editing = computed(
+  () => (route.params.id === 'new' || route.query.edit === '1') && !historical.value,
+)
 const dirty = ref(false),
   validation = ref(''),
   previewCount = ref(1)
@@ -111,6 +125,7 @@ async function load() {
   const generation = ++loadGeneration
   dirty.value = false
   selected.value = undefined
+  latestRevision.value = undefined
   draft.value = undefined
   records.value = undefined
   const isEditing = editing.value
@@ -149,11 +164,20 @@ async function load() {
       }
       selected.value = undefined
     } else {
+      const revision = typeof route.query.revision === 'string' ? route.query.revision : undefined
+      const query = new URLSearchParams({
+        display_unit: displayUnit.value,
+        ...(revision ? { revision } : {}),
+      })
       const record = await api(
-        request(`/api/recipes/${encodeURIComponent(id)}?display_unit=${displayUnit.value}`),
+        request(`/api/recipes/${encodeURIComponent(id)}?${query}`),
         recipeRecordSchema,
       )
+      const current = revision
+        ? await api(request(`/api/recipes/${encodeURIComponent(id)}`), recipeRecordSchema)
+        : record
       if (generation !== loadGeneration) return
+      latestRevision.value = current.revision
       selected.value = record
       previewCount.value = selected.value.recipe.servings
       draft.value = structuredClone(toRaw(selected.value.recipe))
@@ -180,7 +204,7 @@ async function load() {
     document.querySelector<HTMLElement>('.mealshop h1')?.focus()
   }
 }
-watch([() => route.params.id, () => route.query.edit], load)
+watch([() => route.params.id, () => route.query.edit, () => route.query.revision], load)
 onMounted(load)
 function removeImage() {
   if (!draft.value) return
@@ -460,6 +484,11 @@ async function scale() {
               :helper-text="t('optional')"
               maxlength="200"
             />
+            <RecipeOriginEditor
+              v-model="draft.origin"
+              :locked="sourceOrigin?.kind === 'imported'"
+              @update:model-value="dirty = true"
+            />
             <fieldset class="recipe-image-editor">
               <legend>{{ t('image') }}</legend>
               <img
@@ -492,7 +521,23 @@ async function scale() {
     </form>
   </template>
   <template v-else-if="selected">
-    <NcButton :to="{ path: listPath, query: { q: search || undefined } }">{{ t('back') }}</NcButton>
+    <NcButton
+      :to="
+        typeof route.query.collection === 'string'
+          ? {
+              path: `/h/${home}/collections/${route.query.collection}`,
+              query: { page: route.query.collectionPage },
+            }
+          : { path: listPath, query: { q: search || undefined } }
+      "
+      >{{ t('back') }}</NcButton
+    >
+    <NcNoteCard v-if="historical" type="info"
+      >{{ t('historicalRecipeHelp') }}
+      <NcButton :to="{ query: { ...route.query, revision: undefined, edit: undefined } }">{{
+        t('currentRecipe')
+      }}</NcButton></NcNoteCard
+    >
     <header class="page-header">
       <div>
         <h1 tabindex="-1" :lang="selected.recipe.language">{{ selected.recipe.title }}</h1>
@@ -506,10 +551,23 @@ async function scale() {
           {{ servingCount(selected.recipe.servings) }}
         </p>
       </div>
-      <NcButton v-if="writable" :to="{ query: { ...route.query, edit: '1' } }">{{
-        t('edit')
-      }}</NcButton>
+      <div class="toolbar">
+        <ShareControls
+          v-if="owner"
+          :home="home"
+          :title="selected.recipe.title"
+          :resource="{ kind: 'recipe', recipe_id: selected.id, revision: selected.revision }"
+          :source-only="sourceOrigin?.kind === 'imported'"
+        /><NcButton v-if="writable && !historical" :to="{ query: { ...route.query, edit: '1' } }">{{
+          t('edit')
+        }}</NcButton>
+      </div>
     </header>
+    <p v-if="sourceOrigin?.kind === 'imported'">
+      <a :href="sourceOrigin.source_url" target="_blank" rel="noopener noreferrer nofollow">{{
+        t('originalRecipe')
+      }}</a>
+    </p>
     <img
       v-if="selected.recipe.image_id"
       :src="imageUrl(home, selected.recipe.image_id)"

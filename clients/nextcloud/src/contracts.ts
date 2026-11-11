@@ -211,7 +211,24 @@ export const recipePartSchema = z.object({
   uses_parts: z.array(z.string()).default([]),
   starts_after: z.array(z.string()).optional(),
 })
+export const originalRecipeUrlSchema = z
+  .url()
+  .max(2048)
+  .refine((value) => {
+    try {
+      const url = new URL(value)
+      return url.protocol === 'https:' && !url.username && !url.password && !/\s/u.test(value)
+    } catch {
+      return false
+    }
+  })
+export const recipeOriginSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('owned') }),
+  z.object({ kind: z.literal('imported'), source_url: originalRecipeUrlSchema }),
+])
+export type RecipeOrigin = z.infer<typeof recipeOriginSchema>
 export const recipeSchema = z.object({
+  origin: recipeOriginSchema.optional(),
   parts: z.array(recipePartSchema).default([]),
   image_id: z.string().nullable().optional(),
   title: z.string(),
@@ -260,6 +277,7 @@ export const displayLinesSchema = z.array(
   }),
 )
 export const recipeRecordSchema = z.object({
+  sharing_origin: recipeOriginSchema.optional(),
   id: z.string(),
   revision: z.number().int(),
   recipe: recipeSchema,

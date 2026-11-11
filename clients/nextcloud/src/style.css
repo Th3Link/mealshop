@@ -880,6 +880,116 @@
   }
 }
 
+.mealshop .library-header-actions {
+  margin-block: 0;
+}
+.mealshop.sharing-dialog section {
+  margin-block: 0;
+}
+.mealshop .collection-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mealshop .collection-editor-entries,
+.mealshop .share-grant-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mealshop .collection-editor-entries > li,
+.mealshop .collection-entry-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 100px 132px;
+  gap: 8px;
+  align-items: center;
+}
+.mealshop .collection-entry-head {
+  color: var(--color-text-maxcontrast);
+  margin-top: 16px;
+}
+.mealshop .collection-editor-entries > li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .collection-editor-entries strong,
+.mealshop .share-recipient {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.mealshop .collection-revision {
+  min-width: 0;
+}
+.mealshop .collection-revision-caption {
+  display: none;
+}
+.mealshop .collection-entry-actions,
+.mealshop .share-grant-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.mealshop .collection-add-recipe {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 16px;
+}
+.mealshop .share-grant-list > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+.mealshop .share-recipient {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 180px;
+}
+.mealshop .shared-invitation {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .source-url {
+  overflow-wrap: anywhere;
+}
+.mealshop a.source-url {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+@media (max-width: 600px) {
+  .mealshop .collection-editor-entries > li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .mealshop .collection-editor-entries > li > strong {
+    grid-column: 1 / -1;
+  }
+  .mealshop .collection-entry-head {
+    display: none;
+  }
+  .mealshop .collection-revision {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    max-width: 180px;
+  }
+  .mealshop .collection-revision-caption {
+    display: inline;
+  }
+  .mealshop .collection-add-recipe {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mealshop .share-grant-actions {
+    justify-content: flex-end;
+  }
+}
+
 .mealshop .barcode-camera video {
   display: block;
   width: 100%;

@@ -1,5 +1,6 @@
 import { cookingEnglish, cookingGerman, cookingExplanations } from './cooking-messages'
 import { shoppingEnglish, shoppingGerman } from './shopping-messages'
+import { sharingEnglish, sharingGerman, sharingExplanations } from './sharing-messages'
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
@@ -58,6 +59,7 @@ const en = {
   originalLanguage: 'Original language',
   ...shoppingEnglish,
   ...cookingEnglish,
+  ...sharingEnglish,
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
   changesSaved: 'Changes saved.',
@@ -395,6 +397,7 @@ const de: Record<keyof typeof en, string> = {
   maximumWait: 'Längste Ruhezeit',
 
   ...cookingGerman,
+  ...sharingGerman,
   ingredientTemperature: 'Temperatur (°C)',
   addTemperature: 'Temperatur ergänzen',
   temperatureError:
@@ -761,6 +764,7 @@ const explanations: Record<string, { en: string; de: string }> = {
   },
 
   ...cookingExplanations,
+  ...sharingExplanations,
   shopping_barcode_invalid: {
     en: 'Enter a valid EAN/UPC/GTIN including check digit.',
     de: 'Gib einen gültigen EAN/UPC/GTIN mit Prüfziffer ein.',
