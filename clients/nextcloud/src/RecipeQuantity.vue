@@ -4,17 +4,24 @@ import { z } from 'zod'
 import NcTextField from './LabeledField.vue'
 import IngredientSelect from './IngredientSelect.vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import Icon from './Icon.vue'
+import { mdiPlus, mdiThermometer, mdiChefHat, mdiClose } from '@mdi/js'
 import { locale, exact, parseGrams, parseNonnegative, t } from './i18n'
 import type { Ingredient } from './contracts'
 import { conversionsSchema } from './quantity-api'
 import type { LineDraft } from './quantity-api'
 const model = defineModel<LineDraft>({ required: true })
-const emit = defineEmits<{ changed: []; create: [name: string] }>()
+const emit = defineEmits<{ changed: []; create: [name: string]; prepare: []; buy: [] }>()
 const props = defineProps<{
   ingredients: Ingredient[]
   conversions: z.infer<typeof conversionsSchema>
   index: number
   invalid: boolean
+  preparedName?: string
+  canPrepare?: boolean
+  parts: { id: string; label: string }[]
 }>()
 const ingredient = computed(() => props.ingredients.find((i) => i.id === model.value.ingredient_id))
 const mass = computed(() => model.value.unit === 'g' || model.value.unit === 'kg')
@@ -135,12 +142,14 @@ watch(locale, (_, previous) => {
         v-model="model.ingredient_id"
         :ingredients="ingredients"
         allow-create
+        hide-label
         @create="emit('create', $event)"
         @change="reset"
       />
       <NcTextField
         v-model="model.input"
         :label="model.unit === 'g' ? t('grams') : t('amount')"
+        hide-label
         inputmode="decimal"
         maxlength="32"
         required
@@ -152,26 +161,67 @@ watch(locale, (_, previous) => {
         "
         @update:model-value="model.invalidFields = model.invalidFields.filter((k) => k !== 'input')"
       /><label class="field"
-        >{{ t('unit')
-        }}<select v-model="model.unit" :aria-label="t('unit')" @change="reset">
+        ><span class="visually-hidden">{{ t('unit') }}</span
+        ><select v-model="model.unit" :aria-label="t('unit')" @change="reset">
           <option v-for="u in ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'piece']" :key="u" :value="u">
             {{ u }}
           </option>
         </select></label
       >
+      <NcActions force-menu :aria-label="`${t('ingredientExtras')} ${index + 1}`">
+        <template #icon><Icon :path="mdiPlus" /></template>
+        <NcActionButton close-after-click v-if="!temperature" @click="addTemperature"
+          ><template #icon><Icon :path="mdiThermometer" /></template
+          >{{ t('ingredientTemperature') }}</NcActionButton
+        >
+        <NcActionButton close-after-click v-if="model.prepared_part" @click="emit('buy')">{{
+          t('buyIngredient')
+        }}</NcActionButton>
+        <NcActionButton
+          close-after-click
+          v-else
+          :disabled="!model.ingredient_id || canPrepare === false"
+          @click="emit('prepare')"
+          ><template #icon><Icon :path="mdiChefHat" /></template
+          >{{ t('makeIngredient') }}</NcActionButton
+        >
+        <NcActionButton close-after-click v-if="model.part_id" @click="model.part_id = null"
+          >{{ t('moveToPart') }} · {{ t('mainRecipe') }}</NcActionButton
+        >
+        <NcActionButton
+          close-after-click
+          v-for="part in parts.filter(
+            (p) => p.id !== model.part_id && p.id !== model.prepared_part,
+          )"
+          :key="part.id"
+          @click="model.part_id = part.id"
+          >{{ t('moveToPart') }} · {{ part.label }}</NcActionButton
+        >
+      </NcActions>
     </div>
     <div v-if="temperature" class="ingredient-extension">
       <NcTextField
         :model-value="temperatureInput"
         :label="t('ingredientTemperature')"
+        hide-label
+        required
+        :placeholder="t('ingredientTemperature')"
         inputmode="decimal"
         :error="invalidTemperature"
         :helper-text="invalidTemperature ? t('temperatureError') : undefined"
         @update:model-value="updateTemperature"
       />
-      <NcButton variant="tertiary" @click="removeTemperature">{{ t('remove') }}</NcButton>
+      <span aria-hidden="true">°C</span>
+      <NcButton variant="tertiary" :aria-label="t('removeTemperature')" @click="removeTemperature"
+        ><template #icon><Icon :path="mdiClose" /></template
+      ></NcButton>
     </div>
-    <NcButton v-else variant="tertiary" @click="addTemperature">{{ t('addTemperature') }}</NcButton>
+    <a
+      v-if="model.prepared_part"
+      class="prepared-reference"
+      :href="`#recipe-part-${model.prepared_part}`"
+      >{{ t('homemade') }} · {{ preparedName }}</a
+    >
     <template v-if="!mass"
       ><p class="muted">{{ t('conversionHelp') }}</p>
       <label class="field"

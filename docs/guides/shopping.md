@@ -76,3 +76,8 @@ New metadata fields default on older shopping files; older binaries may reject t
 the matching complete backup. Back up membership, recipes, profiles, plans, images, ingredients and
 shopping together. Never run host/container writers simultaneously. Test fixtures are archived only
 with ownership/content evidence; customer households are never selected by age or UI position.
+
+Recipe contributions buy measured base inputs. An explicit homemade output (`prepared_part`, F33)
+is displayed in the recipe but excluded from purchases; its preparation's measured ingredients
+count once. This also applies to meal-plan synchronization and rescaling. Availability is never
+inferred globally from the ingredient name.

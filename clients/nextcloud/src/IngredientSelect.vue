@@ -6,7 +6,12 @@ import type { Ingredient } from './contracts'
 import { locale, t } from './i18n'
 import { foldSearch as fold } from './ingredient-search'
 const model = defineModel<string>({ required: true })
-const props = defineProps<{ ingredients: Ingredient[]; label?: string; allowCreate?: boolean }>()
+const props = defineProps<{
+  ingredients: Ingredient[]
+  label?: string
+  allowCreate?: boolean
+  hideLabel?: boolean
+}>()
 const emit = defineEmits<{ change: []; create: [name: string] }>()
 const id = useId(),
   search = ref('')
@@ -80,7 +85,9 @@ function filter(option: { kind: string; search: string }, _label: string, query:
 </script>
 <template>
   <div class="ingredient-select labeled-field">
-    <label :for="id">{{ label ?? t('selectIngredient') }}</label>
+    <label :for="id" :class="{ 'visually-hidden': hideLabel }">{{
+      label ?? t('selectIngredient')
+    }}</label>
     <NcSelect
       :input-id="id"
       :model-value="selected"

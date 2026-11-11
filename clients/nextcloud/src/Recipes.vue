@@ -54,9 +54,17 @@ async function ingredientCreated(id: string) {
   creatingIngredient.value = null
   dirty.value = true
 }
+const editing = computed(() => route.params.id === 'new' || route.query.edit === '1')
 const dirty = ref(false),
   validation = ref(''),
   previewCount = ref(1)
+watch(
+  [draft, lineDrafts],
+  () => {
+    if (editing.value && draft.value) dirty.value = true
+  },
+  { deep: true, flush: 'sync' },
+)
 const preview = ref<z.infer<typeof nutritionSchema>>()
 const scaledLines = ref<z.infer<typeof displayLinesSchema>>()
 const displayUnit = ref<'g' | 'kg'>('g')
@@ -77,7 +85,6 @@ watch(displayUnit, () => {
   }
 })
 const { busy, error, run, errorMessage } = useTask()
-const editing = computed(() => route.params.id === 'new' || route.query.edit === '1')
 const listPath = computed(() => `/h/${home.value}/recipes`)
 const search = computed({
   get: () => (typeof route.query.q === 'string' ? route.query.q : ''),
@@ -155,6 +162,7 @@ async function load() {
       draft.value?.lines.map((l) => ({
         id: l.id ?? `line-${crypto.randomUUID()}`,
         part_id: l.part_id ?? null,
+        prepared_part: l.prepared_part ?? null,
         extensions: structuredClone(toRaw(l.extensions ?? [])),
         ingredient_id: l.ingredient_id,
         input: exact(l.quantity?.amount ?? l.grams),
@@ -172,7 +180,7 @@ async function load() {
     document.querySelector<HTMLElement>('.mealshop h1')?.focus()
   }
 }
-watch(() => [route.params.id, route.query.edit], load)
+watch([() => route.params.id, () => route.query.edit], load)
 onMounted(load)
 function removeImage() {
   if (!draft.value) return
@@ -224,6 +232,7 @@ async function save() {
         extensions: structuredClone(toRaw(line.extensions ?? [])),
         id: line.id,
         part_id: line.part_id,
+        prepared_part: line.prepared_part,
         ingredient_id: line.ingredient_id,
         quantity: { amount, unit: line.unit },
       })
@@ -251,6 +260,7 @@ async function save() {
       extensions: structuredClone(toRaw(line.extensions ?? [])),
       id: line.id,
       part_id: line.part_id,
+      prepared_part: line.prepared_part,
       ingredient_id: line.ingredient_id,
       quantity: { amount, unit: line.unit },
       conversion: evidence,
@@ -392,32 +402,57 @@ async function scale() {
       }"
       >{{ t('cancel') }}</NcButton
     >
-    <header class="page-header">
+    <header class="page-header recipe-editor-header">
       <h1 tabindex="-1">{{ selected ? t('edit') : t('newRecipe') }}</h1>
+      <NcButton
+        variant="primary"
+        type="submit"
+        form="mealshop-recipe-form"
+        :disabled="busy || !writable"
+        >{{ busy ? t('saving') : t('save') }}</NcButton
+      >
     </header>
     <NcNoteCard v-if="validation" type="error" role="alert">{{ validation }}</NcNoteCard>
-    <form class="recipe-editor" @submit.prevent="save" @input="dirty = true" @change="dirty = true">
+    <form
+      id="mealshop-recipe-form"
+      class="recipe-editor"
+      @submit.prevent="save"
+      @input="dirty = true"
+      @change="dirty = true"
+    >
       <fieldset class="editor-fields" :disabled="busy || !writable">
-        <NcTextField v-model="draft.title" :label="t('title')" required maxlength="200" />
-        <div class="form-row">
-          <NcTextField
-            v-model="draft.servings"
-            type="number"
-            :label="t('servings')"
-            min="1"
-            max="1000000"
-            step="1"
-            required
-          /><label class="field"
-            >{{ t('language')
-            }}<select v-model="draft.language">
-              <option value="en">English</option>
-              <option value="de">Deutsch</option>
-            </select></label
-          >
+        <div class="recipe-title-row">
+          <NcTextField v-model="draft.title" :label="t('title')" required maxlength="200" />
+          <div class="form-row recipe-basics">
+            <NcTextField
+              v-model="draft.servings"
+              type="number"
+              :label="t('servings')"
+              min="1"
+              max="1000000"
+              step="1"
+              required
+            /><label class="field"
+              >{{ t('language')
+              }}<select v-model="draft.language">
+                <option value="en">English</option>
+                <option value="de">Deutsch</option>
+              </select></label
+            >
+          </div>
         </div>
-        <details class="editor-disclosure" :open="Boolean(draft.image_id || draft.author)">
-          <summary>{{ t('optionalDetails') }}</summary>
+        <RecipeStructureEditor
+          v-if="catalogue"
+          v-model:recipe="draft"
+          v-model:lines="lineDrafts"
+          :catalogue="catalogue"
+          :conversions="conversions"
+          :invalid="Boolean(validation)"
+          @changed="dirty = true"
+          @create="(index, name) => (creatingIngredient = { index, name })"
+        />
+        <section class="recipe-metadata editor-section">
+          <h2>{{ t('optionalDetails') }}</h2>
           <div class="editor-fields">
             <NcTextField
               v-model="draft.author"
@@ -452,30 +487,7 @@ async function scale() {
               </select></label
             >
           </div>
-        </details>
-        <RecipeStructureEditor
-          v-if="catalogue"
-          v-model:recipe="draft"
-          v-model:lines="lineDrafts"
-          :catalogue="catalogue"
-          :conversions="conversions"
-          :invalid="Boolean(validation)"
-          @changed="dirty = true"
-          @create="(index, name) => (creatingIngredient = { index, name })"
-        />
-        <div class="editor-actions actions">
-          <NcButton
-            :disabled="busy"
-            :to="{
-              path: selected ? `${listPath}/${selected.id}` : listPath,
-              query: { q: search || undefined },
-            }"
-            >{{ t('cancel') }}</NcButton
-          >
-          <NcButton variant="primary" type="submit" :disabled="busy || !writable">{{
-            t('save')
-          }}</NcButton>
-        </div>
+        </section>
       </fieldset>
     </form>
   </template>
@@ -504,7 +516,19 @@ async function scale() {
       :alt="selected.recipe.title"
       class="recipe-image"
     />
-    <section class="recipe-display-controls">
+    <div class="recipe-reading-toolbar">
+      <form class="recipe-scale" @submit.prevent="scale">
+        <NcTextField
+          v-model="previewCount"
+          type="number"
+          :label="t('previewServings')"
+          min="1"
+          max="1000000"
+          step="1"
+          required
+        /><NcButton type="submit" :disabled="busy">{{ t('preview') }}</NcButton>
+      </form>
+
       <label class="field"
         >{{ t('displayUnit')
         }}<select v-model="displayUnit" :aria-label="t('displayUnit')">
@@ -512,27 +536,17 @@ async function scale() {
           <option value="kg">kg</option>
         </select></label
       >
-    </section>
-    <NcButton
-      v-if="writable && selected.recipe.steps.length"
-      :to="{
-        path: `/h/${home}/cooking/new`,
-        query: { recipe: selected.id, revision: selected.revision, servings: previewCount },
-      }"
-      >{{ t('cookNew') }}</NcButton
-    >
+
+      <NcButton
+        v-if="writable && selected.recipe.steps.length"
+        :to="{
+          path: `/h/${home}/cooking/new`,
+          query: { recipe: selected.id, revision: selected.revision, servings: previewCount },
+        }"
+        >{{ t('cookNew') }}</NcButton
+      >
+    </div>
     <RecipeContents :record="selected" :lines="scaledLines ?? selected.display_lines" />
-    <form class="inline-row" @submit.prevent="scale">
-      <NcTextField
-        v-model="previewCount"
-        type="number"
-        :label="t('previewServings')"
-        min="1"
-        max="1000000"
-        step="1"
-        required
-      /><NcButton type="submit" :disabled="busy">{{ t('preview') }}</NcButton>
-    </form>
     <Nutrition :value="preview ?? selected.nutrition" />
   </template>
   <IngredientEditor

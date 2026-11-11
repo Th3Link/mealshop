@@ -631,3 +631,140 @@ async fn ingredient_temperature_round_trips_without_scaling_and_rejects_duplicat
     assert_eq!(read["recipe"]["lines"][0]["extensions"], json!([extension]));
     assert_eq!(read["recipe"]["lines"][0]["grams"], "100.500000");
 }
+
+#[tokio::test]
+#[allow(clippy::too_many_lines)]
+async fn homemade_parts_keep_declared_outputs_but_calculate_only_base_inputs() {
+    let directory = Directory::new();
+    let app = directory.app();
+    let base = json!({"title":"Input fixture","language":"en","author":"","servings":2,"preparation":"cooking_unmodelled","lines":[{"ingredient_id":"chia","grams":"100.000001"}],"steps":[]});
+    let (_, expected) = request(&app, "POST", "/api/recipes", base.clone()).await;
+    let mut made = base;
+    made["parts"] = json!([{"id":"prep","name":"Homemade fixture"}]);
+    made["lines"][0]["part_id"] = json!("prep");
+    made["lines"].as_array_mut().unwrap().push(json!({"id":"output","ingredient_id":"oats","quantity":{"amount":"0.060001","unit":"kg"},"prepared_part":"prep"}));
+    made["preparation"] = json!("as_recorded");
+    made["steps"] = json!([{"instruction":"Use the declared prepared output","active_seconds":0,"passive_seconds":0},{"part_id":"prep","instruction":"Prepare the fictional input","active_seconds":1,"passive_seconds":0}]);
+    let (status, saved) = request(&app, "POST", "/api/recipes", made.clone()).await;
+    assert_eq!(status, StatusCode::CREATED, "{saved}");
+    assert_eq!(
+        saved["nutrition"]["nutrients"],
+        expected["nutrition"]["nutrients"]
+    );
+    assert_eq!(
+        saved["nutrition"]["ingredients"].as_array().unwrap().len(),
+        1
+    );
+    assert_eq!(
+        saved["recipe"]["lines"][1]["quantity"]["amount"],
+        "0.060001"
+    );
+    assert_eq!(saved["display_lines"][1]["name"], "Oats");
+    assert_eq!(saved["nutrition"]["preparation"], "cooking_unmodelled");
+    let id = saved["id"].as_str().unwrap();
+    let (_, scaled) = request(
+        &app,
+        "GET",
+        &format!("/api/recipes/{id}/scale?servings=4"),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(scaled["lines"].as_array().unwrap().len(), 2);
+    assert_eq!(scaled["lines"][0]["grams"], "200.000002");
+    assert_eq!(scaled["lines"][1]["grams"], "120.002000");
+    assert_eq!(scaled["lines"][1]["prepared_part"], "prep");
+    drop(app);
+    let reopened = directory.app();
+    assert_eq!(
+        request(&reopened, "GET", &format!("/api/recipes/{id}"), Value::Null)
+            .await
+            .1,
+        saved
+    );
+    for mode in [
+        "unknown",
+        "self",
+        "empty",
+        "no_steps",
+        "multiple",
+        "zero",
+        "unknown_food",
+        "cross_cycle",
+    ] {
+        let mut invalid = made.clone();
+        match mode {
+            "unknown" => invalid["lines"][1]["prepared_part"] = json!("absent"),
+            "self" => invalid["lines"][1]["part_id"] = json!("prep"),
+            "empty" => {
+                invalid["lines"].as_array_mut().unwrap().remove(0);
+            }
+            "no_steps" => invalid["steps"] = json!([]),
+            "multiple" => {
+                let output = invalid["lines"][1].clone();
+                invalid["lines"].as_array_mut().unwrap().push(output);
+            }
+            "zero" => {
+                invalid["lines"][1]["quantity"]["amount"] = json!("0");
+            }
+            "unknown_food" => invalid["lines"][1]["ingredient_id"] = json!("not-a-catalogue-food"),
+            "cross_cycle" => {
+                invalid["parts"]
+                    .as_array_mut()
+                    .unwrap()
+                    .push(json!({"id":"finish","name":"Finish","starts_after":["prep"]}));
+                invalid["lines"][1]["part_id"] = json!("finish");
+                invalid["parts"][0]["uses_parts"] = json!(["finish"]);
+            }
+            _ => unreachable!(),
+        }
+        assert_eq!(
+            request(&reopened, "POST", "/api/recipes", invalid).await.0,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "{mode}"
+        );
+    }
+    let path = format!("/api/recipes/{id}");
+    let (status, revised) = request(
+        &reopened,
+        "PUT",
+        &path,
+        json!({"expected_revision":1,"recipe":made}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{revised}");
+    assert_eq!(revised["recipe"]["lines"][1]["prepared_part"], "prep");
+    assert_eq!(
+        request(
+            &reopened,
+            "PUT",
+            &path,
+            json!({"expected_revision":1,"recipe":made})
+        )
+        .await
+        .0,
+        StatusCode::CONFLICT
+    );
+    assert_eq!(
+        request(&reopened, "GET", &path, Value::Null).await.1,
+        revised
+    );
+    assert_eq!(
+        request(&reopened, "GET", &format!("{path}?revision=1"), Value::Null)
+            .await
+            .1,
+        saved
+    );
+    let stateless = json!({"servings":1,"preparation":"as_recorded","lines":[{"ingredient_id":"chia","grams":"1","prepared_part":"unbound"}]});
+    let response = reopened
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/nutrition/calculate")
+                .header("content-type", "application/json")
+                .body(Body::from(stateless.to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+}

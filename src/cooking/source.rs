@@ -43,6 +43,17 @@ pub(crate) fn template(
                     .filter_map(|id| last_part.get(id.as_str()).cloned()),
             );
         }
+        if first_in_part {
+            dependencies.extend(
+                record
+                    .recipe
+                    .lines
+                    .iter()
+                    .filter(|line| line.part_id.as_deref() == key)
+                    .filter_map(|line| line.prepared_part.as_ref())
+                    .filter_map(|id| last_part.get(id.as_str()).cloned()),
+            );
+        }
         dependencies.extend(
             step.prepared_parts
                 .iter()
@@ -171,7 +182,7 @@ pub(crate) fn ingredients(
     let lines=record.recipe.lines.iter().map(|line| {
         let ingredient=record.catalogue.find(&line.ingredient_id).ok_or("unknown_ingredient")?;
         let grams=line.grams.0.scaled(servings,record.recipe.servings).map_err(|_|"cooking_quantity_invalid")?;
-        Ok(serde_json::json!({"ingredient_id":line.ingredient_id,"name":ingredient.name,"translations":ingredient.translations,"grams":grams,"original_quantity":line.quantity,"part_id":line.part_id,"extensions":line.extensions}))
+        Ok(serde_json::json!({"ingredient_id":line.ingredient_id,"name":ingredient.name,"translations":ingredient.translations,"grams":grams,"original_quantity":line.quantity,"part_id":line.part_id,"extensions":line.extensions,"prepared_part":line.prepared_part,"prepared_part_name":line.prepared_part.as_ref().and_then(|id|record.recipe.parts.iter().find(|p|&p.id==id)).map(|p|&p.name)}))
     }).collect::<Result<Vec<_>,&'static str>>()?;
     Ok(serde_json::json!(lines))
 }

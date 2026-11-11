@@ -540,9 +540,7 @@
   justify-content: flex-end;
   z-index: 1;
 }
-.mealshop .recipe-editor {
-  max-width: 920px;
-}
+
 .mealshop .section-heading {
   display: flex;
   align-items: start;
@@ -1052,4 +1050,227 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
+}
+
+/* Recipes stay open: density comes from composition and shared column labels. */
+.mealshop .recipe-editor {
+  max-width: none;
+}
+.mealshop .recipe-editor > fieldset {
+  margin: 0;
+  gap: 8px;
+}
+.mealshop .recipe-editor > fieldset > * {
+  margin-block: 0;
+}
+.mealshop .recipe-editor-header {
+  margin-block-end: 8px;
+}
+.mealshop .recipe-editor .recipe-ingredient-row > .button-vue {
+  margin-top: 0;
+}
+.mealshop .recipe-editor .recipe-part-content {
+  padding-block: 12px 20px;
+}
+.mealshop .step-associations > .labeled-field {
+  min-width: 0;
+}
+.mealshop .recipe-editor-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-main-background);
+  padding-block: 8px;
+}
+.mealshop .recipe-title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(240px, 1fr);
+  gap: 16px;
+  align-items: end;
+}
+.mealshop .recipe-composition {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.mealshop .recipe-composition > div {
+  min-width: 0;
+}
+.mealshop .recipe-composition :is(h2, h3) {
+  margin: 0 0 12px;
+}
+.mealshop .part-dependencies {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.mealshop .recipe-editor .ingredient-entry {
+  padding-block: 4px;
+  border-bottom: 0;
+}
+.mealshop .recipe-editor .recipe-ingredient-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 8px;
+  align-items: start;
+}
+.mealshop .recipe-editor .recipe-ingredient-row > .quantity-line {
+  min-width: 0;
+}
+.mealshop .recipe-editor .line {
+  grid-template-columns: minmax(0, 1fr) 120px 64px 34px;
+  gap: 8px;
+  align-items: start;
+}
+.mealshop .ingredient-column-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 64px 34px 34px;
+  gap: 8px;
+  color: var(--color-text-maxcontrast);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.mealshop .recipe-editor .line > .labeled-field,
+.mealshop .recipe-editor .line > .ingredient-select {
+  margin: 0;
+  min-width: 0;
+}
+.mealshop .recipe-editor .line .field > select {
+  min-height: 44px;
+}
+.mealshop .recipe-editor .line .input-field {
+  margin-block: 0;
+}
+.mealshop .ingredient-extension {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 34px;
+  align-items: center;
+  margin-block: 4px;
+  gap: 8px;
+  max-width: 240px;
+}
+.mealshop .recipe-editor .nc-select.v-select.select {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+}
+.mealshop .recipe-editor-header h1 {
+  padding-inline-start: 32px;
+}
+.mealshop .recipe-title-row {
+  scroll-margin-top: 140px;
+}
+.mealshop .prepared-reference {
+  display: block;
+  font-size: 13px;
+  margin-block: 4px;
+}
+.mealshop .recipe-part-content {
+  scroll-margin-top: 80px;
+}
+.mealshop .recipe-editor .step-editor {
+  margin: 0 0 12px;
+  padding: 0 0 12px;
+}
+.mealshop .recipe-editor .step-editor > * {
+  margin-block: 4px;
+}
+.mealshop .step-instruction-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 34px 34px;
+  gap: 8px;
+  align-items: start;
+}
+.mealshop .step-number {
+  padding-block-start: 12px;
+  color: var(--color-text-maxcontrast);
+  font-variant-numeric: tabular-nums;
+}
+.mealshop .step-instruction-row .textarea {
+  margin: 0;
+}
+.mealshop .step-instruction-row textarea {
+  field-sizing: content;
+  min-height: 44px;
+  max-height: none;
+}
+.mealshop .step-timing,
+.mealshop .step-associations {
+  gap: 8px;
+  margin-inline-start: 28px;
+}
+.mealshop .step-timing .cooking-duration {
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 4px;
+}
+.mealshop .step-editor .labeled-field > label {
+  font-size: 12px;
+}
+.mealshop .recipe-metadata > .editor-fields {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  align-items: start;
+}
+.mealshop .recipe-part-content .plain-list {
+  margin-block: 0;
+  padding-inline-start: 20px;
+}
+.mealshop .recipe-part-content .plain-list li {
+  margin-block: 4px;
+}
+.mealshop .recipe-part-content .plain-list p {
+  margin-bottom: 4px;
+}
+@media (max-width: 600px) {
+  .mealshop .recipe-part-content {
+    scroll-margin-top: 140px;
+  }
+  .mealshop .recipe-title-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mealshop .part-dependencies {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mealshop .ingredient-column-head {
+    display: none;
+  }
+  .mealshop .recipe-editor .line {
+    grid-template-columns: minmax(0, 1fr) 64px 34px;
+  }
+  .mealshop .recipe-editor .line > .ingredient-select {
+    grid-column: 1 / -1;
+  }
+  .mealshop .recipe-editor .recipe-ingredient-row > .button-vue {
+    align-self: end;
+  }
+  .mealshop .step-timing,
+  .mealshop .step-associations {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mealshop .recipe-part-content .plain-list p[lang] {
+  white-space: pre-wrap;
+}
+
+.mealshop .recipe-reading-toolbar,
+.mealshop .recipe-scale {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mealshop .recipe-reading-toolbar {
+  gap: 16px;
+  margin-block: 16px 24px;
+}
+.mealshop .recipe-scale {
+  margin: 0;
+}
+.mealshop .recipe-scale > .labeled-field {
+  width: 140px;
+}
+.mealshop .recipe-reading-toolbar > .field {
+  width: 160px;
+  margin: 0;
 }

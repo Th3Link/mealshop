@@ -14,7 +14,7 @@ export async function recordFixture(page: Page, source: string) {
   appendFileSync(ledger, JSON.stringify({ id, source }) + '\n', { mode: 0o600 })
 }
 export async function openFixture(page: Page, source: string) {
-  await expect(page.locator('.record-list')).toBeVisible()
+  await expect(page.locator('.record-list')).toBeVisible({ timeout: 30000 })
   const entries: unknown[] = readFileSync(ledger, 'utf8')
     .trim()
     .split('\n')

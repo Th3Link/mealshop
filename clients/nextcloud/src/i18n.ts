@@ -3,6 +3,19 @@ import { shoppingEnglish, shoppingGerman } from './shopping-messages'
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  ingredientColumn: 'Ingredient',
+  ingredientExtras: 'Ingredient options',
+  stepExtras: 'Step options',
+  removeTemperature: 'Remove temperature',
+  makeIngredient: 'Prepare at home',
+  buyIngredient: 'Use purchased ingredient',
+  homemade: 'Homemade',
+  preparationInUse:
+    'Resolve references to this preparation and nested prepared parts before removing it or using a purchased ingredient.',
+  buyPreparationConfirm:
+    'Remove this preparation part, its base ingredients and steps? The finished ingredient will be purchased instead.',
+  removeWaitingRange: 'Remove waiting range',
+
   finishAndWait: 'Done · start waiting time',
   moveToPart: 'Move to recipe part',
   production: 'Prepare once',
@@ -314,6 +327,19 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  ingredientColumn: 'Zutat',
+  ingredientExtras: 'Zutatenoptionen',
+  stepExtras: 'Schrittoptionen',
+  removeTemperature: 'Temperatur entfernen',
+  makeIngredient: 'Selbst herstellen',
+  buyIngredient: 'Gekauft verwenden',
+  homemade: 'Selbst hergestellt',
+  preparationInUse:
+    'Löse zuerst die Verweise auf diesen Herstellungsteil und verschachtelte Teile, bevor du ihn entfernst oder die Zutat gekauft verwendest.',
+  buyPreparationConfirm:
+    'Diesen Herstellungsteil mit seinen Grundzutaten und Schritten entfernen? Die fertige Zutat wird stattdessen eingekauft.',
+  removeWaitingRange: 'Zeitspanne entfernen',
+
   finishAndWait: 'Fertig · Ruhezeit starten',
   moveToPart: 'In Rezeptteil verschieben',
   production: 'Einmal zubereiten',
@@ -471,7 +497,7 @@ const de: Record<keyof typeof en, string> = {
   originalInput: 'Originaleingabe',
   leaveHousehold: 'Haushalt verlassen',
   overrideAttendance: 'Kalender-Anwesenheit durch ausgewählte Personen ersetzen',
-  displayUnit: 'Mengenanzeige im Rezept',
+  displayUnit: 'Anzeigeeinheit',
   unit: 'Einheit',
   conversion: 'Umrechnungsbeleg',
   conversionHelp:
@@ -579,7 +605,7 @@ const de: Record<keyof typeof en, string> = {
   passiveSeconds: 'Wartezeit (Sekunden)',
   edit: 'Rezept bearbeiten',
   revision: 'Version',
-  previewServings: 'Portionen vorschauen',
+  previewServings: 'Portionenvorschau',
   preview: 'Vorschau',
   perServing: 'Je Portion',
   total: 'Gesamt',

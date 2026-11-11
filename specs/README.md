@@ -52,5 +52,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F12 | [Guided cooking and preset timers](0012-guided-cooking/specification.md) | Must | M2 |
 | F31 | [Unified preparation, mealprep and ingredient extensions](0031-unified-preparation/specification.md) | Must | M2 |
 | F32 | [Visual household shopping](0032-visual-shopping/specification.md) | Must | M2 |
+| F33 | [Compact recipes and explicit homemade ingredients](0033-compact-recipe-preparation/specification.md) | Must | M2 |
 | F08 | [Barcode scanning and product matching](0008-barcode/specification.md) | Could | M3 |
 | F13 | [Multi-day bread, rolls and pizza scheduling](0013-bread-schedules/specification.md) | Should | M3 |

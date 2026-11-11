@@ -11,7 +11,9 @@ export function useUnsavedChanges(changed: () => boolean) {
     }
   }
   onBeforeRouteLeave(discard)
-  onBeforeRouteUpdate(discard)
+  onBeforeRouteUpdate((to, from) =>
+    to.fullPath.split('#')[0] === from.fullPath.split('#')[0] ? true : discard(),
+  )
   onMounted(() => window.addEventListener('beforeunload', beforeUnload))
   onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
   return discard

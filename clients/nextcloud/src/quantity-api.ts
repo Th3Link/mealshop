@@ -43,6 +43,7 @@ export type LineDraft = {
   extensions?: IngredientExtension[]
   id?: string
   part_id?: string | null
+  prepared_part?: string | null
   ingredient_id: string
   input: string
   unit: Unit

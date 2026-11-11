@@ -29,7 +29,7 @@ pub(crate) fn recipe(store: &Store, selection: &Selection) -> Result<Draft, &'st
         .get(&selection.recipe_id, Some(selection.revision))
         .map_err(|_| "recipe_revision_not_found")?;
     let mut amounts: BTreeMap<String, u128> = BTreeMap::new();
-    for line in &record.recipe.lines {
+    for line in record.recipe.input_lines() {
         let atoms = line
             .grams
             .0
