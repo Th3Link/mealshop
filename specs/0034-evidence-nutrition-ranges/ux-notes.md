@@ -13,4 +13,5 @@ separate; neither comparative composition nor a numeric zero establishes allerge
 
 Unsupported core contributions receive a separate warning, labelled "Nutrition incomplete".
 They never borrow an arbitrary comparison or look like a complete zero. This applies to custom
-ingredients as well, without reading private household data during development.
+ingredients as well. Private source review requires explicit permission and does not replace the
+incomplete state when an ingredient lacks sufficient evidence.

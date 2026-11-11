@@ -1,7 +1,8 @@
 # Public coverage and source selection
 
 The original 313 ingredient identities and their reported maps remain unchanged. This audit reads
-public repository facts only. Private household coverage is pending the explicit read permission.
+public repository facts. The separately authorized private audit is summarized below without
+private names, records or health fields.
 
 | Nutrient | Reported (including same-record supplements) | Estimated | Unknown |
 |---|---:|---:|---:|
@@ -27,6 +28,18 @@ Each food has energy, protein, fat and at least one correctly defined carbohydra
 The two carbohydrate definitions and the two folate definitions remain separate; their unknown
 counts must not be interpreted as omitted ingredients or summed across definitions.
 Unsupported individual nutrients stay unknown, with explicit partial totals in recipes.
+
+## Authorized private coverage
+
+The read-only audit covered both retained test households, their two custom declarations and three
+annotations, using in-memory source matching and authenticated effective ingredient reads. Every
+bundled food still has core coverage in both households; the single annotated public food retains it.
+Neither custom declaration has reported nutrient values, a source URL, declared components or an
+inherited group. No uniquely verified compatible public record was found. These two contributions
+remain explicitly unbounded with the incomplete-nutrition warning; a generic percentage or invented
+source match would misrepresent the evidence. Their owners can add a label/source or declare an
+evidenced range using the existing editor. No record was copied or logged, and all nine active
+persisted files (including membership) remained byte-identical. No private household data was changed.
 
 ## Comparative selections
 

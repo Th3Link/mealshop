@@ -1,6 +1,6 @@
 # Source-backed nutrition ranges
 
-Status: In progress
+Status: Done
 Priority: Must
 Milestone: M2
 Origin: Customer request, following F33, 2026-11-11.
@@ -16,7 +16,8 @@ policy without replacing the original primary records or inferring allergy safet
    protein, fat and a correctly defined carbohydrate value for every bundled food; fill further
    supported missing nutrients using retained primary records/declarations. Keep unavailable individual
    nutrients explicit, never invent values or treat missing data as zero. Unbounded custom inputs
-   receive a separate incomplete-nutrition warning; their private source audit awaits permission.
+   receive a separate incomplete-nutrition warning. Audit private inputs only with explicit permission,
+   in memory without record copies or logging; preserve unknowns when no reviewed source can be matched.
 2. Separate original reported values, same-source supplemental values, comparative ranges and household
    declared ranges. Retain food/state, per-100-g basis, original decimal facts, publisher, record/version,
    retrieval, URL, licence status, selection rationale and method. Existing source facts win.

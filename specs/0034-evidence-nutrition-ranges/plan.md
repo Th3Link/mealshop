@@ -6,24 +6,32 @@
 - [x] Integrate frozen/legacy recipe evidence, own/group ranges and recipe/ingredient rendering.
 - [x] Verify real Nextcloud, languages/themes, accessibility, responsive layouts and restart.
 - [x] Complete source verification, full gates and fixture cleanup.
-- [ ] Review private household ingredients after the requested explicit read permission.
+- [x] Review private household ingredients with the customer's explicit in-memory read permission.
 
-PR dependency: F33 / PR #28 remains open; this slice branches from its verified UI commit.
+PR dependency: F33 / PR #28 is merged. PR #29 targets `main`; its merge commit is incorporated
+without rewriting the shared branch history.
 
-Evidence so far: 95 Rust tests (including exact outward rounding, public-core coverage, malformed
+Evidence: 96 Rust tests (including exact outward rounding, public-core coverage, malformed
 source/range rejection, explicit group inheritance, frozen legacy reads/new revision pinning),
 19 Vue unit tests, strict build, reproducible 313-food/73-group coverage and original archive
 comparison of 1,341 facts. Runtime/CI evidence is recorded after final installation below.
 
 Privacy boundary: an automatic review rejected a proposed private-ingredient read plus full audit
-copy. It was not executed or retried. The customer's separate explicit question for a read-only,
-in-memory comparison is pending. No private household source review, audit export or guessed
-name-based automatic mapping has been performed. Existing authorized private deployment backups
-remain in place; fixture tests are limited to owned ledger-recorded households.
+copy. That operation was not executed. The customer subsequently authorized a read-only,
+in-memory ingredient review, explicitly prohibiting audit copies and record logging. That review
+is now complete: both retained households, two custom declarations and three annotations were
+checked in memory against the public catalogue, frozen source indexes and authenticated effective
+ingredient APIs. The single annotation of a public food retains complete core coverage. Both custom
+declarations lack reported composition, source URLs, explicit components and group inheritance;
+neither has a uniquely verified compatible public source. Their unknown contributions remain visibly
+incomplete rather than receiving fabricated ranges. No private names, records or health fields were
+exported or logged; no new private backup or audit copy was created. All nine active persisted files
+(membership plus the eight original household files) remained byte-identical. Existing authorized
+deployment backups remain in place; browser fixtures use ledger-recorded synthetic households only.
 
 ## Installed acceptance evidence
 
-- The full 21-test Playwright suite passed **against the installed final container**, including
+- The full 21-test Playwright suite passed **against the installed container before the final inheritance correction**, including
   native recipe authoring, household roles/invitations, dietary blocks, group inheritance, conflicts
   and draft retention, shopping, timers, barcode/camera fallbacks and responsive/theme checks.
 - F34 specifically verifies 580–597 kcal total / 290–298.5 kcal per serving for the synthetic
@@ -32,7 +40,7 @@ remain in place; fixture tests are limited to owned ledger-recorded households.
   scans found no violations. Screenshots were visually inspected. This is automated evidence,
   not a blanket accessibility certification.
 - Rootless TCP and Unix-socket container lifecycle/auth/CSRF/private-storage checks passed.
-- Installed image: `sha256:caecd0263b91e499fc7182d8a8a92d0ae80f6a249b0ba2f3b98e822506ae41da`.
+- Initial installed image: `sha256:caecd0263b91e499fc7182d8a8a92d0ae80f6a249b0ba2f3b98e822506ae41da`.
   Public JS/CSS SHA-256 hashes match the local strict production build.
 - A real container restart preserved the owned-fixture authenticated API snapshots, one referenced
   image and all 41 persisted files exactly. API snapshots excluded both original households;
@@ -42,15 +50,32 @@ remain in place; fixture tests are limited to owned ledger-recorded households.
 - All 17 repository/client gates, strict rustdoc and direct original-archive verification passed;
   final pre-push rerun and PR-head CI are recorded in the pull request.
 
-The technical public-catalogue slice is complete and installed. F34 remains **In progress** because
-acceptance item 1 also names private household source review. Automatic approval rejected the planned
-read/export; the requested read-only/in-memory permission remains unanswered. The rejected audit
-copy does not exist. No private source audit, silent name-based mapping or invented private values
-has been substituted. Unsupported core contributions have explicit incomplete-nutrition warnings.
-See [public coverage and comparisons](coverage.md). PR publication is a separate dependent change
-on top of F33 / PR #28; merge/review and CI state remain visible on GitHub.
+The implemented and installed slice and the authorized private source audit are complete. F34 is
+**Done** with explicit per-nutrient unknowns and two unbounded private declarations; Done does not
+claim that unsupported private composition has become known. No customer data required mutation.
+See [coverage and comparisons](coverage.md). PR #29 targets `main`; review and exact-head CI remain
+visible on GitHub.
 
 The importer merges complementary nutrient fields of identical reference records before deriving
 group extrema. The independent verifier also reconstructs each group bound from all effective
 members, rather than merely checking the retained extremal references. Browser checks explicitly
 cover sweetener sugars 0–100 g and vinegar salt 0.045–0.208 g per 100 g.
+
+Final review found that a subtype inheriting an explicitly replaced household group profile could
+still borrow the group's original catalogue estimates for omitted nutrients. The focused regression
+`inherited_household_profile_does_not_borrow_replaced_group_estimates` failed before the correction
+on an unexpected fat range and passed afterward. Only reference-mode parents now pass comparison
+profiles to subtypes; a household profile's omitted fields remain unknown. The regression verifies
+recipe output, persisted inheritance and immutable recipe reads after restart. Final candidate image,
+installed-browser rerun and exact-head CI evidence are recorded in PR #29.
+
+## Acceptance trace
+
+| Acceptance | Evidence |
+|---|---|
+| 1 | Offline 313-food/73-group core coverage, independent archive checks and the authorized aggregate-only private audit above |
+| 2–3 | Frozen primary observations, importer/verifier checks, provenance/bound validation regressions and inspectable source facts |
+| 4 | Checked exact aggregation and outward-rounding Rust regressions, serving-scale browser assertions |
+| 5 | Installed EN/DE light/dark, 1440/390/320 px browser checks, scoped axe scans and inspected screenshots |
+| 6 | Own-range/group inheritance tests, reader/stale-write checks, frozen revision and byte-identical legacy/restart checks |
+| 7 | Full repository/client/container gates, 21 installed browser tests, cleanup/integrity proof and PR-head CI |

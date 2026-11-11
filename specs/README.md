@@ -13,7 +13,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | Requirement | Feature | Priority | Milestone |
 |---|---|---|---|
 | F18 | [Storage adapters, Nextcloud `ExApp` and Flutter](0018-storage-deployment/specification.md) | Must | M1 |
-| F34 | [Source-backed nutrition ranges](0034-evidence-nutrition-ranges/specification.md) | Must | M2 |
 
 ## Draft
 
@@ -54,5 +53,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F31 | [Unified preparation, mealprep and ingredient extensions](0031-unified-preparation/specification.md) | Must | M2 |
 | F32 | [Visual household shopping](0032-visual-shopping/specification.md) | Must | M2 |
 | F33 | [Compact recipes and explicit homemade ingredients](0033-compact-recipe-preparation/specification.md) | Must | M2 |
+| F34 | [Source-backed nutrition ranges](0034-evidence-nutrition-ranges/specification.md) | Must | M2 |
 | F08 | [Barcode scanning and product matching](0008-barcode/specification.md) | Could | M3 |
 | F13 | [Multi-day bread, rolls and pizza scheduling](0013-bread-schedules/specification.md) | Should | M3 |
