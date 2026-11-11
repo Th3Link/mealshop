@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import EstimateBadge from './EstimateBadge.vue'
+import NutritionEvidence from './NutritionEvidence.vue'
+import {
+  hasEstimates,
+  hasMissingNutrition,
+  nutrientValue,
+  nutrientText,
+} from './nutrition-evidence'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NcTextField from './LabeledField.vue'
@@ -255,6 +263,9 @@ onMounted(load)
           ? t('sourceDeclaration')
           : t('sourceNotice')
       }}</NcNoteCard>
+      <NcNoteCard v-if="hasEstimates(selected) || hasMissingNutrition(selected)" type="warning">{{
+        t(hasMissingNutrition(selected) ? 'nutritionMissingHelp' : 'estimateHelp')
+      }}</NcNoteCard>
       <section
         v-if="
           selected.tags.length || selected.components.length || selected.declared_allergens.length
@@ -304,17 +315,23 @@ onMounted(load)
               <tr
                 v-for="nutrient in data.nutrient_definitions.filter((n) => n.group !== 'component')"
                 :key="nutrient.id"
+                :class="{ 'estimated-row': nutrientValue(selected, nutrient.id).range }"
               >
                 <th scope="row">
                   {{ nutrientLabel(nutrient.id, nutrient.label) }}
                   <small>{{ nutrient.unit }}</small>
                 </th>
                 <td class="numeric">
-                  {{ exact(selected.nutrients[nutrient.id]?.amount ?? null) }}
+                  {{ nutrientText(selected, nutrient.id)
+                  }}<EstimateBadge v-if="nutrientValue(selected, nutrient.id).range" />
                 </td>
               </tr>
             </tbody>
           </table>
+          <NutritionEvidence
+            :profiles="selected.nutrition_estimates"
+            :definitions="data.nutrient_definitions"
+          />
           <template v-if="Object.keys(selected.constituents).length"
             ><h3>{{ t('foodConstituents') }}</h3>
             <ul class="plain-list">

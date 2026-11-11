@@ -13,6 +13,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | Requirement | Feature | Priority | Milestone |
 |---|---|---|---|
 | F18 | [Storage adapters, Nextcloud `ExApp` and Flutter](0018-storage-deployment/specification.md) | Must | M1 |
+| F34 | [Source-backed nutrition ranges](0034-evidence-nutrition-ranges/specification.md) | Must | M2 |
 
 ## Draft
 

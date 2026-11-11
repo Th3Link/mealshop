@@ -32,7 +32,44 @@ export const constituentSchema = z.object({
   amount: z.string().nullable(),
 })
 export type Constituent = z.infer<typeof constituentSchema>
-const readingSchema = z.object({ amount: z.string().nullable(), uncertainty: z.string() })
+export const boundsSchema = z.object({ lower: z.string(), upper: z.string() })
+export const readingSchema = z.object({
+  amount: z.string().nullable(),
+  range: boundsSchema.optional(),
+  uncertainty: z.string(),
+})
+export type Reading = z.infer<typeof readingSchema>
+export const nutritionEvidenceSchema = z.object({
+  version: z.string(),
+  method: z.enum(['source_supplement', 'comparison_envelope', 'group_envelope']),
+  rationale: z.string(),
+  references: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      form: z.string(),
+      source: sourceSchema,
+      values: z.record(z.string(), boundsSchema),
+    }),
+  ),
+  values: z.record(z.string(), boundsSchema),
+})
+export type NutritionEvidence = z.infer<typeof nutritionEvidenceSchema>
+const rangeResultSchema = z.discriminatedUnion('status', [
+  z.object({
+    status: z.literal('complete'),
+    total: boundsSchema,
+    per_serving: boundsSchema,
+    estimated_ingredients: z.array(z.string()),
+  }),
+  z.object({
+    status: z.literal('partial'),
+    known_total: boundsSchema,
+    known_per_serving: boundsSchema,
+    estimated_ingredients: z.array(z.string()),
+    missing_ingredients: z.array(z.string()),
+  }),
+])
 export const organizationSchema = z.object({
   is_group: z.boolean().default(false),
   intolerance_triggers: z.array(z.literal('sorbitol')).default([]),
@@ -55,6 +92,7 @@ export const organizationSchema = z.object({
 })
 export type Organization = z.infer<typeof organizationSchema>
 export const ingredientSchema = z.object({
+  nutrition_estimates: z.array(nutritionEvidenceSchema).default([]),
   constituents: z.record(z.string(), constituentSchema).default({}),
   organization: organizationSchema.default({
     is_group: false,
@@ -130,6 +168,7 @@ export const nutritionSchema = z.object({
   servings: z.number(),
   nutrients: z.array(
     z.object({
+      range: rangeResultSchema.optional(),
       id: z.string(),
       label: z.string(),
       group: z.string(),
@@ -146,6 +185,8 @@ export const nutritionSchema = z.object({
   warning_codes: z.array(z.string()),
   ingredients: z.array(
     z.object({
+      nutrition_estimates: z.array(nutritionEvidenceSchema).default([]),
+      nutrient_ranges: z.record(z.string(), boundsSchema).default({}),
       ingredient_id: z.string(),
       name: z.string(),
       grams: z.string(),
@@ -204,6 +245,7 @@ export const recipeSchema = z.object({
 })
 export const displayLinesSchema = z.array(
   z.object({
+    nutrition_estimated: z.boolean().default(false),
     ingredient_id: z.string(),
     name: z.string().nullable().optional(),
     translations: z

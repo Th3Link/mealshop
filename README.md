@@ -79,3 +79,10 @@ Native guided cooking now saves independent preset timers and reviewed multi-day
 Personal Nextcloud reminders retain delivery uncertainty and deadlines across restart.
 [Cooking guide](docs/guides/cooking.md) · [F12 evidence](specs/0012-guided-cooking/validation.md) ·
 [F13 evidence](specs/0013-bread-schedules/validation.md).
+
+F34 adds explicitly labelled comparison envelopes alongside immutable reported composition. All 313
+bundled foods and 73 organizational groups have energy/protein/fat/carbohydrate coverage; unsupported
+individual nutrients remain unknown. Recipe totals include exact source readings and comparative
+ranges, with outward rounding and visible incomplete subtotals. Own declared ranges are supported.
+See [F34](specs/0034-evidence-nutrition-ranges/specification.md) and
+[the evidence protocol](data/README.md#supplemental-nutrition-and-comparison-evidence-v1).

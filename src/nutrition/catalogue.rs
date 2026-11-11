@@ -46,6 +46,8 @@ pub(crate) struct Education {
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Reading {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) range: Option<super::estimates::Bounds>,
     pub(crate) amount: Option<Amount>,
     pub(crate) uncertainty: String,
 }
@@ -69,6 +71,8 @@ pub(crate) struct IngredientText {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Ingredient {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) nutrition_estimates: Vec<super::estimates::Profile>,
     #[serde(
         default,
         skip_serializing_if = "BTreeMap::is_empty",
@@ -144,10 +148,10 @@ fn https(value: &str) -> Result<(), String> {
 
 impl Catalogue {
     pub(crate) fn from_json(json: &str) -> Result<Self, String> {
-        if json.len() > 1_048_576 {
-            return Err("Catalogue exceeds the 1 MiB input limit".to_owned());
+        if json.len() > 2_097_152 {
+            return Err("Catalogue exceeds the 2 MiB input limit".to_owned());
         }
-        let result: Self =
+        let mut result: Self =
             serde_json::from_str(json).map_err(|e| format!("Invalid catalogue JSON: {e}"))?;
         if result.schema_version != 1 || result.language != "en" || result.ingredients.len() > 1000
         {
@@ -163,6 +167,7 @@ impl Catalogue {
                 return Err(format!("Duplicate ingredient ID: {}", ingredient.id));
             }
         }
+        super::estimates::attach(&mut result)?;
         result.validate_composition()?;
         crate::constituents::validate(&result)?;
         Ok(result)
@@ -328,8 +333,27 @@ impl Ingredient {
         for alias in &self.aliases {
             text(alias)?;
         }
-        for reading in self.nutrients.values() {
+        if self.nutrition_estimates.len() > 3 {
+            return Err("Too many supplemental nutrition profiles".to_owned());
+        }
+        let mut covered = BTreeSet::new();
+        for profile in &self.nutrition_estimates {
+            profile.validate(self)?;
+            if profile.values.keys().any(|id| !covered.insert(id)) {
+                return Err("Supplemental nutrition profiles must not overlap".to_owned());
+            }
+        }
+        for (nutrient, reading) in &self.nutrients {
             text(&reading.uncertainty)?;
+            if let Some(range) = &reading.range {
+                range.validate()?;
+                if nutrient.info().group == "component" {
+                    return Err("Constituents require separate explicit evidence".to_owned());
+                }
+                if reading.amount.is_some() {
+                    return Err("Use a reported value or a range, never both".to_owned());
+                }
+            }
         }
         for note in &self.education {
             for field in [

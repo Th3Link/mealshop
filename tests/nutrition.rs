@@ -34,7 +34,7 @@ async fn request_on(
         .await
         .unwrap();
     let status = response.status();
-    let bytes = to_bytes(response.into_body(), 1_000_000).await.unwrap();
+    let bytes = to_bytes(response.into_body(), 2_097_152).await.unwrap();
     (status, serde_json::from_slice(&bytes).unwrap())
 }
 
@@ -281,7 +281,7 @@ fn catalogue_validation_rejects_incompatible_or_ambiguous_records() {
         );
     }
     assert!(mealshop_server::router_from_catalogue_json("{").is_err());
-    assert!(mealshop_server::router_from_catalogue_json(&" ".repeat(1_048_577)).is_err());
+    assert!(mealshop_server::router_from_catalogue_json(&" ".repeat(2_097_153)).is_err());
     assert!(
         mealshop_server::router_from_catalogue_json(
             r#"{"schema_version":1,"version":"empty","ingredients":[]}"#
@@ -307,7 +307,7 @@ async fn oversized_and_malformed_bodies_return_structured_errors() {
             .unwrap();
         assert!(response.status().is_client_error());
         let value: Value =
-            serde_json::from_slice(&to_bytes(response.into_body(), 1_000_000).await.unwrap())
+            serde_json::from_slice(&to_bytes(response.into_body(), 2_097_152).await.unwrap())
                 .unwrap();
         assert!(value["error"].is_string());
     }
@@ -475,4 +475,135 @@ fn translations_are_optional_but_cannot_override_the_english_base_or_use_invalid
         }
         assert!(mealshop_server::router_from_catalogue_json(&fixture.to_string()).is_err());
     }
+}
+
+#[tokio::test]
+async fn declared_nutrition_ranges_are_summed_without_omitting_inputs_and_round_outwards() {
+    let mut catalogue: Value =
+        serde_json::from_str(include_str!("../data/catalogue-base.json")).unwrap();
+    catalogue["ingredients"][0]["nutrients"]["energy_kcal"] = json!({"amount":null,"range":{"lower":"100.000001","upper":"120.000009"},"uncertainty":"Synthetic declared interval"});
+    let app = mealshop_server::router_from_catalogue_json(&catalogue.to_string()).unwrap();
+    let (_,body)=request_on(app.clone(),"POST","/api/nutrition/calculate",json!({"lines":[{"ingredient_id":"oats","grams":"100"},{"ingredient_id":"chia","grams":"100"}],"servings":2,"preparation":"as_recorded"})).await;
+    let energy = nutrient(&body, "energy_kcal");
+    assert_eq!(energy["total"], Value::Null);
+    assert_eq!(energy["known_total"], "486.00");
+    assert_eq!(energy["range"]["status"], "complete");
+    assert_eq!(
+        energy["range"]["total"],
+        json!({"lower":"586.00","upper":"606.01"})
+    );
+    assert_eq!(
+        energy["range"]["per_serving"],
+        json!({"lower":"293.00","upper":"303.01"})
+    );
+    let (_, tiny) = request_on(
+        app,
+        "POST",
+        "/api/nutrition/calculate",
+        recipe("oats", json!("0.000001"), 1),
+    )
+    .await;
+    assert_eq!(
+        nutrient(&tiny, "energy_kcal")["range"]["total"],
+        json!({"lower":"0.00","upper":"0.01"})
+    );
+    for reading in [
+        json!({"amount":null,"range":{"lower":"2","upper":"1"},"uncertainty":"Invalid reversed range"}),
+        json!({"amount":"1","range":{"lower":"1","upper":"2"},"uncertainty":"Ambiguous value and range"}),
+    ] {
+        catalogue["ingredients"][0]["nutrients"]["energy_kcal"] = reading;
+        assert!(mealshop_server::router_from_catalogue_json(&catalogue.to_string()).is_err());
+    }
+}
+
+#[tokio::test]
+async fn unknown_inputs_make_the_range_a_covered_subtotal_instead_of_false_total() {
+    let mut catalogue: Value =
+        serde_json::from_str(include_str!("../data/catalogue-base.json")).unwrap();
+    catalogue["ingredients"][0]["nutrients"]["protein"] = json!({"amount":null,"range":{"lower":"10","upper":"20"},"uncertainty":"Synthetic declared interval"});
+    catalogue["ingredients"][2]["source"]["version"] = json!("Synthetic unbounded test record");
+    let app = mealshop_server::router_from_catalogue_json(&catalogue.to_string()).unwrap();
+    let (_,body)=request_on(app,"POST","/api/nutrition/calculate",json!({"lines":[{"ingredient_id":"oats","grams":"100"},{"ingredient_id":"psyllium-husks","grams":"100"}],"servings":1,"preparation":"as_recorded"})).await;
+    let row = nutrient(&body, "protein");
+    assert_eq!(row["range"]["status"], "partial");
+    assert_eq!(
+        row["range"]["known_total"],
+        json!({"lower":"10.00","upper":"20.00"})
+    );
+    assert_eq!(
+        row["range"]["missing_ingredients"],
+        json!(["psyllium-husks"])
+    );
+    assert!(row["range"].get("total").is_none());
+}
+
+#[tokio::test]
+async fn every_bundled_food_has_core_values_and_psyllium_is_a_source_backed_recipe_range() {
+    let (_, list) = request("GET", "/api/ingredients", Value::Null).await;
+    let items = list["ingredients"].as_array().unwrap();
+    assert_eq!(items.len(), 313);
+    for item in items {
+        let covered = |id: &str| {
+            item["nutrients"][id]["amount"].is_string()
+                || item["nutrition_estimates"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|p| p["values"].get(id).is_some())
+        };
+        for id in ["energy_kcal", "protein", "fat"] {
+            assert!(covered(id), "{} missing {id}", item["id"]);
+        }
+        assert!(covered("available_carbohydrate") || covered("carbohydrate"));
+    }
+    let (_, result) = request("POST", "/api/nutrition/calculate", json!({"lines":[{"ingredient_id":"oats","grams":"100"},{"ingredient_id":"psyllium-husks","grams":"100"}],"servings":2,"preparation":"as_recorded"})).await;
+    let energy = nutrient(&result, "energy_kcal");
+    assert_eq!(energy["total"], Value::Null);
+    assert_eq!(energy["range"]["status"], "complete");
+    assert_eq!(
+        energy["range"]["total"],
+        json!({"lower":"580.00","upper":"597.00"})
+    );
+    assert_eq!(
+        energy["range"]["per_serving"],
+        json!({"lower":"290.00","upper":"298.50"})
+    );
+    assert_eq!(
+        energy["range"]["estimated_ingredients"],
+        json!(["psyllium-husks"])
+    );
+    assert_eq!(
+        result["ingredients"][1]["nutrition_estimates"][0]["references"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    assert_eq!(nutrient(&result, "beta_glucan")["total"], Value::Null);
+}
+
+#[test]
+fn comparison_profiles_reject_fabricated_bounds_sources_and_overlapping_evidence() {
+    let original: Value =
+        serde_json::from_str(include_str!("../data/catalogue-base.json")).unwrap();
+    let registry: Value =
+        serde_json::from_str(include_str!("../data/nutrition-estimates-v1.json")).unwrap();
+    let profile = registry["profiles"]["psyllium-husks"]["profiles"][0].clone();
+    for variant in 0..6 {
+        let mut p = profile.clone();
+        match variant {
+            0 => p["values"]["energy_kcal"]["upper"] = json!("999"),
+            1 => p["references"][0]["source"]["url"] = json!("http://example.org"),
+            2 => p["references"][0]["source"]["license"] = json!(""),
+            3 => p["references"][0]["values"]["energy_kcal"] = json!({"lower":"3","upper":"2"}),
+            4 => p["values"]["beta_glucan"] = json!({"lower":"0","upper":"0"}),
+            _ => p["method"] = json!("source_supplement"),
+        }
+        let mut catalogue = original.clone();
+        catalogue["ingredients"][2]["nutrition_estimates"] = json!([p]);
+        assert!(mealshop_server::router_from_catalogue_json(&catalogue.to_string()).is_err());
+    }
+    let mut catalogue = original;
+    catalogue["ingredients"][2]["nutrition_estimates"] = json!([profile.clone(), profile]);
+    assert!(mealshop_server::router_from_catalogue_json(&catalogue.to_string()).is_err());
 }

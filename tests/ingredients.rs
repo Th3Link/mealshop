@@ -556,7 +556,7 @@ async fn assert_legacy_overlay_loads(dir: &Directory, revision: u64) {
 async fn subtype_nutrition_is_explicit_pinned_and_persistent() {
     let dir = Directory::new();
     let app = dir.app();
-    let create = json!({"expected_revision":0,"ingredient":{"name":"Test flour group","language":"en","form":"Flour","recorded_on":"2026-11-09","annotations":{"organization":{"is_group":true,"diet":"vegan","origin":"plant","nutrition":{"mode":"own","note":"Test packaging declaration per 100 g","source_url":"","values":{"protein":{"amount":"10.500000","uncertainty":"Declared label"},"fat":{"amount":"0","uncertainty":"Declared zero"}}}}}}});
+    let create = json!({"expected_revision":0,"ingredient":{"name":"Test flour group","language":"en","form":"Flour","recorded_on":"2026-11-09","annotations":{"organization":{"is_group":true,"diet":"vegan","origin":"plant","nutrition":{"mode":"own","note":"Test packaging declaration per 100 g","source_url":"","values":{"energy_kcal":{"amount":null,"range":{"lower":"300","upper":"350"},"uncertainty":"Synthetic declared range"},"protein":{"amount":"10.500000","uncertainty":"Declared label"},"fat":{"amount":"0","uncertainty":"Declared zero"}}}}}}});
     let (status, group) = call(&app, "POST", "/api/household/ingredients", create, false).await;
     assert_eq!(status, StatusCode::CREATED);
     let child = json!({"expected_revision":1,"ingredient":{"name":"Test Type 550","language":"en","form":"Flour","recorded_on":"2026-11-09","annotations":{"organization":{"group_id":group["id"],"nutrition":{"mode":"inherit"}}}}});
@@ -565,13 +565,17 @@ async fn subtype_nutrition_is_explicit_pinned_and_persistent() {
     let recipe = json!({"title":"Inherited flour","language":"en","servings":2,"preparation":"as_recorded","lines":[{"ingredient_id":child["id"],"grams":"200"}],"steps":[]});
     let (status, saved) = call(&app, "POST", "/api/recipes", recipe, false).await;
     assert_eq!(status, StatusCode::CREATED);
-    let protein = saved["nutrition"]["nutrients"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|n| n["id"] == "protein")
-        .unwrap();
-    assert_eq!(protein["total"], "21.00");
+    let nutrients = saved["nutrition"]["nutrients"].as_array().unwrap();
+    assert_eq!(
+        nutrients.iter().find(|n| n["id"] == "protein").unwrap()["total"],
+        "21.00"
+    );
+    let energy = &nutrients.iter().find(|n| n["id"] == "energy_kcal").unwrap()["range"];
+    assert_eq!(energy["total"], json!({"lower":"600.00","upper":"700.00"}));
+    assert_eq!(
+        energy["per_serving"],
+        json!({"lower":"300.00","upper":"350.00"})
+    );
     let update = json!({"expected_revision":2,"annotations":{"organization":{"is_group":true,"nutrition":{"mode":"own","note":"Changed label","source_url":"","values":{"protein":{"amount":"20","uncertainty":"Declared"}}}}}});
     assert_eq!(
         call(
@@ -682,6 +686,9 @@ async fn ingredient_profiles_reject_invalid_inputs_and_preserve_primary_sources(
         json!({"group_id":"missing"}),
         json!({"group_id":"oats"}),
         json!({"diet":"invented"}),
+        json!({"nutrition":{"mode":"own","note":"Test","source_url":"","values":{"protein":{"amount":null,"range":{"lower":"2","upper":"1"},"uncertainty":"Reversed"}}}}),
+        json!({"nutrition":{"mode":"own","note":"Test","source_url":"","values":{"protein":{"amount":"1","range":{"lower":"1","upper":"2"},"uncertainty":"Ambiguous"}}}}),
+        json!({"nutrition":{"mode":"own","note":"Test","source_url":"","values":{"beta_glucan":{"amount":null,"range":{"lower":"1","upper":"2"},"uncertainty":"Unsupported constituent inference"}}}}),
         json!({"nutrition":{"mode":"own","note":"","source_url":"","values":{}}}),
         json!({"nutrition":{"mode":"own","note":"Label","source_url":"http://example.org","values":{}}}),
         json!({"nutrition":{"mode":"own","note":"Label","source_url":"","values":{"protein":{"amount":"-1","uncertainty":"Label"}}}}),

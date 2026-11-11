@@ -13,7 +13,7 @@
 These are explicit future work, not completed features or ignored CI findings.
 
 - F23 catalogue generation is offline; 29 identities still lack exact composition. The current
-  file is near the pre-existing 1 MiB demo loader bound; wider loading belongs with F18.
+  file uses the F34 bounded 2 MiB catalogue envelope; wider loading belongs with F18.
 - BLS available carbohydrate and food folate stay separate from other definitions; complete
   product coverage and additional micronutrients need reviewed mappings, never inferred conversion.
 - F21 first slice covers de/en demo messages, names and decimals. Reviewed source/evidence prose

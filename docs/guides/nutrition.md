@@ -1,7 +1,8 @@
 # F02: ingredient catalogue and nutrition
 
 Status: accepted through merged PR #4. This is a disposable test demo with
-313 ingredients and 17 nutrient/component definitions, not a production family planner.
+313 ingredients, 18 nutrient definitions and two legacy constituent identifiers. This page describes
+the core API and disposable demo; the native Nextcloud client also displays F34 comparison ranges.
 
 ## Try the browser demo
 ```sh
@@ -13,6 +14,8 @@ chia for two servings. Choose **Calculate nutrition**: energy is 510.50 kcal for
 
 Change chia to psyllium husks. Complete totals become unknown: the known energy subtotal
 remains 389.00 kcal for the recipe and 194.50 kcal per serving, explicitly labelled partial.
+F34 additionally returns a complete comparative range in a separate field; the native Nextcloud
+client displays it. The disposable demo retains its legacy reported-only display.
 Change preparation to **Will be cooked / yield unknown** to see the retention/yield warning.
 Negative amounts produce a visible error and preserve the input. Search the notebook by
 name or alias (for example Hafer); expand composition to inspect source values per 100 g.
@@ -62,9 +65,9 @@ scaled sum is at most 10³² and the rounding numerator at most 10³⁴, within 
 integer. Portion values are never calculated from rounded recipe totals. This is arithmetic
 precision, not a claim that the source food data are accurate to two decimals.
 
-The registry distinguishes kcal/kJ, g, mg and µg. Carbohydrate specifically means the
-by-difference value including fibre; folate is total folate, not dietary folate equivalents.
-Other definitions require separate IDs before addition. Energy is retained from the source,
+The registry distinguishes kcal/kJ, g, mg and µg. USDA by-difference carbohydrate (including fibre)
+and BLS available carbohydrate (excluding fibre, including polyols) use separate IDs. Total folate
+and food folate also remain separate; neither is dietary folate equivalents. Energy is retained from the source,
 not recomputed from macros. Micronutrient coverage is a selected starter subset, not exhaustive.
 
 ## Use an operator-provided catalogue
@@ -87,7 +90,7 @@ features (F03/F09/F18). The [local recipe authoring slice](recipes.md) now saves
 and pins catalogue subsets independently of this public reference dataset.
 
 ## Limits and provenance
-JSON recipe bodies are limited to 128 KiB; catalogue input to 1 MiB and 1000 records.
+JSON recipe bodies are limited to 128 KiB; catalogue input to 2 MiB and 1000 records.
 The server rejects malformed/oversized/unsupported catalogues and exits on missing files.
 An empty catalogue is valid and the browser explains why calculation is unavailable.
 Source dates, sample counts and educational references are snapshots, not live provider sync.
@@ -120,3 +123,54 @@ Error responses add stable `code` alongside the English `error` text; calculatio
 
 ## Typed quantity conversion (F03 initial slice)
 `POST /api/quantities/convert` accepts `{"quantity":{"amount":"1.250000","unit":"kg"},"target":"g"}` and returns the original input, its dimension and an exact converted quantity. Supported unit identifiers are `g`, `kg`, `ml`, `l`, `tsp`, `tbsp` and `piece`. Cross-dimension and spoon conversions require ingredient data or a named standard and return stable error codes. Conversion rejects values outside the six-decimal precision bound rather than rounding. This endpoint is not yet connected to recipes or user preferences.
+
+## F34: explicit ranges and comparison evidence
+
+Ingredient records and calculated ingredient contributions may contain `nutrition_estimates`. Each
+profile retains its version, method, matching rationale, observed bounds and self-contained primary
+references. `source_supplement` adds facts from the identical original source; `comparison_envelope`
+and `group_envelope` are estimates. Original readings take precedence. Reference facts are per 100 g
+in their named state. No implicit carbohydrate, density, raw/cooked or constituent conversion applies.
+See [public coverage](../../specs/0034-evidence-nutrition-ranges/coverage.md) and ADR 0019.
+
+A nutrient row with any estimated input has an additional tagged `range`. For the synthetic
+100 g oats + 100 g psyllium fixture with two servings, its energy row includes:
+
+```json
+{
+  "id": "energy_kcal",
+  "total": null,
+  "per_serving": null,
+  "range": {
+    "status": "complete",
+    "total": { "lower": "580.00", "upper": "597.00" },
+    "per_serving": { "lower": "290.00", "upper": "298.50" },
+    "estimated_ingredients": ["psyllium-husks"]
+  }
+}
+```
+
+This is an excerpt; the existing reported-only status/subtotal/missing fields remain present.
+When an input has no bound, `range.status` is `partial`, with `known_total`, `known_per_serving`,
+`estimated_ingredients` and `missing_ingredients` instead of complete total fields. Clients must
+label this covered subtotal, never a complete result. Without estimated inputs, `range` is absent
+and the existing reported-only fields apply. Unsupported core inputs receive a separate incomplete
+nutrition warning in the native client. Individual unknown micronutrients remain visible as well.
+
+Household `organization.nutrition.mode = "own"` accepts a reported value **or** a range in its
+existing `values` map. For example, a synthetic per-100-g reading is:
+
+```json
+{"amount":null,"range":{"lower":"10.000001","upper":"12.500001"},"uncertainty":"Explicit household comparison evidence"}
+```
+
+Both limits are nonnegative exact decimal strings with at most six places; lower must not exceed
+upper. A nonnull amount and range cannot coexist. Evidence note remains required, with an optional
+HTTPS source. Explicit subtype inheritance carries group ranges and source identity. Constituents
+require separate explicit evidence; these ranges do not assert allergy safety or health effects.
+
+Checked integer sums retain original serving ratios, with lower bounds rounded down and upper
+bounds up only at the final two-place display. Observed comparison spans are **not guaranteed bounds
+or statistical confidence intervals**. New recipe revisions pin effective evidence. Legacy history
+files stay unchanged and receive immutable-v1 supplemental analysis in memory. The 2 MiB per-recipe
+publication/restart guard remains independent of the 2 MiB catalogue envelope.

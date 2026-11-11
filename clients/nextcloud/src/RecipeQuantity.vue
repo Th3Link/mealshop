@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import EstimateBadge from './EstimateBadge.vue'
+import { hasEstimates, hasMissingNutrition } from './nutrition-evidence'
 import { computed, watch, toRaw, ref } from 'vue'
 import { z } from 'zod'
 import NcTextField from './LabeledField.vue'
@@ -199,6 +201,14 @@ watch(locale, (_, previous) => {
         >
       </NcActions>
     </div>
+    <EstimateBadge
+      v-if="
+        ingredient &&
+        !model.prepared_part &&
+        (hasEstimates(ingredient) || hasMissingNutrition(ingredient))
+      "
+      :unknown="ingredient ? hasMissingNutrition(ingredient) : false"
+    />
     <div v-if="temperature" class="ingredient-extension">
       <NcTextField
         :model-value="temperatureInput"

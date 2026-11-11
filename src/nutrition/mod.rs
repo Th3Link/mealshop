@@ -1,7 +1,9 @@
 //! Computes nutrient estimates from validated ingredient records.
 
 pub(crate) mod catalogue;
+pub(crate) mod estimates;
 pub(crate) mod nutrients;
+mod ranges;
 
 use crate::quantities::{Grams, SCALE, rounded};
 use catalogue::{Basis, Catalogue, Education, IngredientText, Source};
@@ -94,6 +96,9 @@ pub(crate) struct Calculation {
 
 #[derive(Serialize)]
 pub(crate) struct Contribution {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    nutrition_estimates: Vec<estimates::Profile>,
+    nutrient_ranges: BTreeMap<Nutrient, estimates::Bounds>,
     ingredient_id: String,
     name: String,
     form: String,
@@ -107,6 +112,8 @@ pub(crate) struct Contribution {
 
 #[derive(Serialize)]
 pub(crate) struct NutrientResult {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    range: Option<ranges::RangeResult>,
     #[serde(flatten)]
     info: NutrientInfo,
     total: Option<String>,
@@ -177,6 +184,12 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
     let contributions = ingredients
         .iter()
         .map(|(i, grams)| Contribution {
+            nutrition_estimates: i.nutrition_estimates.clone(),
+            nutrient_ranges: i
+                .nutrients
+                .iter()
+                .filter_map(|(id, r)| r.range.clone().map(|bounds| (*id, bounds)))
+                .collect(),
             ingredient_id: i.id.clone(),
             name: i.name.clone(),
             form: i.form.clone(),
@@ -192,6 +205,10 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
     let mut warnings = vec![
         "Composition is a source-based estimate; missing values are unknown, not zero. No individual benefit or allergen safety is established.",
     ];
+    if ingredients.iter().any(|(i, _)| estimates::is_estimated(i)) {
+        warning_codes.push("comparison_nutrition");
+        warnings.push("Nutrition includes explicit estimated ranges. Reference envelopes describe selected observations, not guaranteed bounds or statistical confidence intervals.");
+    }
     if recipe.lines.iter().any(|line| line.conversion.is_some()) {
         warning_codes.push("conversion_estimate");
         warnings.push("Ingredient masses include source-based or user-declared conversion estimates; original quantities and evidence remain in the saved recipe revision.");
@@ -203,7 +220,7 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
     if ["carbohydrate", "available_carbohydrate"].iter().all(|id| {
         nutrients
             .iter()
-            .any(|n| n.info.id == *id && n.status == "partial")
+            .any(|n| n.info.id == *id && (n.status != "unknown" || n.range.is_some()))
     }) {
         warning_codes.push("carbohydrate_definitions");
         warnings.push("Sources use different carbohydrate definitions. By-difference and available carbohydrate totals stay separate and may be partial; no inferred conversion is applied.");
@@ -213,7 +230,7 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         catalogue_version: catalogue.version.clone(),
         servings: recipe.servings,
         preparation: recipe.preparation,
-        rounding: "2 decimal places, half away from zero; scale unrounded totals for portions",
+        rounding: "2 decimal places; reported totals: half away from zero; ranges: lower down, upper up; scale unrounded values for portions",
         nutrients,
         ingredients: contributions,
         warnings,
@@ -234,9 +251,11 @@ fn calculate_nutrient(
     let mut missing = Vec::new();
     let mut uncertainty = Vec::new();
     let mut known = 0;
+    let mut range = ranges::Accumulator::default();
     for (ingredient, grams) in ingredients {
+        range.ingredient(ingredient, grams, nutrient)?;
         let reading = ingredient.nutrients.get(&nutrient);
-        if let Some(amount) = reading.and_then(|r| r.amount.as_ref()) {
+        if let estimates::Value::Reported(amount) = estimates::value(ingredient, nutrient) {
             numerator = amount
                 .atoms()
                 .checked_mul(grams.0.atoms())
@@ -258,6 +277,7 @@ fn calculate_nutrient(
     let portion = rounded(numerator, denominator * u128::from(servings))?;
     let complete = missing.is_empty();
     Ok(NutrientResult {
+        range: range.finish(servings, factor_numerator, factor_denominator)?,
         info: nutrient.info(),
         total: complete.then(|| total.clone()),
         per_serving: complete.then(|| portion.clone()),

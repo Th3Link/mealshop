@@ -45,7 +45,7 @@ fortified/unfortified, lactose-free and fat-in-dry-matter variants retain separa
 A cheese/quark fat-in-dry-matter grade does not mean that many grams of fat per 100 g food.
 Milk is still measured in grams; no ml-to-g conversion or density assumption is introduced.
 
-The registry has 17 definitions. BLS available carbohydrate (`CHO`) excludes fibre and includes
+The current vocabulary has 18 nutrient definitions plus two legacy constituent identifiers. BLS available carbohydrate (`CHO`) excludes fibre and includes
 polyols; USDA by-difference carbohydrate includes fibre. They remain separate IDs, not summed or
 converted. BLS `FOLFD` and USDA 1187 are food folate, not total folate or DFE. Soluble fibre is used
 only where reported; beta-glucan is never extrapolated from total/soluble fibre. Source-specific
@@ -86,8 +86,8 @@ identity/state, component definitions and aliases in the diff. Source verificati
 catalogue checks run in CI. There are 3,778 mapped nutrient values in the current snapshot.
 
 An operator's custom JSON file may still replace the catalogue via `MEALSHOP_CATALOGUE_PATH`.
-The pre-existing 1 MiB/1000-record loader bound remains an input-validation constraint of this
-small demo; wider persistent catalogues require F18 loading/storage work. See the
+The F34-enriched loader has a bounded 2 MiB/1000-record envelope; wider persistent
+catalogues still require F18 loading/storage work. See the
 [nutrition demo guide](../docs/guides/nutrition.md) and [F23](../specs/0023-kitchen-ingredient-catalogue/specification.md).
 
 ## Curated conversion reference portions
@@ -119,3 +119,58 @@ groups. It supplies no nutrient, allergy or health data and never replaces froze
 `python3 scripts/verify_catalogue.py` checks complete and unique coverage alongside the original
 source verifier. `intolerance-triggers.json` is a separate explicit-declaration vocabulary; it is not
 part of the regulated fourteen-allergen positive-identity mapping.
+
+## Supplemental nutrition and comparison evidence v1
+
+F34 explicitly extends the earlier exact-only policy **for separate labelled evidence**. The
+original `catalogue.json`, source snapshots and 29 identity-only nutrient maps remain unchanged.
+`nutrition-estimates-v1.json` is a deterministic supplement matched by ingredient ID, original
+publisher/record/version and food state. It provides complete core energy/protein/fat/carbohydrate
+coverage for 313 foods and member-derived spans for 73 groups. Original readings always win.
+Same-record BLS/USDA supplements add reported sugars, saturated fat and salt where actually stated.
+All other envelopes remain estimates, including degenerate zero-width comparisons.
+
+`data/sources/nutrition-evidence-v1.json` freezes selected raw decimal tokens, units, acquisition
+metadata and explicit comparison selections. BLS/USDA attribution and archive hashes above apply.
+Manufacturer facts retain publisher, product/URL, retrieval and explicit unknown data-licence status;
+no product photographs, health claims or full copyrighted pages are redistributed. Public labels are
+rounded observations, not measurements of an unidentified household product. Numeric `< x` labels
+are conservatively enclosed by 0…x, never silently replaced by zero. An unspecified detection limit
+remains unknown. Microgram, carbohydrate and folate definitions remain distinct.
+
+Min/max spans describe selected comparable observations, **not guaranteed bounds or statistical
+confidence intervals**. There is no universal percentage. Matching rationale names product/purity,
+flavour, processing and state differences. Examples: dry pulse pasta versus dry pulse flour,
+partially defatted hemp powders, two per-100-g psyllium declarations. Only supported fields are
+filled; no beta-glucan, soluble fibre, allergy or diet inference is made. KoRo rice protein energy
+was excluded because of conflicting page/specification declarations and macro/energy consistency;
+per-100-ml pudding tables were excluded without density evidence.
+
+Group ranges use explicit `ingredient-groups.json` membership only, retaining observed extrema,
+never a guessed typical subtype. A group with incompatible supplied member records receives no
+bundled group fallback. Own household ranges and group inheritance preserve explicit evidence.
+New recipe revisions pin effective profiles. Legacy records receive immutable-v1 supplemental
+analysis in memory, with their original persisted files/history unchanged. A future evidence release
+must use a new versioned registry; never revise published v1 in place. Back up before installation:
+older executables may reject the new optional persisted fields.
+
+The enriched catalogue exceeds the previous 1 MiB envelope. Its bounded JSON loader now permits
+2 MiB/1000 records; the independent **2 MiB recipe record publication/restart guard** remains.
+Recipe calculation uses checked integer arithmetic through serving scaling, rounding lower bounds
+down and upper bounds up at the final two-place display. Missing unbounded inputs produce an
+explicit covered subtotal, never an apparently complete total. Exact-only legacy total fields stay
+nullable; new tagged `range` fields carry complete or partial intervals for updated clients.
+
+Offline generation and independent verification (also in CI):
+
+```sh
+python3 scripts/import_nutrition_estimates.py
+python3 scripts/import_nutrition_estimates.py --check
+python3 scripts/verify_nutrition_estimates.py
+python3 scripts/verify_nutrition_archives.py --bls /path/BLS.zip --usda /path/USDA.zip
+```
+
+The optional archive check verifies archive/workbook hashes and original selected BLS/USDA tokens,
+units and acquisition metadata directly, without network access. Manufacturer facts are factual
+manual selections from the linked primary declarations; package updates require a new reviewed
+release. No household health data are included in these public evidence files.

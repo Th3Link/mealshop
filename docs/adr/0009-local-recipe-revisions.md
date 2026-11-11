@@ -53,3 +53,10 @@ Backups/restore, ambiguous-write recovery and startup failures are documented in
 [recipe guide](../guides/recipes.md). No automatic Git commit, deletion, synchronization,
 recipe translation, authentication or production web design is included. F04/F18 remain
 In progress until their broader contracts and customer acceptance are complete.
+
+## F34 amendment
+ADR 0019 adds separate source-backed comparison envelopes and explicit own ranges without
+replacing original primary readings or inferring dietary safety. The enriched catalogue has a
+bounded 2 MiB loader envelope; the independent 2 MiB recipe publication/restart guard remains.
+Historical evidence above describes the decision at that time. See
+[F34](../../specs/0034-evidence-nutrition-ranges/specification.md) for scope and current status.

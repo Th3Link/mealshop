@@ -1274,3 +1274,67 @@
   width: 160px;
   margin: 0;
 }
+
+.mealshop .estimate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline: 6px;
+  padding: 2px 6px;
+  border-inline-start: 3px solid var(--color-warning-text);
+  border-radius: var(--border-radius-small);
+  background: var(--color-warning);
+  color: var(--color-main-text);
+  font-size: 12px;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+.mealshop .estimated-row {
+  background: color-mix(in srgb, var(--color-warning), transparent 55%);
+}
+.mealshop .nutrition-evidence {
+  margin-block: 12px 20px;
+  overflow-wrap: anywhere;
+}
+.mealshop .nutrition-evidence small {
+  display: block;
+}
+.mealshop .reference-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 13px;
+}
+.mealshop .nutrient-input {
+  min-width: 0;
+}
+.mealshop .nutrient-input-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mealshop .nutrient-bounds {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.mealshop .nutrient-bounds .field {
+  min-width: 0;
+  flex: 1;
+}
+.mealshop .estimate-badge {
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .mealshop table .estimate-badge .estimate-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
