@@ -46,3 +46,35 @@ describe('completed history contracts', () => {
     expect(historyEntrySchema.parse(entry)).toEqual(entry)
   })
 })
+
+import { recommendationSchema } from '../src/planning-api'
+describe('recommendation evidence contracts', () => {
+  const value = {
+    model_version: 'history-v1',
+    score: 71,
+    baseline_rank: 2,
+    confidence: 'limited_history',
+    discovery: false,
+    evidence: {
+      cooks: 1,
+      household_ratings: 1,
+      personal_ratings: 0,
+      recent_cooks: 0,
+      earlier_revision_cooks: 1,
+    },
+    reasons: ['completed_cooks', 'household_ratings', 'earlier_revisions'],
+  }
+  it('preserves evidence counts and explicitly labels earlier recipe revisions', () => {
+    expect(recommendationSchema.parse(value)).toEqual(value)
+  })
+  it('rejects probability-like confidence and negative observation counts', () => {
+    expect(recommendationSchema.safeParse({ ...value, confidence: 0.9 }).success).toBe(false)
+    expect(
+      recommendationSchema.safeParse({ ...value, evidence: { ...value.evidence, cooks: -1 } })
+        .success,
+    ).toBe(false)
+    expect(
+      recommendationSchema.safeParse({ ...value, model_version: 'unreviewed-model' }).success,
+    ).toBe(false)
+  })
+})

@@ -26,3 +26,10 @@ pub(crate) struct Actor {
     pub(crate) user: String,
     pub(crate) owner: bool,
 }
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod evaluation;
+pub(crate) mod ranking;
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod ranking_tests;

@@ -159,9 +159,11 @@ impl Store {
     }
     pub(crate) fn policy(&mut self, expected: u64, policy: Policy) -> Result<(), &'static str> {
         self.change(expected, |data| {
-            data.epoch = data.epoch.checked_add(1).ok_or("history_capacity")?;
-            data.policy = policy;
-            data.stats.clear();
+            if data.policy != policy {
+                data.epoch = data.epoch.checked_add(1).ok_or("history_capacity")?;
+                data.policy = policy;
+                data.stats.clear();
+            }
             Ok(())
         })
     }

@@ -55,12 +55,15 @@ No standalone/Flutter shell, remote training provider or new crate is introduced
   allergens, intolerance triggers, compositional closure and current plus frozen declarations are
   hard filters. Unknown allergy coverage continues to require review. Learning cannot make an
   infeasible recipe eligible. Recommendation selection retains the existing explicit plan review.
-- The baseline orders feasible recipes by declared dislikes with stable recipe identity. An opt-in
+- The baseline orders feasible recipes by declared dislikes and stable recipe identity, with a
+  deterministic discovery position for a recently added recipe. An opt-in
   versioned integer rule uses smoothed recorded ratings, actual cooking frequency and recent-cook
   variety; confidence describes evidence counts, not a probability or allergy/health assurance.
-  Keep uncooked recipes visible and reserve an early discovery position within equal dislike groups.
+  Keep recipes without current learning evidence visible and reserve an early discovery position
+  within equal dislike groups. Recipe-identity feedback can include older revisions; disclose their
+  contribution count. The variety window uses the seven reported civil days ending on the plan day.
   Return reasons, sample counts, model/history versions and baseline position. Evaluate the whole
-  bounded pool once and return at most 20 previews, rather than ranking separate client batches.
+  bounded pool once and return at most 20 previews per page, rather than ranking separate client batches.
 - Model-change evaluation is an offline, deterministic, versioned synthetic holdout benchmark
   against the baseline: hard violations, held-out acceptance, distinct recommendations and held-out
   rating utility. Acceptance/utility are explicitly labelled offline proxies, not measured human

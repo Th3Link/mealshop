@@ -58,6 +58,7 @@ onBeforeUnmount(() => {
 function changed() {
   dirty.value = true
   notice.value = ''
+  validation.value = ''
 }
 function date(value: string) {
   return new Intl.DateTimeFormat(locale.value, { timeZone: 'UTC', dateStyle: 'medium' }).format(
@@ -181,9 +182,18 @@ async function save() {
           servings: Number(draft.value.source.servings),
         }
       : draft.value.source
+  if (source.kind === 'manual' && !source.recipe_id) {
+    validation.value = t('historyChooseRecipe')
+    return
+  }
+  if (!draft.value.input.attendees.length) {
+    validation.value = t('historyChooseAttendees')
+    return
+  }
   const data = historyDraftSchema.safeParse({ ...draft.value, source })
   if (!data.success) {
-    validation.value = t('required')
+    validation.value =
+      draft.value.input.active_seconds === -1 ? t('cookDurationError') : t('invalid')
     return
   }
   validation.value = ''
@@ -215,6 +225,10 @@ async function remove() {
     dirty.value = false
     await router.push(base.value)
   })
+}
+async function learningChanged(message: string) {
+  await load()
+  notice.value = message
 }
 async function reload() {
   if (discard()) await load()
@@ -310,7 +324,7 @@ function paginate(delta: number) {
       :owner="current?.role === 'owner'"
       :profiles="profiles"
       :total="list?.total ?? 0"
-      @changed="load"
+      @changed="learningChanged"
     />
   </template>
   <template v-else-if="editing && draft"

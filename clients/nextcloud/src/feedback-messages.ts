@@ -1,4 +1,22 @@
 export const feedbackEnglish = {
+  historyChooseRecipe: 'Choose the saved recipe you cooked.',
+  historyChooseAttendees: 'Choose at least one attendee.',
+  suggestDislikes: 'Declared ingredient dislikes affect this position.',
+  suggestRules: 'Rule-based suggestions; learning is off.',
+  suggestLearned: 'Ordered using this household’s recorded experience.',
+  suggestSafety:
+    'Exclusions for selected attendees are checked first. Missing dietary information or unassigned attendees still need review; history support is not a safety guarantee or prediction probability.',
+  suggestDiscovery: 'Try a recipe',
+  suggestNoHistory: 'No current learning history',
+  suggestLimited: 'Limited history',
+  suggestRepeated: 'Repeated cooking history',
+  suggestCookOne: 'completed cook',
+  suggestCookMany: 'completed cooks',
+  suggestHouseholdSamples: 'Household rating count',
+  suggestPersonalSamples: 'Attendee rating count',
+  suggestRecent: 'Cooks in the 7 days up to this meal',
+  suggestEarlier: 'Cooks from earlier recipe revisions',
+
   history: 'Cooking history',
   historyIntro: 'What you actually cooked, who ate and how it went.',
   historyNew: 'Record a completed cook',
@@ -47,6 +65,7 @@ export const feedbackEnglish = {
     'Erase learned preference aggregates and turn learning off? Your cooking records remain saved.',
   historyLearningChanged: 'Learning scope saved; a fresh learning period has started.',
   historyLearningResetDone: 'Learning reset and turned off. Cooking records remain saved.',
+  historyRecordedCooks: 'Saved cooking records',
   historyLearnedCooks: 'Contributing completed cooks',
   historyLearnedRecipes: 'Recipes with history',
   historyOwnerOnly: 'The household owner manages learning and deletion of all history.',
@@ -60,6 +79,23 @@ export const feedbackEnglish = {
   historyReload: 'Reload saved history',
 } as const
 export const feedbackGerman: Record<keyof typeof feedbackEnglish, string> = {
+  historyChooseRecipe: 'Wähle das gespeicherte Rezept, das du gekocht hast.',
+  historyChooseAttendees: 'Wähle mindestens eine Person aus.',
+  suggestDislikes: 'Angegebene Abneigungen gegen Zutaten werden berücksichtigt.',
+  suggestRules: 'Vorschläge nach festen Regeln; das Lernen ist ausgeschaltet.',
+  suggestLearned: 'Geordnet nach den erfassten Erfahrungen dieses Haushalts.',
+  suggestSafety:
+    'Ausschlüsse ausgewählter Teilnehmender werden zuerst geprüft. Fehlende Ernährungsangaben oder Teilnehmende bleiben prüfungspflichtig; die Erfahrungsbasis ist keine Sicherheitsgarantie oder Trefferwahrscheinlichkeit.',
+  suggestDiscovery: 'Ein Rezept ausprobieren',
+  suggestNoHistory: 'Noch ohne aktuelle Lernhistorie',
+  suggestLimited: 'Wenig Kochhistorie',
+  suggestRepeated: 'Wiederholt gekocht',
+  suggestCookOne: 'Kochvorgang',
+  suggestCookMany: 'Kochvorgänge',
+  suggestHouseholdSamples: 'Anzahl Haushaltsbewertungen',
+  suggestPersonalSamples: 'Anzahl Einzelbewertungen',
+  suggestRecent: 'Kochvorgänge in den 7 Tagen bis zu dieser Mahlzeit',
+  suggestEarlier: 'Kochvorgänge aus früheren Rezeptständen',
   history: 'Kochhistorie',
   historyIntro: 'Was du wirklich gekocht hast, wer mitgegessen hat und wie es war.',
   historyNew: 'Gekochtes Gericht festhalten',
@@ -110,6 +146,7 @@ export const feedbackGerman: Record<keyof typeof feedbackEnglish, string> = {
   historyLearningChanged: 'Lernumfang gespeichert; ein neuer Lernzeitraum hat begonnen.',
   historyLearningResetDone:
     'Lernen zurückgesetzt und ausgeschaltet. Kocheinträge bleiben gespeichert.',
+  historyRecordedCooks: 'Gespeicherte Kocheinträge',
   historyLearnedCooks: 'Berücksichtigte Kochvorgänge',
   historyLearnedRecipes: 'Rezepte mit Kochhistorie',
   historyOwnerOnly:

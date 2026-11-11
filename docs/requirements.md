@@ -87,3 +87,10 @@ and collection entries. Revocation prevents later server access, without claimin
 See [F05](../specs/0005-sharing-collections/specification.md) and
 [the sharing guide](guides/sharing.md). Payments, public links, federation and other clients remain
 outside this Nextcloud delivery.
+
+## F11 Nextcloud delivery boundary
+Explicit manual or verified completed-session history, household-reported ratings, owner-managed
+local learning epochs and explained whole-pool suggestions reuse existing household authorization
+and dietary/time/quantity checks. Reset removes learned state without silently replaying retained
+ratings. Model changes have a versioned synthetic baseline comparison; real-world effectiveness
+is not inferred from offline proxies. See [F11](../specs/0011-recommendation-feedback/specification.md).

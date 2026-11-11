@@ -16,22 +16,22 @@ const props = defineProps<{
   home: string
   owner: boolean
   profiles: z.infer<typeof profilesSchema> | undefined
-  total: number
 }>()
-const emit = defineEmits<{ changed: [] }>()
+const emit = defineEmits<{ changed: [message: string] }>()
 const state = ref<Learning>(),
   enabled = ref(false),
   members = ref<string[]>([]),
   notice = ref('')
 const { busy, error, run, errorMessage } = useTask()
-useUnsavedChanges(() =>
+const dirty = computed(() =>
   Boolean(
     state.value &&
     (enabled.value !== state.value.policy.enabled ||
-      [...members.value].sort().join('\n') !==
+      (enabled.value ? [...members.value].sort().join('\n') : '') !==
         [...state.value.policy.member_ids].sort().join('\n')),
   ),
 )
+useUnsavedChanges(() => dirty.value)
 const missing = computed(() =>
   members.value.filter((id) => !props.profiles?.members.some((p) => p.id === id)),
 )
@@ -65,20 +65,24 @@ async function save(reset = false) {
     enabled.value = state.value.policy.enabled
     members.value = [...state.value.policy.member_ids]
     notice.value = t(reset ? 'historyLearningResetDone' : 'historyLearningChanged')
-    emit('changed')
+    emit('changed', notice.value)
   })
 }
 async function clear() {
-  if (!props.owner || !state.value || !window.confirm(t('historyClearConfirm'))) return
+  if (
+    !props.owner ||
+    !state.value ||
+    !window.confirm(`${dirty.value ? t('unsaved') + '\n\n' : ''}${t('historyClearConfirm')}`)
+  )
+    return
   await run(async () => {
     await api(domain(props.home, historyPath()), historyRevisionSchema, {
       method: 'DELETE',
       data: { expected_revision: state.value?.revision, confirmed: true },
     })
     notice.value = t('historyCleared')
-    emit('changed')
+    emit('changed', notice.value)
   })
-  if (!error.value) await load()
 }
 onMounted(load)
 </script>
@@ -92,7 +96,8 @@ onMounted(load)
     >
     <p v-if="notice" role="status">{{ notice }}</p>
     <template v-if="state"
-      ><p>
+      ><p>{{ t('historyRecordedCooks') }}: {{ state.history_records }}</p>
+      <p>
         <strong>{{ t(state.policy.enabled ? 'historyLearningOn' : 'historyLearningOff') }}</strong>
         · {{ t('historyLearnedCooks') }}: {{ state.learned_cooks }} ·
         {{ t('historyLearnedRecipes') }}: {{ state.learned_recipes }}
@@ -124,9 +129,10 @@ onMounted(load)
             </fieldset>
             <p class="muted">{{ t('historyLearningNew') }}</p>
             <div class="actions">
-              <NcButton type="submit" :disabled="busy || !profiles || missing.length > 0">{{
-                t('historyLearningSave')
-              }}</NcButton
+              <NcButton
+                type="submit"
+                :disabled="busy || !profiles || !dirty || (enabled && missing.length > 0)"
+                >{{ t('historyLearningSave') }}</NcButton
               ><NcButton
                 type="button"
                 :disabled="busy || !state.policy.enabled"
@@ -136,9 +142,12 @@ onMounted(load)
             </div>
           </fieldset>
         </form>
-        <NcButton :disabled="busy || total === 0" variant="tertiary" @click="clear">{{
-          t('historyClear')
-        }}</NcButton></template
+        <NcButton
+          :disabled="busy || state.history_records === 0"
+          variant="tertiary"
+          @click="clear"
+          >{{ t('historyClear') }}</NcButton
+        ></template
       >
       <p v-else class="muted">{{ t('historyOwnerOnly') }}</p></template
     >

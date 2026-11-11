@@ -92,3 +92,7 @@ read access to Nextcloud accounts or whole households; incoming invitations and 
 Shared with me. Imported recipes expose only their original source URL to recipients, including
 when an older revision was shared before its origin was corrected.
 [Sharing and collections guide](docs/guides/sharing.md) · [F05](specs/0005-sharing-collections/specification.md).
+
+Completed cooking history records actual attendees, optional reported effort and household/profile
+ratings. Owner-controlled local learning starts fresh on opt-in/reset, explains suggestion evidence
+and keeps the planner's hard exclusions and explicit review. [History and preferences](docs/guides/history-and-preferences.md).

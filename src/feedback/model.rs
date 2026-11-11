@@ -86,11 +86,13 @@ pub(crate) struct Stats {
     pub(crate) household: RatingStats,
     pub(crate) members: BTreeMap<String, RatingStats>,
     pub(crate) dates: BTreeMap<String, u32>,
+    pub(crate) revisions: BTreeMap<u64, u32>,
 }
 impl Stats {
     fn change(
         &mut self,
         input: &Input,
+        revision: u64,
         scope: &BTreeSet<String>,
         direction: i32,
     ) -> Result<(), &'static str> {
@@ -103,6 +105,11 @@ impl Stats {
             .checked_add_signed(direction)
             .ok_or("history_storage_failed")?;
         self.dates.retain(|_, count| *count > 0);
+        let count = self.revisions.entry(revision).or_default();
+        *count = count
+            .checked_add_signed(direction)
+            .ok_or("history_storage_failed")?;
+        self.revisions.retain(|_, count| *count > 0);
         if let Some(rating) = input.household_rating {
             self.household.change(rating, direction)?;
         }
@@ -118,7 +125,7 @@ impl Stats {
         Ok(())
     }
 }
-#[derive(Clone, Default, Deserialize, Serialize)]
+#[derive(Clone, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Policy {
     pub(crate) enabled: bool,
@@ -154,7 +161,12 @@ impl Data {
             self.stats
                 .entry(entry.recipe.id.clone())
                 .or_default()
-                .change(&entry.input, &self.policy.member_ids, direction)?;
+                .change(
+                    &entry.input,
+                    entry.recipe.revision,
+                    &self.policy.member_ids,
+                    direction,
+                )?;
             self.stats.retain(|_, value| value.cooks > 0);
         }
         Ok(())

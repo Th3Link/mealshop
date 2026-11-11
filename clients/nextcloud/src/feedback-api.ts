@@ -57,6 +57,7 @@ export const learningSchema = z.object({
   epoch: z.number().int().positive(),
   policy: learningPolicySchema,
   model_version: z.enum(['rules-v1', 'history-v1']),
+  history_records: z.number().int().nonnegative(),
   learned_cooks: z.number().int(),
   learned_recipes: z.number().int(),
 })

@@ -9,7 +9,8 @@ snapshots are stored in browser storage. Planning responses are `no-store` and d
 ## Demo flow
 Enter the household token, then Load family and saved plans. Choose date/meal, attendees,
 recipe revision, target servings and available active/elapsed/advance seconds. Use the candidate
-multi-select (maximum 50) to request suggestions. A manual selection or suggested alternative
+multi-select to request suggestions. The native Nextcloud client submits its whole recipe pool
+(up to 1,000 unique recipes) and pages the coherent order in 20-result pages. A manual selection or suggested alternative
 must be previewed before applying. Preview shows exclusions, selected members' current review
 notes, duration estimates, scaled nutrition and signed changes in required shopping grams.
 Blocked candidates cannot be applied. Every unblocked meal still requires explicit review of
@@ -55,8 +56,12 @@ F09 review evidence, `feasible`, conflict codes, active/elapsed/advance timing, 
 nutrition and signed `shopping_delta`. No persistence occurs.
 
 POST `/api/household/mealplan/suggestions` takes `{"template":{...plan...},"candidates":[
-{"id":"recipe-00000001","revision":1}]}` (1–50 candidates). Every rejected candidate includes
-conflicts/errors. No match returns `no_feasible_meal`; preferences cannot relax exclusions.
+{"id":"recipe-00000001","revision":1}],"page":1}` (1–1,000 unique candidates).
+The entire feasible pool is ranked once per request, with at most 20 full previews returned per page.
+Responses include model/history versions, total/page and recommendation evidence; owner-controlled
+learning and reset are described in [Cooking history](history-and-preferences.md).
+Every rejected candidate includes conflicts/errors. No match returns `no_feasible_meal`;
+preferences cannot relax exclusions.
 
 POST `/api/household/mealplan/apply` takes `{"plan":{...},"expected_revision":0,
 "profile_revision":1,"reviewed":true}`. Use the revisions from the preview. Matching date/meal

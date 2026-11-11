@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useId, watch } from 'vue'
 import { z } from 'zod'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -18,6 +18,7 @@ const props = defineProps<{
   sessionTitle?: string
 }>()
 const emit = defineEmits<{ changed: [] }>()
+const recipeInputId = useId()
 const selection = computed(() =>
   model.value.source.kind === 'manual'
     ? (props.recipes.find(
@@ -92,19 +93,23 @@ watch(
   <fieldset class="editor-fields" :disabled="busy">
     <NcNoteCard type="info">{{ t('historyVisibility') }}</NcNoteCard>
     <div v-if="model.source.kind === 'manual'" class="history-source editor-fields">
-      <NcSelect
-        :model-value="selection"
-        :options="recipes"
-        label="title"
-        :input-label="t('historyRecipe')"
-        label-outside
-        :disabled="busy"
-        :clearable="true"
-        @update:model-value="choose"
-        ><template #option="recipe"
-          ><span>{{ recipe.title }}</span></template
-        ><template #no-options>{{ t('noResults') }}</template></NcSelect
-      >
+      <div class="labeled-field">
+        <label :for="recipeInputId">{{ t('historyRecipe') }}</label>
+        <NcSelect
+          :input-id="recipeInputId"
+          :model-value="selection"
+          :options="recipes"
+          label="title"
+          :input-label="t('historyRecipe')"
+          label-outside
+          :disabled="busy"
+          :clearable="true"
+          @update:model-value="choose"
+          ><template #option="recipe"
+            ><span>{{ recipe.title }}</span></template
+          ><template #no-options>{{ t('noResults') }}</template></NcSelect
+        >
+      </div>
       <div class="form-row">
         <LabeledField
           v-model="model.source.revision"

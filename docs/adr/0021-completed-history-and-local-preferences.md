@@ -41,3 +41,9 @@ writes stop mutations until verified recovery. Hard dietary constraints and expl
 priority over preference ordering. API/UI visibility, reset semantics and acceptance commands remain
 in the F11 contract. Individual account consent/privately authenticated voting is outside this existing
 household profile model; the UI states who reports and can see feedback.
+
+Feedback is pooled by stable recipe identity, while counts from earlier revisions are explicit in
+each explanation. Current target-revision constraints always take precedence. Both rule and learned
+ordering retain deterministic discovery within equal declared-dislike groups; the learned version
+uses candidates without evidence in the current epoch. Recency counts the seven reported civil days
+ending on the selected planning day, without pretending that a date-only history is a measured timeline.

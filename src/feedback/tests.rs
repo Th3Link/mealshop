@@ -98,6 +98,23 @@ fn epochs_incremental_corrections_and_deletion_survive_restart_without_resurrect
     assert!(store.data.policy.enabled);
 }
 #[test]
+fn saving_an_unchanged_scope_keeps_the_epoch_and_learning_evidence() {
+    let directory = Directory::new();
+    let mut store = directory.store();
+    store.policy(0, policy()).unwrap();
+    store.save(1, None, draft(Some(5)), "alice", 100).unwrap();
+    let epoch = store.data.epoch;
+    store.policy(2, policy()).unwrap();
+    assert_eq!(store.data.epoch, epoch);
+    assert_eq!(store.data.stats["recipe-00000001"].cooks, 1);
+    let mut changed = policy();
+    changed.member_ids.clear();
+    store.policy(3, changed).unwrap();
+    assert_eq!(store.data.epoch, epoch + 1);
+    assert!(store.data.stats.is_empty());
+    assert_eq!(store.data.entries.len(), 1);
+}
+#[test]
 fn invalid_duplicate_stale_and_ambiguous_writes_do_not_change_history() {
     let directory = Directory::new();
     let mut store = directory.store();

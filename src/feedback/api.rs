@@ -102,7 +102,7 @@ fn response(
 }
 pub(super) fn policy_view(store: &Store) -> Value {
     json!({"revision":store.data.revision,"epoch":store.data.epoch,"policy":store.data.policy,
-        "model_version":if store.data.policy.enabled {"history-v1"}else{"rules-v1"},"learned_cooks":store.data.stats.values().map(|s|u64::from(s.cooks)).sum::<u64>(),"learned_recipes":store.data.stats.len()})
+        "history_records":store.data.entries.len(),"model_version":if store.data.policy.enabled {super::ranking::LEARNED_VERSION}else{super::ranking::BASELINE_VERSION},"learned_cooks":store.data.stats.values().map(|s|u64::from(s.cooks)).sum::<u64>(),"learned_recipes":store.data.stats.len()})
 }
 async fn learning(State(state): State<Shared>, headers: HeaderMap) -> Response {
     if !household::authorized(&state, &headers) {
