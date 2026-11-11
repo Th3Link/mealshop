@@ -19,15 +19,10 @@ comparison of 1,341 facts. Runtime/CI evidence is recorded after final installat
 Privacy boundary: an automatic review rejected a proposed private-ingredient read plus full audit
 copy. That operation was not executed. The customer subsequently authorized a read-only,
 in-memory ingredient review, explicitly prohibiting audit copies and record logging. That review
-is now complete: both retained households, two custom declarations and three annotations were
-checked in memory against the public catalogue, frozen source indexes and authenticated effective
-ingredient APIs. The single annotation of a public food retains complete core coverage. Both custom
-declarations lack reported composition, source URLs, explicit components and group inheritance;
-neither has a uniquely verified compatible public source. Their unknown contributions remain visibly
-incomplete rather than receiving fabricated ranges. No private names, records or health fields were
-exported or logged; no new private backup or audit copy was created. All nine active persisted files
-(membership plus the eight original household files) remained byte-identical. Existing authorized
-deployment backups remain in place; browser fixtures use ledger-recorded synthetic households only.
+is complete; its findings are excluded from published evidence. Public checks use the bundled
+catalogue and synthetic fixtures. Unknown composition remains an explicit product state and must
+not receive invented ranges. Existing authorized deployment backups remain in place; browser
+fixtures use ledger-recorded synthetic households only.
 
 ## Installed acceptance evidence
 
@@ -50,9 +45,8 @@ deployment backups remain in place; browser fixtures use ledger-recorded synthet
 - All 17 repository/client gates, strict rustdoc and direct original-archive verification passed;
   final pre-push rerun and PR-head CI are recorded in the pull request.
 
-The implemented and installed slice and the authorized private source audit are complete. F34 is
-**Done** with explicit per-nutrient unknowns and two unbounded private declarations; Done does not
-claim that unsupported private composition has become known. No customer data required mutation.
+The implemented and installed slice and the authorized memory-only review are complete. F34 is
+**Done** with explicit per-nutrient unknowns; Done does not claim universal nutrition completeness.
 See [coverage and comparisons](coverage.md). PR #29 targets `main`; review and exact-head CI remain
 visible on GitHub.
 

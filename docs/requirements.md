@@ -75,5 +75,4 @@ supplements from estimated/group/declared ranges, aggregate exact bounds and sho
 indicators with complete/partial totals and provenance. Do not infer constituents, allergy safety,
 density, nutrient definitions or population confidence. The customer explicitly authorized private
 household ingredient review in memory only, without household audit copies or record logging.
-The completed audit preserves two unsupported custom declarations as unknown with visible warnings.
 See [F34](../specs/0034-evidence-nutrition-ranges/specification.md) and ADR 0019.
