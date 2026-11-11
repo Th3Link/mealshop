@@ -29,7 +29,8 @@ form the base; the selected profile ratings are optional. Everything stays withi
 no ratings, health data or training dataset are sent to an external learning service or logged.
 
 Enabling or changing scope starts a new epoch and clears learned aggregates. Only cooks explicitly
-saved or corrected afterward contribute. Old retained ratings are never replayed silently on opt-in,
+saved or corrected afterward contribute. Saving an unchanged scope retains the epoch and contributions.
+Old retained ratings are never replayed silently on opt-in,
 reset, restart or re-enabling. Correcting an old entry is an explicit new contribution. Reset disables
 learning, removes aggregates and retains raw history. Delete all cooking history is a separate confirmed
 action; it removes records/contributions while leaving the chosen learning policy available for future

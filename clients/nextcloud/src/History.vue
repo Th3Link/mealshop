@@ -323,7 +323,6 @@ function paginate(delta: number) {
       :home="home"
       :owner="current?.role === 'owner'"
       :profiles="profiles"
-      :total="list?.total ?? 0"
       @changed="learningChanged"
     />
   </template>

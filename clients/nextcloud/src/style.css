@@ -1482,6 +1482,7 @@
 }
 .mealshop .history-facts dt {
   color: var(--color-text-maxcontrast);
+  text-align: start;
 }
 .mealshop .history-facts :is(dt, dd) {
   display: block;
@@ -1529,5 +1530,8 @@
 @media (max-width: 600px) {
   .mealshop .suggestion-item {
     flex-wrap: wrap;
+  }
+  .mealshop .mealplan-sidebar .app-sidebar-header__mainname-container {
+    padding-inline-start: 32px;
   }
 }
