@@ -44,7 +44,7 @@ uses generated Nextcloud URLs; no hostnames or bearer credentials are embedded i
 
 | Route | Methods | Contract |
 |---|---|---|
-| `/api/households/{home}/collections` | GET, POST | Household list/search; create with `expected_revision`, name, optional description, entries |
+| `/api/households/{home}/collections` | GET, POST | Household list/search; create with `expected_revision` and `collection: {name, description?, entries}` |
 | `/api/households/{home}/collections/{id}` | GET, PUT, DELETE | Pinned content; update/delete with `expected_revision` |
 | `/api/households/{home}/shares` | GET, POST | Owner-only grants; create with `expected_revision`, resource, recipient |
 | `/api/households/{home}/shares/{id}` | PUT, DELETE | Owner-only explicit recipe publication or revocation with `expected_revision` |

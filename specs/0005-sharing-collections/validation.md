@@ -39,8 +39,8 @@ npm --prefix clients/nextcloud audit --audit-level=moderate
 RUSTDOCFLAGS='-D warnings' cargo doc --workspace --no-deps --locked
 ```
 
-The final production assets contain 861 transformed modules, 166.62 kB CSS (23.63 kB gzip) and
-1,440.30 kB JS (442.05 kB gzip). These are build output sizes, not measured load-time claims.
+The production build transforms 861 modules and produces about 167 kB CSS (24 kB gzip) and
+1.44 MB JS (442 kB gzip). These are build output sizes, not measured load-time claims.
 No runtime dependencies or crates were added. Existing Zod annotation build notices do not affect
 strict type checking. No global design reset, fonts or theme palette were introduced.
 
