@@ -36,3 +36,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0019: Source-backed nutrition ranges](0019-source-backed-nutrition-ranges.md)
 
 - [0020: Revision-pinned recipe collections and explicit sharing](0020-recipe-sharing-collections.md)
+
+- [0021: Completed cooking history and local preference epochs](0021-completed-history-and-local-preferences.md)

@@ -33,6 +33,14 @@ pub(crate) struct Store {
     preview_epoch: u128,
 }
 impl Store {
+    pub(crate) fn completed_recipe(&self, id: &str) -> Result<(String, u64, u32), &'static str> {
+        let run = self.data.run(id)?;
+        if run.status != RunState::Completed || run.steps.iter().any(|s| !s.timer.complete()) {
+            return Err("history_session_incomplete");
+        }
+        Ok((run.recipe.id.clone(), run.recipe.revision, run.servings))
+    }
+
     pub(crate) fn health(&self) -> serde_json::Value {
         serde_json::json!({"last_check_at":self.worker_checked_at,"error":self.worker_error,"writable":self.writable})
     }

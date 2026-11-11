@@ -1,0 +1,171 @@
+export const feedbackEnglish = {
+  history: 'Cooking history',
+  historyIntro: 'What you actually cooked, who ate and how it went.',
+  historyNew: 'Record a completed cook',
+  historyEdit: 'Edit cooking record',
+  historyEmpty: 'No completed cooks recorded',
+  historyEmptyHelp:
+    'Record a cook here or from a completed cooking session. Planned meals are not counted.',
+  historyRecipe: 'Cooked recipe',
+  historyDate: 'Date cooked',
+  historyZone: 'Time zone',
+  historyPeople: 'Who ate?',
+  historyEffort: 'Actual active effort',
+  historyEffortHelp: 'Optional. Report your active work; timer estimates are not measurements.',
+  historyEffortUnknown: 'Effort not recorded',
+  historyNoRating: 'Not rated',
+  historyHouseholdRating: 'Household rating',
+  historyPersonalRating: 'Rating for',
+  historyConfirm: 'This was actually cooked.',
+  historyVisibility:
+    'Records and ratings are visible to everyone in this household. Individual ratings are reported for dietary profiles.',
+  historySession: 'From a completed cooking session',
+  historyManual: 'Manually confirmed',
+  historyPinned: 'Recipe and servings are pinned to the completed session.',
+  historySaved: 'Cooking record saved',
+  historyDelete: 'Delete cooking record',
+  historyDeleteConfirm: 'Delete this completed cook and its contribution to learning?',
+  historySearch: 'Search cooking history',
+  historyRecordedBy: 'Recorded by',
+  historyUpdatedBy: 'Last corrected by',
+  historyPeopleRequired: 'Add a dietary profile before recording who ate.',
+  historyRemovedPerson: 'Removed profile',
+  historyRemovedHelp:
+    'An attendee profile no longer exists. Remove it and select current attendees before saving a correction.',
+  historyLearning: 'Preference learning',
+  historyLearningOff: 'Learning is off',
+  historyLearningOn: 'Learning is on',
+  historyLearningHelp:
+    'Only this household’s completed cooks and ratings are used. Nothing is sent to a training service.',
+  historyLearningStart: 'Use completed cooks for suggestions',
+  historyLearningScope: 'Also use ratings for these profiles',
+  historyLearningNew:
+    'Enabling or changing scope starts fresh. Only cooks saved or explicitly corrected afterward contribute; older retained ratings are not silently replayed.',
+  historyLearningSave: 'Save learning scope',
+  historyLearningReset: 'Reset and turn off learning',
+  historyLearningResetConfirm:
+    'Erase learned preference aggregates and turn learning off? Your cooking records remain saved.',
+  historyLearningChanged: 'Learning scope saved; a fresh learning period has started.',
+  historyLearningResetDone: 'Learning reset and turned off. Cooking records remain saved.',
+  historyLearnedCooks: 'Contributing completed cooks',
+  historyLearnedRecipes: 'Recipes with history',
+  historyOwnerOnly: 'The household owner manages learning and deletion of all history.',
+  historyClear: 'Delete all cooking history',
+  historyClearConfirm:
+    'Delete every cooking record and learned contribution in this household? This cannot be undone.',
+  historyCleared: 'Cooking history deleted',
+  historyRatingHelp: '1 = disliked · 5 = enjoyed. Leave unknown ratings unassigned.',
+  historySourceRecipe: 'Recipe revision',
+  historyAttendeeRating: 'Individual ratings',
+  historyReload: 'Reload saved history',
+} as const
+export const feedbackGerman: Record<keyof typeof feedbackEnglish, string> = {
+  history: 'Kochhistorie',
+  historyIntro: 'Was du wirklich gekocht hast, wer mitgegessen hat und wie es war.',
+  historyNew: 'Gekochtes Gericht festhalten',
+  historyEdit: 'Kocheintrag bearbeiten',
+  historyEmpty: 'Noch keine gekochten Gerichte erfasst',
+  historyEmptyHelp:
+    'Erfasse einen Kochvorgang hier oder aus einer abgeschlossenen Kochsitzung. Geplante Mahlzeiten zählen nicht mit.',
+  historyRecipe: 'Gekochtes Rezept',
+  historyDate: 'Gekocht am',
+  historyZone: 'Zeitzone',
+  historyPeople: 'Wer hat mitgegessen?',
+  historyEffort: 'Tatsächliche aktive Arbeit',
+  historyEffortHelp:
+    'Optional. Gib deine aktive Arbeit an; Timer-Schätzungen sind keine Messwerte.',
+  historyEffortUnknown: 'Aufwand nicht erfasst',
+  historyNoRating: 'Nicht bewertet',
+  historyHouseholdRating: 'Bewertung des Haushalts',
+  historyPersonalRating: 'Bewertung für',
+  historyConfirm: 'Das wurde tatsächlich gekocht.',
+  historyVisibility:
+    'Einträge und Bewertungen sind für alle Mitglieder dieses Haushalts sichtbar. Einzelbewertungen werden für Ernährungsprofile erfasst.',
+  historySession: 'Aus einer abgeschlossenen Kochsitzung',
+  historyManual: 'Manuell bestätigt',
+  historyPinned: 'Rezept und Portionen bleiben an die abgeschlossene Kochsitzung gebunden.',
+  historySaved: 'Kocheintrag gespeichert',
+  historyDelete: 'Kocheintrag löschen',
+  historyDeleteConfirm: 'Diesen Kochvorgang und seinen Beitrag zum Lernen löschen?',
+  historySearch: 'Kochhistorie durchsuchen',
+  historyRecordedBy: 'Erfasst von',
+  historyUpdatedBy: 'Zuletzt korrigiert von',
+  historyPeopleRequired: 'Lege ein Ernährungsprofil an, bevor du die Teilnehmenden erfasst.',
+  historyRemovedPerson: 'Entferntes Profil',
+  historyRemovedHelp:
+    'Ein früheres Profil ist nicht mehr vorhanden. Entferne es und wähle aktuelle Teilnehmende, bevor du eine Korrektur speicherst.',
+  historyLearning: 'Vorlieben lernen',
+  historyLearningOff: 'Lernen ist ausgeschaltet',
+  historyLearningOn: 'Lernen ist eingeschaltet',
+  historyLearningHelp:
+    'Verwendet werden nur gekochte Gerichte und Bewertungen dieses Haushalts. Es wird nichts an einen Trainingsdienst gesendet.',
+  historyLearningStart: 'Gekochte Gerichte für Vorschläge verwenden',
+  historyLearningScope: 'Zusätzlich Bewertungen dieser Profile verwenden',
+  historyLearningNew:
+    'Einschalten oder Ändern beginnt einen neuen Lernzeitraum. Erst danach gespeicherte oder ausdrücklich korrigierte Kochvorgänge zählen; ältere Bewertungen werden nicht still erneut ausgewertet.',
+  historyLearningSave: 'Lernumfang speichern',
+  historyLearningReset: 'Lernen zurücksetzen und ausschalten',
+  historyLearningResetConfirm:
+    'Gelernte Vorlieben löschen und das Lernen ausschalten? Deine Kocheinträge bleiben gespeichert.',
+  historyLearningChanged: 'Lernumfang gespeichert; ein neuer Lernzeitraum hat begonnen.',
+  historyLearningResetDone:
+    'Lernen zurückgesetzt und ausgeschaltet. Kocheinträge bleiben gespeichert.',
+  historyLearnedCooks: 'Berücksichtigte Kochvorgänge',
+  historyLearnedRecipes: 'Rezepte mit Kochhistorie',
+  historyOwnerOnly:
+    'Der Haushaltsinhaber verwaltet das Lernen und das Löschen der gesamten Historie.',
+  historyClear: 'Gesamte Kochhistorie löschen',
+  historyClearConfirm:
+    'Alle Kocheinträge und Lernbeiträge dieses Haushalts löschen? Das lässt sich nicht rückgängig machen.',
+  historyCleared: 'Kochhistorie gelöscht',
+  historyRatingHelp: '1 = nicht gemocht · 5 = gern gegessen. Lass unbekannte Bewertungen offen.',
+  historySourceRecipe: 'Rezeptstand',
+  historyAttendeeRating: 'Einzelbewertungen',
+  historyReload: 'Gespeicherte Historie neu laden',
+}
+export const feedbackExplanations = {
+  history_not_found: {
+    en: 'This cooking record is unavailable or has been deleted.',
+    de: 'Dieser Kocheintrag ist nicht verfügbar oder wurde gelöscht.',
+  },
+  history_input_invalid: {
+    en: 'Check the date, attendees, optional effort and ratings from 1 to 5.',
+    de: 'Prüfe Datum, Teilnehmende, optionalen Aufwand und Bewertungen von 1 bis 5.',
+  },
+  history_profiles_changed: {
+    en: 'The dietary profiles changed. Review current attendees before saving.',
+    de: 'Die Ernährungsprofile haben sich geändert. Prüfe die aktuellen Teilnehmenden vor dem Speichern.',
+  },
+  history_revision_conflict: {
+    en: 'Cooking history changed. Your draft is retained; reload explicitly to review the current state.',
+    de: 'Die Kochhistorie hat sich geändert. Dein Entwurf bleibt erhalten; lade ausdrücklich den aktuellen Stand neu.',
+  },
+  history_completion_required: {
+    en: 'Confirm that this was actually cooked.',
+    de: 'Bestätige, dass dies tatsächlich gekocht wurde.',
+  },
+  history_future_date: {
+    en: 'A completed cook cannot have a future date in its selected time zone.',
+    de: 'Ein abgeschlossener Kochvorgang darf in seiner gewählten Zeitzone nicht in der Zukunft liegen.',
+  },
+  history_session_incomplete: {
+    en: 'Complete the cooking session before recording it in history.',
+    de: 'Schließe die Kochsitzung ab, bevor du sie in der Historie erfasst.',
+  },
+  history_duplicate_session: {
+    en: 'This cooking session is already recorded. Open its existing history entry.',
+    de: 'Diese Kochsitzung ist bereits erfasst. Öffne ihren vorhandenen Kocheintrag.',
+  },
+  history_source_changed: {
+    en: 'Keep the original completed-session recipe and servings.',
+    de: 'Behalte Rezept und Portionen der ursprünglichen abgeschlossenen Kochsitzung.',
+  },
+  history_recipe_invalid: {
+    en: 'Choose an existing saved recipe revision.',
+    de: 'Wähle einen vorhandenen gespeicherten Rezeptstand.',
+  },
+  history_capacity: {
+    en: 'Cooking history reached its record or storage limit. Remove entries you no longer need.',
+    de: 'Die Kochhistorie hat ihr Eintrags- oder Speicherlimit erreicht. Entferne nicht mehr benötigte Einträge.',
+  },
+} as const

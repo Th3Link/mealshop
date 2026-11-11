@@ -10,6 +10,7 @@ import MealPlan from './MealPlan.vue'
 import Shopping from './Shopping.vue'
 import Cooking from './Cooking.vue'
 import Collections from './Collections.vue'
+import History from './History.vue'
 import SharedWithMe from './SharedWithMe.vue'
 import SharedContent from './SharedContent.vue'
 import { loadHomes, lastHousehold, rememberHousehold } from './state'
@@ -32,6 +33,7 @@ const router = createRouter({
     { path: '/h/:home/ingredients/:id?', component: Catalogue },
     { path: '/h/:home/recipes/:id?', component: Recipes },
     { path: '/h/:home/collections/:id?', component: Collections },
+    { path: '/h/:home/history/:id?', component: History },
     { path: '/h/:home/household', component: Household },
     { path: '/h/:home/plan', component: MealPlan },
     { path: '/h/:home/shopping', component: Shopping },

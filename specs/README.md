@@ -13,6 +13,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | Requirement | Feature | Priority | Milestone |
 |---|---|---|---|
 | F18 | [Storage adapters, Nextcloud `ExApp` and Flutter](0018-storage-deployment/specification.md) | Must | M1 |
+| F11 | [Cooking history and online preference learning](0011-recommendation-feedback/specification.md) | Should | M2 |
 
 ## Draft
 
@@ -20,7 +21,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 |---|---|---|---|
 | F29 | [Cross-client localization and versioned content translations](0029-cross-client-localization/specification.md) | Must | M1 |
 | F30 | [Standalone Vue client and cross-client integration](0030-standalone-vue-client/specification.md) | Must | M1 |
-| F11 | [Cooking history and online preference learning](0011-recommendation-feedback/specification.md) | Should | M2 |
 | F15 | [Inventory and shopping offers](0015-inventory-offers/specification.md) | Should | M3 |
 | F16 | [Customer-operated recipe link import](0016-recipe-import/specification.md) | Should | M3 |
 | F17 | [MCP recipe tools](0017-mcp/specification.md) | Should | M3 |

@@ -299,6 +299,12 @@ const stateKeys = {
         />
         <div v-if="writable" class="actions cooking-management">
           <NcButton
+            v-if="detail.run.status === 'completed'"
+            :disabled="disabled"
+            :to="{ path: `/h/${home}/history/new`, query: { session: detail.run.id } }"
+            >{{ t('historyNew') }}</NcButton
+          >
+          <NcButton
             v-if="detail.run.status === 'active' && detail.run.target"
             :disabled="disabled"
             @click="replan = { kind: 'target' }"

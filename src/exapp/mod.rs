@@ -566,8 +566,12 @@ async fn dispatch_household(
     request.headers_mut().insert(header::AUTHORIZATION, token);
     request.headers_mut().remove(header::COOKIE);
     request.extensions_mut().insert(crate::cooking::Actor {
-        user: actor,
+        user: actor.clone(),
         notifications_available: true,
+    });
+    request.extensions_mut().insert(crate::feedback::Actor {
+        user: actor,
+        owner: role == Role::Owner,
     });
     let mut response = router
         .oneshot(request)
@@ -635,3 +639,7 @@ mod sharing_tests;
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]
 mod sharing_collection_tests;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod feedback_tests;
