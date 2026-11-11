@@ -34,3 +34,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0018: Homemade recipe inputs](0018-homemade-recipe-inputs.md)
 
 - [0019: Source-backed nutrition ranges](0019-source-backed-nutrition-ranges.md)
+
+- [0020: Revision-pinned recipe collections and explicit sharing](0020-recipe-sharing-collections.md)

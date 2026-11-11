@@ -14,6 +14,8 @@ import {
   mdiHomeOutline,
   mdiBasketOutline,
   mdiChefHat,
+  mdiFolderMultipleOutline,
+  mdiShareVariantOutline,
 } from '@mdi/js'
 import Icon from './Icon.vue'
 import HouseholdSwitcher from './HouseholdSwitcher.vue'
@@ -23,13 +25,21 @@ const route = useRoute()
 const home = computed(() => homes.value.find((h) => h.id === route.params.home))
 const links = [
   { key: 'recipes', icon: mdiBookOpenPageVariantOutline },
+  { key: 'collections', icon: mdiFolderMultipleOutline },
   { key: 'plan', icon: mdiCalendarMonthOutline },
   { key: 'shoppingList', icon: mdiBasketOutline },
   { key: 'cookingSessions', icon: mdiChefHat },
   { key: 'ingredients', icon: mdiCarrot },
   { key: 'household', icon: mdiAccountGroupOutline },
 ] satisfies {
-  key: 'recipes' | 'plan' | 'ingredients' | 'household' | 'shoppingList' | 'cookingSessions'
+  key:
+    | 'recipes'
+    | 'collections'
+    | 'plan'
+    | 'ingredients'
+    | 'household'
+    | 'shoppingList'
+    | 'cookingSessions'
   icon: string
 }[]
 onMounted(() => {
@@ -43,6 +53,9 @@ onMounted(() => {
       <template #list>
         <NcAppNavigationItem :name="t('households')" to="/households"
           ><template #icon><Icon :path="mdiHomeOutline" /></template
+        ></NcAppNavigationItem>
+        <NcAppNavigationItem :name="t('sharedWithMe')" to="/shared"
+          ><template #icon><Icon :path="mdiShareVariantOutline" /></template
         ></NcAppNavigationItem>
         <NcAppNavigationItem
           v-for="item in home ? links : []"

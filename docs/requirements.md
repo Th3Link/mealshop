@@ -76,3 +76,14 @@ indicators with complete/partial totals and provenance. Do not infer constituent
 density, nutrient definitions or population confidence. The customer explicitly authorized private
 household ingredient review in memory only, without household audit copies or record logging.
 See [F34](../specs/0034-evidence-nutrition-ranges/specification.md) and ADR 0019.
+
+
+## F05 Nextcloud delivery boundary
+Recipes remain household-owned. Private collections preserve ordered recipe/revision references;
+source owners manage named-account grants, addressed invitations to household owners and direct
+grants to another household they own. Current recipient membership gates every shared read.
+Imported recipes share only their retained original HTTPS source URL, including historical revisions
+and collection entries. Revocation prevents later server access, without claiming to remove copies.
+See [F05](../specs/0005-sharing-collections/specification.md) and
+[the sharing guide](guides/sharing.md). Payments, public links, federation and other clients remain
+outside this Nextcloud delivery.

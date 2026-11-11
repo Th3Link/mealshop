@@ -86,3 +86,9 @@ individual nutrients remain unknown. Recipe totals include exact source readings
 ranges, with outward rounding and visible incomplete subtotals. Own declared ranges are supported.
 See [F34](specs/0034-evidence-nutrition-ranges/specification.md) and
 [the evidence protocol](data/README.md#supplemental-nutrition-and-comparison-evidence-v1).
+
+Native collections organize ordered, explicitly pinned recipe revisions. Household owners can grant
+read access to Nextcloud accounts or whole households; incoming invitations and content appear in
+Shared with me. Imported recipes expose only their original source URL to recipients, including
+when an older revision was shared before its origin was corrected.
+[Sharing and collections guide](docs/guides/sharing.md) · [F05](specs/0005-sharing-collections/specification.md).

@@ -31,6 +31,11 @@ pub(crate) struct Step {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Recipe {
+    #[serde(
+        default,
+        skip_serializing_if = "crate::recipe_origin::Origin::is_owned"
+    )]
+    pub(crate) origin: crate::recipe_origin::Origin,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub(crate) parts: Vec<crate::recipe_structure::Part>,
     pub(crate) title: String,
@@ -70,6 +75,7 @@ impl Recipe {
     }
 
     fn validate(&self, catalogue: &Catalogue) -> Result<(), String> {
+        self.origin.validate()?;
         if !text(&self.title, 200)
             || (!self.author.is_empty() && !text(&self.author, 200))
             || self
@@ -105,6 +111,8 @@ impl Recipe {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Record {
+    #[serde(skip)]
+    pub(crate) sharing_origin: crate::recipe_origin::Origin,
     schema_version: u32,
     pub(crate) id: String,
     pub(crate) revision: u64,
@@ -223,6 +231,14 @@ impl Store {
         }
         for revisions in self.records.values_mut() {
             revisions.sort_by_key(|r| r.revision);
+            if revisions
+                .windows(2)
+                .any(|pair| !pair[1].recipe.origin.follows(&pair[0].recipe.origin))
+            {
+                return Err(
+                    "Imported recipe provenance changed across persisted revisions".to_owned(),
+                );
+            }
             for (index, record) in revisions.iter().enumerate() {
                 if record.revision != index as u64 + 1 {
                     return Err("Recipe history has duplicate or missing revisions".to_owned());
@@ -282,6 +298,7 @@ impl Store {
             .cloned()
             .ok_or(Error::NotFound)?;
         nutrition::estimates::attach(&mut record.catalogue).map_err(Error::Invalid)?;
+        record.sharing_origin = records.last().ok_or(Error::NotFound)?.recipe.origin.clone();
         Ok(record)
     }
 
@@ -336,6 +353,11 @@ impl Store {
             if previous.revision != expected {
                 return Err(Error::Conflict);
             }
+            if !recipe.origin.follows(&previous.recipe.origin) {
+                return Err(Error::Invalid(
+                    "An imported recipe must retain its original source URL".to_owned(),
+                ));
+            }
             (id.to_owned(), expected + 1)
         } else {
             let next = self
@@ -370,6 +392,7 @@ impl Store {
         let snapshot_json = serde_json::to_string(&snapshot).map_err(|_| Error::Storage)?;
         Catalogue::from_json(&snapshot_json).map_err(Error::Invalid)?;
         let record = Record {
+            sharing_origin: recipe.origin.clone(),
             schema_version: 1,
             id,
             revision,

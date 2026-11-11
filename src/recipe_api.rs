@@ -160,6 +160,7 @@ fn response(
         [(header::CACHE_CONTROL, "no-store")],
         Json(json!({
             "id":record.id,"revision":record.revision,"recipe":record.recipe,
+            "sharing_origin":record.sharing_origin,
             "nutrition":nutrition,"display_lines":display_lines(&record.recipe.lines,display_unit,&record.catalogue),
         })),
     )

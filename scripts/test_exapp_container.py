@@ -46,7 +46,7 @@ def request(container, unix, path, *, user=None, method="GET", data=None, marker
 try:
     docker("network", "create", network)
     mock = f"{network}-ocs"
-    script = "require('http').createServer((q,r)=>{r.writeHead(200,{'Content-Type':'application/json'});r.end(JSON.stringify({ocs:{meta:{statuscode:100},data:false}}))}).listen(8080,'0.0.0.0')"
+    script = "require('http').createServer((q,r)=>{r.writeHead(200,{'Content-Type':'application/json'});r.end(JSON.stringify({ocs:{meta:{statuscode:100},data:q.url.startsWith('/ocs/v1.php/apps/app_api/api/v1/users')?['alice','bob']:false}}))}).listen(8080,'0.0.0.0')"
     docker("run", "-d", "--name", mock, "--network", network, "--network-alias", "ocs", "node:24-alpine", "node", "-e", script)
     containers.append(mock)
     for unix in (False, True):
@@ -119,7 +119,28 @@ try:
         assert code == 200 and json.loads(body)["run"]["schedule"] == review["run"]["schedule"], body
         code, body = request(name, unix, prefix + "/api/household/cooking/internal", user="alice", method="POST", data={"operation": "claim"})
         assert code == 403, body
-        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review and storage")
+        collections = f"/api/households/{home}/collections"
+        status, body = request(name, unix, collections, user="alice", method="POST", data={"expected_revision":0,"collection":{"name":"Container collection","entries":[{"recipe_id":recipe_id,"revision":1}]}})
+        assert status == 200, body
+        collection_id = json.loads(body)["id"]
+        shares = f"/api/households/{home}/shares"
+        status, body = request(name, unix, shares, user="alice", method="POST", data={"expected_revision":1,"resource":{"kind":"collection","collection_id":collection_id},"recipient":{"kind":"account","user":"bob"}})
+        assert status == 200, body
+        share_id = json.loads(body)["id"]
+        shared = f"/api/shared/{home}/{share_id}"
+        status, body = request(name, unix, shared, user="bob")
+        assert status == 200 and json.loads(body)["content"]["items"][0]["content"]["title"] == "Container recipe", body
+        assert request(name, unix, prefix + "/api/recipes", user="bob")[0] == 403
+        assert docker("exec", name, "stat", "-c", "%a", "/data/library.json") == "600"
+        imported = {**recipe,"origin":{"kind":"imported","source_url":"https://example.org/container-original"}}
+        status, body = request(name, unix, prefix + "/api/recipes/" + recipe_id, user="alice", method="PUT", data={"expected_revision":1,"recipe":imported})
+        assert status == 200, body
+        status, body = request(name, unix, shared + "/recipes/" + recipe_id, user="bob")
+        assert status == 200 and json.loads(body)["content"] == {"kind":"source_link","source_url":"https://example.org/container-original"}, body
+        status, body = request(name, unix, shares + "/" + share_id, user="alice", method="DELETE", data={"expected_revision":2})
+        assert status == 200, body
+        assert request(name, unix, shared, user="bob")[0] == 404
+        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation and storage")
 finally:
     for container in reversed(containers):
         subprocess.run(["docker", "stop", "--time", "10", container], capture_output=True)
