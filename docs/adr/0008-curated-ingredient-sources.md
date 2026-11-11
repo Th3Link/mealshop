@@ -48,3 +48,10 @@ Full versioned content translations and production language negotiation remain F
 - [BLS 4.0 download and licence](https://blsdb.de/download).
 - [Max Rubner-Institut BLS overview](https://www.mri.bund.de/de/institute/ernaehrungsverhalten/forschungsbereiche/bundeslebensmittelschluessel-bls/).
 - [USDA downloads](https://fdc.nal.usda.gov/download-datasets/) and [API/data licence](https://fdc.nal.usda.gov/api-guide/).
+
+## F34 amendment
+ADR 0019 adds separate source-backed comparison envelopes and explicit own ranges without
+replacing original primary readings or inferring dietary safety. The enriched catalogue has a
+bounded 2 MiB loader envelope; the independent 2 MiB recipe publication/restart guard remains.
+Historical evidence above describes the decision at that time. See
+[F34](../../specs/0034-evidence-nutrition-ranges/specification.md) for scope and current status.

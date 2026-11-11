@@ -17,3 +17,10 @@ Recipe images are immutable private household assets, independent of recipe revi
 
 ## Consequences
 Local and Nextcloud household APIs share the same overlay semantics. Existing catalogue and recipe JSON remain readable through defaulted additive fields. User-provided labels and allergen declarations are shown as declarations, not reviewed primary evidence. Composite nutrition remains explicitly unknown without exact composition evidence. Shared favourites are household annotations. Existing source records are archived only within that household.
+
+## F34 amendment
+ADR 0019 adds separate source-backed comparison envelopes and explicit own ranges without
+replacing original primary readings or inferring dietary safety. The enriched catalogue has a
+bounded 2 MiB loader envelope; the independent 2 MiB recipe publication/restart guard remains.
+Historical evidence above describes the decision at that time. See
+[F34](../../specs/0034-evidence-nutrition-ranges/specification.md) for scope and current status.

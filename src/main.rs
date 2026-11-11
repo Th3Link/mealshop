@@ -18,7 +18,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             use std::io::Read;
             let mut json = String::new();
             std::fs::File::open(path)?
-                .take(1_048_577)
+                .take(2_097_153)
                 .read_to_string(&mut json)?;
             json
         }

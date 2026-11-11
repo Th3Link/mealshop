@@ -30,3 +30,7 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0016: durable cooking instances and civil-time planning](0016-durable-cooking-and-civil-time.md)
 
 - [0017: Unified preparation and recipe-line instructions](0017-unified-preparation.md)
+
+- [0018: Homemade recipe inputs](0018-homemade-recipe-inputs.md)
+
+- [0019: Source-backed nutrition ranges](0019-source-backed-nutrition-ranges.md)

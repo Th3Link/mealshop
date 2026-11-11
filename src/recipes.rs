@@ -274,13 +274,15 @@ impl Store {
 
     pub(crate) fn get(&self, id: &str, revision: Option<u64>) -> Result<Record, Error> {
         let records = self.records.get(id).ok_or(Error::NotFound)?;
-        revision
+        let mut record = revision
             .map_or_else(
                 || records.last(),
                 |n| records.iter().find(|r| r.revision == n),
             )
             .cloned()
-            .ok_or(Error::NotFound)
+            .ok_or(Error::NotFound)?;
+        nutrition::estimates::attach(&mut record.catalogue).map_err(Error::Invalid)?;
+        Ok(record)
     }
 
     fn validate_active_ingredients(

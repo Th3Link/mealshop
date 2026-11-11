@@ -67,3 +67,12 @@ the native Nextcloud shell, following the supplied Bring interaction reference. 
 F33 refines recipe reading/editing against the approved screens: compact always-open composition,
 optional plus actions and explicit homemade outputs with measured base inputs. N03/N04/N07/N09/N10
 apply. See [F33](../specs/0033-compact-recipe-preparation/specification.md) and ADR 0018.
+
+### F34 — Source-backed nutrition ranges
+The customer authorizes comparative estimates for missing composition, separate from original
+source facts. Freeze selected reference observations and matching rationale, distinguish reported
+supplements from estimated/group/declared ranges, aggregate exact bounds and show native warning
+indicators with complete/partial totals and provenance. Do not infer constituents, allergy safety,
+density, nutrient definitions or population confidence. The customer explicitly authorized private
+household ingredient review in memory only, without household audit copies or record logging.
+See [F34](../specs/0034-evidence-nutrition-ranges/specification.md) and ADR 0019.

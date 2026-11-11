@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { missingContribution } from './nutrition-evidence'
+import EstimateBadge from './EstimateBadge.vue'
 import { computed } from 'vue'
 import type { z } from 'zod'
 import { recipeRecordSchema, displayLinesSchema } from './contracts'
@@ -57,7 +59,13 @@ function lineName(id: string) {
           >
             {{ compactExact(entry.line.amount) }} {{ entry.line.unit }} ·
             {{ ingredient(entry.index)
-            }}<span
+            }}<EstimateBadge
+              v-if="
+                entry.line.nutrition_estimated ||
+                missingContribution(record.nutrition, entry.line.ingredient_id)
+              "
+              :unknown="missingContribution(record.nutrition, entry.line.ingredient_id)"
+            /><span
               v-for="extension in record.recipe.lines[entry.index]?.extensions ?? []"
               :key="extension.type"
               :title="t('ingredientTemperature')"

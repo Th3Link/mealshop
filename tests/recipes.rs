@@ -333,7 +333,7 @@ async fn custom_catalogue_snapshot_must_fit_the_restart_loader_before_publicatio
     oats["education"] = json!([]);
     catalogue["ingredients"] = json!([oats]);
     catalogue.as_object_mut().unwrap().remove("language");
-    let target = 1_048_575;
+    let target = 2_097_151;
     while catalogue.to_string().len() + note.to_string().len() + 1 < target {
         catalogue["ingredients"][0]["education"]
             .as_array_mut()
@@ -767,4 +767,71 @@ async fn homemade_parts_keep_declared_outputs_but_calculate_only_base_inputs() {
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+}
+
+#[tokio::test]
+async fn legacy_recipe_ranges_do_not_rewrite_history_and_new_revisions_pin_evidence() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let mut input = recipe();
+    input["lines"] = json!([{"ingredient_id":"psyllium-husks","grams":"100"}]);
+    let (status, created) = request(&app, "POST", "/api/recipes", input.clone()).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let id = created["id"].as_str().unwrap();
+    let file = dir.0.join(format!("{id}-1.json"));
+    drop(app);
+    let mut legacy: Value = serde_json::from_slice(&fs::read(&file).unwrap()).unwrap();
+    for item in legacy["catalogue"]["ingredients"].as_array_mut().unwrap() {
+        item.as_object_mut().unwrap().remove("nutrition_estimates");
+    }
+    let bytes = serde_json::to_vec_pretty(&legacy).unwrap();
+    fs::write(&file, &bytes).unwrap();
+    let app = dir.app();
+    let path = format!("/api/recipes/{id}");
+    let (_, read) = request(&app, "GET", &path, Value::Null).await;
+    assert_eq!(
+        nutrient(&read, "energy_kcal")["range"]["total"],
+        json!({"lower":"191.00","upper":"208.00"})
+    );
+    assert_eq!(read["display_lines"][0]["nutrition_estimated"], true);
+    let (_, scaled) = request(
+        &app,
+        "GET",
+        &format!("{path}/scale?servings=3"),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(
+        nutrient(&scaled, "energy_kcal")["range"]["total"],
+        json!({"lower":"286.50","upper":"312.00"})
+    );
+    assert_eq!(fs::read(&file).unwrap(), bytes);
+    let (status, _) = request(
+        &app,
+        "PUT",
+        &path,
+        json!({"expected_revision":1,"recipe":input}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let pinned: Value =
+        serde_json::from_slice(&fs::read(dir.0.join(format!("{id}-2.json"))).unwrap()).unwrap();
+    assert!(
+        pinned["catalogue"]["ingredients"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|i| i["nutrition_estimates"]
+                .as_array()
+                .is_some_and(|p| !p.is_empty()))
+    );
+    assert_eq!(fs::read(&file).unwrap(), bytes);
+    drop(app);
+    let app = dir.app();
+    assert_eq!(
+        request(&app, "GET", &format!("{path}?revision=1"), Value::Null)
+            .await
+            .1,
+        read
+    );
 }

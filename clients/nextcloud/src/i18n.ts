@@ -3,6 +3,24 @@ import { shoppingEnglish, shoppingGerman } from './shopping-messages'
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  nutritionMissing: 'Nutrition incomplete',
+  nutritionMissingHelp:
+    'Some ingredients still lack supported values. Their unknown contribution is not counted as zero; totals remain incomplete. Enter declared values or ranges, or explicitly inherit a suitable group.',
+  estimated: 'Estimated',
+  estimateHelp:
+    'Includes comparative or declared ranges. These span the selected references, not guaranteed bounds or statistical confidence intervals. Unknown nutrients remain explicit.',
+  comparisonRange: 'Comparative values',
+  groupRange: 'Group comparison',
+  supplementalValues: 'Additional reported source values',
+  incompleteRange: 'Covered subtotal · additional values unknown',
+  rangeMode: 'Enter a range',
+  pointMode: 'Enter a value',
+  lowerValue: 'Lower value',
+  upperValue: 'Upper value',
+  rangeInputHelp:
+    'Per 100 g. Enter both bounds and describe the evidence below; do not guess a percentage.',
+  rangeInputError:
+    'Enter nonnegative lower and upper values with up to six decimal places. The lower value must not exceed the upper value.',
   ingredientColumn: 'Ingredient',
   ingredientExtras: 'Ingredient options',
   stepExtras: 'Step options',
@@ -327,6 +345,24 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  nutritionMissing: 'Nährwerte unvollständig',
+  nutritionMissingHelp:
+    'Für einige Zutaten fehlen noch belegbare Werte. Ihr unbekannter Anteil wird nicht als null gerechnet; Summen bleiben unvollständig. Gib eigene Werte oder Spannen an oder übernimm ausdrücklich eine passende Gruppe.',
+  estimated: 'Geschätzt',
+  estimateHelp:
+    'Enthält Vergleichs- oder angegebene Spannen. Sie umfassen die gewählten Vergleichswerte und sind weder garantierte Grenzen noch statistische Konfidenzintervalle. Unbekannte Nährwerte bleiben erkennbar.',
+  comparisonRange: 'Vergleichswerte',
+  groupRange: 'Gruppenvergleich',
+  supplementalValues: 'Zusätzliche Quellwerte',
+  incompleteRange: 'Erfasste Zwischensumme · weitere Werte unbekannt',
+  rangeMode: 'Spanne angeben',
+  pointMode: 'Einzelwert angeben',
+  lowerValue: 'Unterer Wert',
+  upperValue: 'Oberer Wert',
+  rangeInputHelp:
+    'Je 100 g. Gib beide Grenzen an und beschreibe unten die Quelle; keinen pauschalen Prozentsatz schätzen.',
+  rangeInputError:
+    'Gib nichtnegative Grenzen mit höchstens sechs Nachkommastellen an. Der untere Wert darf den oberen nicht überschreiten.',
   ingredientColumn: 'Zutat',
   ingredientExtras: 'Zutatenoptionen',
   stepExtras: 'Schrittoptionen',

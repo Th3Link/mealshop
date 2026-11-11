@@ -151,7 +151,7 @@ async function save() {
     ]"
     @update:open="closed"
   >
-    <div class="ingredient-editor" @invalid.capture="revealInvalid">
+    <div class="ingredient-editor" @input="changed = true" @invalid.capture="revealInvalid">
       <fieldset ref="fields" class="editor-fields" :disabled="busy">
         <NcNoteCard v-if="error" type="error" role="alert"
           >{{ errorMessage(error)

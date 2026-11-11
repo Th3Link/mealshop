@@ -2,9 +2,10 @@
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import NcTextField from './LabeledField.vue'
 import { computed, watch } from 'vue'
+import NutrientInput from './NutrientInput.vue'
 import FoodConstituents from './FoodConstituents.vue'
 import type { Catalogue, Organization } from './contracts'
-import { t, locale, exact, parseNonnegative, nutrientLabel } from './i18n'
+import { t, locale, nutrientLabel } from './i18n'
 const model = defineModel<Organization>({ required: true })
 const props = defineProps<{ catalogue: Catalogue; id?: string }>()
 const groups = computed(() =>
@@ -42,17 +43,6 @@ function mode(event: Event) {
         ? { mode: 'inherit' }
         : { mode: 'reference' }
 }
-function amount(id: string, event: Event) {
-  if (!(event.target instanceof HTMLInputElement) || model.value.nutrition.mode !== 'own') return
-  const input = event.target.value
-  const canonical = parseNonnegative(input)
-  event.target.setCustomValidity(input && canonical === null ? t('nutrientQuantityError') : '')
-  if (!input || canonical !== null)
-    model.value.nutrition.values[id] = {
-      amount: canonical,
-      uncertainty: 'Household declared value; verify the supplied evidence',
-    }
-}
 </script>
 <template>
   <section class="editor-section nutrition-editor">
@@ -68,34 +58,26 @@ function amount(id: string, event: Event) {
       </select></label
     >
     <template v-if="model.nutrition.mode === 'own'">
-      <p class="muted">{{ t('unknownValue') }}</p>
+      <p class="muted">{{ t('unknownValue') }} {{ t('rangeInputHelp') }}</p>
       <div class="nutrient-inputs">
-        <label
+        <NutrientInput
           v-for="n in catalogue.nutrient_definitions.filter(
             (n) => n.group === 'energy' || n.group === 'macro',
           )"
           :key="n.id"
-          class="field"
-          >{{ nutrientLabel(n.id, n.label) }} ({{ n.unit }})<input
-            :value="exact(model.nutrition.values[n.id]?.amount ?? '')"
-            inputmode="decimal"
-            maxlength="32"
-            @input="amount(n.id, $event)"
-        /></label>
+          v-model="model.nutrition.values[n.id]"
+          :label="`${nutrientLabel(n.id, n.label)} (${n.unit})`"
+        />
       </div>
       <details>
         <summary>{{ t('moreNutrients') }}</summary>
         <div class="nutrient-inputs">
-          <label
+          <NutrientInput
             v-for="n in catalogue.nutrient_definitions.filter((n) => n.group === 'micro')"
             :key="n.id"
-            class="field"
-            >{{ nutrientLabel(n.id, n.label) }} ({{ n.unit }})<input
-              :value="exact(model.nutrition.values[n.id]?.amount ?? '')"
-              inputmode="decimal"
-              maxlength="32"
-              @input="amount(n.id, $event)"
-          /></label>
+            v-model="model.nutrition.values[n.id]"
+            :label="`${nutrientLabel(n.id, n.label)} (${n.unit})`"
+          />
         </div>
       </details>
       <FoodConstituents v-model="model.nutrition.constituents" :catalogue="catalogue" />

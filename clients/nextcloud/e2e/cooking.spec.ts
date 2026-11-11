@@ -113,7 +113,14 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
   await expect(first).toContainText('Paused')
   await first.getByRole('button', { name: 'Resume', exact: true }).click()
   await page.getByText('Reminders and delivery', { exact: true }).click()
-  await page.getByText('Send Nextcloud reminders to me for this session', { exact: true }).click()
+  const reminder = page.getByRole('checkbox', {
+    name: 'Send Nextcloud reminders to me for this session',
+    exact: true,
+  })
+  await expect(reminder).toBeEnabled()
+  await reminder.focus()
+  await page.keyboard.press('Space')
+  await expect(reminder).toBeChecked()
   await expect(
     page.getByText('Accepted by Nextcloud · device delivery unconfirmed', { exact: false }),
   ).toBeVisible({ timeout: 20000 })

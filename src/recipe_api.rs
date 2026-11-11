@@ -143,7 +143,7 @@ fn display_lines(
                     }
                 };
                 let ingredient = catalogue.find(&line.ingredient_id);
-                json!({"ingredient_id":line.ingredient_id,"amount":amount,"unit":unit,"name":ingredient.map(|i|&i.name),"translations":ingredient.map(|i|&i.translations)})
+                json!({"ingredient_id":line.ingredient_id,"amount":amount,"unit":unit,"name":ingredient.map(|i|&i.name),"translations":ingredient.map(|i|&i.translations),"nutrition_estimated":line.prepared_part.is_none() && ingredient.is_some_and(nutrition::estimates::is_estimated)})
             })
             .collect::<Vec<_>>()
     )

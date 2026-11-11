@@ -1,6 +1,6 @@
 //! Explicit group membership and provenance-aware household nutrition.
 use crate::nutrition::{
-    catalogue::{Catalogue, Reading, Source, SourceKind},
+    catalogue::{Catalogue, Ingredient, Reading, Source, SourceKind},
     nutrients::Nutrient,
 };
 use serde::{Deserialize, Serialize};
@@ -57,6 +57,22 @@ pub(crate) enum Origin {
     Plant,
     Animal,
     Mixed,
+}
+
+fn inherited_evidence(parent: &Ingredient) -> Vec<crate::nutrition::estimates::Profile> {
+    if !matches!(parent.organization.nutrition, Nutrition::Reference) {
+        return Vec::new();
+    }
+    parent
+        .nutrition_estimates
+        .iter()
+        .cloned()
+        .map(|mut profile| {
+            profile.method = crate::nutrition::estimates::Method::GroupEnvelope;
+            profile.rationale = format!("Explicit group inheritance. {}", profile.rationale);
+            profile
+        })
+        .collect()
 }
 
 pub(crate) fn resolve(catalogue: &mut Catalogue, revision: u64) -> Result<(), String> {
@@ -137,6 +153,9 @@ pub(crate) fn resolve(catalogue: &mut Catalogue, revision: u64) -> Result<(), St
         };
         item.education.clear();
         item.nutrients = values;
+        item.nutrition_estimates = parent
+            .filter(|_| inherited.is_some())
+            .map_or_else(Vec::new, inherited_evidence);
         item.constituents = constituents;
         for (id, nutrient) in [
             ("beta_glucan", Nutrient::BetaGlucan),
@@ -146,6 +165,7 @@ pub(crate) fn resolve(catalogue: &mut Catalogue, revision: u64) -> Result<(), St
                 item.nutrients.insert(
                     nutrient,
                     Reading {
+                        range: None,
                         amount: declaration.amount.clone(),
                         uncertainty: item.uncertainty.clone(),
                     },
@@ -207,6 +227,7 @@ pub(crate) fn seed(catalogue: &mut Catalogue) -> Result<(), String> {
         group.name = definition.name;
         "Ingredient group".clone_into(&mut group.form);
         group.nutrients.clear();
+        group.nutrition_estimates.clear();
         group.constituents.clear();
         group.education.clear();
         group.aliases.clear();
@@ -239,6 +260,7 @@ pub(crate) fn seed(catalogue: &mut Catalogue) -> Result<(), String> {
         }
         catalogue.ingredients.push(group);
     }
+    crate::nutrition::estimates::attach(catalogue)?;
     let metadata = Catalogue {
         schema_version: catalogue.schema_version,
         language: catalogue.language.clone(),
@@ -261,7 +283,7 @@ pub(crate) fn seed(catalogue: &mut Catalogue) -> Result<(), String> {
 mod tests {
     use super::*;
     #[test]
-    fn grouping_preserves_all_exact_records_and_keeps_group_nutrition_unknown() {
+    fn grouping_preserves_all_exact_records_and_separates_group_estimates() {
         let original = Catalogue::from_json(include_str!("../data/catalogue.json")).unwrap();
         let mut grouped = original.clone();
         seed(&mut grouped).unwrap();
@@ -281,6 +303,7 @@ mod tests {
             .iter()
             .filter(|i| i.organization.is_group)
         {
+            assert!(!group.nutrition_estimates.is_empty());
             assert!(
                 group.nutrients.is_empty()
                     && group.constituents.is_empty()
