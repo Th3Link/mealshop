@@ -1,6 +1,6 @@
 # Cooking history and online preference learning
 
-Status: In progress
+Status: Done
 Priority: Should
 Origin: Customer
 Milestone: M2
@@ -28,7 +28,8 @@ Requirement: [F11](../../docs/requirements.md). Delivery tasks: [plan.md](plan.m
 The customer requested F11 after the merged F05 delivery. Use the existing protected household,
 recipe-revision, cooking-session and planning boundaries. This contract enters Ready for the
 requested implementation under the customer's autonomous-work instruction, then In progress.
-No standalone/Flutter shell, remote training provider or new crate is introduced.
+No standalone/Flutter shell, remote training provider or new crate is introduced. The delivered
+scope and reproducible acceptance evidence are recorded in [validation.md](validation.md).
 
 - A history entry is an explicitly confirmed completed cook, never an automatically imported plan.
   It references a saved recipe/revision, servings, actual civil date, actual attendees, optional

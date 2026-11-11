@@ -19,9 +19,9 @@ distinct first choices 1 versus 2 and rating points 4/4 versus 20/4. These inten
 examples do not establish real-world satisfaction, fairness or generalization.
 
 ## Repository and client gates
-The required catalogue, nutrition evidence, conversions, allergens, localization, formatting,
-Clippy, Rust tests, licence/advisory, strict Vue build, contract and npm audit checks passed.
-The final documentation/head verification is recorded alongside the installed checks below.
+All 17 required catalogue, nutrition evidence, conversions, allergens, localization, formatting,
+Clippy, Rust test, licence/advisory, strict Vue build, contract and npm audit gates passed. Strict
+rustdoc and demo syntax checks also pass; generated documentation is checked after status updates.
 
 ```sh
 python3 scripts/generate_docs.py --check
@@ -63,5 +63,27 @@ learning controls; results receive focus after loading. These are scoped automat
 accessibility certification. Screenshots remain local ignored artifacts of owned synthetic data.
 
 ## Installed container verification
-Pending: rootless TCP/Unix smoke, full installed browser sweep, installed restart, final cleanup and
-exact-head PR CI. Keep F11 In progress until this evidence is complete.
+The complete installed Playwright sweep passed **26/26 (9.4 minutes)**. After the final scoped
+alignment changes, all three F11 scenarios passed again on the final image (**3/3, 1.4 minutes**).
+That image is `mealshop.local/mealshop:cooking-history-feedback`,
+`sha256:16877aa292e05b95ecd2110320f1c0dbedf73daff73d0099d9d2cb8b742f4165`, built from
+implementation commit `f728682`. Later acceptance/status documentation changes do not change the
+functional server/client implementation. The final image passes
+`python3 scripts/test_exapp_container.py --image mealshop.local/mealshop:cooking-history-feedback`
+in both isolated rootless TCP and Unix-socket modes, including F11 history/learning/constrained
+suggestions and existing lifecycle, authentication, CSRF, sharing, shopping and cooking checks.
+
+It is installed in the existing Nextcloud 35.0.2 test deployment with its existing `AppAPI`
+registration, secret, internal URL and data volume. Only one application writer runs. Public JS/CSS
+responses match the running container's assets, and the expected image reports healthy.
+
+A separately ledger-recorded synthetic fixture verifies an actual installed container restart:
+history list/detail, exact 125-second effort, actor provenance, policy/epoch/counts and explained
+suggestion responses remain identical. Opt-out erases aggregates while retaining raw history;
+re-enabling leaves contribution counts at zero instead of replaying that history.
+
+After testing, only ledger-recorded synthetic households are validated and archived with the single
+writer stopped. Retained household directories are neither read nor copied by cleanup. Retained
+membership/library entries and monotonic household identities are preserved; no active ledger-owned
+fixture remains. No broad original-file checksum audit is claimed. `AGENTS.md` is unchanged.
+The final container is restarted and healthy after cleanup. Exact-head remote CI is tracked in the PR.

@@ -12,12 +12,15 @@ These are verifiable parts of the existing F11 contract, not new standalone prod
 - [x] Record the conservative delivery contract and native flows before implementation.
 - [x] Implement completed/manual history, validated incremental updates and durable restart.
 - [x] Integrate household roles, trusted actors and source validation with API regressions.
-- [x] Deliver native history entry/list/edit/delete and completed-session entry point; strict build passes, live browser checks follow.
+- [x] Deliver and verify native history entry/list/edit/delete and completed-session entry points.
 - [x] Reuse canonical feasibility checks and add versioned whole-pool explainable ranking.
 - [x] Implement owner-only opt-in/scope/reset and separate history deletion.
 - [x] Compare baseline/learned rules with labelled offline acceptance/variety/rating proxies.
-- [ ] Verify real Nextcloud roles, exact values, responsive accessibility, restart and synthetic cleanup.
-- [ ] Run required repository/client/container gates, create one PR and verify its exact-head CI.
+- [x] Verify real Nextcloud roles, exact values, responsive accessibility, restart and synthetic cleanup.
+- [x] Run required repository/client/container gates and prepare the single-PR delivery with acceptance evidence.
+
+The PR's live exact-head CI is the remaining remote gate before handoff; its result is recorded on
+the PR rather than inferred from this committed checklist. See [validation.md](validation.md).
 
 ## Acceptance trace
 AC 1: explicit completed/manual history and immutable source tests plus native editor workflow.

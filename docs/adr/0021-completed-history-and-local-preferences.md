@@ -1,6 +1,6 @@
 # ADR 0021: completed cooking history and local preference epochs
 
-Status: Accepted for implementation under F11
+Status: Accepted and implemented under F11
 Date: 2026-11-11
 
 ## Context
