@@ -669,11 +669,9 @@ async fn inherited_household_profile_does_not_borrow_replaced_group_estimates() 
         .iter()
         .find(|i| i["id"] == child["id"])
         .unwrap();
-    assert!(
-        !inherited["nutrition_estimates"]
-            .as_array()
-            .unwrap()
-            .is_empty()
+    assert_eq!(
+        inherited["nutrition_estimates"][0]["method"],
+        "group_envelope"
     );
     let update = json!({"expected_revision":1,"annotations":{"organization":{"is_group":true,"nutrition":{"mode":"own","note":"Synthetic household label replaces reference composition","source_url":"","values":{"protein":{"amount":"12","uncertainty":"Synthetic label"}}}}}});
     assert_eq!(
