@@ -655,6 +655,82 @@ async fn subtype_nutrition_is_explicit_pinned_and_persistent() {
 }
 
 #[tokio::test]
+async fn inherited_household_profile_does_not_borrow_replaced_group_estimates() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let path = "/api/household/ingredients";
+    let child = json!({"expected_revision":0,"ingredient":{"name":"Synthetic oat subtype","language":"en","form":"Dry oats","recorded_on":"2026-11-11","annotations":{"organization":{"group_id":"custom-group-oats","nutrition":{"mode":"inherit"}}}}});
+    let (status, child) = call(&app, "POST", path, child, false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let reference = call(&app, "GET", path, Value::Null, true).await.1;
+    let inherited = reference["ingredients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["id"] == child["id"])
+        .unwrap();
+    assert!(
+        !inherited["nutrition_estimates"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    let update = json!({"expected_revision":1,"annotations":{"organization":{"is_group":true,"nutrition":{"mode":"own","note":"Synthetic household label replaces reference composition","source_url":"","values":{"protein":{"amount":"12","uncertainty":"Synthetic label"}}}}}});
+    assert_eq!(
+        call(
+            &app,
+            "PUT",
+            &format!("{path}/custom-group-oats"),
+            update,
+            false
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let recipe = json!({"title":"Explicit inherited declaration","language":"en","servings":1,"preparation":"as_recorded","lines":[{"ingredient_id":child["id"],"grams":"100"}],"steps":[]});
+    let (status, saved) = call(&app, "POST", "/api/recipes", recipe, false).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let nutrients = saved["nutrition"]["nutrients"].as_array().unwrap();
+    let protein = nutrients.iter().find(|n| n["id"] == "protein").unwrap();
+    assert_eq!(protein["total"], "12.00");
+    let fat = nutrients.iter().find(|n| n["id"] == "fat").unwrap();
+    assert!(
+        fat["range"].is_null(),
+        "An omitted household field must stay unknown"
+    );
+    assert!(fat["total"].is_null());
+    drop(app);
+    let reopened = dir.app();
+    let list = call(&reopened, "GET", path, Value::Null, true).await.1;
+    let inherited = list["ingredients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["id"] == child["id"])
+        .unwrap();
+    assert_eq!(inherited["nutrients"]["protein"]["amount"], "12");
+    assert!(
+        inherited
+            .get("nutrition_estimates")
+            .is_none_or(|p| p == &json!([]))
+    );
+    let id = saved["id"].as_str().unwrap();
+    assert_eq!(
+        call(
+            &reopened,
+            "GET",
+            &format!("/api/recipes/{id}"),
+            Value::Null,
+            true
+        )
+        .await
+        .1,
+        saved
+    );
+}
+
+#[tokio::test]
 async fn ingredient_profiles_reject_invalid_inputs_and_preserve_primary_sources() {
     let dir = Directory::new();
     let app = dir.app();

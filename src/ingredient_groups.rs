@@ -60,6 +60,9 @@ pub(crate) enum Origin {
 }
 
 fn inherited_evidence(parent: &Ingredient) -> Vec<crate::nutrition::estimates::Profile> {
+    if !matches!(parent.organization.nutrition, Nutrition::Reference) {
+        return Vec::new();
+    }
     parent
         .nutrition_estimates
         .iter()
