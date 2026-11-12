@@ -12,7 +12,7 @@ use axum::{
     routing::{get, post},
 };
 use serde::Deserialize;
-use serde_json::json;
+use serde_json::{Value, json};
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Input {
@@ -151,28 +151,94 @@ async fn change(
     if apply && !input.reviewed {
         return failure("inventory_review_required");
     }
-    let result=tokio::task::spawn_blocking(move||{
-        let profiles=state.store.lock().map_err(|_|"household_storage_failed")?;
-        let recipes=state.recipes.as_ref().map(|s|s.lock()).transpose().map_err(|_|"recipe_store_unavailable")?;
-        let cooking=state.cooking.lock().map_err(|_|"cooking_storage_failed")?;
-        let ingredients=state.catalogue.lock().map_err(|_|"ingredient_storage_failed")?;
-        let mut store=state.shopping.lock().map_err(|_|"shopping_storage_failed")?;
-        store.ready()?;
-        let ctx=Context{state:&state,profiles:&profiles.data,ingredients:&ingredients,recipes:recipes.as_deref(),cooking:&cooking,now:super::now()?};
-        if let Some(id)=store.data.inventory.replay(&actor.user,&input.idempotency_key,input.expected_revision,&input.command)? {
-            if !apply {return Err("inventory_already_applied");}
-            return Ok(json!({"operation_id":id,"inventory":view::view(&store.data,&ctx,0,500,0,50)?,"replayed":true}));
-        }
-        if !apply {
-            let next=store.prepare(input.expected_revision,|data|operations::execute(data,&ctx,&actor.user,&input.idempotency_key,input.expected_revision,input.command).map(|_|()))?;
-            return view::preview(&store.data,&next);
-        }
-        let key=input.idempotency_key;
-        store.change(input.expected_revision,|data|operations::execute(data,&ctx,&actor.user,&key,input.expected_revision,input.command).map(|_|()))?;
-        let id=store.data.inventory.operations.iter().find(|op|op.actor==actor.user&&op.key==key).map(|op|op.id.clone()).ok_or("inventory_storage_failed")?;
-        Ok(json!({"operation_id":id,"inventory":view::view(&store.data,&ctx,0,500,0,50)?,"replayed":false}))
-    }).await;
+    let result = tokio::task::spawn_blocking(move || transact(&state, input, &actor, apply)).await;
     respond(result)
+}
+fn transact(
+    state: &household::Household,
+    input: Input,
+    actor: &Authority,
+    apply: bool,
+) -> Result<Value, &'static str> {
+    let profiles = state.store.lock().map_err(|_| "household_storage_failed")?;
+    let recipes = state
+        .recipes
+        .as_ref()
+        .map(|s| s.lock())
+        .transpose()
+        .map_err(|_| "recipe_store_unavailable")?;
+    let cooking = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
+    let ingredients = state
+        .catalogue
+        .lock()
+        .map_err(|_| "ingredient_storage_failed")?;
+    let mut store = state
+        .shopping
+        .lock()
+        .map_err(|_| "shopping_storage_failed")?;
+    store.ready()?;
+    let ctx = Context {
+        state,
+        profiles: &profiles.data,
+        ingredients: &ingredients,
+        recipes: recipes.as_deref(),
+        cooking: &cooking,
+        now: super::now()?,
+    };
+    if let Some(id) = store.data.inventory.replay(
+        &actor.user,
+        &input.idempotency_key,
+        input.expected_revision,
+        &input.command,
+    )? {
+        if !apply {
+            return Err("inventory_already_applied");
+        }
+        return Ok(json!({
+            "operation_id": id,
+            "inventory": view::view(&store.data, &ctx, 0, 500, 0, 50)?,
+            "replayed": true,
+        }));
+    }
+    if !apply {
+        let next = store.prepare(input.expected_revision, |data| {
+            operations::execute(
+                data,
+                &ctx,
+                &actor.user,
+                &input.idempotency_key,
+                input.expected_revision,
+                input.command,
+            )
+            .map(|_| ())
+        })?;
+        return view::preview(&store.data, &next);
+    }
+    let key = input.idempotency_key;
+    store.change(input.expected_revision, |data| {
+        operations::execute(
+            data,
+            &ctx,
+            &actor.user,
+            &key,
+            input.expected_revision,
+            input.command,
+        )
+        .map(|_| ())
+    })?;
+    let id = store
+        .data
+        .inventory
+        .operations
+        .iter()
+        .find(|op| op.actor == actor.user && op.key == key)
+        .map(|op| op.id.clone())
+        .ok_or("inventory_storage_failed")?;
+    Ok(json!({
+        "operation_id": id,
+        "inventory": view::view(&store.data, &ctx, 0, 500, 0, 50)?,
+        "replayed": false,
+    }))
 }
 fn respond(
     result: Result<Result<serde_json::Value, &'static str>, tokio::task::JoinError>,

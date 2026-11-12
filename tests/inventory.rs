@@ -368,6 +368,30 @@ async fn manual_offers_keep_snapshot_validity_and_current_hard_exclusions() {
         "inventory_offer_blocked"
     );
     ok(&app,"PUT","/api/household/profiles",json!({"expected_revision":1,"members":[{"id":"person-a","name":"Acceptance attendee","allergies":[],"intolerances":[],"excluded_ingredients":[],"disliked_ingredients":[]}]})).await;
+    let reviewed = request(&app, command.clone()).await;
+    ok(
+        &app,
+        "POST",
+        "/api/household/inventory/preview",
+        reviewed.clone(),
+    )
+    .await;
+    ok(&app,"PUT","/api/household/profiles",json!({"expected_revision":2,"members":[{"id":"person-a","name":"Acceptance attendee","allergies":[],"intolerances":[],"excluded_ingredients":["oats"],"disliked_ingredients":[]}]})).await;
+    let changed = call(
+        &app,
+        Some(OWNER),
+        "POST",
+        "/api/household/inventory",
+        reviewed,
+    )
+    .await;
+    assert_eq!(changed.0, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(changed.1["code"], "inventory_offer_blocked");
+    assert_eq!(
+        ok(&app, "GET", "/api/household/shopping", Value::Null).await["sources"],
+        json!([])
+    );
+    ok(&app,"PUT","/api/household/profiles",json!({"expected_revision":3,"members":[{"id":"person-a","name":"Acceptance attendee","allergies":[],"intolerances":[],"excluded_ingredients":[],"disliked_ingredients":[]}]})).await;
     let mut invalid = command.clone();
     invalid["as_of"] = json!("2026-12-01");
     let invalid = request(&app, invalid).await;
@@ -658,4 +682,38 @@ async fn corrupted_opening_receipt_or_lot_reference_fails_closed_on_restart() {
         std::fs::write(path, serde_json::to_vec(&data).unwrap()).unwrap();
         assert!(dir.app().is_err(), "{corruption}");
     }
+}
+
+#[tokio::test]
+async fn stock_history_pages_preserve_order_and_expose_no_operation_secrets() {
+    let directory = Directory::new();
+    let app = directory.app().unwrap();
+    for amount in ["1", "2", "3"] {
+        apply(&app, lot(amount)).await;
+    }
+    let all = inventory(&app).await;
+    let page = ok(
+        &app,
+        "GET",
+        "/api/household/inventory?limit=1&offset=1&history_limit=1&history_offset=1",
+        Value::Null,
+    )
+    .await;
+    assert_eq!(page["total"], 3);
+    assert_eq!(page["movement_total"], 3);
+    assert_eq!(page["movement_offset"], 1);
+    assert_eq!(page["movement_limit"], 1);
+    assert_eq!(page["lots"].as_array().unwrap().len(), 1);
+    assert_eq!(page["movements"].as_array().unwrap().len(), 1);
+    assert_eq!(page["movements"][0], all["movements"][1]);
+    assert_eq!(page["lots"][0], all["lots"][1]);
+    assert!(!page.to_string().contains("idempotency_key"));
+    let beyond = ok(
+        &app,
+        "GET",
+        "/api/household/inventory?history_offset=9999",
+        Value::Null,
+    )
+    .await;
+    assert_eq!(beyond["movements"], json!([]));
 }

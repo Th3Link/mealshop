@@ -29,10 +29,22 @@ pub(super) fn view(
         .map(|m| m.id.clone())
         .collect::<Vec<_>>();
     let offers=data.inventory.offers.iter().map(|offer|Ok(json!({"offer":offer,"safety":offers::safety(ctx.state,ctx.profiles,ctx.ingredients,&offer.binding,&members)?,"shop_available":data.shops.entries.iter().any(|s|s.id==offer.shop_id)}))).collect::<Result<Vec<Value>,&'static str>>()?;
-    let movements=data.inventory.movements.iter().rev().take(100).map(|m|{
-        let op=data.inventory.operations.iter().find(|op|op.id==m.id);
-        json!({"id":m.id,"kind":m.kind,"entries":m.entries,"reversed":data.inventory.reversed(&m.id),"actor":op.map(|o|&o.actor),"recorded_at":op.map(|o|o.recorded_at)})
-    }).collect::<Vec<_>>();
+    let movements = data
+        .inventory
+        .movements
+        .iter()
+        .rev()
+        .skip(history_offset)
+        .take(history_limit)
+        .map(|m| {
+            let op = data.inventory.operations.iter().find(|op| op.id == m.id);
+            json!({
+                "id": m.id, "kind": m.kind, "entries": m.entries,
+                "reversed": data.inventory.reversed(&m.id),
+                "actor": op.map(|o| &o.actor), "recorded_at": op.map(|o| o.recorded_at),
+            })
+        })
+        .collect::<Vec<_>>();
     let purchases = data
         .purchases
         .iter()
