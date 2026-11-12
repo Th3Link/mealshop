@@ -13,8 +13,15 @@
 
 - [x] Read requirements/spec and existing shopping, quantity, planning, cooking and role boundaries.
 - [x] Record the delivery contract, UX and atomicity decision.
-- [ ] AC 1: exact lots, metadata/corrections/archive and durable source records.
-- [ ] AC 2: reviewed reservations and explicit remaining purchase projection.
-- [ ] AC 3: purchase/completed-cooking booking, reversal and idempotent recovery.
-- [ ] AC 4: manual offers, package/price/source/validity and current dietary constraints.
-- [ ] Native integration, all gates, installed evidence, synthetic cleanup and exact-head CI.
+- [x] AC 1: exact lots, metadata/corrections/archive and durable source records.
+- [x] AC 2: reviewed reservations and explicit remaining purchase projection.
+- [x] AC 3: purchase/completed-cooking booking, reversal and idempotent recovery.
+- [x] AC 4: manual offers, package/price/source/validity and current dietary constraints.
+- [x] Native integration, local gates, installed transport/restart evidence and synthetic cleanup.
+
+Current-head CI is an external handoff gate: all eleven PR checks must pass before the PR is marked
+ready and handed back. Its authoritative record is the PR Checks tab.
+
+Implementation uses no new dependencies and remains within the existing shopping transaction. The
+review corrected movement pagination, preserved reviews across locale-only quantity changes and
+guarded delayed booking/refresh responses. See [validation.md](validation.md) for exact evidence.

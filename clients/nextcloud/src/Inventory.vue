@@ -485,6 +485,9 @@ onMounted(() => {
 .stock-editor {
   margin-block: 20px;
 }
+.mealshop .stock-fields .form-row {
+  align-items: start;
+}
 .stock-fields,
 .stock-selection {
   min-width: 0;

@@ -1,6 +1,6 @@
 # Inventory and shopping offers
 
-Status: In progress
+Status: Done
 Priority: Should
 Origin: Customer
 Milestone: M3
@@ -46,3 +46,9 @@ Requirement: [F15](../../docs/requirements.md). Delivery tasks: [plan.md](plan.m
 
 Decisions: [ADR 0024](../../docs/adr/0024-household-stock-and-offers.md). Complete AC 1–4 with native
 owner/reader tests, durable restart/failure tests, required gates and synthetic-only test cleanup.
+
+## Acceptance evidence
+
+AC 1–4 are implemented and verified in the native Nextcloud delivery. See [validation.md](validation.md)
+for isolated domain tests, all installed browser scenarios, transport/restart/cleanup evidence and the
+mandatory current-head CI boundary. No provider or automatic purchasing is implied.

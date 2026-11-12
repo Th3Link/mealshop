@@ -87,6 +87,13 @@ async function audit(page: Page, name: string) {
               .analyze()
           ).violations,
         ).toEqual([])
+        await page
+          .locator(
+            name.includes('review') || name.includes('reservation')
+              ? '.stock-review'
+              : '.stock-page h1',
+          )
+          .evaluate((e) => e.scrollIntoView({ block: 'start' }))
         await page.screenshot({
           path: `test-results/${name}-${language}-${colorScheme}-${width}.png`,
           animations: 'disabled',

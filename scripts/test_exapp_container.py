@@ -183,6 +183,21 @@ try:
         assert status == 201 and json.loads(body)['id'] == inserted['id'], body
         assert request(name, unix, imports, user='bob', method='POST', data=reviewed)[0] == 403
         assert docker('exec', name, 'stat', '-c', '%a', f"/data/{home}/recipes/{inserted['id']}-1.json") == '600'
+        inventory = prefix + "/api/household/inventory"
+        status, body = request(name, unix, inventory, user="alice")
+        assert status == 200 and not json.loads(body)["lots"], body
+        stock = json.loads(body)
+        booking = {"expected_revision": stock["revision"], "idempotency_key":"container-stock-request-0001", "reviewed":False, "command":{"operation":"create_lot","target":{"kind":"ingredient","ingredient_id":ingredient},"quantity":{"amount":"0.100001","unit":"kg"},"metadata":{"location":"Container pantry","batch":"synthetic","expiry":None}}}
+        status, body = request(name, unix, inventory + "/preview", user="alice", method="POST", data=booking)
+        assert status == 200, body
+        assert not json.loads(request(name, unix, inventory, user="alice")[1])["lots"]
+        booking["reviewed"] = True
+        status, body = request(name, unix, inventory, user="alice", method="POST", data=booking)
+        assert status == 200 and json.loads(body)["inventory"]["lots"][0]["remaining"] == "100.001000", body
+        status, body = request(name, unix, inventory, user="alice", method="POST", data=booking)
+        assert status == 200 and json.loads(body)["replayed"] and len(json.loads(body)["inventory"]["movements"]) == 1, body
+        assert request(name, unix, inventory, user="bob", method="POST", data=booking)[0] == 403
+        assert "container-stock-request-0001" not in body
         history = prefix + "/api/household/history"
         learning = prefix + "/api/household/learning"
         status, body = request(name, unix, history, user="alice")
@@ -213,7 +228,7 @@ try:
         policy.update(expected_revision=3,policy={"enabled":False,"member_ids":[]})
         status, body = request(name, unix, learning, user="alice", method="PUT", data=policy)
         assert status == 200 and json.loads(body)["model_version"] == "rules-v1", body
-        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation, completed history, preference epochs, scoped MCP, reviewed imports/retries/SSRF rejection and storage")
+        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation, completed history, preference epochs, scoped MCP, reviewed imports/retries/SSRF rejection, stock preview/booking/idempotence and storage")
 finally:
     for container in reversed(containers):
         subprocess.run(["docker", "stop", "--time", "10", container], capture_output=True)
