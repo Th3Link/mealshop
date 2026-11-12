@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, toRaw, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -179,6 +179,9 @@ async function reload() {
 }
 const request = (path: string) => domain(home.value, path)
 let loadGeneration = 0
+onBeforeUnmount(() => {
+  loadGeneration += 1
+})
 async function load() {
   const generation = ++loadGeneration
   importReview.value = undefined
@@ -303,16 +306,20 @@ async function uploadImage(event: Event) {
 async function sendImport() {
   const submission = importSubmission.value
   if (!submission) return
+  const generation = loadGeneration
+  const path = listPath.value
   await run(async () => {
     try {
       const result = await api(request('/api/household/imports'), recipeRecordSchema, {
         method: 'POST',
         data: submission,
       })
+      if (generation !== loadGeneration) return
       dirty.value = false
       selected.value = result
-      await router.push(`${listPath.value}/${result.id}`)
+      await router.push(`${path}/${result.id}`)
     } catch (error) {
+      if (generation !== loadGeneration) return
       if (error instanceof ApiError && [401, 403, 422].includes(error.status)) {
         importSubmission.value = undefined
         importReviewed.value = false

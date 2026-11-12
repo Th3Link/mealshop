@@ -105,7 +105,7 @@ test('public structured import retains source text, exact review and source-only
   await page.getByRole('option', { name: 'Oats', exact: true }).click()
   await pickers.nth(1).fill('Drinking water')
   await page.getByRole('option', { name: 'Drinking water', exact: true }).click()
-  await expect(page.getByLabel('Grams', { exact: true }).nth(0)).toHaveValue('100.5')
+  await expect(page.getByLabel('Grams', { exact: true }).nth(0)).toHaveValue('100.500000')
   await expect(page.getByLabel('1. Instruction', { exact: true })).toHaveValue(
     'Preparation: Mix the synthetic ingredients.',
   )
@@ -128,11 +128,16 @@ test('public structured import retains source text, exact review and source-only
   await expect(
     page.getByRole('heading', { name: 'Revised import acceptance recipe', exact: true }),
   ).toBeVisible()
-  await expect(page.locator('.import-evidence')).toContainText(
-    'Source title Import acceptance recipe',
-  )
+  await expect(
+    page
+      .locator('.import-evidence dt')
+      .filter({ hasText: /^Source title$/ })
+      .locator('..'),
+  ).toContainText('Import acceptance recipe')
   await page.getByRole('button', { name: 'Share', exact: true }).click()
-  await expect(page.getByRole('dialog', { name: 'Sharing', exact: true })).toContainText('source')
+  await expect(page.getByRole('dialog', { name: 'Sharing', exact: true })).toContainText(
+    'Sharing shows only the original link.',
+  )
   expect(errors).toEqual([])
   expect(unsafeRequests).toEqual([])
 })
@@ -160,8 +165,16 @@ test('blocked URL falls back to manual review and a lost save response retries w
   await expect(page.locator('.import-evidence')).toContainText('Not supplied by the source')
   await check(page, reviewed)
   let first: { id: string } | undefined
+  let releaseResponse: () => void = () => {}
+  const heldResponse = new Promise<void>((resolve) => {
+    releaseResponse = resolve
+  })
   await page.route('**/api/household/imports', async (route) => {
-    if (first) return route.continue()
+    if (first) {
+      const response = await route.fetch()
+      await heldResponse
+      return route.fulfill({ response })
+    }
     const response = await route.fetch()
     expect(response.status()).toBe(201)
     const body: unknown = await response.json()
@@ -174,13 +187,24 @@ test('blocked URL falls back to manual review and a lost save response retries w
   await expect(page.getByText(/^This confirmed request is frozen/)).toBeVisible()
   await expect(page.getByLabel('Recipe title', { exact: true })).toBeDisabled()
   await page.getByRole('button', { name: 'Retry confirmed import', exact: true }).click()
-  await expect(
-    page.getByRole('heading', { name: 'Import acceptance recipe', exact: true }),
-  ).toBeVisible()
-  await expect(page).toHaveURL(new RegExp(`/recipes/${first?.id}$`))
-  await page.unroute('**/api/household/imports')
+  await expect(page.getByRole('button', { name: 'Saving…', exact: true })).toBeDisabled()
+  page.once('dialog', (dialog) => void dialog.accept())
   await page.getByRole('link', { name: 'Recipes', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Recipes', exact: true })).toBeVisible()
+  const received = page.waitForResponse((response) =>
+    response.url().endsWith('/api/household/imports'),
+  )
+  releaseResponse()
+  await (await received).finished()
+  await page.waitForLoadState('networkidle')
+  await expect(page).toHaveURL(/\/recipes$/)
+  await expect(page.getByRole('heading', { name: 'Recipes', exact: true })).toBeVisible()
   await expect(page.locator('.record-list a')).toHaveCount(1)
+  await expect(page.locator('.record-list a')).toHaveAttribute(
+    'href',
+    new RegExp(`/recipes/${first?.id}$`),
+  )
+  await page.unroute('**/api/household/imports')
   await page.goto(`${embedded}/h/${household.id}/recipes/import`)
   await page.getByLabel('Recipe URL', { exact: true }).fill('https://example.org/unsaved')
   page.once('dialog', (dialog) => void dialog.dismiss())
