@@ -111,6 +111,8 @@ impl Recipe {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Record {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) creation: Option<Creation>,
     #[serde(skip)]
     pub(crate) sharing_origin: crate::recipe_origin::Origin,
     schema_version: u32,
@@ -118,6 +120,31 @@ pub(crate) struct Record {
     pub(crate) revision: u64,
     pub(crate) recipe: Recipe,
     pub(crate) catalogue: Catalogue,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Creation {
+    pub(crate) actor: String,
+    pub(crate) key: String,
+    pub(crate) preview_id: String,
+    pub(crate) recorded_at: i64,
+}
+impl Creation {
+    pub(crate) fn valid(&self) -> bool {
+        crate::membership::valid_user(&self.actor)
+            && Self::valid_key(&self.key)
+            && self.preview_id.starts_with("mcp-")
+            && self.preview_id.len() == 68
+            && self.preview_id[4..].bytes().all(|b| b.is_ascii_hexdigit())
+            && self.recorded_at >= 0
+    }
+    pub(crate) fn valid_key(key: &str) -> bool {
+        (16..=128).contains(&key.len())
+            && key
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b"-_.".contains(&b))
+    }
 }
 
 #[derive(Serialize)]
@@ -131,6 +158,7 @@ pub(crate) struct Summary {
     image_id: Option<String>,
 }
 
+#[derive(Debug)]
 pub(crate) enum Error {
     Invalid(String),
     NotFound,
@@ -156,6 +184,9 @@ impl Drop for Store {
 }
 
 impl Store {
+    pub(crate) fn latest(&self) -> impl Iterator<Item = &Record> {
+        self.records.values().filter_map(|records| records.last())
+    }
     pub(crate) fn open(directory: &Path) -> Result<Self, String> {
         fs::create_dir_all(directory)
             .map_err(|e| format!("Cannot create recipe directory: {e}"))?;
@@ -229,6 +260,7 @@ impl Store {
                 .push(record);
             self.count += 1;
         }
+        let mut creation_keys = BTreeSet::new();
         for revisions in self.records.values_mut() {
             revisions.sort_by_key(|r| r.revision);
             if revisions
@@ -240,6 +272,14 @@ impl Store {
                 );
             }
             for (index, record) in revisions.iter().enumerate() {
+                if let Some(creation) = &record.creation {
+                    if record.revision != 1
+                        || !creation.valid()
+                        || !creation_keys.insert((creation.actor.clone(), creation.key.clone()))
+                    {
+                        return Err("Invalid or duplicate recipe creation receipt".to_owned());
+                    }
+                }
                 if record.revision != index as u64 + 1 {
                     return Err("Recipe history has duplicate or missing revisions".to_owned());
                 }
@@ -334,8 +374,8 @@ impl Store {
         Ok(())
     }
 
-    pub(crate) fn save(
-        &mut self,
+    pub(crate) fn prepare(
+        &self,
         recipe: Recipe,
         update: Option<(&str, u64)>,
         catalogue: &Catalogue,
@@ -391,14 +431,73 @@ impl Store {
         };
         let snapshot_json = serde_json::to_string(&snapshot).map_err(|_| Error::Storage)?;
         Catalogue::from_json(&snapshot_json).map_err(Error::Invalid)?;
-        let record = Record {
+        Ok(Record {
+            creation: None,
             sharing_origin: recipe.origin.clone(),
             schema_version: 1,
             id,
             revision,
             recipe,
             catalogue: snapshot,
-        };
+        })
+    }
+    pub(crate) fn save(
+        &mut self,
+        recipe: Recipe,
+        update: Option<(&str, u64)>,
+        catalogue: &Catalogue,
+    ) -> Result<Record, Error> {
+        let record = self.prepare(recipe, update, catalogue)?;
+        self.publish(record)
+    }
+    pub(crate) fn creation_result(
+        &self,
+        actor: &str,
+        key: &str,
+        preview: &str,
+    ) -> Result<Option<Record>, Error> {
+        for revisions in self.records.values() {
+            if let Some(record) = revisions.first() {
+                if let Some(creation) = &record.creation {
+                    if creation.actor == actor && creation.key == key {
+                        if creation.preview_id != preview {
+                            return Err(Error::Conflict);
+                        }
+                        return self.get(&record.id, Some(1)).map(Some);
+                    }
+                }
+            }
+        }
+        Ok(None)
+    }
+    pub(crate) fn save_created(
+        &mut self,
+        recipe: Recipe,
+        catalogue: &Catalogue,
+        creation: Creation,
+    ) -> Result<Record, Error> {
+        if !creation.valid() {
+            return Err(Error::Invalid("Invalid recipe creation receipt".to_owned()));
+        }
+        if let Some(record) =
+            self.creation_result(&creation.actor, &creation.key, &creation.preview_id)?
+        {
+            return Ok(record);
+        }
+        let mut record = self.prepare(recipe, None, catalogue)?;
+        record.creation = Some(creation);
+        self.publish(record)
+    }
+    pub(crate) fn creation_activity(&self) -> Vec<serde_json::Value> {
+        let mut entries = self.records.values().filter_map(|revisions| {
+            let record = revisions.first()?;
+            let creation = record.creation.as_ref()?;
+            Some(serde_json::json!({"recipe_id":record.id,"revision":1,"actor":creation.actor,"recorded_at":creation.recorded_at,"title":record.recipe.title,"language":record.recipe.language}))
+        }).collect::<Vec<_>>();
+        entries.sort_by_key(|value| std::cmp::Reverse(value["recorded_at"].as_i64()));
+        entries
+    }
+    fn publish(&mut self, record: Record) -> Result<Record, Error> {
         let bytes = serde_json::to_vec_pretty(&record).map_err(|_| Error::Storage)?;
         if bytes.len() as u64 > MAX_RECORD_BYTES {
             return Err(Error::Full);

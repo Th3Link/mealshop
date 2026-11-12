@@ -17,6 +17,7 @@ import {
   mdiFolderMultipleOutline,
   mdiShareVariantOutline,
   mdiHistory,
+  mdiRobotOutline,
 } from '@mdi/js'
 import Icon from './Icon.vue'
 import HouseholdSwitcher from './HouseholdSwitcher.vue'
@@ -33,6 +34,7 @@ const links = [
   { key: 'cookingSessions', icon: mdiChefHat },
   { key: 'ingredients', icon: mdiCarrot },
   { key: 'household', icon: mdiAccountGroupOutline },
+  { key: 'assistants', icon: mdiRobotOutline },
 ] satisfies {
   key:
     | 'recipes'
@@ -43,6 +45,7 @@ const links = [
     | 'household'
     | 'shoppingList'
     | 'cookingSessions'
+    | 'assistants'
   icon: string
 }[]
 onMounted(() => {

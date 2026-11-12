@@ -39,3 +39,13 @@ Inspect `gh run list` and failed job logs; a dispatched workflow is not evidence
 `src/docs.rs` embeds the Markdown sources as rustdoc modules. Run `cargo doc --no-deps` and
 open `target/doc/mealshop_server/docs/index.html`. The Docs workflow adds a root landing
 page. After adding a spec or ADR, update its index; docs generation discovers Markdown files.
+
+## MCP interoperability
+
+After installing the pinned Nextcloud development dependencies, check the committed tool schema with
+`node scripts/generate_mcp_schema.mjs --check`, run
+`python3 -m unittest discover -s tests -p 'test_mcp_stdio.py'`, then
+`node scripts/test_mcp_client.mjs target/debug/mealshop-server` after `cargo build --locked`.
+The latter starts isolated synthetic HTTP/stdio fixtures and uses the official MCP client. CI also
+runs these checks against its compiled debug artifact; the SDK never enters shipped browser assets.
+The `ExApp` container smoke test covers both rootless TCP and Unix-socket MCP adapters.

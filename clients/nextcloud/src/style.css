@@ -1535,3 +1535,40 @@
     padding-inline-start: 32px;
   }
 }
+
+.mealshop .mcp-current {
+  margin-block: 16px;
+}
+.mealshop .mcp-section {
+  border-top: 1px solid var(--color-border);
+  padding-top: 24px;
+}
+.mealshop .mcp-grants {
+  display: grid;
+  gap: 16px;
+  border: 0;
+  padding: 0;
+  max-width: 720px;
+}
+.mealshop .mcp-grants > button {
+  justify-self: start;
+}
+.mealshop .mcp-connection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+.mealshop .mcp-connection > :first-child {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+.mealshop .mcp-example {
+  padding: 16px;
+  background: var(--color-background-dark);
+  border-radius: var(--border-radius);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}

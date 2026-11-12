@@ -1,0 +1,355 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "origin": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "owned"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "imported"
+            },
+            "source_url": {
+              "type": "string",
+              "maxLength": 2048,
+              "format": "uri"
+            }
+          },
+          "required": [
+            "kind",
+            "source_url"
+          ]
+        }
+      ]
+    },
+    "parts": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "uses_parts": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "starts_after": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "maxItems": 30
+    },
+    "image_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "de"
+      ]
+    },
+    "author": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "servings": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 1000000
+    },
+    "preparation": {
+      "type": "string",
+      "enum": [
+        "as_recorded",
+        "cooking_unmodelled"
+      ]
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "part_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prepared_part": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ingredient_id": {
+            "type": "string"
+          },
+          "extensions": {
+            "maxItems": 1,
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "temperature"
+                    },
+                    "value": {
+                      "type": "string",
+                      "maxLength": 32,
+                      "pattern": "^-?\\d+(?:\\.\\d{1,6})?$"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "const": "celsius"
+                    },
+                    "original_input": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "provenance": {
+                      "type": "string",
+                      "const": "recipe_author"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value",
+                    "unit",
+                    "original_input",
+                    "provenance"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "grams": {
+            "type": "string",
+            "pattern": "^\\d+(?:\\.\\d{1,6})?$"
+          },
+          "quantity": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "maxLength": 32,
+                "pattern": "^\\d+(?:\\.\\d{1,6})?$"
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "g",
+                  "kg",
+                  "ml",
+                  "l",
+                  "tsp",
+                  "tbsp",
+                  "piece"
+                ]
+              }
+            },
+            "required": [
+              "amount",
+              "unit"
+            ]
+          },
+          "conversion": {
+            "type": "object",
+            "properties": {
+              "ingredient_id": {
+                "type": "string"
+              },
+              "form": {
+                "type": "string"
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "version": {
+                "type": "string"
+              },
+              "uncertainty": {
+                "type": "string"
+              },
+              "grams_per_base_unit": {
+                "type": "string",
+                "maxLength": 32,
+                "pattern": "^\\d+(?:\\.\\d{1,6})?$"
+              },
+              "spoon_standard": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "millilitres_per_spoon": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 32,
+                    "pattern": "^\\d+(?:\\.\\d{1,6})?$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "input_unit": {
+                "type": "string",
+                "enum": [
+                  "g",
+                  "kg",
+                  "ml",
+                  "l",
+                  "tsp",
+                  "tbsp",
+                  "piece"
+                ]
+              },
+              "source_record_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ingredient_id",
+              "form",
+              "source_url",
+              "version",
+              "uncertainty",
+              "grams_per_base_unit",
+              "spoon_standard",
+              "millilitres_per_spoon"
+            ]
+          }
+        },
+        "required": [
+          "ingredient_id"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "grams"
+            ]
+          },
+          {
+            "required": [
+              "quantity"
+            ]
+          }
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "part_id": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ingredient_line_ids": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "prepared_parts": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "instruction": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "active_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 604800
+          },
+          "passive_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 604800
+          },
+          "passive_max_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 604800
+          }
+        },
+        "required": [
+          "instruction",
+          "active_seconds",
+          "passive_seconds"
+        ]
+      },
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "title",
+    "language",
+    "servings",
+    "preparation",
+    "lines",
+    "steps"
+  ]
+}

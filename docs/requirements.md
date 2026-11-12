@@ -94,3 +94,9 @@ local learning epochs and explained whole-pool suggestions reuse existing househ
 and dietary/time/quantity checks. Reset removes learned state without silently replaying retained
 ratings. Model changes have a versioned synthetic baseline comparison; real-world effectiveness
 is not inferred from offline proxies. See [F11](../specs/0011-recommendation-feedback/specification.md).
+
+F17 delivers disabled-by-default per-account MCP grants within current Nextcloud household roles,
+source-only imported projections, canonical nonpersistent recipe previews and atomically audited,
+idempotent confirmed creation. The supplied stdio bridge uses existing Nextcloud app passwords;
+hosted OAuth and per-client delegated credentials are outside this authentication slice.
+N03/N04/N06/N09/N10 apply. See [MCP guide](guides/mcp.md) and ADR 0022.

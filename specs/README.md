@@ -22,7 +22,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F30 | [Standalone Vue client and cross-client integration](0030-standalone-vue-client/specification.md) | Must | M1 |
 | F15 | [Inventory and shopping offers](0015-inventory-offers/specification.md) | Should | M3 |
 | F16 | [Customer-operated recipe link import](0016-recipe-import/specification.md) | Should | M3 |
-| F17 | [MCP recipe tools](0017-mcp/specification.md) | Should | M3 |
 | F14 | [Brewing and fermentation workflows](0014-brewing-fermentation/specification.md) | Could | M4 |
 | F19 | [Hosted plans, paid app and recipe marketplace](0019-commercial-service/specification.md) | Could | M4 |
 | F20 | [Federated recipe and meal-plan exchange](0020-federation/specification.md) | Could | M5 |
@@ -56,3 +55,4 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F34 | [Source-backed nutrition ranges](0034-evidence-nutrition-ranges/specification.md) | Must | M2 |
 | F08 | [Barcode scanning and product matching](0008-barcode/specification.md) | Could | M3 |
 | F13 | [Multi-day bread, rolls and pizza scheduling](0013-bread-schedules/specification.md) | Should | M3 |
+| F17 | [MCP recipe tools](0017-mcp/specification.md) | Should | M3 |

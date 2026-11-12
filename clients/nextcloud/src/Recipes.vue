@@ -530,7 +530,9 @@ async function scale() {
             }
           : typeof route.query.history === 'string'
             ? { path: `/h/${home}/history/${encodeURIComponent(route.query.history)}` }
-            : { path: listPath, query: { q: search || undefined } }
+            : route.query.assistant === '1'
+              ? { path: `/h/${home}/assistants` }
+              : { path: listPath, query: { q: search || undefined } }
       "
       >{{ t('back') }}</NcButton
     >

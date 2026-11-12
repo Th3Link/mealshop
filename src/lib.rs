@@ -120,3 +120,8 @@ pub fn family_router(
 }
 
 mod feedback;
+
+#[cfg(test)]
+mod recipe_creation_tests;
+
+mod mcp;

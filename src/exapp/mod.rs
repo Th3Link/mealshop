@@ -460,6 +460,7 @@ fn read_action(method: &axum::http::Method, path: &str) -> bool {
                     | "/api/nutrition/calculate"
                     | "/api/quantities/convert"
                     | "/api/household/cooking/preview"
+                    | "/api/household/mcp"
             ))
 }
 async fn dispatch(State(app): State<Shared>, request: Request) -> Response {
@@ -538,8 +539,15 @@ async fn dispatch_household(
     if !(domain.starts_with("/api/recipes") || domain.starts_with("/api/household/")) {
         return StatusCode::NOT_FOUND.into_response();
     }
-    let role = match app.membership.lock() {
-        Ok(s) => s.role(id, &actor),
+    let (role, members) = match app.membership.lock() {
+        Ok(s) => (
+            s.role(id, &actor),
+            if domain.starts_with("/api/household/mcp") {
+                s.members(id).unwrap_or_default()
+            } else {
+                BTreeMap::new()
+            },
+        ),
         Err(_) => return reply(StatusCode::SERVICE_UNAVAILABLE, "membership_storage_failed"),
     };
     let Some(role) = role else {
@@ -568,6 +576,11 @@ async fn dispatch_household(
     request.extensions_mut().insert(crate::cooking::Actor {
         user: actor.clone(),
         notifications_available: true,
+    });
+    request.extensions_mut().insert(crate::mcp::Authority {
+        user: actor.clone(),
+        role,
+        members,
     });
     request.extensions_mut().insert(crate::feedback::Actor {
         user: actor,
@@ -643,3 +656,7 @@ mod sharing_collection_tests;
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]
 mod feedback_tests;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod mcp_tests;

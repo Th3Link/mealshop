@@ -281,16 +281,6 @@ async fn scale(
 }
 
 fn validate_image(state: &RecipeState, recipe: &Recipe) -> Result<(), ApiError> {
-    if recipe.image_id.as_ref().is_some_and(|id| {
-        !crate::recipe_images::valid_id(id)
-            || !state
-                .images
-                .as_ref()
-                .is_some_and(|directory| directory.join(id).is_file())
-    }) {
-        return Err(ApiError::from(recipes::Error::Invalid(
-            "Upload a household image before referencing it".to_owned(),
-        )));
-    }
-    Ok(())
+    crate::recipe_images::validate_reference(state.images.as_deref(), recipe.image_id.as_deref())
+        .map_err(ApiError::from)
 }

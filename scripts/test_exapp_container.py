@@ -36,6 +36,10 @@ def request(container, unix, path, *, user=None, method="GET", data=None, marker
         command += ["-H", "EX-APP-ID: mealshop", "-H", f"AUTHORIZATION-APP-API: {auth}"]
     if marker:
         command += ["-H", "X-Mealshop-Request: 1"]
+    if path.endswith('/api/household/mcp') and data is not None:
+        command += ['-H', 'Accept: application/json, text/event-stream', '-H', 'MCP-Protocol-Version: 2026-07-28', '-H', f'Mcp-Method: {data["method"]}']
+        if data['method'] == 'tools/call':
+            command += ['-H', f'Mcp-Name: {data["params"]["name"]}']
     if data is not None:
         command += ["-H", f"Content-Type: {mime}", "--data", json.dumps(data)]
     command += [f"http://127.0.0.1:{3339 if not unix else 80}{path}"]
@@ -140,6 +144,31 @@ try:
         status, body = request(name, unix, shares + "/" + share_id, user="alice", method="DELETE", data={"expected_revision":2})
         assert status == 200, body
         assert request(name, unix, shared, user="bob")[0] == 404
+        settings = prefix + '/api/household/mcp/settings'
+        rpc_path = prefix + '/api/household/mcp'
+        status, body = request(name, unix, settings, user='alice', method='PUT', data={'expected_revision':0,'grants':{'alice':'create'}})
+        assert status == 200 and json.loads(body)['scope'] == 'create', body
+        def rpc(tool, arguments):
+            payload = {'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':tool,'arguments':arguments,'_meta':{'io.modelcontextprotocol/protocolVersion':'2026-07-28','io.modelcontextprotocol/clientCapabilities':{}}}}
+            status, body = request(name, unix, rpc_path, user='alice', method='POST', data=payload)
+            assert status == 200, body
+            return json.loads(body)['result']
+        restricted = rpc('recipe_get', {'id':recipe_id,'revision':1})
+        assert restricted['structuredContent']['content'] == {'kind':'source_link','source_url':'https://example.org/container-original'}, restricted
+        assert request(name, unix, rpc_path, user='bob', method='POST', data={'jsonrpc':'2.0','id':1,'method':'ping'})[0] == 403
+        preview = rpc('recipe_preview_create', {'recipe':{**recipe,'title':'Container MCP recipe'}})
+        assert not preview['isError'] and not preview['structuredContent']['saved'], preview
+        confirmed = {'preview_id':preview['structuredContent']['preview_id'],'idempotency_key':'container-mcp-request-0001','confirmed':True}
+        created = rpc('recipe_create', confirmed)
+        assert not created['isError'], created
+        retry = rpc('recipe_create', confirmed)
+        assert retry['structuredContent']['replayed'] and retry['structuredContent']['record']['id'] == created['structuredContent']['record']['id'], retry
+        assert docker('exec', name, 'stat', '-c', '%a', f'/data/{home}/household/mcp.json') == '600'
+        status, body = request(name, unix, settings, user='alice', method='PUT', data={'expected_revision':1,'grants':{'alice':'read'}})
+        assert status == 200, body
+        assert rpc('recipe_create', confirmed)['isError']
+        status, body = request(name, unix, prefix + '/api/household/mcp/activity', user='alice')
+        assert status == 200 and json.loads(body)['entries'][0]['actor'] == 'alice' and 'idempotency_key' not in body, body
         history = prefix + "/api/household/history"
         learning = prefix + "/api/household/learning"
         status, body = request(name, unix, history, user="alice")
@@ -170,7 +199,7 @@ try:
         policy.update(expected_revision=3,policy={"enabled":False,"member_ids":[]})
         status, body = request(name, unix, learning, user="alice", method="PUT", data=policy)
         assert status == 200 and json.loads(body)["model_version"] == "rules-v1", body
-        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation, completed history, preference epochs and storage")
+        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation, completed history, preference epochs, scoped MCP preview/create/retry/redaction and storage")
 finally:
     for container in reversed(containers):
         subprocess.run(["docker", "stop", "--time", "10", container], capture_output=True)
