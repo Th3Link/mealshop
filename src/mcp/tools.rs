@@ -142,7 +142,24 @@ pub(super) fn execute(ctx: &mut Context<'_>, name: &str, args: Value) -> Result<
                 return Err("invalid_arguments".into());
             }
             let ingredient = ctx.catalogue.find(&input.id).ok_or("unknown_ingredient")?;
-            serde_json::to_value(ingredient).map_err(|_| "mcp_storage_failed".into())
+            let mut value =
+                serde_json::to_value(ingredient).map_err(|_| Error::from("mcp_storage_failed"))?;
+            let mut conversions: Value =
+                serde_json::from_str(include_str!("../../data/conversions.json"))
+                    .map_err(|_| Error::from("mcp_storage_failed"))?;
+            conversions["entries"]
+                .as_array_mut()
+                .ok_or("mcp_storage_failed")?
+                .retain(|entry| {
+                    let evidence = &entry["evidence"];
+                    evidence["ingredient_id"].as_str() == Some(ingredient.id.as_str())
+                        && evidence["form"].as_str() == Some(ingredient.form.as_str())
+                        && evidence["source_record_id"].as_str()
+                            == Some(ingredient.source.record_id.as_str())
+                        && evidence["source_url"].as_str() == Some(ingredient.source.url.as_str())
+                });
+            value["reference_conversions"] = conversions;
+            Ok(value)
         }
         "recipe_search" => {
             let search = search(args)?;

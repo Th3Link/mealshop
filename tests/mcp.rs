@@ -658,3 +658,54 @@ async fn failed_scope_revocation_blocks_all_tools_instead_of_using_stale_grants(
         json!({"recipes":[]})
     );
 }
+
+#[tokio::test]
+async fn ingredient_reads_supply_exact_source_portions_without_inventing_custom_conversions() {
+    let directory = Directory::new();
+    let app = directory.app();
+    enable(&app).await;
+    let ingredient = rpc(
+        &app,
+        Some(OWNER),
+        "ingredient_get",
+        json!({"id":"caraway-seed"}),
+    )
+    .await
+    .1;
+    let conversions = &ingredient["result"]["structuredContent"]["reference_conversions"];
+    assert_eq!(conversions["license"], "CC0-1.0");
+    let portion = conversions["entries"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["unit"] == "tsp")
+        .unwrap();
+    assert_eq!(portion["evidence"]["source_record_id"], "170918");
+    let mut draft = recipe();
+    draft["lines"] = json!([{"ingredient_id":"caraway-seed","quantity":{"amount":"2.5","unit":"tsp"},"conversion":portion["evidence"]}]);
+    let (_, result) = rpc(
+        &app,
+        Some(OWNER),
+        "recipe_preview_create",
+        json!({"recipe":draft}),
+    )
+    .await;
+    assert_eq!(result["result"]["isError"], false);
+    assert_eq!(
+        result["result"]["structuredContent"]["content"]["recipe"]["lines"][0]["grams"],
+        "5.250000"
+    );
+    let (status, custom) = call(&app, Some(OWNER), "POST", "/api/household/ingredients", json!({"expected_revision":0,"ingredient":{"name":"Synthetic caraway product","language":"en","form":"raw, edible portion","recorded_on":"2026-11-12"}})).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let (_, result) = rpc(
+        &app,
+        Some(OWNER),
+        "ingredient_get",
+        json!({"id":custom["id"]}),
+    )
+    .await;
+    assert_eq!(
+        result["result"]["structuredContent"]["reference_conversions"]["entries"],
+        json!([])
+    );
+}

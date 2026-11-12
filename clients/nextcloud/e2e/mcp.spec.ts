@@ -72,10 +72,16 @@ async function audit(page: Page, name: string) {
         await expect
           .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
           .toBeLessThanOrEqual(width)
+        await page.locator('.page-header').scrollIntoViewIfNeeded()
         await page.screenshot({
           path: `test-results/${name}-${language}-${scheme}-${width}.png`,
           animations: 'disabled',
           fullPage: true,
+        })
+        await page.locator('.mcp-section').last().scrollIntoViewIfNeeded()
+        await page.screenshot({
+          path: `test-results/${name}-activity-${language}-${scheme}-${width}.png`,
+          animations: 'disabled',
         })
         expect(
           (
@@ -121,6 +127,24 @@ test('native MCP grants, official client creation, source restriction and reader
     expect(found.isError).toBe(false)
     expect(found.structuredContent).toMatchObject({
       items: expect.arrayContaining([expect.objectContaining({ id: 'oats' })]),
+    })
+    const portions = await client.callTool({
+      name: 'ingredient_get',
+      arguments: { id: 'caraway-seed' },
+    })
+    expect(portions.structuredContent).toMatchObject({
+      reference_conversions: {
+        license: 'CC0-1.0',
+        entries: expect.arrayContaining([
+          expect.objectContaining({
+            unit: 'tsp',
+            evidence: expect.objectContaining({
+              ingredient_id: 'caraway-seed',
+              source_record_id: '170918',
+            }),
+          }),
+        ]),
+      },
     })
     const recipe = {
       title: 'MCP acceptance recipe',
