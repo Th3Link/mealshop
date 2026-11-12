@@ -56,8 +56,22 @@ pub(super) fn failure(code: &'static str) -> Response {
         json!({"code":code}),
     )
 }
-fn view(store: &super::Store, who: &Authority) -> Value {
-    json!({"revision":store.grants.revision,"user":who.user,"owner":who.role==Role::Owner,"scope":store.scope(&who.user,who.role),"members":if who.role==Role::Owner{who.members.clone()}else{BTreeMap::from([(who.user.clone(),who.role)])},"grants":if who.role==Role::Owner{store.grants.users.clone()}else{BTreeMap::from([(who.user.clone(),store.scope(&who.user,who.role))])}})
+fn view(store: &super::Store, who: &Authority) -> Result<Value, &'static str> {
+    let scope = store.scope(&who.user, who.role)?;
+    let owner = who.role == Role::Owner;
+    let members = if owner {
+        who.members.clone()
+    } else {
+        BTreeMap::from([(who.user.clone(), who.role)])
+    };
+    let grants = if owner {
+        store.grants.users.clone()
+    } else {
+        BTreeMap::from([(who.user.clone(), scope)])
+    };
+    Ok(
+        json!({"revision":store.grants.revision,"user":who.user,"owner":owner,"scope":scope,"members":members,"grants":grants}),
+    )
 }
 async fn settings(
     State(state): State<Shared>,
@@ -69,7 +83,10 @@ async fn settings(
     }
     let who = authority(&state, &headers, who);
     match state.mcp.lock() {
-        Ok(store) => household::reply(StatusCode::OK, view(&store, &who)),
+        Ok(store) => match view(&store, &who) {
+            Ok(value) => household::reply(StatusCode::OK, value),
+            Err(code) => failure(code),
+        },
         Err(_) => failure("mcp_storage_failed"),
     }
 }
@@ -105,7 +122,7 @@ async fn configure(
     match tokio::task::spawn_blocking(move || {
         let mut store = state.mcp.lock().map_err(|_| "mcp_storage_failed")?;
         store.configure(input.expected_revision, input.grants)?;
-        Ok::<_, &'static str>(view(&store, &who))
+        view(&store, &who)
     })
     .await
     {

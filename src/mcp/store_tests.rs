@@ -44,7 +44,9 @@ fn previews_expire_monotonically_and_identical_scope_saves_preserve_live_drafts(
     assert_eq!(store.grants.revision, 1);
     assert_eq!(store.previews.len(), 1);
     assert!(matches!(
-        store.scope("alice", crate::membership::Role::Reader),
+        store
+            .scope("alice", crate::membership::Role::Reader)
+            .unwrap(),
         Scope::Read
     ));
     store.expire(now + Duration::from_secs(61));
@@ -53,7 +55,8 @@ fn previews_expire_monotonically_and_identical_scope_saves_preserve_live_drafts(
     assert!(matches!(
         Store::open(&dir.0)
             .unwrap()
-            .scope("alice", crate::membership::Role::Owner),
+            .scope("alice", crate::membership::Role::Owner)
+            .unwrap(),
         Scope::Create
     ));
 }

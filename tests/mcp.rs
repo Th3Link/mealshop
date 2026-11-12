@@ -609,3 +609,52 @@ async fn changed_ingredients_and_revoked_scopes_require_an_explicit_new_preview(
         false
     );
 }
+
+#[tokio::test]
+async fn failed_scope_revocation_blocks_all_tools_instead_of_using_stale_grants() {
+    let directory = Directory::new();
+    let app = directory.app();
+    enable(&app).await;
+    let draft = preview(&app, recipe()).await;
+    std::fs::write(directory.0.join("household/.mcp.pending"), b"interrupted").unwrap();
+    assert_eq!(
+        call(
+            &app,
+            Some(OWNER),
+            "PUT",
+            "/api/household/mcp/settings",
+            json!({"expected_revision":1,"grants":{}})
+        )
+        .await
+        .0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    assert_eq!(
+        rpc(&app, Some(OWNER), "recipe_search", json!({})).await.0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    assert_eq!(
+        rpc(&app, Some(OWNER), "recipe_create", insert(&draft))
+            .await
+            .0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    assert_eq!(
+        call(
+            &app,
+            Some(OWNER),
+            "GET",
+            "/api/household/mcp/settings",
+            Value::Null
+        )
+        .await
+        .0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    assert_eq!(
+        call(&app, Some(OWNER), "GET", "/api/recipes", Value::Null)
+            .await
+            .1,
+        json!({"recipes":[]})
+    );
+}

@@ -311,7 +311,9 @@ fn dispatch(
         .map_err(|_| unavailable())?;
     let ingredients = state.catalogue.lock().map_err(|_| unavailable())?;
     let mut store = state.mcp.lock().map_err(|_| unavailable())?;
-    let scope = store.scope(&actor.user, actor.role);
+    let scope = store
+        .scope(&actor.user, actor.role)
+        .map_err(|_| unavailable())?;
     if scope == Scope::Disabled {
         return Err(Fault {
             status: StatusCode::FORBIDDEN,

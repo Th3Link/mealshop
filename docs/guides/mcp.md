@@ -68,7 +68,7 @@ Profiles, plans, shopping, history, preference learning and other households are
 
 A preview is bound to the current account, scope-settings revision and ingredient revision. It expires
 after ten monotonic minutes; a bounded household cache holds at most 16 previews and 4 per account.
-Expired bodies are removed on access and by a household cleanup task within a further 30 seconds.
+Expired bodies are removed when adding previews and by a household cleanup task within a further 30 seconds.
 Previews never reach disk. A restart requires a new preview for an **uncommitted** write. Changing
 scope settings or ingredient declarations invalidates a pending creation; obtain and review a new
 preview. Saving identical grants preserves a valid draft. Household membership is checked on every call.
@@ -93,7 +93,8 @@ is enforced on subsequent calls. There is no background assistant or speculative
 
 Settings are private `household/mcp.json` (schema 1, mode 0600), with optimistic revision checks and
 synced atomic rename. A settings conflict retains the browser draft until explicit reload. An interrupted
-`.mcp.pending`, invalid settings or an ambiguous write fails closed. Stop **all** writers, inspect only
+`.mcp.pending`, invalid settings or an ambiguous write fails closed. After a failed settings write,
+all RPC tools and scope reads return unavailable rather than using stale grants. Stop **all** writers, inspect only
 the affected household's verified settings and recover deliberately; never silently reset grants.
 Recipe publication/recovery uses the [existing immutable recipe procedure](recipes.md). Do not delete a
 successful first revision or its receipt to retry. Backups and restoration must preserve the complete

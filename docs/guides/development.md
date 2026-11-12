@@ -48,4 +48,4 @@ After installing the pinned Nextcloud development dependencies, check the commit
 `node scripts/test_mcp_client.mjs target/debug/mealshop-server` after `cargo build --locked`.
 The latter starts isolated synthetic HTTP/stdio fixtures and uses the official MCP client. CI also
 runs these checks against its compiled debug artifact; the SDK never enters shipped browser assets.
-The ExApp container smoke test covers both rootless TCP and Unix-socket MCP adapters.
+The `ExApp` container smoke test covers both rootless TCP and Unix-socket MCP adapters.

@@ -73,13 +73,21 @@ impl Store {
             expiry_started: false,
         })
     }
-    pub(crate) fn scope(&self, actor: &str, role: crate::membership::Role) -> Scope {
-        self.grants
+    pub(crate) fn scope(
+        &self,
+        actor: &str,
+        role: crate::membership::Role,
+    ) -> Result<Scope, &'static str> {
+        if !self.writable {
+            return Err("mcp_storage_failed");
+        }
+        Ok(self
+            .grants
             .users
             .get(actor)
             .copied()
             .unwrap_or_default()
-            .effective(role)
+            .effective(role))
     }
     pub(crate) fn configure(
         &mut self,
@@ -130,6 +138,7 @@ impl Store {
         };
         if persist().is_err() {
             self.writable = false;
+            self.previews.clear();
             return Err("mcp_storage_failed");
         }
         self.grants = grants;
