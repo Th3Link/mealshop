@@ -15,6 +15,18 @@ use std::{
     path::Path as FsPath,
 };
 const MAX_BYTES: usize = 5 * 1024 * 1024;
+pub(crate) fn validate_reference(
+    directory: Option<&FsPath>,
+    id: Option<&str>,
+) -> Result<(), crate::recipes::Error> {
+    if id.is_some_and(|id| !valid_id(id) || !directory.is_some_and(|root| root.join(id).is_file()))
+    {
+        return Err(crate::recipes::Error::Invalid(
+            "Upload a household image before referencing it".to_owned(),
+        ));
+    }
+    Ok(())
+}
 pub(crate) fn valid_id(id: &str) -> bool {
     id.strip_prefix("image-")
         .and_then(|rest| rest.split_once('.'))

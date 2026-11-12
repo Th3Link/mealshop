@@ -141,6 +141,7 @@ jobs:
       - run: npm install --global npm@12.2.2 --ignore-scripts --no-audit --no-fund
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run format:check
+      - run: node ../../scripts/generate_mcp_schema.mjs --check
       - run: npm test
       - run: npm run build
       - run: npm audit --audit-level=moderate
@@ -157,3 +158,23 @@ jobs:
       - run: docker build -t mealshop.local/mealshop:ci .
       - name: Verify rootless TCP and Unix transports
         run: python3 scripts/test_exapp_container.py --image mealshop.local/mealshop:ci
+  mcp-client:
+    name: MCP / official client and stdio interoperability
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: clients/nextcloud/package-lock.json
+      - run: npm install --global npm@12.2.2 --ignore-scripts --no-audit --no-fund
+      - run: npm --prefix clients/nextcloud ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/download-artifact@v8
+        with:
+          name: mealshop-server-debug-linux-x86_64
+          path: bin
+      - run: chmod +x bin/mealshop-server
+      - run: python3 -m unittest discover -s tests -p 'test_mcp_stdio.py'
+      - run: node scripts/test_mcp_client.mjs bin/mealshop-server

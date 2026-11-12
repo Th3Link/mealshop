@@ -177,6 +177,16 @@ impl Membership {
             .collect();
         serde_json::json!({"households":homes,"invitations":invitations,"user":user})
     }
+    pub(crate) fn members(&self, id: &str) -> Option<BTreeMap<String, Role>> {
+        Some(
+            self.data
+                .homes
+                .iter()
+                .find(|home| home.id == id)?
+                .members
+                .clone(),
+        )
+    }
     pub(crate) fn role(&self, id: &str, user: &str) -> Option<Role> {
         self.data
             .homes

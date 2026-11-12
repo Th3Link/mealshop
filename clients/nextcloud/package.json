@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
+    "@modelcontextprotocol/client": "2.4.0",
     "@playwright/test": "^1.56.1",
     "@vitejs/plugin-vue": "^6.0.2",
     "prettier": "^3.8.4",
