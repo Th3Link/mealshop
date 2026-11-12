@@ -161,10 +161,14 @@ fn response(
         Json(json!({
             "id":record.id,"revision":record.revision,"recipe":record.recipe,
             "sharing_origin":record.sharing_origin,
+            "import_source":record.import_receipt.as_ref().map(|r|&r.source),
             "nutrition":nutrition,"display_lines":display_lines(&record.recipe.lines,display_unit,&record.catalogue),
         })),
     )
         .into_response())
+}
+pub(crate) fn saved_response(record: &Record, status: StatusCode) -> Response {
+    response(record, status, DisplayUnit::G).unwrap_or_else(IntoResponse::into_response)
 }
 async fn list(State(state): State<Shared>) -> Result<Response, ApiError> {
     let recipes = blocking(state, |store, _| Ok(store.list())).await?;

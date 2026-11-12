@@ -4,17 +4,11 @@ mod protocol;
 mod schemas;
 mod store;
 mod tools;
+pub(crate) use crate::household::Authority;
 use crate::membership::Role;
 pub(crate) use api::routes;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 pub(crate) use store::Store;
-#[derive(Clone)]
-pub(crate) struct Authority {
-    pub(crate) user: String,
-    pub(crate) role: Role,
-    pub(crate) members: BTreeMap<String, Role>,
-}
 #[derive(Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum Scope {

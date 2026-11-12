@@ -7,7 +7,7 @@ import NcTextField from './LabeledField.vue'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
-import { api, domain, imageUrl } from './api'
+import { api, domain, imageUrl, ApiError } from './api'
 import {
   catalogueSchema,
   nutritionSchema,
@@ -24,6 +24,15 @@ import { foldSearch } from './ingredient-search'
 import { useUnsavedChanges } from './useUnsavedChanges'
 import Nutrition from './Nutrition.vue'
 import RecipeStructureEditor from './RecipeStructureEditor.vue'
+import ImportEntry from './ImportEntry.vue'
+import ImportEvidence from './ImportEvidence.vue'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import {
+  reviewedDraft,
+  type ImportPreview,
+  type ImportReview,
+  type ImportSource,
+} from './recipe-import'
 import RecipeContents from './RecipeContents.vue'
 import RecipeOriginEditor from './RecipeOriginEditor.vue'
 import ShareControls from './ShareControls.vue'
@@ -33,6 +42,51 @@ import type { LineDraft } from './quantity-api'
 const route = useRoute(),
   router = useRouter()
 const home = computed(() => String(route.params.home))
+const importing = computed(() => route.params.id === 'import')
+const importUrl = ref(''),
+  importReview = ref<ImportReview>(),
+  importReviewed = ref(false)
+const sourceLines = ref<Record<string, string>>({})
+type RecipeBody = Omit<Recipe, 'lines'> & {
+  lines: Array<Omit<Recipe['lines'][number], 'grams'> & { grams?: string }>
+}
+const importSubmission = ref<{
+  preview_id: string
+  candidate: number
+  idempotency_key: string
+  reviewed: true
+  recipe: RecipeBody
+}>()
+const importEvidence = computed<ImportSource | undefined>(() => {
+  const review = importReview.value,
+    original = review?.preview.candidates[review.candidate]
+  return review && original
+    ? {
+        requested_url: review.preview.requested_url,
+        final_url: review.preview.final_url,
+        method: review.preview.method,
+        retrieved_at: review.preview.retrieved_at,
+        importer_version: 'schema-recipe-1',
+        original,
+      }
+    : undefined
+})
+watch(importUrl, () => {
+  if (importing.value) dirty.value = true
+})
+function reviewImport(preview: ImportPreview, candidate: number) {
+  const review = { preview, candidate, key: crypto.randomUUID() }
+  const prepared = reviewedDraft(review, locale.value)
+  for (const line of prepared.lines) if (line.input) line.input = exact(line.input)
+  importReview.value = review
+  draft.value = prepared.recipe
+  lineDrafts.value = prepared.lines
+  sourceLines.value = prepared.sourceLines
+  importReviewed.value = false
+  dirty.value = true
+  void nextTick(() => document.querySelector<HTMLElement>('.recipe-editor-header h1')?.focus())
+}
+
 const writable = computed(() => homes.value.some((h) => h.id === home.value && h.role !== 'reader'))
 const records = ref<z.infer<typeof recipesSchema>>()
 const selected = ref<z.infer<typeof recipeRecordSchema>>()
@@ -67,7 +121,8 @@ async function ingredientCreated(id: string) {
   dirty.value = true
 }
 const editing = computed(
-  () => (route.params.id === 'new' || route.query.edit === '1') && !historical.value,
+  () =>
+    (route.params.id === 'new' || importing.value || route.query.edit === '1') && !historical.value,
 )
 const dirty = ref(false),
   validation = ref(''),
@@ -75,7 +130,10 @@ const dirty = ref(false),
 watch(
   [draft, lineDrafts],
   () => {
-    if (editing.value && draft.value) dirty.value = true
+    if (editing.value && draft.value) {
+      dirty.value = true
+      importReviewed.value = false
+    }
   },
   { deep: true, flush: 'sync' },
 )
@@ -123,6 +181,10 @@ const request = (path: string) => domain(home.value, path)
 let loadGeneration = 0
 async function load() {
   const generation = ++loadGeneration
+  importReview.value = undefined
+  importSubmission.value = undefined
+  importReviewed.value = false
+  sourceLines.value = {}
   dirty.value = false
   selected.value = undefined
   latestRevision.value = undefined
@@ -151,6 +213,7 @@ async function load() {
       catalogue.value = data[0]
       conversions.value = data[1]
     }
+    if (id === 'import') return
     if (id === 'new') {
       draft.value = {
         title: '',
@@ -237,8 +300,37 @@ async function uploadImage(event: Event) {
     }
   })
 }
+async function sendImport() {
+  const submission = importSubmission.value
+  if (!submission) return
+  await run(async () => {
+    try {
+      const result = await api(request('/api/household/imports'), recipeRecordSchema, {
+        method: 'POST',
+        data: submission,
+      })
+      dirty.value = false
+      selected.value = result
+      await router.push(`${listPath.value}/${result.id}`)
+    } catch (error) {
+      if (error instanceof ApiError && [401, 403, 422].includes(error.status)) {
+        importSubmission.value = undefined
+        importReviewed.value = false
+      }
+      throw error
+    }
+  })
+}
 async function save() {
   if (busy.value) return
+  if (importSubmission.value) {
+    await sendImport()
+    return
+  }
+  if (importing.value && !importReviewed.value) {
+    validation.value = t('importReviewed')
+    return
+  }
   const recipe = draft.value
   if (!recipe) return
   validation.value = ''
@@ -300,17 +392,28 @@ async function save() {
     validation.value = t('required')
     return
   }
-  await run(async () => {
-    const body = {
-      ...recipe,
-      servings: Number(recipe.servings),
-      lines,
-      steps: recipe.steps.map((s) => ({
-        ...s,
-        active_seconds: Number(s.active_seconds),
-        passive_seconds: Number(s.passive_seconds),
-      })),
+  const body: RecipeBody = {
+    ...recipe,
+    servings: Number(recipe.servings),
+    lines,
+    steps: recipe.steps.map((s) => ({
+      ...s,
+      active_seconds: Number(s.active_seconds),
+      passive_seconds: Number(s.passive_seconds),
+    })),
+  }
+  if (importReview.value) {
+    importSubmission.value = {
+      preview_id: importReview.value.preview.preview_id,
+      candidate: importReview.value.candidate,
+      idempotency_key: importReview.value.key,
+      reviewed: true,
+      recipe: structuredClone(toRaw(body)),
     }
+    await sendImport()
+    return
+  }
+  await run(async () => {
     const result = await api(
       request(selected.value ? `/api/recipes/${selected.value.id}` : '/api/recipes'),
       recipeRecordSchema,
@@ -347,13 +450,13 @@ async function scale() {
 </script>
 <template>
   <header v-if="route.params.id && !selected && !draft && !busy" class="page-header">
-    <h1 tabindex="-1">{{ t('recipes') }}</h1>
+    <h1 tabindex="-1">{{ t(importing ? 'importRecipe' : 'recipes') }}</h1>
     <NcButton :to="listPath">{{ t('back') }}</NcButton>
   </header>
   <NcNoteCard v-if="error" type="error" role="alert"
     >{{ errorMessage(error)
     }}<NcButton :disabled="busy" @click="reload">{{
-      t(dirty ? 'reloadSaved' : 'retry')
+      t(importing ? 'importStartAgain' : dirty ? 'reloadSaved' : 'retry')
     }}</NcButton></NcNoteCard
   >
   <NcLoadingIcon v-if="busy" :aria-label="t('loading')" />
@@ -363,9 +466,12 @@ async function scale() {
         <h1 tabindex="-1">{{ t('recipes') }}</h1>
         <p>{{ t('recipeIntro') }}</p>
       </div>
-      <NcButton v-if="writable" variant="primary" :to="`${listPath}/new`"
-        ><template #icon><Icon :path="mdiPlus" /></template>{{ t('newRecipe') }}</NcButton
-      >
+      <div v-if="writable" class="actions">
+        <NcButton :to="`${listPath}/import`">{{ t('importRecipe') }}</NcButton>
+        <NcButton variant="primary" :to="`${listPath}/new`"
+          ><template #icon><Icon :path="mdiPlus" /></template>{{ t('newRecipe') }}</NcButton
+        >
+      </div>
     </header>
     <div v-if="records?.recipes.length" class="toolbar">
       <NcTextField
@@ -417,6 +523,14 @@ async function scale() {
       </li>
     </ul>
   </template>
+  <ImportEntry
+    v-else-if="importing && !draft"
+    v-model="importUrl"
+    :home="home"
+    :writable="writable"
+    @review="reviewImport"
+    @changed="dirty = true"
+  />
   <template v-else-if="editing && draft">
     <NcButton
       :disabled="busy"
@@ -427,15 +541,27 @@ async function scale() {
       >{{ t('cancel') }}</NcButton
     >
     <header class="page-header recipe-editor-header">
-      <h1 tabindex="-1">{{ selected ? t('edit') : t('newRecipe') }}</h1>
+      <h1 tabindex="-1">
+        {{ importing ? t('importReviewTitle') : selected ? t('edit') : t('newRecipe') }}
+      </h1>
       <NcButton
         variant="primary"
         type="submit"
         form="mealshop-recipe-form"
-        :disabled="busy || !writable"
-        >{{ busy ? t('saving') : t('save') }}</NcButton
+        :disabled="busy || !writable || (importing && !importReviewed && !importSubmission)"
+        >{{
+          busy
+            ? t('saving')
+            : importSubmission
+              ? t('importRetry')
+              : importing
+                ? t('importSave')
+                : t('save')
+        }}</NcButton
       >
     </header>
+    <NcNoteCard v-if="importReview" type="info">{{ t('importReviewHelp') }}</NcNoteCard>
+    <NcNoteCard v-if="importSubmission" type="warning">{{ t('importFrozen') }}</NcNoteCard>
     <NcNoteCard v-if="validation" type="error" role="alert">{{ validation }}</NcNoteCard>
     <form
       id="mealshop-recipe-form"
@@ -444,7 +570,7 @@ async function scale() {
       @input="dirty = true"
       @change="dirty = true"
     >
-      <fieldset class="editor-fields" :disabled="busy || !writable">
+      <fieldset class="editor-fields" :disabled="busy || !writable || Boolean(importSubmission)">
         <div class="recipe-title-row">
           <NcTextField v-model="draft.title" :label="t('title')" required maxlength="200" />
           <div class="form-row recipe-basics">
@@ -472,6 +598,7 @@ async function scale() {
           :catalogue="catalogue"
           :conversions="conversions"
           :invalid="Boolean(validation)"
+          :source-lines="sourceLines"
           @changed="dirty = true"
           @create="(index, name) => (creatingIngredient = { index, name })"
         />
@@ -486,7 +613,7 @@ async function scale() {
             />
             <RecipeOriginEditor
               v-model="draft.origin"
-              :locked="sourceOrigin?.kind === 'imported'"
+              :locked="importing || sourceOrigin?.kind === 'imported'"
               @update:model-value="dirty = true"
             />
             <fieldset class="recipe-image-editor">
@@ -518,6 +645,13 @@ async function scale() {
           </div>
         </section>
       </fieldset>
+      <ImportEvidence v-if="importEvidence" :source="importEvidence" />
+      <NcCheckboxRadioSwitch
+        v-if="importReview"
+        v-model="importReviewed"
+        :disabled="busy || !writable || Boolean(importSubmission)"
+        >{{ t('importReviewed') }}</NcCheckboxRadioSwitch
+      >
     </form>
   </template>
   <template v-else-if="selected">
@@ -610,6 +744,7 @@ async function scale() {
     </div>
     <RecipeContents :record="selected" :lines="scaledLines ?? selected.display_lines" />
     <Nutrition :value="preview ?? selected.nutrition" />
+    <ImportEvidence v-if="selected.import_source" :source="selected.import_source" with-text />
   </template>
   <IngredientEditor
     v-if="creatingIngredient !== null && catalogue"

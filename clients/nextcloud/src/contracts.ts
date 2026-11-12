@@ -1,3 +1,4 @@
+import { importSourceSchema } from './recipe-import'
 import { ingredientExtensionSchema } from './quantity-api'
 import { z } from 'zod'
 import { quantitySchema, evidenceSchema } from './quantity-api'
@@ -277,6 +278,7 @@ export const displayLinesSchema = z.array(
   }),
 )
 export const recipeRecordSchema = z.object({
+  import_source: importSourceSchema.nullable().optional(),
   sharing_origin: recipeOriginSchema.optional(),
   id: z.string(),
   revision: z.number().int(),

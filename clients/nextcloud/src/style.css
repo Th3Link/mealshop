@@ -1572,3 +1572,40 @@
   overflow-wrap: anywhere;
   font-size: 13px;
 }
+
+.mealshop .import-entry {
+  max-width: 880px;
+}
+.mealshop .import-entry .actions {
+  margin-top: 16px;
+}
+.mealshop .import-preview {
+  margin-top: 24px;
+}
+.mealshop .import-evidence {
+  border-top: 1px solid var(--color-border);
+  padding-top: 20px;
+  margin-top: 24px;
+}
+.mealshop .import-evidence a,
+.mealshop .import-evidence li {
+  overflow-wrap: anywhere;
+}
+.mealshop .import-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px 24px;
+}
+.mealshop .import-facts dt {
+  color: var(--color-text-maxcontrast);
+  font-size: 14px;
+}
+.mealshop .import-facts dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+.mealshop .import-source-line {
+  margin: 4px 0 8px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}

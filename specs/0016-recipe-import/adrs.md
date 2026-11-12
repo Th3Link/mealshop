@@ -5,3 +5,6 @@
 
 ## Feature-local decisions
 2026-11-07: Acceptance criteria capture the customer vision; unspecified implementation choices remain proposals. No future feature is implemented by this bootstrap.
+
+- [ADR 0023](../../docs/adr/0023-reviewed-recipe-link-import.md): public retrieval boundaries,
+  non-executing extraction, explicit native review and atomic private import receipts.
