@@ -577,11 +577,13 @@ async fn dispatch_household(
         user: actor.clone(),
         notifications_available: true,
     });
-    request.extensions_mut().insert(crate::mcp::Authority {
-        user: actor.clone(),
-        role,
-        members,
-    });
+    request
+        .extensions_mut()
+        .insert(crate::household::Authority {
+            user: actor.clone(),
+            role,
+            members,
+        });
     request.extensions_mut().insert(crate::feedback::Actor {
         user: actor,
         owner: role == Role::Owner,
@@ -660,3 +662,7 @@ mod feedback_tests;
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]
 mod mcp_tests;
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod import_tests;

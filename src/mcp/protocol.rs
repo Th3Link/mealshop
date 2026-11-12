@@ -231,7 +231,7 @@ pub(super) async fn handle(
         );
     }
     let notification = request.id.is_none();
-    let who = api::authority(&state, &headers, who);
+    let who = household::authority(&state, &headers, who);
     match tokio::task::spawn_blocking(move || dispatch(&state, &who, &request, modern)).await {
         Ok(Ok(mut result)) => {
             if notification {

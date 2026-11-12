@@ -112,6 +112,8 @@ impl Recipe {
 #[serde(deny_unknown_fields)]
 pub(crate) struct Record {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) import_receipt: Option<crate::imports::Receipt>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub(crate) creation: Option<Creation>,
     #[serde(skip)]
     pub(crate) sharing_origin: crate::recipe_origin::Origin,
@@ -261,6 +263,7 @@ impl Store {
             self.count += 1;
         }
         let mut creation_keys = BTreeSet::new();
+        let mut import_keys = BTreeSet::new();
         for revisions in self.records.values_mut() {
             revisions.sort_by_key(|r| r.revision);
             if revisions
@@ -278,6 +281,19 @@ impl Store {
                         || !creation_keys.insert((creation.actor.clone(), creation.key.clone()))
                     {
                         return Err("Invalid or duplicate recipe creation receipt".to_owned());
+                    }
+                }
+                if let Some(receipt) = &record.import_receipt {
+                    if index != 0
+                        || record.creation.is_some()
+                        || !receipt.valid()
+                        || record.recipe.origin
+                            != (crate::recipe_origin::Origin::Imported {
+                                source_url: receipt.source.requested_url.clone(),
+                            })
+                        || !import_keys.insert((receipt.actor.clone(), receipt.key.clone()))
+                    {
+                        return Err("Invalid or duplicate recipe import receipt".to_owned());
                     }
                 }
                 if record.revision != index as u64 + 1 {
@@ -339,6 +355,7 @@ impl Store {
             .ok_or(Error::NotFound)?;
         nutrition::estimates::attach(&mut record.catalogue).map_err(Error::Invalid)?;
         record.sharing_origin = records.last().ok_or(Error::NotFound)?.recipe.origin.clone();
+        record.import_receipt = records.first().and_then(|r| r.import_receipt.clone());
         Ok(record)
     }
 
@@ -432,6 +449,7 @@ impl Store {
         let snapshot_json = serde_json::to_string(&snapshot).map_err(|_| Error::Storage)?;
         Catalogue::from_json(&snapshot_json).map_err(Error::Invalid)?;
         Ok(Record {
+            import_receipt: None,
             creation: None,
             sharing_origin: recipe.origin.clone(),
             schema_version: 1,
@@ -448,7 +466,13 @@ impl Store {
         catalogue: &Catalogue,
     ) -> Result<Record, Error> {
         let record = self.prepare(recipe, update, catalogue)?;
-        self.publish(record)
+        let mut record = self.publish(record)?;
+        record.import_receipt = self
+            .records
+            .get(&record.id)
+            .and_then(|revisions| revisions.first())
+            .and_then(|first| first.import_receipt.clone());
+        Ok(record)
     }
     pub(crate) fn creation_result(
         &self,
@@ -486,6 +510,61 @@ impl Store {
         }
         let mut record = self.prepare(recipe, None, catalogue)?;
         record.creation = Some(creation);
+        self.publish(record)
+    }
+    pub(crate) fn import_result(
+        &self,
+        actor: &str,
+        key: &str,
+        preview: &str,
+        candidate: usize,
+        recipe: &Recipe,
+    ) -> Result<Option<Record>, Error> {
+        for revisions in self.records.values() {
+            if let Some(record) = revisions.first() {
+                if let Some(receipt) = &record.import_receipt {
+                    if receipt.actor == actor && receipt.key == key {
+                        if receipt.preview_id != preview
+                            || receipt.candidate != candidate
+                            || serde_json::to_value(&record.recipe).map_err(|_| Error::Storage)?
+                                != serde_json::to_value(recipe).map_err(|_| Error::Storage)?
+                        {
+                            return Err(Error::Conflict);
+                        }
+                        return self.get(&record.id, Some(1)).map(Some);
+                    }
+                }
+            }
+        }
+        Ok(None)
+    }
+    pub(crate) fn save_imported(
+        &mut self,
+        recipe: Recipe,
+        catalogue: &Catalogue,
+        receipt: crate::imports::Receipt,
+    ) -> Result<Record, Error> {
+        if !receipt.valid()
+            || recipe.origin
+                != (crate::recipe_origin::Origin::Imported {
+                    source_url: receipt.source.requested_url.clone(),
+                })
+        {
+            return Err(Error::Invalid(
+                "An import must retain its reviewed original source".to_owned(),
+            ));
+        }
+        if let Some(record) = self.import_result(
+            &receipt.actor,
+            &receipt.key,
+            &receipt.preview_id,
+            receipt.candidate,
+            &recipe,
+        )? {
+            return Ok(record);
+        }
+        let mut record = self.prepare(recipe, None, catalogue)?;
+        record.import_receipt = Some(receipt);
         self.publish(record)
     }
     pub(crate) fn creation_activity(&self) -> Vec<serde_json::Value> {

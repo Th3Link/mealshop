@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head><title>Synthetic Mealshop import fixture</title></head>
+<body>
+<h1>Synthetic recipe; acceptance testing only</h1>
+<script src="https://127.0.0.1/must-not-load"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Recipe",
+      "name": "Import acceptance recipe",
+      "author": [{"@type":"Person", "name":"Synthetic fixture author"}],
+      "inLanguage": "en",
+      "recipeYield": "2 servings",
+      "prepTime": "PT1M",
+      "cookTime": "PT2M",
+      "totalTime": "PT3M",
+      "recipeIngredient": ["100.500000 g Oats", "25 g Drinking water"],
+      "recipeInstructions": [
+        {"@type":"HowToSection", "name":"Preparation", "itemListElement":[
+          {"@type":"HowToStep", "text":"<p>Mix the synthetic ingredients.</p><script>throw new Error('must-not-execute')<\/script>"},
+          {"@type":"HowToStep", "text":"Review the test fixture before saving."}
+        ]}
+      ],
+      "image": "https://127.0.0.1/must-not-load-image",
+      "nutrition": {"@type":"NutritionInformation", "calories":"99999 kcal"},
+      "suitableForDiet":"https://schema.org/GlutenFreeDiet"
+    }
+  ]
+}
+</script>
+</body></html>

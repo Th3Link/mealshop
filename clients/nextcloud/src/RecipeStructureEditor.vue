@@ -18,6 +18,7 @@ const lines = defineModel<LineDraft[]>('lines', { required: true })
 const props = defineProps<{
   catalogue: Catalogue
   conversions: z.infer<typeof conversionsSchema>
+  sourceLines?: Record<string, string>
   invalid: boolean
 }>()
 const emit = defineEmits<{ changed: []; create: [index: number, name: string] }>()
@@ -240,6 +241,9 @@ function addStep(partId: string | null = null) {
           :key="entry.line.id ?? entry.index"
           class="ingredient-entry"
         >
+          <p v-if="entry.line.id && sourceLines?.[entry.line.id]" class="import-source-line">
+            <strong>{{ t('importSourceIngredient') }}:</strong> {{ sourceLines[entry.line.id] }}
+          </p>
           <div class="recipe-ingredient-row">
             <RecipeQuantity
               :model-value="entry.line"

@@ -100,3 +100,8 @@ and keeps the planner's hard exclusions and explicit review. [History and prefer
 Household assistant tools now offer explicitly granted MCP ingredient/recipe search, canonical previews
 and confirmed, idempotent recipe creation through existing Nextcloud authentication. Imported content
 remains source-only. [Connection, permissions and recovery](docs/guides/mcp.md).
+
+Native reviewed recipe import fetches supported public structured sources after explicit consent,
+retains original fields separately, and offers manual private entry when retrieval is blocked.
+Ingredient/quantity review is mandatory and imported sharing remains source-link-only.
+[Import, source boundaries and recovery](docs/guides/recipe-import.md).

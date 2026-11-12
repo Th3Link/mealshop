@@ -1,3 +1,4 @@
+import { importEnglish, importGerman, importExplanations } from './import-messages'
 import { mcpEnglish, mcpGerman, mcpExplanations } from './mcp-messages'
 import { feedbackEnglish, feedbackGerman, feedbackExplanations } from './feedback-messages'
 import { cookingEnglish, cookingGerman, cookingExplanations } from './cooking-messages'
@@ -64,6 +65,7 @@ const en = {
   ...sharingEnglish,
   ...feedbackEnglish,
   ...mcpEnglish,
+  ...importEnglish,
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
   changesSaved: 'Changes saved.',
@@ -404,6 +406,7 @@ const de: Record<keyof typeof en, string> = {
   ...sharingGerman,
   ...feedbackGerman,
   ...mcpGerman,
+  ...importGerman,
   ingredientTemperature: 'Temperatur (°C)',
   addTemperature: 'Temperatur ergänzen',
   temperatureError:
@@ -773,6 +776,7 @@ const explanations: Record<string, { en: string; de: string }> = {
   ...sharingExplanations,
   ...feedbackExplanations,
   ...mcpExplanations,
+  ...importExplanations,
   shopping_barcode_invalid: {
     en: 'Enter a valid EAN/UPC/GTIN including check digit.',
     de: 'Gib einen gültigen EAN/UPC/GTIN mit Prüfziffer ein.',

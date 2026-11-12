@@ -74,9 +74,42 @@ pub(crate) struct Household {
     pub(crate) cooking: Mutex<crate::cooking::store::Store>,
     pub(crate) feedback: Mutex<crate::feedback::Store>,
     pub(crate) mcp: Mutex<crate::mcp::Store>,
+    pub(crate) imports: Mutex<crate::imports::Store>,
     pub(crate) images: PathBuf,
     pub(crate) catalogue: crate::ingredients::Shared,
     pub(crate) allergen_data: serde_json::Value,
+}
+#[derive(Clone)]
+pub(crate) struct Authority {
+    pub(crate) user: String,
+    pub(crate) role: crate::membership::Role,
+    pub(crate) members: std::collections::BTreeMap<String, crate::membership::Role>,
+}
+pub(crate) fn authority(
+    state: &crate::household::Household,
+    headers: &HeaderMap,
+    who: Option<axum::Extension<Authority>>,
+) -> Authority {
+    who.map_or_else(
+        || Authority {
+            user: if can_write(state, headers) {
+                "local"
+            } else {
+                "local-reader"
+            }
+            .to_owned(),
+            role: if can_write(state, headers) {
+                crate::membership::Role::Owner
+            } else {
+                crate::membership::Role::Reader
+            },
+            members: std::collections::BTreeMap::from([
+                ("local".to_owned(), crate::membership::Role::Owner),
+                ("local-reader".to_owned(), crate::membership::Role::Reader),
+            ]),
+        },
+        |axum::Extension(a)| a,
+    )
 }
 pub(crate) type Shared = Arc<Household>;
 pub(crate) fn reply(status: StatusCode, body: serde_json::Value) -> Response {
@@ -205,6 +238,7 @@ pub(crate) fn router(
         cooking: Mutex::new(crate::cooking::store::Store::open(directory)?),
         feedback: Mutex::new(crate::feedback::Store::open(directory)?),
         mcp: Mutex::new(crate::mcp::Store::open(directory)?),
+        imports: Mutex::new(crate::imports::Store::default()),
         token,
         reader_token,
         allergen_data,
@@ -222,6 +256,7 @@ pub(crate) fn router(
         .merge(crate::cooking::routes())
         .merge(crate::feedback::routes())
         .merge(crate::mcp::routes())
+        .merge(crate::imports::routes())
         .merge(crate::ingredient_api::routes())
         .merge(crate::recipe_images::routes())
         .route("/api/household/profiles", get(read).put(write))

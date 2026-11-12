@@ -169,6 +169,20 @@ try:
         assert rpc('recipe_create', confirmed)['isError']
         status, body = request(name, unix, prefix + '/api/household/mcp/activity', user='alice')
         assert status == 200 and json.loads(body)['entries'][0]['actor'] == 'alice' and 'idempotency_key' not in body, body
+        imports = prefix + '/api/household/imports'
+        status, body = request(name, unix, imports + '/preview', user='alice', method='POST', data={'mode':'url','url':'https://127.0.0.1/private','consent':True})
+        assert status == 422 and json.loads(body)['code'] == 'import_url_invalid', body
+        status, body = request(name, unix, imports + '/preview', user='alice', method='POST', data={'mode':'manual','url':'https://example.org/container-import'})
+        assert status == 200 and json.loads(body)['method'] == 'manual', body
+        reviewed = {'preview_id':json.loads(body)['preview_id'],'candidate':0,'idempotency_key':'container-import-request-0001','reviewed':True,'recipe':{**recipe,'title':'Container import recipe','origin':{'kind':'imported','source_url':'https://example.org/container-import'}}}
+        status, body = request(name, unix, imports, user='alice', method='POST', data=reviewed)
+        assert status == 201, body
+        inserted = json.loads(body)
+        assert inserted['import_source']['requested_url'] == 'https://example.org/container-import' and 'container-import-request-0001' not in body, body
+        status, body = request(name, unix, imports, user='alice', method='POST', data=reviewed)
+        assert status == 201 and json.loads(body)['id'] == inserted['id'], body
+        assert request(name, unix, imports, user='bob', method='POST', data=reviewed)[0] == 403
+        assert docker('exec', name, 'stat', '-c', '%a', f"/data/{home}/recipes/{inserted['id']}-1.json") == '600'
         history = prefix + "/api/household/history"
         learning = prefix + "/api/household/learning"
         status, body = request(name, unix, history, user="alice")
@@ -199,7 +213,7 @@ try:
         policy.update(expected_revision=3,policy={"enabled":False,"member_ids":[]})
         status, body = request(name, unix, learning, user="alice", method="PUT", data=policy)
         assert status == 200 and json.loads(body)["model_version"] == "rules-v1", body
-        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation, completed history, preference epochs, scoped MCP preview/create/retry/redaction and storage")
+        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation, completed history, preference epochs, scoped MCP, reviewed imports/retries/SSRF rejection and storage")
 finally:
     for container in reversed(containers):
         subprocess.run(["docker", "stop", "--time", "10", container], capture_output=True)

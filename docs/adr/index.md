@@ -39,3 +39,4 @@ A proposal is not customer acceptance of an unresolved choice.
 
 - [0021: Completed cooking history and local preference epochs](0021-completed-history-and-local-preferences.md)
 - [0022: scoped MCP access and atomic recipe creation receipts](0022-scoped-mcp-recipe-creation.md)
+- [0023: Safe public retrieval and reviewed recipe import](0023-reviewed-recipe-link-import.md)

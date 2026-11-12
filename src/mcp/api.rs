@@ -19,32 +19,6 @@ pub(crate) fn routes() -> Router<Shared> {
         .route("/api/household/mcp/settings", get(settings).put(configure))
         .route("/api/household/mcp/activity", get(activity))
 }
-pub(super) fn authority(
-    state: &crate::household::Household,
-    headers: &HeaderMap,
-    who: Option<Extension<Authority>>,
-) -> Authority {
-    who.map_or_else(
-        || Authority {
-            user: if household::can_write(state, headers) {
-                "local"
-            } else {
-                "local-reader"
-            }
-            .to_owned(),
-            role: if household::can_write(state, headers) {
-                Role::Owner
-            } else {
-                Role::Reader
-            },
-            members: BTreeMap::from([
-                ("local".to_owned(), Role::Owner),
-                ("local-reader".to_owned(), Role::Reader),
-            ]),
-        },
-        |Extension(a)| a,
-    )
-}
 pub(super) fn failure(code: &'static str) -> Response {
     household::reply(
         match code {
@@ -81,7 +55,7 @@ async fn settings(
     if !household::authorized(&state, &headers) {
         return household::denied();
     }
-    let who = authority(&state, &headers, who);
+    let who = household::authority(&state, &headers, who);
     match state.mcp.lock() {
         Ok(store) => match view(&store, &who) {
             Ok(value) => household::reply(StatusCode::OK, value),
@@ -105,7 +79,7 @@ async fn configure(
     if !household::can_write(&state, &headers) {
         return failure("mcp_owner_required");
     }
-    let who = authority(&state, &headers, who);
+    let who = household::authority(&state, &headers, who);
     if who.role != Role::Owner {
         return failure("mcp_owner_required");
     }

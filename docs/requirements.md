@@ -100,3 +100,9 @@ source-only imported projections, canonical nonpersistent recipe previews and at
 idempotent confirmed creation. The supplied stdio bridge uses existing Nextcloud app passwords;
 hosted OAuth and per-client delegated credentials are outside this authentication slice.
 N03/N04/N06/N09/N10 apply. See [MCP guide](guides/mcp.md) and ADR 0022.
+
+F16 delivers customer-operated public HTTPS recipe retrieval, bounded structured previews, explicit
+native ingredient/quantity/source review and manual private fallback. DNS/peer/redirect/robots bounds
+protect the fetch surface. Atomic first-revision import receipts retain original fields separately
+from reviewed values and preserve source-only sharing through later edits, collections and MCP.
+N03/N04/N06/N09/N10 apply; see [import guide](guides/recipe-import.md) and ADR 0023.
