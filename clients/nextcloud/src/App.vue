@@ -18,6 +18,7 @@ import {
   mdiShareVariantOutline,
   mdiHistory,
   mdiRobotOutline,
+  mdiArchiveOutline,
 } from '@mdi/js'
 import Icon from './Icon.vue'
 import HouseholdSwitcher from './HouseholdSwitcher.vue'
@@ -31,6 +32,7 @@ const links = [
   { key: 'history', icon: mdiHistory },
   { key: 'plan', icon: mdiCalendarMonthOutline },
   { key: 'shoppingList', icon: mdiBasketOutline },
+  { key: 'inventory', icon: mdiArchiveOutline },
   { key: 'cookingSessions', icon: mdiChefHat },
   { key: 'ingredients', icon: mdiCarrot },
   { key: 'household', icon: mdiAccountGroupOutline },
@@ -44,6 +46,7 @@ const links = [
     | 'ingredients'
     | 'household'
     | 'shoppingList'
+    | 'inventory'
     | 'cookingSessions'
     | 'assistants'
   icon: string

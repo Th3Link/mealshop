@@ -29,7 +29,10 @@ const categoryIcons: Record<string, string> = {
   pantry: mdiFoodVariant,
   eggs_meat: mdiFoodVariant,
 }
-export const isPurchased = (item: ShoppingItem) => /^0(?:\.0+)?$/.test(item.remaining)
+const zero = (amount: string) => /^0(?:\.0+)?$/.test(amount)
+export const isStockCovered = (item: ShoppingItem) =>
+  zero(item.remaining) && zero(item.purchased) && (!zero(item.reserved) || !zero(item.used))
+export const isPurchased = (item: ShoppingItem) => zero(item.remaining) && !isStockCovered(item)
 export function shoppingIcon(
   item: ShoppingItem,
   ingredients: ReadonlyMap<string, Ingredient>,

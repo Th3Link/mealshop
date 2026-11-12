@@ -38,6 +38,26 @@ export function canonicalGtin(code: string): string | null {
     .reduce((total, digit, i) => total + Number(digit) * (i % 2 === 0 ? 1 : 3), 0)
   return sum % 10 === 0 ? code.padStart(14, '0') : null
 }
+export const inventoryBindingSchema = z.object({
+  ingredient_id: z.string().nullable(),
+  name: z.string(),
+  translations: z.record(z.string(), z.string()),
+  product: productSchema.nullable(),
+})
+export const offerSchema = z.object({
+  id: z.string(),
+  shop_id: z.string(),
+  shop_name: z.string(),
+  binding: inventoryBindingSchema,
+  quantity: shoppingQuantitySchema,
+  price: z.string(),
+  currency: z.enum(['EUR', 'GBP', 'USD', 'CHF']),
+  valid_from: z.string(),
+  valid_until: z.string(),
+  source: z.string(),
+  source_url: z.string().nullable(),
+  archived: z.boolean(),
+})
 const recipeFields = {
   recipe_id: z.string(),
   revision: z.number().int(),
@@ -46,13 +66,14 @@ const recipeFields = {
   servings: z.number().int(),
 }
 export const shoppingOriginSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('offer'), offer: offerSchema, packages: z.number().int() }),
   z.object({ kind: z.literal('product'), product: productSchema, packages: z.number().int() }),
   z.object({ kind: z.literal('manual'), label: z.string(), quantity: shoppingQuantitySchema }),
   z.object({ kind: z.literal('recipe'), ...recipeFields }),
   z.object({ kind: z.literal('meal'), date: z.string(), meal: z.string(), ...recipeFields }),
 ])
 export type ShoppingOrigin = z.infer<typeof shoppingOriginSchema>
-const itemSchema = z.object({
+export const shoppingItemRefSchema = z.object({
   key: z.string(),
   ingredient_id: z.string().nullable(),
   name: z.string(),
@@ -86,17 +107,19 @@ export const shoppingSchema = z.object({
       id: z.string(),
       active: z.boolean(),
       origin: shoppingOriginSchema,
-      requirements: z.array(z.object({ item: itemSchema, amount: z.string() })),
+      requirements: z.array(z.object({ item: shoppingItemRefSchema, amount: z.string() })),
     }),
   ),
   items: z.array(
-    itemSchema.extend({
+    shoppingItemRefSchema.extend({
       shop_id: z.string().nullable(),
       fallback_shop_id: z.string().nullable(),
       order_basis: z.enum(['default', 'uncertain', 'learned', 'manual']),
       samples: z.number().int(),
       remaining: z.string(),
       purchased: z.string(),
+      reserved: z.string().default('0'),
+      used: z.string().default('0'),
       total: z.string(),
       contributions: z.array(
         z.object({
@@ -104,6 +127,8 @@ export const shoppingSchema = z.object({
           origin: shoppingOriginSchema,
           required: z.string(),
           purchased: z.string(),
+          reserved: z.string().default('0'),
+          used: z.string().default('0'),
           receipts: z.array(z.object({ amount: z.string(), origin: shoppingOriginSchema })),
         }),
       ),

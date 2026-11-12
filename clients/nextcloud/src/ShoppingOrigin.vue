@@ -36,6 +36,22 @@ defineProps<{ origin: ShoppingOrigin }>()
       }}</template
     ></span
   >
+  <span v-else-if="origin.kind === 'offer'"
+    >{{ origin.offer.binding.translations[locale] ?? origin.offer.binding.name }} ·
+    {{ origin.offer.shop_name }} · {{ origin.packages }} {{ t('productPackages') }} ×
+    {{ compactExact(origin.offer.quantity.amount) }}
+    {{ shoppingUnit(origin.offer.quantity.unit, origin.offer.quantity.amount) }} ·
+    {{ compactExact(origin.offer.price) }} {{ origin.offer.currency }} ·
+    {{ calendarDate(origin.offer.valid_from) }} – {{ calendarDate(origin.offer.valid_until) }} ·
+    {{ origin.offer.source }}
+    <a
+      v-if="origin.offer.source_url"
+      :href="origin.offer.source_url"
+      target="_blank"
+      rel="noopener noreferrer"
+      >{{ t('stockSource') }}</a
+    >
+  </span>
   <span v-else
     ><span :lang="origin.language">{{ origin.title }}</span
     ><template v-if="origin.language !== locale">

@@ -11,6 +11,7 @@ const props = defineProps<{
   label?: string
   allowCreate?: boolean
   hideLabel?: boolean
+  disabled?: boolean
 }>()
 const emit = defineEmits<{ change: []; create: [name: string] }>()
 const id = useId(),
@@ -89,6 +90,7 @@ function filter(option: { kind: string; search: string }, _label: string, query:
       label ?? t('selectIngredient')
     }}</label>
     <NcSelect
+      :disabled="disabled"
       :input-id="id"
       :model-value="selected"
       :options="options"
