@@ -1,6 +1,6 @@
 # Customer-operated recipe link import
 
-Status: In progress
+Status: Done
 Priority: Should
 Origin: Customer
 Milestone: M3
@@ -19,14 +19,15 @@ Keep recipes from source websites in a private recipe library.
 Guaranteed support for every website or publication rights obtained merely by importing.
 
 ## UX notes
-UI flows, accessibility, empty/error states and user review points must be specified before Ready.
+See [ux-notes.md](ux-notes.md) for native review order, unknown fields, draft recovery,
+accessibility and responsive acceptance.
 
 ## Links
 Requirement: [F16](../../docs/requirements.md). Delivery tasks: [plan.md](plan.md). Decisions: [adrs.md](adrs.md).
 
 ## Nextcloud delivery contract
-F16 proceeds under the customer's standing autonomous implementation instruction after merged F17.
-The implementation choices below narrow the public fetch surface while delivering all five criteria.
+Delivery targets the existing authenticated Nextcloud household editor. These boundaries define
+supported public retrieval and reviewed manual fallback for all five acceptance criteria.
 
 - Existing owner/editor household authorization protects fetch and save; readers cannot initiate either.
   Require explicit outbound consent for each URL fetch and retain original requested HTTPS URL across
@@ -37,8 +38,8 @@ The implementation choices below narrow the public fetch surface while deliverin
   and verify the peer. Validate each of at most three redirect targets before contacting it; reject
   robots redirects rather than relaxing policy. Respect robots disallow and explicit paywall metadata.
 - Bound total fetch to 15 seconds, page to 2 MiB, robots to 512 KiB and extracted preview/source to
-  96 KiB; accept UTF-8 HTML/JSON-LD (including text/plain carriers) only. At most four simultaneous fetches per process, one per actor
-  and a ten-second actor cooldown in the existing single-writer deployment. No background crawling.
+  96 KiB; accept UTF-8 HTML/JSON-LD (including text/plain carriers) only. At most four simultaneous fetches per
+  process, one per household/account pair and a ten-second pair cooldown in the existing single-writer deployment. No background crawling.
 - Extract up to 16 Schema.org Recipe JSON-LD candidates with original text, author/language, yield,
   ingredients, steps/sections and optional source durations. Unsupported/login/policy/large/timeout
   states are actionable and always offer manual private entry. No universal website support claim.
@@ -59,6 +60,7 @@ The implementation choices below narrow the public fetch surface while deliverin
   original source fields, while sharing/collections/MCP expose only the retained source URL.
 
 ## Acceptance evidence
-Map parser/transport/permission/review/atomic-retry regressions, native browser checks and installed
-restart to AC 1–5 in validation.md. Complete all required gates and one reviewable PR against main.
-Only ledger-owned synthetic households may be inspected/archived; preserve all retained data.
+[Validation evidence](validation.md) maps parser/transport/permission/review/atomic-retry regressions,
+31 installed native browser scenarios, rootless transports and an actual installed restart to AC 1–5.
+Required gates and current-head CI accompany [PR #35](https://github.com/Th3Link/mealshop/pull/35).
+Only ledger-owned synthetic households were inspected/archived; retained directories were not read.

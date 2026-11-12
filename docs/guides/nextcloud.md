@@ -119,8 +119,9 @@ docker build -t mealshop.local/mealshop:0.1.0 .
 python3 scripts/test_exapp_container.py
 ```
 
-The image pins base digests, builds Rust with 1.85 and the Vue IIFE with Node 24/npm 12.2.2,
-and includes the manifest, assets, CA store and FRP entrypoint. Runtime uses a supported Alpine
+The image pins base digests, uses the Rust 1.99 compiler image and builds the Vue IIFE with
+Node 24/npm 12.2.2. The declared Rust 1.85 MSRV is checked separately. The image includes the
+manifest, assets, CA store and FRP entrypoint. Runtime uses a supported Alpine
 3.24 release. The isolated smoke test exercises both TCP and Unix socket, lifecycle registration,
 assets, authorization, CSRF and private storage as UID 1000 with a read-only root filesystem.
 Its OCS mock is a transport fixture, not evidence of a real `HaRP` tunnel.
@@ -339,3 +340,9 @@ Nextcloud URL is internal, so notification links use the browser-visible install
 F17 adds explicit per-account MCP grants, connection setup and immutable creation activity in the
 existing household shell. See the [MCP guide](mcp.md) for stdio setup, app-password authority,
 confirmation, source-only imported content and recovery.
+
+## Recipe link import
+
+F16 adds Import from link to the native recipe list and reuses the existing editor for review and
+inline ingredient creation. See the [import guide](recipe-import.md) for public fetch consent,
+manual fallback, retained unknowns, frozen retry and source-only downstream access.
