@@ -57,3 +57,46 @@ export const plansSchema = z.object({
 })
 
 export type PlanReview = { plan: Plan; preview: z.infer<typeof previewSchema>; remove: boolean }
+
+export const recommendationSchema = z.object({
+  model_version: z.enum(['rules-v1', 'history-v1']),
+  score: z.number().int(),
+  baseline_rank: z.number().int().positive(),
+  confidence: z.enum(['cold_start', 'limited_history', 'repeated_history']),
+  discovery: z.boolean(),
+  evidence: z.object({
+    cooks: z.number().int().nonnegative(),
+    household_ratings: z.number().int().nonnegative(),
+    personal_ratings: z.number().int().nonnegative(),
+    recent_cooks: z.number().int().nonnegative(),
+    earlier_revision_cooks: z.number().int().nonnegative(),
+  }),
+  reasons: z.array(
+    z.enum([
+      'declared_dislikes',
+      'completed_cooks',
+      'household_ratings',
+      'attendee_ratings',
+      'recent_variety',
+      'earlier_revisions',
+      'discovery',
+    ]),
+  ),
+})
+export const suggestionSchema = previewSchema.extend({
+  plan: planSchema,
+  recommendation: recommendationSchema,
+})
+export const suggestionsSchema = z.object({
+  suggestions: z.array(suggestionSchema),
+  rejected: z.array(
+    z.object({ conflicts: z.array(z.string()).optional(), error: z.string().optional() }),
+  ),
+  reason: z.string().nullable(),
+  page: z.number().int().positive(),
+  per_page: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+  history_revision: z.number().int().nonnegative(),
+  learning_epoch: z.number().int().positive(),
+  model_version: z.enum(['rules-v1', 'history-v1']),
+})

@@ -140,7 +140,37 @@ try:
         status, body = request(name, unix, shares + "/" + share_id, user="alice", method="DELETE", data={"expected_revision":2})
         assert status == 200, body
         assert request(name, unix, shared, user="bob")[0] == 404
-        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation and storage")
+        history = prefix + "/api/household/history"
+        learning = prefix + "/api/household/learning"
+        status, body = request(name, unix, history, user="alice")
+        assert status == 200 and json.loads(body)["total"] == 0, body
+        profile = {"id":"person-a","name":"Container attendee","allergies":[],"intolerances":[],"excluded_ingredients":[],"disliked_ingredients":[]}
+        status, body = request(name, unix, prefix + "/api/household/profiles", user="alice", method="PUT", data={"expected_revision":0,"members":[profile]})
+        assert status == 200, body
+        policy = {"expected_revision":0,"expected_profile_revision":1,"policy":{"enabled":True,"member_ids":["person-a"]}}
+        status, body = request(name, unix, learning, user="alice", method="PUT", data=policy)
+        assert status == 200 and json.loads(body)["learned_cooks"] == 0, body
+        entry = {"expected_revision":1,"expected_profile_revision":1,"confirmed_completed":True,"source":{"kind":"manual","recipe_id":recipe_id,"revision":1,"servings":2},"input":{"date":"2026-11-01","timezone":"Europe/Berlin","attendees":["person-a"],"active_seconds":125,"household_rating":5,"ratings":{"person-a":4}}}
+        status, body = request(name, unix, history, user="alice", method="POST", data=entry)
+        assert status == 201, body
+        history_id = json.loads(body)["id"]
+        status, body = request(name, unix, learning, user="alice")
+        assert status == 200 and json.loads(body)["learned_cooks"] == 1, body
+        assert request(name, unix, history, user="bob")[0] == 403
+        assert docker("exec", name, "stat", "-c", "%a", f"/data/{home}/household/history.json") == "600"
+        candidate = {"id":recipe_id,"revision":1}
+        suggestion = {"template":{"date":"2026-11-02","meal":"lunch","recipe":candidate,"attendees":["person-a"],"calendar":None,"servings":2,"active_seconds":600,"elapsed_seconds":600,"advance_seconds":0},"candidates":[candidate]}
+        status, body = request(name, unix, prefix + "/api/household/mealplan/suggestions", user="alice", method="POST", data=suggestion)
+        ranked = json.loads(body)
+        assert status == 200 and ranked["model_version"] == "history-v1" and ranked["suggestions"][0]["recommendation"]["evidence"]["cooks"] == 1, body
+        status, body = request(name, unix, history + "/" + history_id, user="alice", method="DELETE", data={"expected_revision":2,"confirmed":True})
+        assert status == 200, body
+        status, body = request(name, unix, learning, user="alice")
+        assert status == 200 and json.loads(body)["learned_cooks"] == 0, body
+        policy.update(expected_revision=3,policy={"enabled":False,"member_ids":[]})
+        status, body = request(name, unix, learning, user="alice", method="PUT", data=policy)
+        assert status == 200 and json.loads(body)["model_version"] == "rules-v1", body
+        print(f"PASS: {'Unix socket' if unix else 'TCP'}; rootless lifecycle, assets, auth, CSRF, private shopping/products, cooking review, collections, sharing/redaction/revocation, completed history, preference epochs and storage")
 finally:
     for container in reversed(containers):
         subprocess.run(["docker", "stop", "--time", "10", container], capture_output=True)

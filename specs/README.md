@@ -20,7 +20,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 |---|---|---|---|
 | F29 | [Cross-client localization and versioned content translations](0029-cross-client-localization/specification.md) | Must | M1 |
 | F30 | [Standalone Vue client and cross-client integration](0030-standalone-vue-client/specification.md) | Must | M1 |
-| F11 | [Cooking history and online preference learning](0011-recommendation-feedback/specification.md) | Should | M2 |
 | F15 | [Inventory and shopping offers](0015-inventory-offers/specification.md) | Should | M3 |
 | F16 | [Customer-operated recipe link import](0016-recipe-import/specification.md) | Should | M3 |
 | F17 | [MCP recipe tools](0017-mcp/specification.md) | Should | M3 |
@@ -49,6 +48,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F06 | [Shopping lists and recipe provenance](0006-shopping-list/specification.md) | Must | M2 |
 | F07 | [Preferred shops and learned shopping order](0007-shops-order-learning/specification.md) | Should | M2 |
 | F10 | [Family meal planning and calendar attendance](0010-meal-planning/specification.md) | Must | M2 |
+| F11 | [Cooking history and online preference learning](0011-recommendation-feedback/specification.md) | Should | M2 |
 | F12 | [Guided cooking and preset timers](0012-guided-cooking/specification.md) | Must | M2 |
 | F31 | [Unified preparation, mealprep and ingredient extensions](0031-unified-preparation/specification.md) | Must | M2 |
 | F32 | [Visual household shopping](0032-visual-shopping/specification.md) | Must | M2 |

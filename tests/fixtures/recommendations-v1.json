@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "baseline": "rules-v1",
+  "learned": "history-v1",
+  "training_date": "2026-10-01",
+  "heldout_date": "2026-11-01",
+  "recipes": [
+    {
+      "id": "recipe-00000001",
+      "eligible": true
+    },
+    {
+      "id": "recipe-00000002",
+      "eligible": true
+    },
+    {
+      "id": "recipe-00000003",
+      "eligible": true
+    },
+    {
+      "id": "recipe-00000004",
+      "eligible": true
+    },
+    {
+      "id": "recipe-00000005",
+      "eligible": true
+    },
+    {
+      "id": "recipe-00000006",
+      "eligible": false
+    }
+  ],
+  "cases": [
+    {
+      "name": "synthetic-holdout-1",
+      "training": [
+        {
+          "recipe": 1,
+          "rating": 1
+        },
+        {
+          "recipe": 2,
+          "rating": 5
+        },
+        {
+          "recipe": 3,
+          "rating": 1
+        },
+        {
+          "recipe": 6,
+          "rating": 5
+        }
+      ],
+      "heldout_choice": 2,
+      "heldout_ratings": {
+        "1": 1,
+        "2": 5,
+        "3": 1,
+        "4": 3,
+        "5": 3,
+        "6": 5
+      }
+    },
+    {
+      "name": "synthetic-holdout-2",
+      "training": [
+        {
+          "recipe": 1,
+          "rating": 1
+        },
+        {
+          "recipe": 2,
+          "rating": 1
+        },
+        {
+          "recipe": 3,
+          "rating": 5
+        },
+        {
+          "recipe": 6,
+          "rating": 5
+        }
+      ],
+      "heldout_choice": 3,
+      "heldout_ratings": {
+        "1": 1,
+        "2": 1,
+        "3": 5,
+        "4": 3,
+        "5": 3,
+        "6": 5
+      }
+    },
+    {
+      "name": "synthetic-holdout-3",
+      "training": [
+        {
+          "recipe": 1,
+          "rating": 1
+        },
+        {
+          "recipe": 2,
+          "rating": 5
+        },
+        {
+          "recipe": 3,
+          "rating": 1
+        },
+        {
+          "recipe": 6,
+          "rating": 5
+        }
+      ],
+      "heldout_choice": 2,
+      "heldout_ratings": {
+        "1": 1,
+        "2": 5,
+        "3": 1,
+        "4": 3,
+        "5": 3,
+        "6": 5
+      }
+    },
+    {
+      "name": "synthetic-holdout-4",
+      "training": [
+        {
+          "recipe": 1,
+          "rating": 1
+        },
+        {
+          "recipe": 2,
+          "rating": 1
+        },
+        {
+          "recipe": 3,
+          "rating": 5
+        },
+        {
+          "recipe": 6,
+          "rating": 5
+        }
+      ],
+      "heldout_choice": 3,
+      "heldout_ratings": {
+        "1": 1,
+        "2": 1,
+        "3": 5,
+        "4": 3,
+        "5": 3,
+        "6": 5
+      }
+    }
+  ],
+  "expected": {
+    "baseline_hits": 0,
+    "learned_hits": 4,
+    "baseline_variety": 1,
+    "learned_variety": 2,
+    "baseline_rating_points": 4,
+    "learned_rating_points": 20
+  }
+}

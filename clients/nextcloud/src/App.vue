@@ -16,6 +16,7 @@ import {
   mdiChefHat,
   mdiFolderMultipleOutline,
   mdiShareVariantOutline,
+  mdiHistory,
 } from '@mdi/js'
 import Icon from './Icon.vue'
 import HouseholdSwitcher from './HouseholdSwitcher.vue'
@@ -26,6 +27,7 @@ const home = computed(() => homes.value.find((h) => h.id === route.params.home))
 const links = [
   { key: 'recipes', icon: mdiBookOpenPageVariantOutline },
   { key: 'collections', icon: mdiFolderMultipleOutline },
+  { key: 'history', icon: mdiHistory },
   { key: 'plan', icon: mdiCalendarMonthOutline },
   { key: 'shoppingList', icon: mdiBasketOutline },
   { key: 'cookingSessions', icon: mdiChefHat },
@@ -35,6 +37,7 @@ const links = [
   key:
     | 'recipes'
     | 'collections'
+    | 'history'
     | 'plan'
     | 'ingredients'
     | 'household'

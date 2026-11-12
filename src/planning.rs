@@ -476,7 +476,8 @@ fn error(code: &'static str) -> Response {
             "revision_conflict" => StatusCode::CONFLICT,
             "mealplan_storage_failed"
             | "recipe_store_unavailable"
-            | "ingredient_storage_failed" => StatusCode::SERVICE_UNAVAILABLE,
+            | "ingredient_storage_failed"
+            | "history_storage_failed" => StatusCode::SERVICE_UNAVAILABLE,
             _ => StatusCode::UNPROCESSABLE_ENTITY,
         },
         json!({"code":code}),
@@ -628,6 +629,8 @@ async fn apply(
 struct Suggestions {
     template: Plan,
     candidates: Vec<RecipeRef>,
+    #[serde(default)]
+    page: Option<usize>,
 }
 async fn suggest(
     State(state): State<Shared>,
@@ -643,22 +646,57 @@ async fn suggest(
     let Ok(Json(input)) = body else {
         return error("invalid_meal_plan");
     };
-    if input.candidates.is_empty() || input.candidates.len() > 50 {
+    let page = input.page.unwrap_or(1);
+    if input.candidates.is_empty()
+        || input.candidates.len() > 1000
+        || page == 0
+        || page.checked_mul(20).is_none()
+        || input
+            .candidates
+            .iter()
+            .map(|r| &r.id)
+            .collect::<BTreeSet<_>>()
+            .len()
+            != input.candidates.len()
+    {
         return error("candidate_limit");
     }
-    work(state,move|state,profiles,recipes,plans,ingredients| {
-        let mut matches=Vec::new(); let mut rejected=Vec::new();
+    work(state, move |state, profiles, recipes, plans, ingredients| {
+        let feedback = state.feedback.lock().map_err(|_| "history_storage_failed")?;
+        let mut feasible = Vec::new();
+        let mut rejected = Vec::new();
         for candidate in input.candidates {
-            let mut plan=input.template.clone(); plan.recipe=candidate;
-            match preview(state,profiles,recipes,&plans.data,&plan,ingredients) {
-                Ok(value)=> {if value["feasible"]==true {matches.push(value);} else {rejected.push(value);}},
-                Err(code)=>rejected.push(json!({"recipe":plan.recipe,"error":code})),
+            let mut plan = input.template.clone();
+            plan.recipe = candidate;
+            match preview(state, profiles, recipes, &plans.data, &plan, ingredients) {
+                Ok(value) if value["feasible"] == true => {
+                    feasible.push(crate::feedback::ranking::Candidate {
+                        id: plan.recipe.id,
+                        revision: plan.recipe.revision,
+                        dislikes: value["review"]["disliked_ingredients"].as_array().map_or(0,Vec::len),
+                    });
+                }
+                Ok(value) => rejected.push(json!({"recipe":plan.recipe,"conflicts":value["conflicts"]})),
+                Err(code) => rejected.push(json!({"recipe":plan.recipe,"error":code})),
             }
         }
-        matches.sort_by_key(|v|v["review"]["disliked_ingredients"].as_array().map_or(0,Vec::len));
-        Ok(json!({"suggestions":matches,"rejected":rejected,"reason":if matches.is_empty(){Some("no_feasible_meal")}else{None}}))
+        let ranked = crate::feedback::ranking::rank(feasible, &feedback.data, &attendees(&input.template), &input.template.date)?;
+        let total = ranked.len();
+        let page = page.min(total.div_ceil(20).max(1));
+        let mut matches = Vec::new();
+        for candidate in ranked.into_iter().skip((page-1)*20).take(20) {
+            let mut plan = input.template.clone();
+            plan.recipe = RecipeRef {id:candidate.candidate.id, revision:candidate.candidate.revision};
+            let mut value = preview(state, profiles, recipes, &plans.data, &plan, ingredients)?;
+            value["recommendation"] = serde_json::to_value(candidate.explanation).map_err(|_| "history_storage_failed")?;
+            matches.push(value);
+        }
+        Ok(json!({"suggestions":matches,"rejected":rejected,"reason":if total==0{Some("no_feasible_meal")}else{None},
+            "page":page,"per_page":20,"total":total,"history_revision":feedback.data.revision,"learning_epoch":feedback.data.epoch,
+            "model_version":if feedback.data.policy.enabled {crate::feedback::ranking::LEARNED_VERSION}else{crate::feedback::ranking::BASELINE_VERSION}}))
     }).await
 }
+
 async fn work(
     state: Shared,
     action: impl FnOnce(

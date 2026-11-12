@@ -528,7 +528,9 @@ async function scale() {
               path: `/h/${home}/collections/${route.query.collection}`,
               query: { page: route.query.collectionPage },
             }
-          : { path: listPath, query: { q: search || undefined } }
+          : typeof route.query.history === 'string'
+            ? { path: `/h/${home}/history/${encodeURIComponent(route.query.history)}` }
+            : { path: listPath, query: { q: search || undefined } }
       "
       >{{ t('back') }}</NcButton
     >

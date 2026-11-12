@@ -13,7 +13,8 @@ import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import { api, domain } from './api'
 import { catalogueSchema, emptySchema, profilesSchema, recipesSchema } from './contracts'
-import { plansSchema, previewSchema } from './planning-api'
+import { plansSchema, previewSchema, suggestionSchema, suggestionsSchema } from './planning-api'
+import RecommendationReasons from './RecommendationReasons.vue'
 import type { Plan, PlanReview as ReviewValue } from './planning-api'
 import { homes, useTask, loadCatalogue } from './state'
 import { cookingListSchema } from './cooking-api'
@@ -45,9 +46,9 @@ async function reload() {
   }
 }
 const result = ref<ReviewValue>()
-const suggestionSchema = previewSchema.extend({ plan: planSchema })
 const suggestions = ref<z.infer<typeof suggestionSchema>[]>([])
 const rejected = ref<string[]>([])
+const suggestionMeta = ref<z.infer<typeof suggestionsSchema>>()
 const { busy, error, run, errorMessage } = useTask()
 const path = (suffix: string) => domain(home.value, `/api/household/mealplan${suffix}`)
 const names = (id: string) => {
@@ -226,39 +227,30 @@ async function apply() {
     document.getElementById('mealshop-calendar-title')?.focus()
   })
 }
-async function suggest() {
+async function suggest(page = 1) {
   const template = payload()
   if (!template) return
   await run(async () => {
     suggestions.value = []
     rejected.value = []
+    suggestionMeta.value = undefined
     const candidates = recipes.value?.recipes ?? []
-    for (let offset = 0; offset < candidates.length; offset += 50) {
-      const data = await api(
-        path('/suggestions'),
-        z.object({
-          suggestions: z.array(suggestionSchema),
-          rejected: z.array(
-            z.object({ conflicts: z.array(z.string()).optional(), error: z.string().optional() }),
-          ),
-        }),
-        {
-          method: 'POST',
-          data: {
-            template,
-            candidates: candidates
-              .slice(offset, offset + 50)
-              .map((r) => ({ id: r.id, revision: r.revision })),
-          },
-        },
-      )
-      suggestions.value.push(...data.suggestions)
-      rejected.value.push(
-        ...data.rejected.flatMap((r) => r.conflicts ?? (r.error ? [r.error] : [])),
-      )
-    }
+    const data = await api(path('/suggestions'), suggestionsSchema, {
+      method: 'POST',
+      data: {
+        template,
+        page,
+        candidates: candidates.map((r) => ({ id: r.id, revision: r.revision })),
+      },
+    })
+    suggestions.value = data.suggestions
+    suggestionMeta.value = data
+    rejected.value = data.rejected.flatMap((r) => r.conflicts ?? (r.error ? [r.error] : []))
+    await nextTick()
+    document.getElementById('mealshop-suggestions-title')?.focus()
   })
 }
+
 import { planSchema } from './planning-api'
 watch(
   draft,
@@ -266,6 +258,7 @@ watch(
     result.value = undefined
     reviewed.value = false
     suggestions.value = []
+    suggestionMeta.value = undefined
   },
   { deep: true },
 )
@@ -542,31 +535,60 @@ onMounted(load)
             </details>
             <div class="actions editor-actions">
               <NcButton type="submit" variant="primary" :disabled="busy">{{ t('review') }}</NcButton
-              ><NcButton :disabled="busy" @click="suggest">{{ t('suggestions') }}</NcButton
+              ><NcButton :disabled="busy" @click="suggest()">{{ t('suggestions') }}</NcButton
               ><NcButton :disabled="busy" @click="cancelPlan">{{ t('cancel') }}</NcButton>
             </div>
           </fieldset>
         </form>
         <section v-if="suggestions.length">
-          <h2>{{ t('suggestions') }}</h2>
-          <div
-            v-for="suggestion in suggestions"
-            :key="`${suggestion.plan.recipe.id}@${suggestion.plan.recipe.revision}`"
-            class="inline-row"
-          >
-            <span>{{ title(suggestion.plan) }}</span
-            ><NcButton
-              :disabled="busy"
-              @click="
-                result = {
-                  plan: planSchema.parse(suggestion.plan),
-                  preview: suggestion,
-                  remove: false,
-                }
-              "
-              >{{ t('review') }}</NcButton
+          <h2 id="mealshop-suggestions-title" tabindex="-1">{{ t('suggestions') }}</h2>
+          <p v-if="suggestionMeta" class="muted">
+            {{ t(suggestionMeta.model_version === 'rules-v1' ? 'suggestRules' : 'suggestLearned') }}
+          </p>
+          <p class="muted">{{ t('suggestSafety') }}</p>
+          <ul class="record-list suggestion-results">
+            <li
+              v-for="suggestion in suggestions"
+              :key="`${suggestion.plan.recipe.id}@${suggestion.plan.recipe.revision}`"
             >
-          </div>
+              <div class="suggestion-item">
+                <div>
+                  <strong>{{ title(suggestion.plan) }}</strong
+                  ><RecommendationReasons :value="suggestion.recommendation" />
+                </div>
+                <NcButton
+                  :disabled="busy"
+                  @click="
+                    result = {
+                      plan: planSchema.parse(suggestion.plan),
+                      preview: suggestion,
+                      remove: false,
+                    }
+                  "
+                  >{{ t('review') }}</NcButton
+                >
+              </div>
+            </li>
+          </ul>
+          <nav
+            v-if="suggestionMeta && suggestionMeta.total > suggestionMeta.per_page"
+            class="actions"
+            :aria-label="t('libraryPage')"
+          >
+            <NcButton
+              :disabled="busy || suggestionMeta.page <= 1"
+              @click="suggest(suggestionMeta.page - 1)"
+              >{{ t('libraryPreviousPage') }}</NcButton
+            >
+            <span>{{ t('libraryPage') }} {{ suggestionMeta.page }}</span>
+            <NcButton
+              :disabled="
+                busy || suggestionMeta.page * suggestionMeta.per_page >= suggestionMeta.total
+              "
+              @click="suggest(suggestionMeta.page + 1)"
+              >{{ t('libraryNextPage') }}</NcButton
+            >
+          </nav>
         </section>
         <NcNoteCard v-if="rejected.length" type="warning"
           >{{ t(suggestions.length ? 'someRejected' : 'noSuggestions') }}
