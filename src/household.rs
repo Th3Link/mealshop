@@ -253,6 +253,7 @@ pub(crate) fn router(
         .route("/api/household/allergens", get(allergens))
         .merge(crate::planning::routes())
         .merge(crate::shopping::routes())
+        .merge(crate::inventory::routes())
         .merge(crate::cooking::routes())
         .merge(crate::feedback::routes())
         .merge(crate::mcp::routes())

@@ -126,3 +126,5 @@ mod recipe_creation_tests;
 
 mod imports;
 mod mcp;
+
+mod inventory;

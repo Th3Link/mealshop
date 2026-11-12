@@ -1,6 +1,7 @@
 //! Protected durable cooking instances and reviewed multi-day schedules.
 pub(crate) mod delivery;
 mod model;
+pub(crate) use model::{Run, RunState};
 mod plan;
 mod source;
 pub(crate) mod store;
