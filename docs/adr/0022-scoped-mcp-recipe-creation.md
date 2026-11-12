@@ -27,7 +27,8 @@ This is existing Nextcloud authentication, not a new standalone auth provider or
 Use canonical validation and a short-lived actor/scope/catalogue-bound preview. Explicitly confirmed
 creation atomically adds an audit/idempotency receipt to the first recipe revision. The existing store
 lock serializes duplicate keys; restart loads the immutable receipt. There is no second commit to lose.
-A receipt is private persistence metadata; public API/tool projections expose actor/time, not keys.
+A receipt is private persistence metadata. Native activity exposes actor/time, never keys; ordinary
+recipe and MCP projections omit the receipt.
 Imported effective provenance controls every MCP projection, including historical revisions and previews.
 
 ## Consequences

@@ -1,6 +1,6 @@
 # MCP recipe tools
 
-Status: In progress
+Status: Done
 Priority: Should
 Origin: Customer
 Milestone: M3
@@ -72,3 +72,6 @@ historical reads, concurrent/restarted idempotency and malformed input regressio
 client plus the stdio bridge, real Nextcloud account authentication, native EN/DE themes/responsiveness,
 all required repository/client/container gates and exact-head PR CI. Live checks use only new ledger-
 recorded synthetic households; do not inspect or copy retained household directories.
+
+Acceptance evidence: [validation.md](validation.md). Hosted OAuth, independently delegated credentials
+and model-provider configuration are not part of the accepted Nextcloud tool contract.

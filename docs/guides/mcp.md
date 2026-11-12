@@ -48,7 +48,7 @@ stdio bridge. Protocol support is MCP 2026-07-28 and legacy 2025-11-25, verified
 | `ingredient_search` | Optional localized `query`, `page` | Up to 20 declared catalogue/household ingredients and stable IDs. |
 | `ingredient_get` | Ingredient `id` | Original declarations, sources, available conversions and unknowns. |
 | `recipe_search` | Optional `query`, `page` | Up to 20 owned title summaries or imported source links. |
-| `recipe_get` | Recipe `id`, optional pinned `revision` | Owned recipe and saved nutrition inputs, or original source URL only. |
+| `recipe_get` | Recipe `id`, optional pinned `revision` | Owned recipe with nutrition from its saved inputs, or original source URL only. |
 | `recipe_preview_create` | Structured `recipe` matching discovered schema | Canonical validation, normalized exact values, preview ID and expiry; saves nothing. |
 | `recipe_create` | `preview_id`, opaque `idempotency_key`, `confirmed: true` | First immutable recipe revision and replay status; creation scope required. |
 
@@ -58,6 +58,11 @@ Canonical validation preserves the original quantity and normalizes it to `100.5
 A floating-point number, unknown ingredient, invalid image reference, invalid recipe composition or
 implicit volume/mass conversion fails with a structured tool error, as in the regular recipe API.
 Unknown nutrition/allergens remain unknown. Tools never claim dietary safety.
+`ingredient_get.reference_conversions` contains only bundled portions matching that exact ingredient ID,
+form, source record and source URL, retaining version, licence and full conversion evidence. Copy the
+selected entry's `evidence` into the recipe line's `conversion` when using its `unit`. An empty entries
+array means no matching bundled portion is known; use mass or provide your own explicit evidence.
+Never reuse a neighbouring food's portion or assume ml equals grams.
 
 Imported recipes expose **only their retained original HTTPS source URL**, including preview,
 search and older revisions subsequently marked imported. No imported title, ingredients, instructions,
@@ -88,7 +93,8 @@ The native activity list displays actor/time and pinned revision links, never ke
 
 Set an account to Disabled and save to stop subsequent tool calls. Reduce its household role or remove
 membership when appropriate. Revoke an app password in Nextcloud to invalidate that credential across
-its underlying account authority. A request already admitted before revocation may finish; revocation
+its underlying account authority. Nextcloud's own authentication cache can delay credential revocation;
+disable the MCP grant to block subsequent tool calls directly in Mealshop. A request already admitted before revocation may finish; revocation
 is enforced on subsequent calls. There is no background assistant or speculative execution.
 
 Settings are private `household/mcp.json` (schema 1, mode 0600), with optimistic revision checks and

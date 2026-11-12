@@ -322,11 +322,20 @@ Dependent tests open only the matching recorded setup fixture, waiting for the h
 Run the complete suite from the repository root after configuring the documented test credentials.
 Individual dependent specs require their authoring/Nextcloud setup spec first; missing fixtures fail
 closed instead of opening the last household. Never point tests at customer-owned households.
-Archive confirmed fixtures after stopping the sole writer, taking a complete private backup and checking
-that retained customer files are byte-identical. Test reports and the fixture ledger remain ignored.
+Archive only confirmed ledger-owned fixtures after stopping the sole writer. Validate their IDs,
+names and synthetic contents, and preserve all non-fixture membership/library entries and counters.
+Do not inspect, hash or copy retained household directories for cleanup. Test reports and the fixture
+ledger remain ignored. Avoid parallel manual fixture creation during a full browser run: the existing
+20-household account limit is intentionally enforced.
 
 ## Cooking and baking
 
 The household Cooking & baking view and recipe entry point implement F12/F13; see the
 [cooking guide](cooking.md). Configure `MEALSHOP_PUBLIC_NEXTCLOUD_URL` when the server-side
 Nextcloud URL is internal, so notification links use the browser-visible installation.
+
+## Assistant tools
+
+F17 adds explicit per-account MCP grants, connection setup and immutable creation activity in the
+existing household shell. See the [MCP guide](mcp.md) for stdio setup, app-password authority,
+confirmation, source-only imported content and recovery.
