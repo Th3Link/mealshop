@@ -168,13 +168,14 @@ async fn detail(
                 .map_err(|_| "recipe_store_unavailable")?;
             let store = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
             let run = store.data.run(&id)?;
-            let record = source::recipe(&recipes, &run.recipe.id, run.recipe.revision)?;
+            let (recipe, servings) = run.food()?;
+            let record = source::recipe(&recipes, &recipe.id, recipe.revision)?;
             let mut value = view::detail(
                 &store.data,
                 &id,
                 &actor,
                 time::now()?,
-                &source::ingredients(&record, run.servings)?,
+                &source::ingredients(&record, servings)?,
             )?;
             value["scheduler"] = store.health();
             Ok(value)
@@ -232,6 +233,7 @@ async fn preview(
                 }
                 Proposal::Replan { run_id, change } => {
                     let previous = store.data.run(&run_id)?.clone();
+                    previous.food()?;
                     let (run, proposal) = operations::replan(previous.clone(), change, now)?;
                     (run, Some(previous), proposal)
                 }
@@ -274,6 +276,15 @@ fn execute(
     now: i64,
 ) -> Result<Option<String>, &'static str> {
     let expected = input.expected_revision;
+    match &input.command {
+        Command::Timer { run_id, .. }
+        | Command::Cancel { run_id }
+        | Command::Remove { run_id }
+        | Command::Subscribe { run_id, .. } => {
+            store.data.run(run_id)?.food()?;
+        }
+        _ => {}
+    }
     match input.command {
         Command::Apply {
             preview_id,
@@ -358,6 +369,7 @@ fn notice_action(
             .iter()
             .position(|n| n.id == id && n.user == actor.user)
             .ok_or("cooking_notice_not_found")?;
+        data.run(&data.notices[index].run_id)?.food()?;
         if retry {
             super::delivery::retry(data, index, accepted_risk, now)?;
         } else {

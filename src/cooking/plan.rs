@@ -352,14 +352,16 @@ mod tests {
             id: "cook-1".to_owned(),
             name: "Dough schedule".to_owned(),
             kind: Kind::Bread,
-            recipe: RecipeRef {
-                id: "recipe-1".to_owned(),
-                revision: 1,
-                title: "Dough".to_owned(),
-                language: "en".to_owned(),
-                reference_servings: 1,
+            source: crate::cooking::run_source::Source::Food {
+                recipe: RecipeRef {
+                    id: "recipe-1".to_owned(),
+                    revision: 1,
+                    title: "Dough".to_owned(),
+                    language: "en".to_owned(),
+                    reference_servings: 1,
+                },
+                servings: 1,
             },
-            servings: 1,
             timezone: target.timezone.clone(),
             target: Some(target),
             created_at: now,

@@ -38,7 +38,8 @@ impl Store {
         if run.status != RunState::Completed || run.steps.iter().any(|s| !s.timer.complete()) {
             return Err("history_session_incomplete");
         }
-        Ok((run.recipe.id.clone(), run.recipe.revision, run.servings))
+        let (recipe, servings) = run.food()?;
+        Ok((recipe.id.clone(), recipe.revision, servings))
     }
 
     pub(crate) fn health(&self) -> serde_json::Value {
@@ -194,6 +195,7 @@ impl Store {
         if prepared.revision != expected {
             return Err("cooking_revision_conflict");
         }
+        prepared.run.food()?;
         let mut run = prepared.run;
         let mut result = run.id.clone();
         self.change(Some(expected), |data| {
@@ -225,12 +227,7 @@ fn validate(data: &Data) -> Result<(), &'static str> {
         if !ids.insert(&run.id)
             || !allocated(data, &run.id, "cook-")
             || !model::text(&run.name, 200)
-            || !crate::recipes::valid_id(&run.recipe.id)
-            || run.recipe.revision == 0
-            || !model::text(&run.recipe.title, 200)
-            || !matches!(run.recipe.language.as_str(), "en" | "de")
-            || !(1..=1_000_000).contains(&run.servings)
-            || !(1..=1_000_000).contains(&run.recipe.reference_servings)
+            || run.source.validate(run.kind).is_err()
             || !time::valid(run.created_at)
             || time::zone(&run.timezone).is_err()
             || run

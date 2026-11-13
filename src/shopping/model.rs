@@ -29,7 +29,7 @@ impl Unit {
         }
     }
 }
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Quantity {
     pub(crate) amount: Amount,

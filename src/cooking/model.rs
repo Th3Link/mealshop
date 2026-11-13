@@ -99,6 +99,7 @@ pub(crate) enum Kind {
     Rolls,
     Pizza,
     Baguette,
+    Beer,
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -199,15 +200,14 @@ pub(crate) enum Permission {
     Unsupported,
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serde(try_from = "super::run_source::Wire", into = "super::run_source::Wire")]
 pub(crate) struct Run {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub(crate) plan_slot: Option<PlanSlot>,
     pub(crate) id: String,
     pub(crate) name: String,
     pub(crate) kind: Kind,
-    pub(crate) recipe: RecipeRef,
-    pub(crate) servings: u32,
+    pub(crate) source: super::run_source::Source,
     pub(crate) timezone: String,
     pub(crate) target: Option<LocalTime>,
     pub(crate) created_at: i64,

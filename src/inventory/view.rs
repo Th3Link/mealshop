@@ -50,7 +50,8 @@ pub(super) fn view(
         .iter()
         .filter(|p| !p.reversed && !data.inventory.purchase_booked(&p.id))
         .collect::<Vec<_>>();
-    let runs=ctx.cooking.data.runs.iter().filter(|r|r.status==RunState::Completed).map(|r|json!({"id":r.id,"name":r.name,"recipe":r.recipe,"servings":r.servings,"plan_slot":r.plan_slot,"booked":data.inventory.cooking_booked(&r.id)})).collect::<Vec<_>>();
+    let runs = ctx.cooking.data.runs.iter().filter(|r| r.status == RunState::Completed)
+        .filter_map(|r| r.food().ok().map(|(recipe, servings)| json!({"id":r.id,"name":r.name,"recipe":recipe,"servings":servings,"plan_slot":r.plan_slot,"booked":data.inventory.cooking_booked(&r.id)}))).collect::<Vec<_>>();
     Ok(
         json!({"revision":data.revision,"lots":rows.iter().skip(offset).take(limit).collect::<Vec<_>>(),"offset":offset,"limit":limit,"total":rows.len(),"allocations":data.inventory.allocations,"movements":movements,"movement_total":data.inventory.movements.len(),"movement_offset":history_offset,"movement_limit":history_limit,"offers":offers,"purchases":purchases,"completed_runs":runs,"cooking_selection":null}),
     )

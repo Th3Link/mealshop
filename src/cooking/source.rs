@@ -107,7 +107,8 @@ pub(crate) fn template(
     Ok(draft)
 }
 fn validate(draft: &Draft, record: &Record) -> Result<(), &'static str> {
-    if !(1..=1_000_000).contains(&draft.servings)
+    if draft.kind == Kind::Beer
+        || !(1..=1_000_000).contains(&draft.servings)
         || !super::model::text(&draft.name, 200)
         || draft.stages.len() > 100
         || draft.stages.is_empty()
@@ -151,14 +152,16 @@ pub(crate) fn create(
         id: String::new(),
         name: draft.name,
         kind: draft.kind,
-        recipe: RecipeRef {
-            id: record.id.clone(),
-            revision: record.revision,
-            title: record.recipe.title.clone(),
-            language: record.recipe.language.clone(),
-            reference_servings: record.recipe.servings,
+        source: super::run_source::Source::Food {
+            recipe: RecipeRef {
+                id: record.id.clone(),
+                revision: record.revision,
+                title: record.recipe.title.clone(),
+                language: record.recipe.language.clone(),
+                reference_servings: record.recipe.servings,
+            },
+            servings: draft.servings,
         },
-        servings: draft.servings,
         timezone: draft.timezone,
         target: draft.target,
         created_at: now,
