@@ -140,17 +140,20 @@ def emulator(headless=False, host_gpu=False):
         with (BASE / 'emulator.log').open('ab') as log:
             subprocess.Popen([str(SDK / 'emulator/emulator'), '-avd', CONFIG['emulator_avd'],
                 '-port', str(CONFIG['emulator_console_port']), '-accel', 'on', '-gpu', 'host' if host_gpu else 'swiftshader', '-feature', '-Vulkan,-GuestAngle',
-                '-memory', '3072', '-cores', '4', '-no-audio', '-no-boot-anim', '-no-metrics', '-no-snapshot-save', *(['-no-window'] if headless else [])],
+                '-memory', '3072', '-cores', '4', '-no-audio', '-no-boot-anim', '-no-metrics', '-no-snapshot-load', '-no-snapshot-save', *(['-no-window'] if headless else [])],
                 env=environment(), stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
                 preexec_fn=lambda: resource.setrlimit(resource.RLIMIT_CORE, (0, 0)))
     print('Dedicated emulator:', SERIAL, '— wait for sys.boot_completed=1 using status')
 
 
-def verify_integration_apk(apk):
-    identity = subprocess.check_output(
+def apk_identity(apk):
+    return subprocess.check_output(
         [str(SDK / 'cmdline-tools/latest/bin/apkanalyzer'), 'manifest', 'application-id', str(apk)],
         env=environment(), text=True, stderr=subprocess.DEVNULL, timeout=30).strip()
-    if identity != 'org.mealshop.pocket.verification':
+
+
+def verify_integration_apk(apk):
+    if apk_identity(apk) != 'org.mealshop.pocket.verification':
         raise SystemExit('Refusing integration cleanup of any package except org.mealshop.pocket.verification')
 
 
@@ -203,7 +206,10 @@ def main():
         adb('emu', 'avd', 'name')
     elif args.action == 'install':
         prepare_emulator()
-        adb('install', '-r', APP / 'build/app/outputs/flutter-apk/app-x86_64-debug.apk')
+        apk = APP / 'build/app/outputs/flutter-apk/app-x86_64-debug.apk'
+        if apk_identity(apk) != 'org.mealshop.pocket.dev':
+            raise SystemExit('Refusing an upgrade APK with a different application ID')
+        adb('install', '-r', '--no-streaming', apk)
         adb('shell', 'am', 'start', '-n', 'org.mealshop.pocket.dev/.MainActivity')
     else:
         signing_key()
@@ -225,8 +231,10 @@ def main():
                 versions = {field.replace('-', '_'): subprocess.check_output(
                     [str(SDK / 'cmdline-tools/latest/bin/apkanalyzer'), 'manifest', field, str(apk)],
                     env=environment(), text=True, stderr=subprocess.DEVNULL).strip()
-                    for field in ['version-name', 'version-code']}
-                apk.with_suffix('.apk.build.json').write_text(json.dumps({'commit': commit, 'flutter': CONFIG['flutter_version'], 'application_id': 'org.mealshop.pocket.dev', **versions, 'sha256': digest, 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())}, indent=2) + '\n')
+                    for field in ['application-id', 'version-name', 'version-code']}
+                if versions['application_id'] != 'org.mealshop.pocket.dev':
+                    raise SystemExit('Refusing to publish development APK metadata for a different package')
+                apk.with_suffix('.apk.build.json').write_text(json.dumps({'commit': commit, 'flutter': CONFIG['flutter_version'], **versions, 'sha256': digest, 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())}, indent=2) + '\n')
 
 
 if __name__ == '__main__':
