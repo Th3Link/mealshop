@@ -23,14 +23,17 @@ String decimal(String value, String language) {
   return result;
 }
 
+String inputDecimal(String canonical, String language) =>
+    language == 'de' ? canonical.replaceAll('.', ',') : canonical;
 String exactInput(String value, String language, {bool signed = false}) {
-  final text = value.trim().replaceAll(language == 'de' ? ',' : '.', '.');
-  if (!RegExp(
-    signed ? r'^-?\d{1,12}(?:\.\d{1,6})?$' : r'^\d{1,12}(?:\.\d{1,6})?$',
-  ).hasMatch(text)) {
+  final text = value.trim();
+  final separator = language == 'de' ? ',' : '.';
+  final pattern =
+      '^${signed ? "-?" : ""}[0-9]{1,12}(?:${RegExp.escape(separator)}[0-9]{1,6})?\$';
+  if (!RegExp(pattern).hasMatch(text)) {
     throw const ApiFailure('quantity_invalid');
   }
-  return text;
+  return text.replaceAll(separator, '.');
 }
 
 /// Captures identity and household once. A disposed route cannot retarget a request.

@@ -432,7 +432,7 @@ class _ActivityEditorState extends State<ActivityEditor>
 
   @override
   Widget build(BuildContext context) => DraftGuard(
-    dirty: dirty,
+    dirty: () => dirty,
     child: Scaffold(
       appBar: AppBar(
         title: Text(context.t('new_activity')),

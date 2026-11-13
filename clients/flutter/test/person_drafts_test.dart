@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -9,6 +10,56 @@ import 'package:mealshop/shopping/controller.dart';
 import 'fixtures.dart';
 
 void main() {
+  test('logout immediately closes account scope and a new login waits for the durable clear', () async {
+    final vault = DelayedClearVault();
+    var requests = 0;
+    final controller = ShoppingController(
+      Nextcloud(
+        client: MockClient((request) async {
+          requests++;
+          return http.Response(
+            jsonEncode(
+              request.url.path.endsWith('/api/households')
+                  ? membership()
+                  : capability(0),
+            ),
+            200,
+          );
+        }),
+      ),
+      vault,
+    );
+    await controller.initialize();
+    await controller.signIn(
+      Credential(Server('https://cloud.example.org'), 'alice', 'synthetic'),
+    );
+    await controller.saveDraft('person:new', {'name': 'Synthetic draft'});
+    vault.barrier = Completer<void>();
+    final logout = controller.signOut();
+    expect(controller.credential, isNull);
+    expect(controller.selected, isNull);
+    expect(controller.initialized, isFalse);
+    expect(controller.draft('person:new'), isNull);
+    final before = requests;
+    await controller.refresh();
+    expect(requests, before);
+    final login = controller.signIn(
+      Credential(
+        Server('https://cloud.example.org'),
+        'alice',
+        'synthetic-next',
+      ),
+    );
+    expect(controller.credential, isNull);
+    vault.barrier!.complete();
+    await logout;
+    await login;
+    expect(controller.initialized, isTrue);
+    expect(controller.credential!.password, 'synthetic-next');
+    expect(controller.draft('person:new'), isNull);
+    controller.dispose();
+  });
+
   test('person drafts are scoped, survive restart, expire and are cleared on revoked membership', () async {
     final vault = MemoryVault();
     var revoked = false;
@@ -99,4 +150,13 @@ void main() {
     expect(c.storageBlocked, isFalse);
     c.dispose();
   });
+}
+
+class DelayedClearVault extends MemoryVault {
+  Completer<void>? barrier;
+  @override
+  Future<void> clear() async {
+    if (barrier != null) await barrier!.future;
+    await super.clear();
+  }
 }

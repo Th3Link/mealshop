@@ -119,7 +119,7 @@ class SectionTitle extends StatelessWidget {
 
 class DraftGuard extends StatefulWidget {
   const DraftGuard({super.key, required this.dirty, required this.child});
-  final bool dirty;
+  final ValueGetter<bool> dirty;
   final Widget child;
   @override
   State<DraftGuard> createState() => _DraftGuardState();
@@ -129,14 +129,14 @@ class _DraftGuardState extends State<DraftGuard> {
   bool discarded = false;
   @override
   Widget build(BuildContext context) => PopScope<Object?>(
-    canPop: discarded || !widget.dirty,
-    onPopInvokedWithResult: (didPop, _) async {
-      if (didPop || !await confirm(context, 'discard_draft') || !mounted) {
-        return;
-      }
+    canPop: discarded || !widget.dirty(),
+    onPopInvokedWithResult: (didPop, result) async {
+      if (didPop) return;
+      if (widget.dirty() && !await confirm(context, 'discard_draft')) return;
+      if (!mounted) return;
       setState(() => discarded = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Navigator.pop(context);
+        if (mounted) Navigator.pop(context, result);
       });
     },
     child: widget.child,

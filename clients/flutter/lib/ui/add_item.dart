@@ -206,7 +206,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
       title: Text(context.t(widget.source == null ? 'add' : 'edit')),
     ),
     body: DraftGuard(
-      dirty: dirty,
+      dirty: () => dirty,
       child: SafeArea(
         child: Form(
           onChanged: () => setState(() => dirty = true),

@@ -37,6 +37,7 @@ class ShoppingController extends ChangeNotifier {
   Json _drafts = {};
   Timer? _timer;
   Future<void>? _refreshing;
+  Future<void>? _clearing;
   Future<void> _storageTail = Future<void>.value();
   Home? get home => homes.where((h) => h.id == selected).firstOrNull;
   Json? get _record => selected == null ? null : _records[selected] as Json?;
@@ -117,16 +118,17 @@ class ShoppingController extends ChangeNotifier {
 
   Future<void> signIn(Credential value) async {
     await signOut();
+    if (storageBlocked) throw const ApiFailure('storage_failed');
+    _epoch++;
     credential = value;
     await _save();
     await refresh();
   }
 
-  Future<void> signOut() async {
+  Future<void> signOut() => _clearing ??= _clearAccount();
+  Future<void> _clearAccount() async {
     _epoch++;
     _refreshing = null;
-    await _storageTail;
-    await vault.clear();
     credential = null;
     homes = [];
     invitations = [];
@@ -138,7 +140,19 @@ class ShoppingController extends ChangeNotifier {
     busy = false;
     online = false;
     storageBlocked = false;
+    initialized = false;
     notifyListeners();
+    try {
+      await _storageTail;
+      await vault.clear();
+    } catch (_) {
+      storageBlocked = true;
+      error = 'storage_failed';
+    } finally {
+      _clearing = null;
+      initialized = true;
+      notifyListeners();
+    }
   }
 
   Future<void> setLanguage(String value) async {

@@ -261,7 +261,7 @@ class _CollectionEditorState extends State<CollectionEditor> {
   });
   @override
   Widget build(BuildContext context) => DraftGuard(
-    dirty: dirty,
+    dirty: () => dirty,
     child: Scaffold(
       appBar: AppBar(
         title: Text(

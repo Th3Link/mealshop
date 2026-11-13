@@ -155,10 +155,12 @@ implicit read/edit access. [ADR 0028](../../docs/adr/0028-person-rules-and-activ
   **189 Rust tests**, deny licences, audit; generated docs and strict rustdoc also pass.
   A project-local Rust 1.85.0 `check --workspace --all-targets --locked` additionally passes;
   explicit crate paths avoid the older compiler's nested parent-import resolution difference.
-- Flutter format/strict analyze and **32 unit/widget tests** pass. New coverage includes minimized,
+- Flutter format/strict analyze and **35 unit/widget tests** pass. New coverage includes minimized,
   scoped, expiring drafts, durable restart, revoked membership, pending invitations without content/a selected household, capacity rejection without losing the
   previous draft; localized search/focus/inline-create entry, original language/exact multipart recipe
   round trip, 320dp/200% DE/EN recipe ranges, activity duration without weight and clearing a revoked form.
+  Further regressions cover localized decimal fields/ranges/constituents, rejecting the other locale’s
+  separator, saved-editor completion/result propagation and immediate scope closure during durable logout.
 - **68 locked package licences**, **60 external Pub versions** checked with OSV, no matched advisory.
   `image_picker` 1.2.4 is the only new direct package, from the official Flutter publisher. No new Rust crate.
 - **39 Vue tests**, strict typecheck/production build, Prettier and production npm audit pass.
@@ -166,7 +168,7 @@ implicit read/edit access. [ADR 0028](../../docs/adr/0028-person-rules-and-activ
   mouse selection, save/reload and Axe WCAG tags cover the new editor.
   Profile rules/avatar and omitted-vs-explicit production declarations survive typed legacy round trips.
 - Native API 36/Pixel 6: **11 tests pass**, including the P2 journeys and protected-storage/shopping
-  regressions. The helper prebuilds the verification APK and passes its explicit binary to Flutter drive.
+  regressions. The helper prebuilds the verification APK and passes a private stable copy to Flutter drive only after checking its manifest package ID; target/binary/device overrides are rejected.
   This is necessary: deriving a package from stale project metadata selected the development app for
   driver cleanup. Retesting with an exact merged P1 build proved the corrected driver preserves its
   package, encrypted record, login and selected synthetic household.

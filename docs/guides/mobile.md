@@ -193,7 +193,7 @@ use existing server contracts. Incoming imported recipes expose only the source 
 collections. Incoming shared content is never put into the offline cache.
 
 `python3 scripts/mobile.py integration` runs shopping and P2 native journeys using the separate
-`org.mealshop.pocket.verification` package. Flutter drive uninstalls that target; it cannot erase the
+`org.mealshop.pocket.verification` package. The helper verifies its manifest ID and uses a private stable APK copy, rejecting target/device/binary overrides. Flutter drive uninstalls that target; it cannot erase the
 installed `org.mealshop.pocket.dev` record. Normal `build`/`install` still upgrade the development app
 with its retained key. Do not run raw driver commands against the development package when preserving
 an account/cache. Automated/mock native evidence and real Nextcloud proxy evidence are distinct.

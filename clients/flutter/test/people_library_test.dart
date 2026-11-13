@@ -9,6 +9,8 @@ import 'package:mealshop/ui/ingredient_picker.dart';
 import 'package:mealshop/ui/person_tour.dart';
 import 'package:mealshop/ui/recipe_editor.dart';
 import 'package:mealshop/ui/recipes.dart';
+import 'package:mealshop/ui/common.dart';
+import 'package:mealshop/ui/ingredient_editor.dart';
 import 'package:mealshop/ui/sharing.dart';
 
 import 'content_fixtures.dart';
@@ -28,6 +30,10 @@ void main() {
   test('exact display preserves all normalized digits and localized aliases resolve', () {
     expect(decimal('0.200000001', 'de'), '0,200000001');
     expect(decimal('200.000000', 'de'), '200');
+    expect(inputDecimal('200.000001', 'de'), '200,000001');
+    expect(exactInput('200,000001', 'de'), '200.000001');
+    expect(() => exactInput('1.000', 'de'), throwsA(isA<ApiFailure>()));
+    expect(() => exactInput('1,000', 'en'), throwsA(isA<ApiFailure>()));
     expect(Catalogue(catalogue()).search('hafer', 'de').single['id'], 'oats');
     expect(Catalogue(catalogue()).search('synthetic alias', 'en').length, 2);
   });
@@ -66,6 +72,138 @@ void main() {
           (request) => request.url.path.endsWith('/shared/home-7/share-1'),
         ),
         isFalse,
+      );
+      await tester.pumpWidget(const SizedBox());
+      fixture.controller.dispose();
+    },
+  );
+  testWidgets(
+    'confirmed save closes a dirty editor without discard and retains its result',
+    (tester) async {
+      bool dirty = true;
+      String? result;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StatefulBuilder(
+            builder: (context, update) {
+              Future<void> openEditor() async {
+                final editor = Builder(
+                  builder: (editorContext) => DraftGuard(
+                    dirty: () => dirty,
+                    child: Scaffold(
+                      body: FilledButton(
+                        onPressed: () {
+                          dirty = false;
+                          Navigator.pop(editorContext, 'saved-recipe-id');
+                        },
+                        child: const Text('Save editor'),
+                      ),
+                    ),
+                  ),
+                );
+                final saved = await Navigator.push<String>(
+                  context,
+                  MaterialPageRoute(builder: (_) => editor),
+                );
+                if (context.mounted) update(() => result = saved);
+              }
+
+              return Scaffold(
+                body: Column(
+                  children: [
+                    Text(result ?? 'No saved result'),
+                    FilledButton(
+                      onPressed: openEditor,
+                      child: const Text('Open editor'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open editor'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save editor'));
+      await tester.pumpAndSettle();
+      expect(find.text('Discard this draft?'), findsNothing);
+      expect(find.text('saved-recipe-id'), findsOneWidget);
+      expect(find.text('Save editor'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'German ingredient edits preserve exact range and constituent decimals',
+    (tester) async {
+      final fixture = ContentFixture();
+      await fixture.start(language: 'de');
+      final item = objects(fixture.foods['ingredients']).first;
+      object(item['organization'])['nutrition'] = {
+        'mode': 'own',
+        'values': {
+          'protein': {
+            'amount': null,
+            'range': {'lower': '1.000001', 'upper': '2.500000'},
+            'uncertainty': 'Synthetic declared range',
+          },
+        },
+        'constituents': {
+          'synthetic': {
+            'name': 'Synthetic constituent',
+            'unit': 'g',
+            'amount': '0.125000',
+            'translations': <String, dynamic>{},
+          },
+        },
+        'note': 'Synthetic declaration',
+        'source_url': '',
+      };
+      await tester.pumpWidget(
+        app(
+          IngredientEditor(HouseholdApi(fixture.controller), id: 'oats'),
+          language: 'de',
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('range_lower')),
+        300,
+        scrollable: find
+            .byWidgetPredicate(
+              (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+            )
+            .first,
+      );
+      final field = find.descendant(
+        of: find.byKey(const ValueKey('range_lower')),
+        matching: find.byType(EditableText),
+      );
+      expect(tester.widget<EditableText>(field).controller.text, '1,000001');
+      await tester.scrollUntilVisible(
+        find.widgetWithText(FilledButton, 'Speichern'),
+        500,
+        scrollable: find
+            .byWidgetPredicate(
+              (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+            )
+            .first,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Speichern'));
+      await tester.pumpAndSettle();
+      final saved = object(
+        object(
+          jsonDecode(fixture.requests.lastWhere((r) => r.method == 'PUT').body),
+        )['annotations'],
+      );
+      final nutrition = object(object(saved['organization'])['nutrition']);
+      expect(object(object(nutrition['values'])['protein'])['range'], {
+        'lower': '1.000001',
+        'upper': '2.500000',
+      });
+      expect(
+        object(object(nutrition['constituents'])['synthetic'])['amount'],
+        '0.125000',
       );
       await tester.pumpWidget(const SizedBox());
       fixture.controller.dispose();

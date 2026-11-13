@@ -102,6 +102,21 @@ class _RecipeEditorState extends State<RecipeEditor> {
         : clone(object(widget.record!['recipe']));
     for (final line in ingredients) {
       line['id'] ??= newId('line-');
+      if (line['quantity'] != null) {
+        final quantity = object(line['quantity']);
+        quantity['amount'] = inputDecimal(
+          quantity['amount'] as String,
+          language,
+        );
+      } else {
+        line['grams'] = inputDecimal(line['grams'] as String, language);
+      }
+      for (final extension in objects(line['extensions'] ?? [])) {
+        extension['value'] = inputDecimal(
+          extension['value'] as String,
+          language,
+        );
+      }
     }
     unawaited(load());
   }
@@ -222,7 +237,7 @@ class _RecipeEditorState extends State<RecipeEditor> {
   );
   @override
   Widget build(BuildContext context) => DraftGuard(
-    dirty: dirty,
+    dirty: () => dirty,
     child: Scaffold(
       appBar: AppBar(
         title: Text(context.t(widget.record == null ? 'new_recipe' : 'edit')),

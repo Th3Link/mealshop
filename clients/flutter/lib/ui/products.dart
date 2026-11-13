@@ -223,7 +223,7 @@ class _ProductEditorState extends State<ProductEditor> {
         ],
       ),
       body: DraftGuard(
-        dirty: dirty,
+        dirty: () => dirty,
         child: Form(
           onChanged: () => setState(() => dirty = true),
           key: form,

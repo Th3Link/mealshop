@@ -73,6 +73,35 @@ class _IngredientEditorState extends State<IngredientEditor> {
               ])
                 k: original![k],
             });
+      final nutrition = object(organization['nutrition']);
+      if (nutrition['mode'] == 'own') {
+        for (final value in object(nutrition['values']).values) {
+          final reading = object(value);
+          if (reading['amount'] != null) {
+            reading['amount'] = inputDecimal(
+              reading['amount'] as String,
+              locale,
+            );
+          }
+          if (reading['range'] != null) {
+            final range = object(reading['range']);
+            for (final key in ['lower', 'upper']) {
+              range[key] = inputDecimal(range[key] as String, locale);
+            }
+          }
+        }
+        for (final value in object(
+          nutrition['constituents'] ?? <String, dynamic>{},
+        ).values) {
+          final declaration = object(value);
+          if (declaration['amount'] != null) {
+            declaration['amount'] = inputDecimal(
+              declaration['amount'] as String,
+              locale,
+            );
+          }
+        }
+      }
       name = original == null
           ? widget.initialName
           : data.name(original!, locale);
@@ -153,7 +182,7 @@ class _IngredientEditorState extends State<IngredientEditor> {
       : catalogue!.name(catalogue!.find(id)!, locale);
   @override
   Widget build(BuildContext context) => DraftGuard(
-    dirty: dirty,
+    dirty: () => dirty,
     child: Scaffold(
       appBar: AppBar(
         title: Text(context.t(widget.id == null ? 'new_ingredient' : 'edit')),

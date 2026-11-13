@@ -5,6 +5,8 @@ import hashlib
 import json
 import os
 import resource
+import shutil
+import tempfile
 from pathlib import Path
 import subprocess
 import tarfile
@@ -144,6 +146,30 @@ def emulator(headless=False, host_gpu=False):
     print('Dedicated emulator:', SERIAL, '— wait for sys.boot_completed=1 using status')
 
 
+def verify_integration_apk(apk):
+    identity = subprocess.check_output(
+        [str(SDK / 'cmdline-tools/latest/bin/apkanalyzer'), 'manifest', 'application-id', str(apk)],
+        env=environment(), text=True, stderr=subprocess.DEVNULL, timeout=30).strip()
+    if identity != 'org.mealshop.pocket.verification':
+        raise SystemExit('Refusing integration cleanup of any package except org.mealshop.pocket.verification')
+
+
+def integration(arguments):
+    if any(value.startswith(('--use-application-binary', '--target', '--driver', '--device-id', '-d', '-t')) for value in arguments):
+        raise SystemExit('Integration target, device, driver and verified binary cannot be overridden')
+    os.environ['MEALSHOP_ANDROID_VERIFICATION'] = '1'
+    prepare_emulator()
+    run([FLUTTER / 'bin/flutter', 'build', 'apk', '--debug', '--target=integration_test/shopping_smoke_test.dart'], cwd=APP)
+    with tempfile.TemporaryDirectory(prefix='verification-', dir=BASE) as folder:
+        # Inspect a private stable copy; concurrent normal builds cannot retarget driver cleanup.
+        binary = Path(folder) / 'verification.apk'
+        shutil.copyfile(APP / 'build/app/outputs/flutter-apk/app-debug.apk', binary)
+        verify_integration_apk(binary)
+        run([FLUTTER / 'bin/flutter', 'drive', '--driver=test_driver/integration_test.dart',
+             '--target=integration_test/shopping_smoke_test.dart', '-d', SERIAL, '--no-dds',
+             '--use-application-binary=' + str(binary), *arguments], cwd=APP)
+
+
 def signing_key():
     key = BASE / 'development.keystore'
     if not key.exists():
@@ -182,13 +208,11 @@ def main():
     else:
         signing_key()
         if args.action == 'integration':
-            # flutter drive uninstalls its target: isolate it from the upgradeable user app.
-            os.environ['MEALSHOP_ANDROID_VERIFICATION'] = '1'
-            prepare_emulator()
-            run([FLUTTER / 'bin/flutter', 'build', 'apk', '--debug', '--target=integration_test/shopping_smoke_test.dart'], cwd=APP)
+            integration(args.arguments)
+            return
         command = {
             'doctor': ['doctor', '-v'], 'build': ['build', 'apk', '--debug', '--split-per-abi', '--target=lib/main.dart'],
-            'test': ['test'], 'integration': ['drive', '--driver=test_driver/integration_test.dart', '--target=integration_test/shopping_smoke_test.dart', '-d', SERIAL, '--no-dds', '--use-application-binary=' + str(APP / 'build/app/outputs/flutter-apk/app-debug.apk')],
+            'test': ['test'],
             'flutter': [],
         }[args.action] + args.arguments
         run([FLUTTER / 'bin/flutter', *command], cwd=APP)
