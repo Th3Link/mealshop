@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { BrewRecipe } from './brewing-api'
-import { methodOptions, readingUnits } from './brewing-format'
+import { methodOptions, readingUnits, fermentationProcesses } from './brewing-format'
 import { t, compactExact, exact, shoppingUnit } from './i18n'
 import { duration } from './cooking-format'
 import BrewSources from './BrewSources.vue'
@@ -13,23 +13,29 @@ defineProps<{ recipe: BrewRecipe }>()
         <dt>{{ t('brewVolume') }}</dt>
         <dd>{{ compactExact(recipe.volume.amount) }} {{ recipe.volume.unit }}</dd>
       </div>
-      <div v-for="(choices, key) in methodOptions" :key="key">
-        <dt>
-          {{
-            t(
-              (
-                {
-                  strategy: 'brewStrategy',
-                  layout: 'brewLayout',
-                  heat: 'brewHeat',
-                  sparge: 'brewSparge',
-                  mash: 'brewMash',
-                } as const
-              )[key],
-            )
-          }}
-        </dt>
-        <dd>{{ t(choices[recipe.method[key] as keyof typeof choices]) }}</dd>
+      <template v-if="'strategy' in recipe.method"
+        ><div v-for="(choices, key) in methodOptions" :key="key">
+          <dt>
+            {{
+              t(
+                (
+                  {
+                    strategy: 'brewStrategy',
+                    layout: 'brewLayout',
+                    heat: 'brewHeat',
+                    sparge: 'brewSparge',
+                    mash: 'brewMash',
+                  } as const
+                )[key],
+              )
+            }}
+          </dt>
+          <dd>{{ t(choices[recipe.method[key] as keyof typeof choices]) }}</dd>
+        </div>
+      </template>
+      <div v-else>
+        <dt>{{ t('brewMethod') }}</dt>
+        <dd>{{ t(fermentationProcesses[recipe.method.process]) }}</dd>
       </div>
     </dl>
     <section>

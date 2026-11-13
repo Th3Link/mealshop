@@ -16,10 +16,9 @@
 - [x] AC 2: explicit pre-brew yeast reminder, phase timers and durable personal delivery.
 - [x] AC 3: original units, calibration, timestamp, source and reasoned reading corrections.
 - [x] AC 4: atomic equipment reservations and independent simultaneous batches.
-- [x] AC 5: beer-only validated templates; reject unvalidated cider/wine/mead assumptions.
+- [ ] AC 5: independently researched cider, white/red wine and traditional mead templates; validate their own typed processes, native authoring and restart.
 - [ ] Native acceptance, all gates, installed evidence, owned-fixture cleanup and current-head CI.
 
-Implementation checkpoint: all five domain criteria are implemented. The full local gate passes
-178 Rust tests and 36 native client contracts. Actual Nextcloud owner authoring/timers/readings/offline/
-resource conflict and reader/uncertain-save flows have passed with isolated fixtures; final image,
-installed restart, complete existing browser suite and current-head CI evidence remain pending below.
+Implementation checkpoint: the twelve beer templates have passed initial domain/native/installed checks.
+Four independently sourced fermentation templates are now being validated in the same PR. Final full
+scope evidence, exact-head CI and owned-fixture cleanup remain required before Done.

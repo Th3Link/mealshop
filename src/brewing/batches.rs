@@ -4,7 +4,7 @@ use super::{
 };
 use crate::cooking::{
     self,
-    model::{Data, Kind, Run, RunState, Stage, StageOrigin},
+    model::{Data, Run, RunState, Stage, StageOrigin},
     run_source::{BrewRef, Source},
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -115,9 +115,10 @@ pub(super) fn build(
         plan_slot: None,
         id: String::new(),
         name: draft.name.clone(),
-        kind: Kind::Beer,
-        source: Source::Beer {
+        kind: recipe.beverage.kind(),
+        source: Source::Brewing {
             recipe: BrewRef {
+                beverage: recipe.beverage,
                 id: record.id.clone(),
                 revision: record.revision,
                 title: recipe.title.clone(),

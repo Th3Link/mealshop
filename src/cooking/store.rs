@@ -261,7 +261,7 @@ fn validate(data: &Data) -> Result<(), &'static str> {
         let stages: Vec<_> = run.steps.iter().map(|s| s.stage.clone()).collect();
         plan::order(&stages)?;
         for step in &run.steps {
-            let maximum = if run.kind == model::Kind::Beer {
+            let maximum = if run.kind.is_brewing() {
                 31_536_000
             } else {
                 604_800

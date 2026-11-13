@@ -17,11 +17,21 @@ const props = defineProps<{
   disabled?: boolean
   index: number
   options: { id: string; label: string }[]
+  beverage: BrewRecipe['beverage']
   catalogue: BrewTemplates
 }>()
-const kinds = computed(() => [
-  ...new Map(Object.values(props.catalogue.phases).map((p) => [p.kind, p])).values(),
-])
+const kinds = computed(() => {
+  const keys = new Set(
+    props.catalogue.templates.filter((t) => t.beverage === props.beverage).flatMap((t) => t.phases),
+  )
+  return [
+    ...new Map(
+      Object.entries(props.catalogue.phases)
+        .filter(([id]) => keys.has(id))
+        .map(([, p]) => [p.kind, p]),
+    ).values(),
+  ]
+})
 defineEmits<{ remove: [] }>()
 function timing(known: boolean) {
   phase.value.timing_known = known

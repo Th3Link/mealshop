@@ -61,7 +61,7 @@ def verify_brewing(container, unix, prefix, home):
         assert status == 200, result
         return body, json.loads(result)
     catalogue = get("/templates")
-    assert len(catalogue["templates"]) == 12
+    assert len(catalogue["templates"]) == 16
     template = next(t for t in catalogue["templates"] if t["id"] == "biab")
     phase = catalogue["phases"][template["phases"][0]]
     stage = {"id":"water","origin":{"kind":"custom","note":"Synthetic smoke phase"},"name":phase["name"],"instruction":phase["instruction"],"dependencies":[],"active_seconds":0,"passive_seconds":0,"passive_min_seconds":0,"passive_max_seconds":0,"equipment":[],"lead_seconds":0,"repeat":1,"wait_between_seconds":0,"uncertainty":"Declared smoke fixture"}
@@ -80,6 +80,16 @@ def verify_brewing(container, unix, prefix, home):
     change({"operation":"add_reading","run_id":run["id"],"reading":reading,"corrects":None,"reason":None},"container-brewing-reading-0001")
     detail = get("/batches/"+run["id"])
     assert detail["measurements"]["readings"][0]["input"] == reading
+    for template_id in ("cider-juice", "white-wine", "red-wine", "traditional-mead"):
+        template = next(t for t in catalogue["templates"] if t["id"] == template_id)
+        other = json.loads(json.dumps(recipe))
+        other.update(beverage=template["beverage"], method={"process":template["process"]})
+        other["template"] = {"id":template_id,"version":1,"sources":[s for s in catalogue["sources"] if s["id"] in template["sources"]]}
+        first = catalogue["phases"][template["phases"][0]]
+        other["phases"][0].update(kind=first["kind"])
+        _, saved = change({"operation":"save_recipe","id":None,"expected_recipe_revision":None,"recipe":other},"container-fermentation-"+template_id)
+        record = next(r["record"] for r in saved["brewing"]["recipes"] if r["record"]["recipe"]["template"]["id"] == template_id)
+        assert record["recipe"]["method"] == {"process":template["process"]}
     assert docker("exec",container,"stat","-c","%a",f"/data/{home}/household/cooking.json") == "600"
 
 try:

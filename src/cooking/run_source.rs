@@ -8,6 +8,11 @@ use std::collections::BTreeMap;
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct BrewRef {
+    #[serde(
+        default,
+        skip_serializing_if = "crate::brewing::model::Beverage::is_beer"
+    )]
+    pub(crate) beverage: crate::brewing::model::Beverage,
     pub(crate) id: String,
     pub(crate) revision: u64,
     pub(crate) title: String,
@@ -17,13 +22,13 @@ pub(crate) struct BrewRef {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Source {
     Food { recipe: RecipeRef, servings: u32 },
-    Beer { recipe: BrewRef },
+    Brewing { recipe: BrewRef },
 }
 impl Source {
     pub(crate) fn validate(&self, kind: Kind) -> Result<(), &'static str> {
         let valid = match self {
             Self::Food { recipe, servings } => {
-                kind != Kind::Beer
+                !kind.is_brewing()
                     && crate::recipes::valid_id(&recipe.id)
                     && recipe.revision > 0
                     && super::model::text(&recipe.title, 200)
@@ -31,8 +36,8 @@ impl Source {
                     && (1..=1_000_000).contains(servings)
                     && (1..=1_000_000).contains(&recipe.reference_servings)
             }
-            Self::Beer { recipe } => {
-                kind == Kind::Beer
+            Self::Brewing { recipe } => {
+                kind == recipe.beverage.kind()
                     && super::model::id(&recipe.id)
                     && recipe.id.starts_with("brew-recipe-")
                     && recipe.revision > 0
@@ -56,7 +61,7 @@ impl Run {
     pub(crate) fn food(&self) -> Result<(&RecipeRef, u32), &'static str> {
         match &self.source {
             Source::Food { recipe, servings } => Ok((recipe, *servings)),
-            Source::Beer { .. } => Err("cooking_wrong_process"),
+            Source::Brewing { .. } => Err("cooking_wrong_process"),
         }
     }
 }
@@ -87,7 +92,7 @@ impl TryFrom<Wire> for Run {
     fn try_from(w: Wire) -> Result<Self, Self::Error> {
         let source = match (w.recipe, w.servings, w.brew_recipe) {
             (Some(recipe), Some(servings), None) => Source::Food { recipe, servings },
-            (None, None, Some(recipe)) if w.plan_slot.is_none() => Source::Beer { recipe },
+            (None, None, Some(recipe)) if w.plan_slot.is_none() => Source::Brewing { recipe },
             _ => return Err("cooking_data_invalid"),
         };
         source.validate(w.kind)?;
@@ -111,7 +116,7 @@ impl From<Run> for Wire {
     fn from(r: Run) -> Self {
         let (recipe, servings, brew_recipe) = match r.source {
             Source::Food { recipe, servings } => (Some(recipe), Some(servings), None),
-            Source::Beer { recipe } => (None, None, Some(recipe)),
+            Source::Brewing { recipe } => (None, None, Some(recipe)),
         };
         Self {
             plan_slot: r.plan_slot,
@@ -163,5 +168,21 @@ mod tests {
         assert_eq!(serde_json::to_value(parsed).unwrap(), original);
         original["brew_recipe"]["volume"]["unit"] = json!("g");
         assert!(serde_json::from_value::<Run>(original).is_err());
+    }
+    #[test]
+    fn fermentation_kinds_never_accept_food_or_mismatched_drink_references() {
+        for kind in ["cider", "wine", "mead"] {
+            let mut food = old_food();
+            food["kind"] = json!(kind);
+            assert!(serde_json::from_value::<Run>(food.clone()).is_err());
+            food.as_object_mut().unwrap().remove("recipe");
+            food.as_object_mut().unwrap().remove("servings");
+            food["brew_recipe"] = json!({"beverage":kind,"id":"brew-recipe-1","revision":1,"title":"Synthetic drink","language":"en","volume":{"amount":"20.000001","unit":"l"}});
+            let run: Run = serde_json::from_value(food.clone()).unwrap();
+            assert!(run.food().is_err());
+            assert_eq!(serde_json::to_value(run).unwrap(), food);
+            food["brew_recipe"]["beverage"] = json!("beer");
+            assert!(serde_json::from_value::<Run>(food).is_err());
+        }
     }
 }

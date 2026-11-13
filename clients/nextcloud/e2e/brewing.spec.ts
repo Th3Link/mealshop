@@ -378,6 +378,7 @@ test('brewing keeps drafts on concurrent changes and retries an uncertain save w
 test('empty brewing views lead directly to the matching recipe or equipment form', async ({
   page,
 }) => {
+  test.setTimeout(180000)
   const { base } = await setup(page)
   await page.goto(`${base}/batches`)
   await page
@@ -386,6 +387,7 @@ test('empty brewing views lead directly to the matching recipe or equipment form
     .click()
   await expect(page.getByRole('heading', { name: 'Create brew recipe', exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Equipment', exact: true }).click()
+  await audit(page, 'brewing-empty-equipment')
   await page
     .locator('.brew-overview-empty')
     .getByRole('link', { name: 'Add equipment', exact: true })
@@ -398,4 +400,66 @@ test('empty brewing views lead directly to the matching recipe or equipment form
     .getByRole('link', { name: 'Create brew recipe', exact: true })
     .click()
   await expect(page.getByRole('combobox', { name: 'Starting template', exact: true })).toBeVisible()
+})
+
+test('independent cider, white and red wine and mead templates create native recipes and batches', async ({
+  page,
+}) => {
+  test.setTimeout(300000)
+  const { base, proxy } = await setup(page)
+  for (const [template, beverage, process, count] of [
+    ['cider-juice', 'cider', 'cider_juice', 7],
+    ['white-wine', 'wine', 'white_wine', 9],
+    ['red-wine', 'wine', 'red_wine', 8],
+    ['traditional-mead', 'mead', 'traditional_mead', 7],
+  ] as const) {
+    await page.goto(`${base}/recipes/new`)
+    await page
+      .getByRole('combobox', { name: 'Starting template', exact: true })
+      .selectOption(template)
+    await expect(page.locator('.brew-phase')).toHaveCount(count)
+    await expect(
+      page.getByRole('combobox', { name: 'Fermentable strategy', exact: true }),
+    ).toHaveCount(0)
+    await page.getByLabel('Recipe title', { exact: true }).fill('Brewing acceptance recipe')
+    await page.getByLabel('Target batch volume', { exact: true }).fill('5.000001')
+    await review(page)
+    await save(page)
+    if (template === 'red-wine') await audit(page, 'brewing-red-wine-recipe')
+    await page.getByRole('link', { name: 'Plan a batch', exact: true }).click()
+    await page.getByLabel('Batch name', { exact: true }).fill(`Independent brewing ${template}`)
+    await review(page)
+    await save(page)
+    await expect(page.locator('.cooking-timeline > li')).toHaveCount(count)
+    await page.getByRole('button', { name: 'Record measurement', exact: true }).click()
+    await page.getByLabel('Original measured value', { exact: true }).fill('12.345678')
+    await page.getByRole('combobox', { name: 'Unit', exact: true }).selectOption('brix')
+    await review(page)
+    await save(page)
+    await expect(page.locator('.brew-readings')).toContainText('12.345678')
+    await page.reload()
+    await expect(page.locator('.brew-readings')).toContainText('12.345678')
+    const response = await page.request.get(proxy)
+    expect(response.ok()).toBe(true)
+    const state = (await response.json()) as {
+      recipes: { record: { id: string; recipe: { template: { id: string }; method: unknown } } }[]
+      batches: {
+        run: {
+          name: string
+          kind: string
+          brew_recipe: { beverage: string; volume: { amount: string } }
+          servings?: unknown
+          recipe?: unknown
+        }
+      }[]
+    }
+    const recipe = state.recipes.find((r) => r.record.recipe.template.id === template)
+    expect(recipe?.record.recipe.method).toEqual({ process })
+    const run = state.batches.find((b) => b.run.name === `Independent brewing ${template}`)?.run
+    expect(run?.kind).toBe(beverage)
+    expect(run?.brew_recipe.beverage).toBe(beverage)
+    expect(run?.brew_recipe.volume.amount).toBe('5.000001')
+    expect(run?.servings).toBeUndefined()
+    expect(run?.recipe).toBeUndefined()
+  }
 })

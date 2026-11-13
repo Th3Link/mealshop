@@ -111,6 +111,7 @@ bookings, reversals and manually entered shop offers. [Inventory guide](docs/gui
 [F15 evidence](specs/0015-inventory-offers/validation.md).
 
 Native brewing adds source-linked BIAB/all-grain/extract/partial-mash and named/DIY equipment templates,
+plus independently researched cider, white/red wine and traditional mead processes,
 immutable brew recipes, reviewed independent batches, physical equipment reservations, personal reminders
 and exact instrument/manual reading history. [Brewing guide](docs/guides/brewing.md) ·
 [F14 research](specs/0014-brewing-fermentation/research.md).

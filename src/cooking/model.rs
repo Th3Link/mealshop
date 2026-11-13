@@ -103,6 +103,14 @@ pub(crate) enum Kind {
     Pizza,
     Baguette,
     Beer,
+    Cider,
+    Wine,
+    Mead,
+}
+impl Kind {
+    pub(crate) fn is_brewing(self) -> bool {
+        matches!(self, Self::Beer | Self::Cider | Self::Wine | Self::Mead)
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]

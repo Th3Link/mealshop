@@ -154,10 +154,7 @@ fn events(run: &super::model::Run, step: &super::model::Step) -> Vec<(Event, i64
             active_until,
             deadline,
         } => {
-            if run.kind == super::model::Kind::Beer
-                && step.stage.timer_seconds() == 0
-                && deadline == started_at
-            {
+            if run.kind.is_brewing() && step.stage.timer_seconds() == 0 && deadline == started_at {
                 return vec![];
             }
             let mut events = vec![];
@@ -293,7 +290,7 @@ pub(crate) fn claim(data: &mut super::model::Data, now: i64) -> Result<Vec<Job>,
             .get(&notice.user)
             .ok_or("cooking_data_invalid")?;
         jobs.push(Job {
-            destination: if run.kind == super::model::Kind::Beer {
+            destination: if run.kind.is_brewing() {
                 Destination::Brewing
             } else {
                 Destination::Cooking

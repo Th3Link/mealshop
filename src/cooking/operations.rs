@@ -60,7 +60,7 @@ pub(crate) fn replan(
             let at = deadline.resolve()?;
             if at < now
                 || at - now
-                    > if run.kind == super::model::Kind::Beer {
+                    > if run.kind.is_brewing() {
                         63_072_000
                     } else {
                         1_209_600
@@ -162,14 +162,14 @@ pub(crate) fn timer(
 ) -> Result<(), &'static str> {
     let run = data.run_mut(run_id)?;
     let index = super::source::ensure_ready(run, step_id, now)?;
-    let beer = run.kind == super::model::Kind::Beer;
-    if !beer
+    let brewing = run.kind.is_brewing();
+    if !brewing
         && matches!(action, TimerAction::Start)
         && matches!(run.steps[index].timer, Timer::Pending)
     {
         acknowledge_elapsed_dependencies(run, index, now)?;
     }
-    if beer
+    if brewing
         && matches!(action, TimerAction::Pause)
         && matches!(run.steps[index].timer, Timer::Running {started_at, deadline, ..} if deadline == started_at)
     {
@@ -179,7 +179,7 @@ pub(crate) fn timer(
     let started = super::source::started(&step.timer);
     step.timer = match (action, &step.timer) {
         (TimerAction::Start, Timer::Pending) => {
-            if step.stage.timer_seconds() == 0 && !beer {
+            if step.stage.timer_seconds() == 0 && !brewing {
                 Timer::Completed {
                     started_at: Some(now),
                     completed_at: now,

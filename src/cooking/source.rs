@@ -107,7 +107,7 @@ pub(crate) fn template(
     Ok(draft)
 }
 fn validate(draft: &Draft, record: &Record) -> Result<(), &'static str> {
-    if draft.kind == Kind::Beer
+    if draft.kind.is_brewing()
         || !(1..=1_000_000).contains(&draft.servings)
         || !super::model::text(&draft.name, 200)
         || draft.stages.len() > 100
@@ -226,7 +226,7 @@ pub(crate) fn available_at(
     let mut earliest = run
         .created_at
         .max(step.not_before.unwrap_or(run.created_at));
-    if run.kind == Kind::Beer {
+    if run.kind.is_brewing() {
         if let Some(anchor) = &step.stage.start_at {
             earliest = earliest.max(anchor.resolve()?);
         }
@@ -246,7 +246,7 @@ pub(crate) fn available_at(
 }
 
 fn dependency_end(run: &Run, step: &super::model::Step) -> Option<i64> {
-    if run.kind == Kind::Beer {
+    if run.kind.is_brewing() {
         match step.timer {
             Timer::Completed { completed_at, .. } => Some(completed_at),
             _ => None,

@@ -116,11 +116,12 @@ is implied. N03/N04/N09/N10 apply; see [inventory guide](guides/inventory.md) an
 
 ## F14 Nextcloud delivery boundary
 
-F14 implements source-linked beer methods, immutable recipes with exact liquid quantities, reviewed
+F14 implements source-linked beer methods plus independently researched cider, white/red wine and
+traditional mead processes, immutable recipes with exact liquid quantities, reviewed
 independent batches/equipment reservations, recipe-specific pre-brew reminders and original manual/
 instrument readings with append-only corrections on the shared durable scheduler. BIAB is all-grain;
 strategy/layout/heat/sparging are distinct, including the requested named and DIY systems. No fake food
 servings, unconfigured live connector, automatic equipment control or non-beer chemistry is implied.
-Cider/wine/mead templates require independent validation before introduction, satisfying the original
-AC 5 guard rather than claiming those drinks are supported. N03/N07/N09/N10 apply; see
+Separate typed fermentation methods and phase orders satisfy the original AC 5 independent-validation
+guard; no grain-processing assumptions are reused for these drinks. N03/N07/N09/N10 apply; see
 [brewing guide](guides/brewing.md), research and ADR 0025. Acceptance evidence is tracked in F14.

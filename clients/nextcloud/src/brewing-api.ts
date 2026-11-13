@@ -21,6 +21,8 @@ const evidence = z
     retrieved_on: z.string(),
   })
   .strict()
+export const beverage = z.enum(['beer', 'cider', 'wine', 'mead'])
+const process = z.enum(['cider_juice', 'white_wine', 'red_wine', 'traditional_mead'])
 const strategy = z.enum(['extract', 'extract_steep', 'partial_mash', 'all_grain'])
 const layout = z.enum([
   'kettle',
@@ -52,6 +54,13 @@ const phaseKind = z.enum([
   'package',
   'clean',
   'yeast_preparation',
+  'fruit_preparation',
+  'press',
+  'juice',
+  'must',
+  'macerate',
+  'rack',
+  'mature',
   'custom',
 ])
 export const templatesSchema = z
@@ -76,13 +85,14 @@ export const templatesSchema = z
         .object({
           id: z.string(),
           version: z.number().int(),
-          beverage: z.literal('beer'),
+          beverage,
           name: z.string(),
           translations: z.record(z.string(), z.string()),
-          strategy,
-          layout,
-          heat,
-          sparge,
+          strategy: strategy.optional(),
+          layout: layout.optional(),
+          heat: heat.optional(),
+          sparge: sparge.optional(),
+          process: process.optional(),
           sources: z.array(z.string()),
           phases: z.array(z.string()),
         })
@@ -93,22 +103,25 @@ export const templatesSchema = z
 export type BrewTemplates = z.infer<typeof templatesSchema>
 export const brewRecipeSchema = z
   .object({
-    beverage: z.literal('beer'),
+    beverage,
     title: z.string(),
     language: z.enum(['en', 'de']),
     volume: brewQuantity,
     template: z
       .object({ id: z.string(), version: z.number().int(), sources: z.array(evidence) })
       .strict(),
-    method: z
-      .object({
-        strategy,
-        layout,
-        heat,
-        sparge,
-        mash: z.enum(['none', 'infusion', 'step', 'decoction']),
-      })
-      .strict(),
+    method: z.union([
+      z
+        .object({
+          strategy,
+          layout,
+          heat,
+          sparge,
+          mash: z.enum(['none', 'infusion', 'step', 'decoction']),
+        })
+        .strict(),
+      z.object({ process }).strict(),
+    ]),
     ingredients: z.array(
       z
         .object({
@@ -144,6 +157,20 @@ export const brewRecipeSchema = z
     notes: z.string(),
   })
   .strict()
+  .refine(
+    (r) =>
+      'strategy' in r.method
+        ? r.beverage === 'beer'
+        : (
+            {
+              cider_juice: 'cider',
+              white_wine: 'wine',
+              red_wine: 'wine',
+              traditional_mead: 'mead',
+            } as const
+          )[r.method.process] === r.beverage,
+    { message: 'Beverage and process must agree' },
+  )
 export type BrewRecipe = z.infer<typeof brewRecipeSchema>
 export const brewRecordSchema = z
   .object({
@@ -204,7 +231,7 @@ const batchSchema = z
   })
   .strict()
 export const brewRunSchema = runSchema.omit({ recipe: true, servings: true, kind: true }).extend({
-  kind: z.literal('beer'),
+  kind: beverage,
   brew_recipe: z
     .object({
       id: z.string(),
@@ -212,6 +239,7 @@ export const brewRunSchema = runSchema.omit({ recipe: true, servings: true, kind
       title: z.string(),
       language: z.string(),
       volume: brewQuantity,
+      beverage: beverage.optional(),
     })
     .strict(),
 })

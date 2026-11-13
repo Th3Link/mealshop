@@ -10,7 +10,14 @@ import BrewSources from './BrewSources.vue'
 import IngredientSelect from './IngredientSelect.vue'
 import type { Ingredient } from './contracts'
 import type { BrewTemplates, BrewRecord, BrewRecipe, BrewCommand } from './brewing-api'
-import { seedRecipe, localized, newPhase, methodOptions } from './brewing-format'
+import {
+  seedRecipe,
+  localized,
+  newPhase,
+  methodOptions,
+  fermentationProcesses,
+  beverages,
+} from './brewing-format'
 import { t } from './i18n'
 const props = defineProps<{
   catalogue: BrewTemplates
@@ -66,9 +73,9 @@ function selectIngredient(line: BrewRecipe['ingredients'][number]) {
   if (i) line.name = i.translations[draft.value?.language ?? 'en']?.name ?? i.name
 }
 watch(
-  () => draft.value?.method.strategy,
+  () => (draft.value && 'strategy' in draft.value.method ? draft.value.method.strategy : undefined),
   (strategy) => {
-    if (!draft.value) return
+    if (!draft.value || !('strategy' in draft.value.method)) return
     const mash = strategy === 'partial_mash' || strategy === 'all_grain'
     if (!mash) draft.value.method.mash = 'none'
     else if (draft.value.method.mash === 'none') draft.value.method.mash = 'infusion'
@@ -98,9 +105,15 @@ watch(draft, () => emit('dirty', true), { deep: true })
         >{{ t('brewTemplate')
         }}<select :value="template" required @change="choose">
           <option value="" disabled>{{ t('brewMethod') }}</option>
-          <option v-for="item in catalogue.templates" :key="item.id" :value="item.id">
-            {{ localized(item) }}
-          </option>
+          <optgroup v-for="(label, beverage) in beverages" :key="beverage" :label="t(label)">
+            <option
+              v-for="item in catalogue.templates.filter((t) => t.beverage === beverage)"
+              :key="item.id"
+              :value="item.id"
+            >
+              {{ localized(item) }}
+            </option>
+          </optgroup>
         </select></label
       >
       <p class="muted">{{ t('brewTemplateHelp') }}</p>
@@ -115,7 +128,7 @@ watch(draft, () => emit('dirty', true), { deep: true })
             </select></label
           ><BrewQuantity v-model="draft.volume" :label="t('brewVolume')" volume />
         </div>
-        <div class="form-row">
+        <div v-if="'strategy' in draft.method" class="form-row">
           <label v-for="(choices, field) in methodOptions" :key="field" class="field"
             >{{
               t(
@@ -136,6 +149,7 @@ watch(draft, () => emit('dirty', true), { deep: true })
             </select></label
           >
         </div>
+        <p v-else>{{ t('brewMethod') }}: {{ t(fermentationProcesses[draft.method.process]) }}</p>
         <section>
           <h2>{{ t('ingredients') }}</h2>
           <p class="muted">{{ t('brewIngredientHelp') }}</p>
@@ -213,6 +227,7 @@ watch(draft, () => emit('dirty', true), { deep: true })
             :disabled="disabled"
             :options="options"
             :catalogue="catalogue"
+            :beverage="draft.beverage"
             @remove="removePhase(phase.stage.id)"
           /><NcButton @click="draft.phases.push(newPhase())"
             ><template #icon><Icon :path="mdiPlus" /></template>{{ t('brewAddPhase') }}</NcButton

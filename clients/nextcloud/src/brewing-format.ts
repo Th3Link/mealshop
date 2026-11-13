@@ -1,5 +1,17 @@
 import type { BrewRecipe, BrewTemplates, BrewEquipmentInput } from './brewing-api'
 import { locale, t } from './i18n'
+export const fermentationProcesses = {
+  cider_juice: 'brewCider',
+  white_wine: 'brewWhiteWine',
+  red_wine: 'brewRedWine',
+  traditional_mead: 'brewMead',
+} as const
+export const beverages = {
+  beer: 'brewBeer',
+  cider: 'brewCider',
+  wine: 'brewWine',
+  mead: 'brewMead',
+} as const
 export const methodOptions = {
   strategy: {
     extract: 'brewExtract',
@@ -91,17 +103,10 @@ export function seedRecipe(c: BrewTemplates, id: string): BrewRecipe | undefined
     phase.stage.dependencies = index ? [`phase-${index}`] : []
     return [phase]
   })
-  return {
-    beverage: 'beer',
-    title: '',
-    language: locale.value,
-    volume: { amount: '', unit: 'l' },
-    template: {
-      id: template.id,
-      version: template.version,
-      sources: c.sources.filter((s) => template.sources.includes(s.id)).map((s) => ({ ...s })),
-    },
-    method: {
+  let method: BrewRecipe['method']
+  if (template.beverage === 'beer') {
+    if (!template.strategy || !template.layout || !template.heat || !template.sparge) return
+    method = {
       strategy: template.strategy,
       layout: template.layout,
       heat: template.heat,
@@ -110,7 +115,22 @@ export function seedRecipe(c: BrewTemplates, id: string): BrewRecipe | undefined
         template.strategy === 'all_grain' || template.strategy === 'partial_mash'
           ? 'infusion'
           : 'none',
+    }
+  } else {
+    if (!template.process) return
+    method = { process: template.process }
+  }
+  return {
+    beverage: template.beverage,
+    title: '',
+    language: locale.value,
+    volume: { amount: '', unit: 'l' },
+    template: {
+      id: template.id,
+      version: template.version,
+      sources: c.sources.filter((s) => template.sources.includes(s.id)).map((s) => ({ ...s })),
     },
+    method,
     phases,
     ingredients: [],
     notes: '',

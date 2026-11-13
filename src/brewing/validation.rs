@@ -1,5 +1,5 @@
 use super::{
-    model::{EquipmentInput, Mash, Measurement, ReadingUnit, Recipe},
+    model::{Beverage, EquipmentInput, Mash, Measurement, Method, ReadingUnit, Recipe},
     templates,
 };
 use crate::{
@@ -47,6 +47,22 @@ pub(super) fn measurement(value: &Measurement) -> Result<(), &'static str> {
     }
     Ok(())
 }
+fn method(r: &Recipe) -> Result<(), &'static str> {
+    match &r.method {
+        Method::Beer { strategy, mash, .. } if r.beverage == Beverage::Beer => {
+            if matches!(
+                strategy,
+                templates::Strategy::PartialMash | templates::Strategy::AllGrain
+            ) == (*mash == Mash::None)
+            {
+                return Err("brewing_method_invalid");
+            }
+        }
+        Method::Fermentation { process } if process.beverage() == r.beverage => {}
+        _ => return Err("brewing_method_invalid"),
+    }
+    Ok(())
+}
 pub(super) fn recipe(r: &Recipe, fresh: bool) -> Result<(), &'static str> {
     if !text(&r.title, 200)
         || !matches!(r.language.as_str(), "en" | "de")
@@ -76,13 +92,7 @@ pub(super) fn recipe(r: &Recipe, fresh: bool) -> Result<(), &'static str> {
             return Err("brewing_preparation_invalid");
         }
     }
-    let mash = matches!(
-        r.method.strategy,
-        templates::Strategy::PartialMash | templates::Strategy::AllGrain
-    );
-    if mash == (r.method.mash == Mash::None) {
-        return Err("brewing_method_invalid");
-    }
+    method(r)?;
     let ids = r
         .phases
         .iter()
@@ -93,6 +103,21 @@ pub(super) fn recipe(r: &Recipe, fresh: bool) -> Result<(), &'static str> {
     }
     for p in &r.phases {
         p.stage.validate_limit(31_536_000)?;
+        if r.beverage != Beverage::Beer
+            && matches!(
+                p.kind,
+                templates::PhaseKind::Steep
+                    | templates::PhaseKind::Mash
+                    | templates::PhaseKind::Lauter
+                    | templates::PhaseKind::BagLift
+                    | templates::PhaseKind::BasketLift
+                    | templates::PhaseKind::MaltPipeLift
+                    | templates::PhaseKind::Sparge
+                    | templates::PhaseKind::Extract
+            )
+        {
+            return Err("brewing_phase_invalid");
+        }
         if !matches!(p.stage.origin, StageOrigin::Custom { .. })
             || p.stage.start_at.is_some()
             || (!p.timing_known
@@ -154,6 +179,14 @@ fn sources(r: &Recipe, fresh: bool) -> Result<(), &'static str> {
             .iter()
             .find(|t| t.id == r.template.id && t.version == r.template.version)
             .ok_or("brewing_source_invalid")?;
+        if t.beverage != r.beverage
+            || match &r.method {
+                Method::Fermentation { process } => t.process != Some(*process),
+                Method::Beer { .. } => false,
+            }
+        {
+            return Err("brewing_method_invalid");
+        }
         let expected = c
             .sources
             .iter()
@@ -218,7 +251,7 @@ pub(crate) fn validate(data: &Processes) -> Result<(), &'static str> {
     if data
         .runs
         .iter()
-        .any(|r| (r.kind == cooking::model::Kind::Beer) != b.batches.contains_key(&r.id))
+        .any(|r| (r.kind.is_brewing()) != b.batches.contains_key(&r.id))
     {
         return Err("brewing_data_invalid");
     }
@@ -329,7 +362,7 @@ pub(super) fn batch(
         .brewing
         .recipe(&draft.recipe_id, draft.recipe_revision)?
         .recipe;
-    let crate::cooking::run_source::Source::Beer { recipe: reference } = &run.source else {
+    let crate::cooking::run_source::Source::Brewing { recipe: reference } = &run.source else {
         return Err("brewing_data_invalid");
     };
     if !cooking::actor_valid(&batch.actor)
@@ -344,6 +377,7 @@ pub(super) fn batch(
         || reference.title != recipe.title
         || reference.language != recipe.language
         || reference.volume != recipe.volume
+        || reference.beverage != recipe.beverage
         || (batch.archived && run.status == cooking::RunState::Active)
     {
         return Err("brewing_data_invalid");

@@ -31,7 +31,7 @@ all-grain, extract and partial mash on 2026-11-13. [research.md](research.md) re
 and separates those facts from implementation choices. BIAB is represented within all-grain;
 fermentable strategy, vessel layout, heating and sparging are distinct.
 
-The native delivery includes beer brew recipes with immutable revisions and exact target liquid
+The native delivery includes beer, cider, wine and mead recipes with immutable revisions and exact target liquid
 volume/entered ingredients, source-linked editable phase templates, explicit equipment bindings,
 reviewed independent batches and phase reminders. Readings retain raw units, measurement/entry
 timestamps, manual/instrument attribution and known or unknown calibration; corrections preserve
@@ -40,6 +40,7 @@ the original. Manual instrument transcription is supported without claiming a li
 Use the existing durable scheduler and atomic household file with an honest food/brew source boundary.
 No food servings are repurposed as litres, no fake food recipe is created and no automatic stock
 consumption or chemistry calculation is inferred. Entered yeast instructions/times remain recipe-
-specific. Cider/wine/mead templates are unavailable until independently validated.
+specific. Independently reviewed cider-juice, white-wine, red-wine and traditional-mead templates
+use their own process classifications; see the primary-source validation in research.md.
 
 Decision: [ADR 0025](../../docs/adr/0025-native-brewing-processes.md).

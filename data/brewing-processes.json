@@ -113,6 +113,38 @@
       "url": "https://www.blichmannengineering.com/product/breweasy-compact-all-grain-brewing-system/",
       "document_version": null,
       "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-cider",
+      "publisher": "American Homebrewers Association",
+      "title": "How to Make Cider",
+      "url": "https://homebrewersassociation.org/tutorials/how-to-make-cider/how-to-make-cider/",
+      "document_version": "2018-02-15",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-mead",
+      "publisher": "American Homebrewers Association",
+      "title": "How to Make Mead",
+      "url": "https://homebrewersassociation.org/tutorials/how-to-make-mead/how-to-make-mead/",
+      "document_version": "2018-02-07",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "morewine-white",
+      "publisher": "MoreWine / MoreFlavor",
+      "title": "Guide to White Winemaking",
+      "url": "https://morewinemaking.com/web_files/intranet.morebeer.com/files/wwhiw.pdf",
+      "document_version": "Copyright 2009; chapters 2–4, 6–7",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "morewine-red",
+      "publisher": "MoreWine / MoreFlavor",
+      "title": "Guide to Red Winemaking",
+      "url": "https://morewinemaking.com/web_files/intranet.morebeer.com/files/wredw.pdf",
+      "document_version": "Copyright 2008; chapters 2–4, 7–9",
+      "retrieved_on": "2026-11-13"
     }
   ],
   "templates": [
@@ -462,6 +494,97 @@
         "package",
         "clean"
       ]
+    },
+    {
+      "id": "cider-juice",
+      "version": 1,
+      "beverage": "cider",
+      "name": "Cider from apple juice",
+      "translations": {
+        "de": "Cider aus Apfelsaft"
+      },
+      "process": "cider_juice",
+      "sources": [
+        "aha-cider"
+      ],
+      "phases": [
+        "sanitation",
+        "cider-juice",
+        "fermentation-pitch",
+        "wine-ferment",
+        "rack",
+        "mature",
+        "fermentation-package"
+      ]
+    },
+    {
+      "id": "white-wine",
+      "version": 1,
+      "beverage": "wine",
+      "name": "White wine from grapes",
+      "translations": {
+        "de": "Weißwein aus Trauben"
+      },
+      "process": "white_wine",
+      "sources": [
+        "morewine-white"
+      ],
+      "phases": [
+        "sanitation",
+        "fruit-prepare",
+        "wine-press",
+        "wine-juice",
+        "fermentation-pitch",
+        "wine-ferment",
+        "rack",
+        "mature",
+        "fermentation-package"
+      ]
+    },
+    {
+      "id": "red-wine",
+      "version": 1,
+      "beverage": "wine",
+      "name": "Red wine with skin fermentation",
+      "translations": {
+        "de": "Rotwein mit Maischegärung"
+      },
+      "process": "red_wine",
+      "sources": [
+        "morewine-red"
+      ],
+      "phases": [
+        "sanitation",
+        "fruit-prepare",
+        "fermentation-pitch",
+        "red-macerate",
+        "wine-press",
+        "rack",
+        "mature",
+        "fermentation-package"
+      ]
+    },
+    {
+      "id": "traditional-mead",
+      "version": 1,
+      "beverage": "mead",
+      "name": "Traditional mead without boiling",
+      "translations": {
+        "de": "Traditioneller Met ohne Kochen"
+      },
+      "process": "traditional_mead",
+      "sources": [
+        "aha-mead"
+      ],
+      "phases": [
+        "sanitation",
+        "mead-must",
+        "fermentation-pitch",
+        "mead-monitor",
+        "rack",
+        "mature",
+        "fermentation-package"
+      ]
     }
   ],
   "phases": {
@@ -639,6 +762,149 @@
       "instruction": "Follow the selected Braumeister model instructions for malt-pipe removal.",
       "instruction_translations": {
         "de": "Beachte beim Herausheben des Malzrohrs die Anleitung deines Braumeister-Modells."
+      }
+    },
+    "sanitation": {
+      "kind": "clean",
+      "name": "Prepare clean equipment",
+      "translations": {
+        "de": "Saubere Ausrüstung vorbereiten"
+      },
+      "instruction": "Record cleaning and sanitation according to the equipment and product instructions.",
+      "instruction_translations": {
+        "de": "Reinigung und Desinfektion nach Geräte- und Produktanleitung festhalten."
+      }
+    },
+    "cider-juice": {
+      "kind": "juice",
+      "name": "Prepare apple juice",
+      "translations": {
+        "de": "Apfelsaft vorbereiten"
+      },
+      "instruction": "Record the juice source, amount and initial measurements. This template starts with juice, not whole apples.",
+      "instruction_translations": {
+        "de": "Saftquelle, Menge und Ausgangsmessungen erfassen. Diese Vorlage beginnt mit Saft, nicht mit ganzen Äpfeln."
+      }
+    },
+    "fruit-prepare": {
+      "kind": "fruit_preparation",
+      "name": "Prepare grapes",
+      "translations": {
+        "de": "Trauben vorbereiten"
+      },
+      "instruction": "Record grape preparation and the actual fruit source.",
+      "instruction_translations": {
+        "de": "Traubenvorbereitung und tatsächliche Herkunft der Früchte festhalten."
+      }
+    },
+    "wine-press": {
+      "kind": "press",
+      "name": "Press and separate solids",
+      "translations": {
+        "de": "Pressen und Feststoffe trennen"
+      },
+      "instruction": "Record the pressing operation, yield and equipment.",
+      "instruction_translations": {
+        "de": "Pressvorgang, Ausbeute und verwendete Ausrüstung erfassen."
+      }
+    },
+    "wine-juice": {
+      "kind": "juice",
+      "name": "Review prepared grape juice",
+      "translations": {
+        "de": "Vorbereiteten Traubensaft prüfen"
+      },
+      "instruction": "Record juice measurements and recipe-specific decisions before inoculation.",
+      "instruction_translations": {
+        "de": "Saftmessungen und rezeptbezogene Entscheidungen vor dem Anstellen festhalten."
+      }
+    },
+    "mead-must": {
+      "kind": "must",
+      "name": "Dissolve honey in water",
+      "translations": {
+        "de": "Honig in Wasser lösen"
+      },
+      "instruction": "Record honey and water amounts and initial must readings. This is a no-boil traditional mead workflow.",
+      "instruction_translations": {
+        "de": "Honig- und Wassermengen sowie Ausgangsmessungen des Ansatzes erfassen. Dieser Ablauf für traditionellen Met kommt ohne Kochen aus."
+      }
+    },
+    "fermentation-pitch": {
+      "kind": "pitch",
+      "name": "Inoculate prepared juice or must",
+      "translations": {
+        "de": "Vorbereiteten Saft oder Ansatz anstellen"
+      },
+      "instruction": "Record selected yeast and its product instructions; enter any additions explicitly.",
+      "instruction_translations": {
+        "de": "Gewählte Hefe und ihre Produktanleitung festhalten; Zusätze ausdrücklich eintragen."
+      }
+    },
+    "wine-ferment": {
+      "kind": "ferment",
+      "name": "Monitor juice fermentation",
+      "translations": {
+        "de": "Saftgärung beobachten"
+      },
+      "instruction": "Record readings and recipe-specific observations; confirm completion explicitly.",
+      "instruction_translations": {
+        "de": "Messungen und rezeptbezogene Beobachtungen erfassen; Abschluss ausdrücklich bestätigen."
+      }
+    },
+    "red-macerate": {
+      "kind": "macerate",
+      "name": "Ferment on grape skins",
+      "translations": {
+        "de": "Auf der Maische vergären"
+      },
+      "instruction": "Record readings and cap-management actions from your wine recipe before pressing.",
+      "instruction_translations": {
+        "de": "Messungen und Tresterhut-Behandlung aus deinem Weinrezept vor dem Pressen festhalten."
+      }
+    },
+    "mead-monitor": {
+      "kind": "ferment",
+      "name": "Monitor mead fermentation",
+      "translations": {
+        "de": "Metgärung beobachten"
+      },
+      "instruction": "Record readings and any recipe-specific nutrient schedule. A timer does not prove fermentation completion.",
+      "instruction_translations": {
+        "de": "Messungen und gegebenenfalls den rezeptbezogenen Nährstoffplan erfassen. Ein Timer bestätigt keinen Gärabschluss."
+      }
+    },
+    "rack": {
+      "kind": "rack",
+      "name": "Rack off sediment",
+      "translations": {
+        "de": "Vom Bodensatz abziehen"
+      },
+      "instruction": "Record transfer, sediment observations and destination vessel.",
+      "instruction_translations": {
+        "de": "Umfüllen, Beobachtungen zum Bodensatz und Zielgefäß festhalten."
+      }
+    },
+    "mature": {
+      "kind": "mature",
+      "name": "Mature and review",
+      "translations": {
+        "de": "Reifen lassen und prüfen"
+      },
+      "instruction": "Record the planned observation window and actual measurements.",
+      "instruction_translations": {
+        "de": "Geplanten Beobachtungszeitraum und tatsächliche Messungen erfassen."
+      }
+    },
+    "fermentation-package": {
+      "kind": "package",
+      "name": "Review and package finished drink",
+      "translations": {
+        "de": "Fertiges Getränk prüfen und abfüllen"
+      },
+      "instruction": "Record the recipe-specific finishing and packaging decision after reviewing fermentation measurements. No automatic priming or stabilization is applied.",
+      "instruction_translations": {
+        "de": "Rezeptbezogene Entscheidung zu Fertigstellung und Abfüllung nach Prüfung der Gärmessungen festhalten. Keine automatische Karbonisierung oder Stabilisierung."
       }
     }
   }

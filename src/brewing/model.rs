@@ -14,13 +14,35 @@ pub(crate) enum Mash {
     Decoction,
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub(crate) struct Method {
-    pub(crate) strategy: Strategy,
-    pub(crate) layout: Layout,
-    pub(crate) heat: Heat,
-    pub(crate) sparge: Sparge,
-    pub(crate) mash: Mash,
+#[serde(untagged, deny_unknown_fields)]
+pub(crate) enum Method {
+    Beer {
+        strategy: Strategy,
+        layout: Layout,
+        heat: Heat,
+        sparge: Sparge,
+        mash: Mash,
+    },
+    Fermentation {
+        process: FermentationProcess,
+    },
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum FermentationProcess {
+    CiderJuice,
+    WhiteWine,
+    RedWine,
+    TraditionalMead,
+}
+impl FermentationProcess {
+    pub(crate) fn beverage(self) -> Beverage {
+        match self {
+            Self::CiderJuice => Beverage::Cider,
+            Self::WhiteWine | Self::RedWine => Beverage::Wine,
+            Self::TraditionalMead => Beverage::Mead,
+        }
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -29,10 +51,29 @@ pub(crate) struct TemplateRef {
     pub(crate) version: u32,
     pub(crate) sources: Vec<Evidence>,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum Beverage {
+    #[default]
     Beer,
+    Cider,
+    Wine,
+    Mead,
+}
+impl Beverage {
+    #[allow(clippy::trivially_copy_pass_by_ref)] // Required by serde skip_serializing_if.
+    pub(crate) fn is_beer(&self) -> bool {
+        *self == Self::Beer
+    }
+    pub(crate) fn kind(self) -> crate::cooking::model::Kind {
+        use crate::cooking::model::Kind;
+        match self {
+            Self::Beer => Kind::Beer,
+            Self::Cider => Kind::Cider,
+            Self::Wine => Kind::Wine,
+            Self::Mead => Kind::Mead,
+        }
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]

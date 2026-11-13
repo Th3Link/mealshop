@@ -9,15 +9,17 @@ import {
 import { seedRecipe } from '../src/brewing-format'
 import { locale } from '../src/i18n'
 describe('brewing source and exact reading contracts', () => {
-  it('seeds all twelve source-linked methods without invented timings, temperatures or ingredient values', () => {
+  it('seeds all sixteen source-linked methods without invented timings, temperatures or ingredient values', () => {
     const c = templatesSchema.parse(catalogue)
     for (const language of ['en', 'de'] as const) {
       locale.value = language
       for (const template of c.templates) {
         const recipe = seedRecipe(c, template.id)
         expect(recipe).toBeDefined()
+        expect(recipe?.beverage).toBe(template.beverage)
         if (!recipe) throw new Error('Missing method seed')
         recipe.volume.amount = '20.000001'
+        expect('strategy' in recipe.method).toBe(template.beverage === 'beer')
         expect(brewRecipeSchema.parse(recipe).language).toBe(language)
         expect(
           recipe.phases.every(

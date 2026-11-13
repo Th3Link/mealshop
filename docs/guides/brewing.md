@@ -7,7 +7,8 @@ Food recipe shares, cooking history and inventory consumption do not turn a brew
 
 ## Choose and adapt a method
 
-The twelve source-linked starting templates cover extract, extract with specialty-grain steeping,
+Sixteen source-linked starting templates cover beer and independently researched cider, white/red wine
+and traditional mead. The twelve beer templates cover extract, extract with specialty-grain steeping,
 partial mash, BIAB, Grainfather, Brew Monk, Speidel Braumeister and separate-tun/two-vessel/three-vessel/
 HERMS/RIMS DIY setups. BIAB belongs to all-grain. Fermentable strategy, vessel layout, heating,
 sparging and mash approach are independent recipe facts. Top-return baskets and upward-flow malt pipes
@@ -50,7 +51,7 @@ or cancellation, even after its projected end. Unassigned equipment cannot be ch
 Independent equipment permits simultaneous batches. Cancelling/pausing/replanning one affects only it.
 
 Start, pause/resume timed phases, adjust a pending start or actual timer deadline through review, and
-complete phases yourself. An elapsed beer timer does **not** complete dependencies or release equipment.
+complete phases yourself. An elapsed brewing/fermentation timer does **not** complete dependencies or release equipment.
 Unknown-duration manual work has no fake countdown. Completing or cancelling releases its held equipment;
 archiving is available after the batch finishes/cancels and preserves recipes, readings and receipts.
 
@@ -70,7 +71,7 @@ the original stays saved. History loads in pages of 50 and retains the correctio
 
 ## Personal reminders, conflicts and recovery
 
-The existing single durable household worker handles food and beer events. Reminders start off; each
+The existing single durable household worker handles food and brewing/fermentation events. Reminders start off; each
 current writer can opt into their own batch reminders. Browser permission is reported separately.
 Prepare/start/active-ended/elapsed events link to the native batch. **Accepted** means Nextcloud accepted
 the notification, not that a device displayed it. Interrupted attempts become **unknown** on restart;
@@ -114,6 +115,9 @@ revision. Equipment edits include `expected_equipment`; new equipment omits it o
 Retries require identical parsed payload, expected revision, actor and key, plus current write authority.
 Receipt keys never appear in normal reads. Reusing a key for a different action conflicts.
 
-Cider, wine and mead templates remain unavailable pending their own domain validation. Automatic heater/
+Independently sourced cider-from-juice, white wine, red wine and traditional mead templates include
+their own phase order and process classification. White wine presses before fermentation; red wine
+ferments on skins before pressing. They do not inherit grain/mash/sparge settings. All timings, readings,
+additions and completion decisions remain explicitly recipe-specific. Automatic heater/
 pump control, configured live device/vendor integrations, food-safety guarantees, automatic stock
 consumption and non-beer chemistry are outside this delivered contract.

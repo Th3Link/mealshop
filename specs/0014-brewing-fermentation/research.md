@@ -71,8 +71,8 @@ The following is Mealshop's design derived from the researched distinctions, not
    or unknown calibration. Do not silently equate SG, Plato and Brix or temperature-correct them.
 5. Check actual equipment reservations across batches and keep their operation/reminder identities
    independent. Editing one batch must not reset another's timers or original readings.
-6. Initial validated templates are for beer. Cider, wine and mead remain unavailable until their own
-   domain validation; neither grain processing nor beer-specific assumptions are silently reused.
+6. Cider, white wine, red wine and traditional mead have independently reviewed templates below.
+   Their typed processes contain no grain/layout/heat/sparge classifications.
 
 ## Source use and limits
 
@@ -94,3 +94,24 @@ calibration declaration and separate measurement/entry times, without assuming a
 not to impose a universal day-before yeast treatment. F14 offers an explicitly authored recipe reminder,
 resolved by local calendar day, instead. These are primary-reference-informed implementation decisions;
 no numeric beer chemistry, device credential contract or food-safety conclusion is inferred.
+
+## Independent validation of cider, wine and mead
+
+Primary references independently reviewed on 2026-11-13; the resulting labels/prompts are Mealshop's
+original implementation decisions. Validation here means source review of the process distinctions,
+not certification or a guarantee that a user's recipe is safe or fermentation complete.
+
+| Template and boundary | Source-supported distinction | Primary reference and version |
+| --- | --- | --- |
+| Cider from prepared apple juice | Juice preparation, yeast, observations, transfer and maturation; no grain conversion. Whole-fruit milling/pressing is outside this juice starter template. | [AHA, How to Make Cider](https://homebrewersassociation.org/tutorials/how-to-make-cider/how-to-make-cider/), 2018-02-15 |
+| Traditional mead without boiling | Honey dissolved in water, yeast, recipe-specific nutrition/observations, transfer and maturation. No malt conversion or mandatory wort boil. | [AHA, How to Make Mead](https://homebrewersassociation.org/tutorials/how-to-make-mead/how-to-make-mead/), 2018-02-07 |
+| White wine from grapes | Press/separate solids **before** juice fermentation; then transfer and maturation. | [MoreWine, Guide to White Winemaking](https://morewinemaking.com/web_files/intranet.morebeer.com/files/wwhiw.pdf), copyright 2009, chapters 2–4, 6–7 |
+| Red wine with skin fermentation | Crush/prepare grapes, ferment on skins with recipe-specific cap management, then press, transfer and mature. | [MoreWine, Guide to Red Winemaking](https://morewinemaking.com/web_files/intranet.morebeer.com/files/wredw.pdf), copyright 2008, chapters 2–4, 7–9 |
+
+No universal temperature, elapsed fermentation duration, yeast nutrition, acid/sulphite dose, stabilization,
+malolactic treatment, priming or packaging readiness is inferred. Additional repeated observation/addition
+phases and source instructions can be authored explicitly in the recipe. Readings retain original SG,
+Plato/Brix or temperature units; conversion, alcohol and chemistry calculators are not introduced.
+These four templates reuse only neutral scheduling, equipment reservation and provenance mechanisms.
+Backend validation rejects grain-method fields masquerading as non-beer processes; beverage identity
+survives batch snapshots, restart and idempotent replay. Old beer/food wire formats remain unchanged.
