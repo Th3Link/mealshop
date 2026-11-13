@@ -1,7 +1,5 @@
-use super::{
-    super::{self as household, Authority, Shared, Store},
-    state::{Entry, Grant, Permission, Person, entry_id},
-};
+use super::state::{Entry, Grant, Permission, Person, entry_id};
+use crate::household::{self, Authority, Shared, Store};
 use axum::{
     Extension, Json, Router,
     extract::{Path, Query, State, rejection::JsonRejection},

@@ -153,6 +153,8 @@ implicit read/edit access. [ADR 0028](../../docs/adr/0028-person-rules-and-activ
 
 - All AGENTS gates: catalogue import check/verifier, Node i18n tests, Rust format, strict Clippy,
   **189 Rust tests**, deny licences, audit; generated docs and strict rustdoc also pass.
+  A project-local Rust 1.85.0 `check --workspace --all-targets --locked` additionally passes;
+  explicit crate paths avoid the older compiler's nested parent-import resolution difference.
 - Flutter format/strict analyze and **32 unit/widget tests** pass. New coverage includes minimized,
   scoped, expiring drafts, durable restart, revoked membership, pending invitations without content/a selected household, capacity rejection without losing the
   previous draft; localized search/focus/inline-create entry, original language/exact multipart recipe

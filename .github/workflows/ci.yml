@@ -151,7 +151,7 @@ jobs:
           path: clients/nextcloud/dist/
           if-no-files-found: error
   exapp-image:
-    name: ExApp image / Rust 1.85 and native Vue assets
+    name: ExApp image / pinned Rust and native Vue assets
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
