@@ -44,3 +44,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0024 Household stock and offers](0024-household-stock-and-offers.md)
 
 - [0025: Native brewing processes](0025-native-brewing-processes.md) — Accepted for F14.
+
+- [0026: Flutter phone delivery and the first offline boundary](0026-flutter-phone-delivery.md) — Proposed; customer plan review and implementation Go required.

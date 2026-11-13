@@ -19,3 +19,10 @@ Product web UI coordination: F22/F30; cross-client localization: F21/F29. The ex
 Current local part of AC 5: exclusive lock, immutable revisions, expected-revision conflicts,
 fail-closed startup and documented backup/recovery (ADR 0009). Tests in `tests/recipes.rs`
 exercise these behaviours. This does not complete any full multi-adapter/client criterion.
+
+## Flutter coordination (planned, 2026-11-13)
+
+[F35](../0035-flutter-mobile-client/specification.md) and its
+[five-PR phone plan](../0035-flutter-mobile-client/plan.md) own the mobile delivery backlog, including
+AC4's endpoint configuration/failure UX. This planning change does not complete AC4 or the remaining
+storage/standalone contracts above. No existing unchecked task is removed or marked implemented.

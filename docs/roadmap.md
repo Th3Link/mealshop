@@ -27,3 +27,19 @@ F06/F07/F08 provide native household shopping, optional shop ordering and barcod
 The customer approved closing F21/F22 for the delivered Nextcloud client. F29/F30 retain their
 original complete cross-client acceptance contracts for unfinished content/standalone/Flutter work.
 F18 remains In progress for its other deployment/storage/client requirements.
+
+## Proposed phone delivery sequence (F35)
+
+This is a plan for customer approval, not delivered app functionality or a dated commitment.
+Each implementation PR contains its necessary Flutter, Rust, compatibility and device evidence:
+
+1. P1: real Nextcloud connection and independent shared shopping, including safe offline replay.
+2. P2: household/profile tour, recipe/ingredient/shared library and optional activity.
+3. P3: reviewed whole-week planning, physical mealprep allocations and inventory/offers.
+4. P4: native guided cooking, baking/fermentation timers, reminders and feedback.
+5. P5: phone camera, share-sheet URL/barcode/OCR review and final portability audit.
+
+[Detailed dependencies, acceptance and install gates](../specs/0035-flutter-mobile-client/plan.md).
+The customer must merge the planning PR and give a separate Go. The initial phone platform still needs
+confirmation; Android APK is a proposal. Standalone identity, other persistence adapters and hosted
+commerce keep their own contracts rather than delaying the first Nextcloud phone journey.

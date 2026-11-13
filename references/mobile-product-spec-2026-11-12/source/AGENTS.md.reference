@@ -1,0 +1,38 @@
+# MealShop — Agent instructions
+
+These instructions describe the product direction. They do **not** assert that a feature or API already exists.
+
+## Before coding
+1. Inspect the repository, README, existing `AGENTS.md` files, architecture, tests, API definitions and open specifications. Follow existing repository conventions; merge these instructions rather than blindly replacing existing instructions.
+2. Read `docs/PRODUCT_VISION.md`, `docs/UX_SPEC.md`, `docs/DOMAIN_MODEL.md`, and `docs/IMPLEMENTATION_PLAN.md`.
+3. Create a short current-state inventory: implemented / partial / missing / unclear, with file paths and evidence. Do not infer implementation from README claims alone.
+4. Propose a small vertical slice, the files it will touch, and acceptance tests before large changes.
+
+## Non-negotiable product principles
+- Household-first planning with independent per-person rules, preferences and attendance; support individual plans without requiring them for the MVP.
+- Distinguish hard constraints (allergies, explicitly forbidden ingredients, attendance) from soft preferences (likes, convenience, variety).
+- Never silently relax hard constraints. Report infeasible plans and explain why.
+- Server owns generated plans, durable scheduling and shared data; mobile client owns capture, presentation and offline-friendly interactions.
+- Shopping works independently of meal planning and supports manually added items.
+- Keep generic ingredients, branded barcode products, shopping entries, recipes and prepared batches as distinct concepts.
+- Recipe-derived shopping contributions must retain provenance; edits must not erase manually entered or already purchased items.
+- Imported/OCR/AI content is untrusted until reviewed; unknown amounts and nutrition values stay explicitly unknown.
+- Medical conditions are user-provided context, not a license to infer clinical dietary restrictions. Avoid prescriptive medical claims.
+- Sensitive health information is optional and access-controlled. Never log it or send it to external AI services without explicit user authorization.
+- Accessibility, localization, metric units and mobile one-handed use are baseline requirements.
+
+## Engineering guardrails
+- Preserve existing working APIs and data; use migrations and versioned contracts where needed.
+- Prefer small end-to-end changes with automated tests over broad rewrites.
+- Add validation and tests for constraint conflicts, shopping aggregation, recipe dependency cycles, offline edits and concurrent household changes.
+- For Nextcloud and standalone deployments, keep domain behavior and API semantics consistent; document auth/deployment differences.
+- Do not assume Instagram video downloads, OCR providers, barcode databases, push infrastructure or smart scales are available. Verify feasibility and legal/technical constraints before implementation.
+- If product requirements are ambiguous, record a decision in `docs/DECISIONS.md` and ask for clarification on irreversible choices.
+- Update specifications and acceptance criteria when implementing features.
+
+## Definition of done
+- A user-facing scenario works end to end, with loading/empty/error/offline states as applicable.
+- Authorization and privacy implications are addressed.
+- Unit/integration/UI tests cover key behavior; existing tests still pass.
+- API changes, migrations and configuration are documented.
+- `docs/IMPLEMENTATION_PLAN.md` status and `docs/DECISIONS.md` are updated.

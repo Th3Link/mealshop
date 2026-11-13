@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "source_archive": "mealshop-spec.zip",
+  "archive_sha256": "463edb32e605c2c02ea8a83185e4b7249245209db2b0dd602a9b7e7fc65ca964",
+  "source_date": "2026-11-12",
+  "imported_on": "2026-11-13",
+  "files": [
+    {
+      "archive_path": "mealshop-spec/docs/DECISIONS.md",
+      "repository_path": "references/mobile-product-spec-2026-11-12/source/docs/DECISIONS.md",
+      "bytes": 1312,
+      "sha256": "1dd5b291184a05311fa757530fe721986431e8889524467b7d315a9c611e7564"
+    },
+    {
+      "archive_path": "mealshop-spec/docs/IMPLEMENTATION_PLAN.md",
+      "repository_path": "references/mobile-product-spec-2026-11-12/source/docs/IMPLEMENTATION_PLAN.md",
+      "bytes": 4662,
+      "sha256": "1de3f6cde0e0680b75ab21795e3b37ef39fff1117a3c56a5c8dd3cb0d5b9e3c0"
+    },
+    {
+      "archive_path": "mealshop-spec/docs/DOMAIN_MODEL.md",
+      "repository_path": "references/mobile-product-spec-2026-11-12/source/docs/DOMAIN_MODEL.md",
+      "bytes": 4666,
+      "sha256": "114aa282b3e559c25b14e242ed110516fe97c68499dedf29910295aee0823030"
+    },
+    {
+      "archive_path": "mealshop-spec/docs/UX_SPEC.md",
+      "repository_path": "references/mobile-product-spec-2026-11-12/source/docs/UX_SPEC.md",
+      "bytes": 5177,
+      "sha256": "4c1e6625d9fd4c15dadc2be2debd5a029ada872a8e1bff54e07e3d0d28355eee"
+    },
+    {
+      "archive_path": "mealshop-spec/docs/PRODUCT_VISION.md",
+      "repository_path": "references/mobile-product-spec-2026-11-12/source/docs/PRODUCT_VISION.md",
+      "bytes": 4581,
+      "sha256": "c1b97d95b1df6cdd98da4181ed3f97174467c477902db2b2655c947a2ebeaacf"
+    },
+    {
+      "archive_path": "mealshop-spec/README.md",
+      "repository_path": "references/mobile-product-spec-2026-11-12/source/README.md",
+      "bytes": 918,
+      "sha256": "f9af91634010ece26f50779e058c7bd354af02b32f5f269065043c3570cdf5b1"
+    },
+    {
+      "archive_path": "mealshop-spec/AGENTS.md",
+      "repository_path": "references/mobile-product-spec-2026-11-12/source/AGENTS.md.reference",
+      "bytes": 3467,
+      "sha256": "b2b9ced0bd830a8839811e40c59b01dcf036093afabfd3eb8da0c77f92cfcf5b"
+    }
+  ]
+}
