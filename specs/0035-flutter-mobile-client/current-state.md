@@ -1,7 +1,9 @@
 # Repository audit for the mobile pack
 
 Audit date: 2026-11-13. Baseline: `fe6dd078d8db77b6ae4e55a48f78310d53487d2a` (`main`, merged PR #37).
-This is source/contract evidence, not a new mobile runtime test. Existing acceptance evidence remains
+This table preserves the pre-implementation baseline. P1 now adds `clients/flutter/`, Android tooling and
+`shopping/mobile` receipts; see [current P1 verification](verification.md#p1-implementation-evidence).
+This baseline is source/contract evidence, not a mobile runtime test. Existing acceptance evidence remains
 in the linked feature folders. No retained household records were inspected for this planning task.
 
 | Capability from the pack | Verified server/web state and source evidence | Mobile gap / delivery |

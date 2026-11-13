@@ -1,6 +1,6 @@
 # Smartphone interaction plan
 
-Status: Proposed design for customer review before implementation. The ZIP's UX is a target;
+Status: Accepted P1 direction; implementation and emulator verification in progress. The ZIP's UX is a target;
 this document reconciles it with existing data and the five complete deliveries.
 
 ## Navigation and the first useful launch

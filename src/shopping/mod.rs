@@ -1,5 +1,6 @@
 //! Revisioned household shopping requirements and purchased provenance.
 mod api;
+mod mobile;
 pub(crate) mod model;
 pub(crate) mod sources;
 pub(crate) mod store;

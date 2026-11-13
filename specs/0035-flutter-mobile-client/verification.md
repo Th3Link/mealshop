@@ -1,4 +1,9 @@
-# Planning PR verification
+# F35 verification
+
+## Historical planning PR evidence
+
+The following section records the earlier planning-only PR at commit 77b6cd5. It is not the
+implementation status after the customer Go; current P1 evidence is tracked below.
 
 Scope: imported source documents, source-based capability audit, proposed delivery/UX/ADR and navigation
 links. No Flutter application, new API behaviour, SDK setup, device build or mobile runtime acceptance
@@ -43,3 +48,94 @@ Run the complete required repository gate after the patch updates, plus generate
 strict rustdoc and the import/link/status checks above. Record actual command/results in the PR; final
 head CI must pass before handoff. A passing Rust/docs pipeline does not establish Flutter functionality.
 Physical-phone build, installation, two-client offline and OS notification proof belong to P1–P5.
+
+## P1 implementation evidence
+
+P1 implementation is in this PR; F35 remains **In progress** for P2–P5 and the physical-handset
+acceptance. No handset is attached. Android APKs and a working visible accelerated emulator are
+provided; emulator evidence is not relabelled as physical-phone evidence.
+
+### Automated gates
+
+- Full required catalogue/import/verifier/i18n/fmt/Clippy/nextest/licence/advisory gate; strict rustdoc
+  and generated-document synchronization. The suite now contains **186 Rust tests**, including five
+  mobile receipt/group tests: restart/replay, concurrent duplicate check, authority removal, stale
+  contribution scope, expiry/capacity/corrupt receipts, purchase-only-new-source and legacy projection.
+- Flutter format and strict analysis; **22 unit/widget tests** cover exact localized input, original
+  precision, anonymous Login Flow polling, origin/prefix/redirect boundaries, frozen outbox after
+  lost/malformed responses, durable-write failure, revocation, explicit first household choice,
+  household removal while a draft is open, restart and local purchase state. Three shop-menu scenarios
+  verify that starting a round requires consent and no already active round, matching server constraints.
+- Real API 36 Android integration through `python3 scripts/mobile.py integration`: two named native
+  tests (plus framework teardown) pass. They exercise the Android Keystore/atomic-file adapter and
+  native German shopping/navigation with synthetic HTTP transport; this is separate from live login.
+- Owner/reader shopping and connection at **320 dp and 200% text** in DE/EN; Android 48-dp tap target
+  and labelled-target guidelines, group labels, pending checkbox semantics and error layout pass.
+  These checks do not claim a manual `TalkBack` audit or complete WCAG certification.
+- Existing Nextcloud client: **36 Vitest tests**, production type-check/build, npm audit (no
+  vulnerabilities), and **five shopping Playwright tests** against the actual test instance pass.
+- `python3 scripts/verify_mobile_packages.py --audit`: 53 locked package licence records; 45 external
+  Pub package versions, no matched OSV advisories. The built APK includes the root AGPL notice.
+- The seven imported ZIP records still match byte for byte; root `AGENTS.md` retains its original hash.
+
+### Live Android / Nextcloud session
+
+Environment: Nextcloud **35.0.2**, `AppAPI` **35**, own Google APIs Android 16/API 36 r07 Pixel 6 AVD,
+Emulator 37.2.13.0, KVM and local hardware GPU, system Chrome **133.0.6943.137**. `SwiftShader` triggered
+an independently traced guest OpenGL-pipe deadlock/system-server watchdog on this NVIDIA host; the
+helper supports `--host-gpu` without clearing AVD data. CI uses its own software-rendered guest.
+
+The following checks use only the ledger-owned synthetic `flutter-p1` household; retained customer
+household directories are never inspected, copied or used as fixtures. Browser authentication is
+operated using field positions and fixed button labels only; no authentication screenshot, raw
+browser URL, poll token or app password is retained in evidence.
+
+1. Enter the configured loopback origin in the native app, launch Login Flow v2 in system Chrome,
+   submit the authorized test account in that browser, grant device access and return to Mealshop.
+   Choose the own synthetic household. The app uses the resulting device credential through the
+   real `index.php/apps/app_api/proxy/mealshop` front controller, never the `ExApp` secret.
+2. Add **200.000001 g** natively. Compare the live legacy proxy snapshot: original quantity and
+   remaining quantity retain every decimal digit. Native purchase and undo each match server state.
+3. Remove only the emulator's port reverse, force-stop and restart the app. Last household and
+   encrypted cached list remain. Add a separate **2 pcs** entry offline, check that draft locally,
+   queue a check for the earlier item, force-stop/restart again and confirm the pending checkbox.
+   The server still has only the original source while disconnected.
+4. Change the original source to **250.000001 g** from a second authenticated proxy client. Restore
+   the reverse and refresh natively. Only the new draft's 2 pcs are purchased; changed original
+   demand remains entirely unpurchased, with a visible conflict. Explicit native review/confirmation
+   then purchases the reviewed 250.000001 g. No blind rebase or duplicate source occurs.
+
+5. Select the actual type-550 ingredient through the native search, add **30 g**, and verify its
+   existing wheat-flour group in the live minimized projection. Switch the app to German.
+6. Install the retained-key build **0.1.0+2** over **0.1.0+1** (`x86_64` Android version codes **4002 over
+   4001**) using `adb install -r`. The existing device credential, selected household and three-source
+   shopping snapshot survive. No browser approval or data reset is needed for this actual update.
+   This check runs separately from the integration driver, whose cleanup intentionally uninstalls
+   its test application.
+
+Visually inspected own-fixture native screenshots: [light](screenshots/android-shopping-light.png),
+[dark](screenshots/android-shopping-dark.png), [200% text](screenshots/android-shopping-large-text.png).
+System theme/font settings are restored after capture. Screenshots contain only the synthetic household
+and shopping data, not browser authentication or retained customer content.
+
+Network loss above is simulated by removing ADB reverse forwarding; it is not a claim of an airplane-mode
+OS test. Lost-response replay/restart and permission revocation are additionally proved by executable
+server/controller tests. Manual product entry/shops reuse the existing server contracts; consented
+Open Food Facts lookup remains dependent on the external service. Camera capture, background sync,
+production signing, iOS, physical handset/`TalkBack`/performance profiling and P2–P5 are not claimed.
+
+### Cleanup and artifact identity
+
+Only the six fixtures created in this run (one mobile fixture, four shopping fixtures and one visual
+shopping fixture) were selected from the ledger. With the sole backend writer stopped, the strict
+fixture cleanup archived only those synthetic records; retained household membership/library entries
+were compared unchanged, and retained household directories were not inspected. The backend returned
+healthy. The native app was signed out and its production protected record was confirmed absent;
+temporary UI-probe/optional browser packages were removed from the owned emulator. The normal app,
+Chrome and the working emulator remain available.
+
+Local handset APKs use the retained development key and build **0.1.0+2**, with actual manifest version
+name/code, source commit, dirty-source flag and verified SHA-256 alongside each artifact. The first
+complete PR CI run passed Rust, Vue, MCP, image/rootless TCP+Unix, security, Android native tests and APK
+upload; the final-head CI is required again after this evidence/version-metadata update. No signing
+key, device credential, raw UI dump or private household data is committed.

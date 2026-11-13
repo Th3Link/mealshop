@@ -1,6 +1,6 @@
 # Flutter mobile client and smartphone delivery
 
-Status: Draft
+Status: In progress
 Priority: Must
 Origin: Customer, 2026-11-13; supplied product specification dated 2026-11-12
 Milestone: M1
@@ -11,9 +11,9 @@ Use Mealshop on a real smartphone from the first implementation PR, initially ag
 Nextcloud installation. Prefer a few substantial, complete user journeys over separate scaffolding,
 backend-only and screen-only PRs. Each delivery extends an installable app.
 
-**This PR imports, audits and plans only.** Merging the planning PR does not authorize starting the
-app: the customer will merge it and give an explicit implementation Go. No Flutter project, SDK,
-new backend behaviour, mobile credential or test-instance configuration is created by this PR.
+The customer approved Android APK delivery, explicitly requested an Android emulator, and gave the
+implementation Go on 2026-11-13. P1 is now in progress on `story/flutter-pocket-shopping`.
+The earlier planning PR remains a separate review record; its preserved source import is unchanged.
 
 The [original pack](../../references/mobile-product-spec-2026-11-12/README.md) remains a preserved
 reference. [Current state](current-state.md) distinguishes shipped server/web behaviour from missing
@@ -27,7 +27,8 @@ there is no extra technical-foundation PR before the first usable app.
    base URL, authenticates with that device's revocable app credential, selects/creates a household,
    exposes the current role and supports sign-out/revocation/account switching without cross-account
    cache leakage. Real phone connectivity and update installation are demonstrated. Android APK is
-   the current proposal; the device/platform question remains open until the customer answers.
+   the accepted initial platform; a real accelerated Android emulator is required in addition to a
+   downloadable handset-installable build. Physical-handset testing is recorded separately.
 2. **Independent shopping (P1).** Manual exact-quantity entry, editing/removal, check-off/undo,
    source details, shops/order and existing product capture work without a meal plan. Two authorized
    clients see canonical changes. Bounded durable offline add/check operations survive process death,

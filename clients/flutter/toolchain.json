@@ -1,0 +1,27 @@
+{
+  "flutter_version": "3.50.0",
+  "flutter_commit": "ab2912035e160d9cad6306df307576da6128ebdb",
+  "dart_version": "3.14.0",
+  "java_major": 17,
+  "android_compile_sdk": 36,
+  "android_min_sdk": 24,
+  "android_ndk": "28.2.13676358",
+  "android_build_tools": "36.0.0",
+  "emulator_api": 36,
+  "emulator_avd": "Mealshop_API36",
+  "adb_server_port": 5038,
+  "emulator_console_port": 5556,
+  "command_line_tools": {
+    "url": "https://dl.google.com/android/repository/commandlinetools-linux-16111833_latest.zip",
+    "sha256": "0877a1d048fe4a24efe2eff536ca4223f7adeb58648bb81909d33c446918cfa8"
+  },
+  "jdk": {
+    "release": "jdk-17.0.21+9",
+    "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_x64_linux_hotspot_17.0.21_9.tar.gz",
+    "sha256": "8b9b611d917e3dfd8419d3566b5949226f69b052fed7e109c1368add1dfe8711"
+  },
+  "emulator_browser": {
+    "package": "com.android.chrome",
+    "source": "Google APIs API 36 system image"
+  }
+}

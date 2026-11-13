@@ -1,0 +1,69 @@
+name: Android
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  flutter-android:
+    name: Flutter / analyze, tests, Android emulator and APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/cache@v6
+        with:
+          path: |
+            var/mobile/flutter
+            var/mobile/android-sdk
+            var/mobile/pub-cache
+            var/mobile/gradle
+            var/mobile/jdk
+            var/mobile/jdk-info.json
+          key: android-${{ runner.os }}-${{ hashFiles('clients/flutter/toolchain.json', 'clients/flutter/pubspec.lock') }}
+      - name: Set up pinned project-local tools
+        run: python3 scripts/mobile.py bootstrap
+      - name: Verify immutable dependencies and package licence inventory
+        run: |
+          python3 scripts/mobile.py flutter pub get --enforce-lockfile
+          python3 scripts/verify_mobile_packages.py --audit
+      - name: Format, strict analysis and unit/widget tests
+        working-directory: clients/flutter
+        env:
+          PUB_CACHE: ${{ github.workspace }}/var/mobile/pub-cache
+        run: |
+          ../../var/mobile/flutter/bin/dart format --output=none --set-exit-if-changed lib test integration_test test_driver
+          ../../var/mobile/flutter/bin/flutter analyze
+          ../../var/mobile/flutter/bin/flutter test
+      - name: Start dedicated accelerated emulator
+        run: |
+          test -c /dev/kvm
+          sudo chmod 666 /dev/kvm
+          python3 scripts/mobile.py emulator --headless
+          for attempt in $(seq 1 90); do
+            if var/mobile/android-sdk/platform-tools/adb -P 5038 -s emulator-5556 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | grep -qx 1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'Android emulator failed to boot' >&2
+          exit 1
+      - name: Native protected storage and shopping integration
+        run: python3 scripts/mobile.py integration
+      - name: Build phone APKs with this job's ephemeral test key
+        run: python3 scripts/mobile.py build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mealshop-android-ci-apks-${{ github.sha }}
+          path: |
+            clients/flutter/build/app/outputs/flutter-apk/app-*-debug.apk
+            clients/flutter/build/app/outputs/flutter-apk/*.apk.sha256
+            clients/flutter/build/app/outputs/flutter-apk/*.apk.build.json
+          if-no-files-found: error
+      - name: Distribution distinction
+        run: echo 'CI APKs use an ephemeral key. Upgradeable handset builds use the retained local development key; see docs/guides/mobile.md.' >> "$GITHUB_STEP_SUMMARY"

@@ -106,6 +106,7 @@ fn validate(data: &Data) -> Result<(), &'static str> {
             return Err("shopping_data_invalid");
         }
     }
+    super::mobile::validate_receipts(data)?;
     data.validate_shops()?;
     data.validate_products()?;
     crate::inventory::validation::validate(data)?;
