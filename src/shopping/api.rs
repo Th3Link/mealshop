@@ -15,7 +15,7 @@ use serde::Deserialize;
 use serde_json::json;
 #[derive(Deserialize)]
 #[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
-enum Command {
+pub(super) enum Command {
     SaveProduct {
         product: super::products::ProductInput,
     },
@@ -62,6 +62,8 @@ enum Command {
         label: String,
         ingredient_id: Option<String>,
         quantity: Quantity,
+        #[serde(default)]
+        purchased: bool,
     },
     AddRecipe {
         source_id: Option<String>,
@@ -81,12 +83,13 @@ enum Command {
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Mutation {
-    expected_revision: u64,
-    command: Command,
+pub(super) struct Mutation {
+    pub(super) expected_revision: u64,
+    pub(super) command: Command,
 }
 pub(crate) fn routes() -> Router<Shared> {
     Router::new()
+        .merge(super::mobile::routes())
         .route("/api/household/shopping", get(list).post(change))
         .route(
             "/api/household/shopping/lookup",
@@ -148,7 +151,14 @@ async fn change(
             .shopping
             .lock()
             .map_err(|_| "shopping_storage_failed")?;
-        execute(&mut store, &ingredients, recipes.as_deref(), &plans, input)?;
+        execute(
+            &mut store,
+            &ingredients,
+            recipes.as_deref(),
+            &plans,
+            input,
+            None,
+        )?;
         Ok::<_, &'static str>(store.view())
     })
     .await
@@ -158,84 +168,103 @@ async fn change(
         Err(_) => failure("shopping_storage_failed"),
     }
 }
-fn execute(
+pub(super) fn execute(
     store: &mut Store,
     ingredients: &crate::ingredients::Store,
     recipes: Option<&crate::recipes::Store>,
     plans: &crate::planning::PlanStore,
     input: Mutation,
+    receipt: Option<super::mobile::Receipt>,
 ) -> Result<(), &'static str> {
-    store.change(input.expected_revision, |data| match input.command {
-        Command::SaveProduct { product } => {
-            data.save_product(product, &ingredients.catalogue(), super::lookup::now()?)
-        }
-        Command::AddProduct { barcode, packages } => {
-            data.add_product(&barcode, packages, &ingredients.catalogue())
-        }
-        Command::RemoveProduct { barcode } => {
-            data.products
-                .records
-                .remove(&super::products::gtin(&barcode)?)
-                .ok_or("shopping_product_not_found")?;
-            Ok(())
-        }
-        Command::SaveShop { id, name } => data.save_shop(id, &name),
-        Command::RemoveShop { id } => data.remove_shop(&id),
-        Command::Preference {
-            ingredient_id,
-            first,
-            second,
-        } => {
-            if !ingredients
-                .catalogue()
-                .ingredients
-                .iter()
-                .any(|i| i.id == ingredient_id)
-            {
-                return Err("unknown_ingredient");
+    store.change(input.expected_revision, |data| {
+        match input.command {
+            Command::SaveProduct { product } => {
+                data.save_product(product, &ingredients.catalogue(), super::lookup::now()?)
             }
-            data.set_preference(ingredient_id, super::shops::Preference { first, second })
+            Command::AddProduct { barcode, packages } => {
+                data.add_product(&barcode, packages, &ingredients.catalogue())
+            }
+            Command::RemoveProduct { barcode } => {
+                data.products
+                    .records
+                    .remove(&super::products::gtin(&barcode)?)
+                    .ok_or("shopping_product_not_found")?;
+                Ok(())
+            }
+            Command::SaveShop { id, name } => data.save_shop(id, &name),
+            Command::RemoveShop { id } => data.remove_shop(&id),
+            Command::Preference {
+                ingredient_id,
+                first,
+                second,
+            } => {
+                if !ingredients
+                    .catalogue()
+                    .ingredients
+                    .iter()
+                    .any(|i| i.id == ingredient_id)
+                {
+                    return Err("unknown_ingredient");
+                }
+                data.set_preference(ingredient_id, super::shops::Preference { first, second })
+            }
+            Command::AssignShop { key, shop_id } => data.assign(key, shop_id),
+            Command::Order { shop_id, keys } => data.order(shop_id, keys),
+            Command::Learning { enabled } => {
+                data.learning(enabled);
+                Ok(())
+            }
+            Command::ResetHistory => {
+                data.shops.sessions.clear();
+                Ok(())
+            }
+            Command::StartSession { shop_id } => data.start_session(shop_id),
+            Command::FinishSession { id, discard } => data.finish_session(&id, discard),
+            Command::AddManual {
+                source_id,
+                label,
+                ingredient_id,
+                quantity,
+                purchased,
+            } => add_manual(
+                data,
+                ingredients,
+                source_id,
+                label,
+                ingredient_id,
+                quantity,
+                purchased,
+            ),
+            Command::RemoveSource { id } => {
+                data.sources
+                    .iter_mut()
+                    .find(|s| s.id == id)
+                    .ok_or("shopping_source_not_found")?
+                    .active = false;
+                Ok(())
+            }
+            Command::Check { key, checked } => data.check(&key, checked),
+            Command::AddRecipe { source_id, recipe } => sources::upsert(
+                data,
+                source_id,
+                sources::recipe(recipes.ok_or("recipe_store_unavailable")?, &recipe)?,
+            ),
+            Command::SyncPlan {
+                plan_revision,
+                slots,
+            } => sources::sync(
+                data,
+                recipes.ok_or("recipe_store_unavailable")?,
+                plans.shopping_recipes(plan_revision, &slots)?,
+            ),
+        }?;
+        if let Some(receipt) = receipt {
+            data.mobile_receipts.retain(|r| {
+                r.issued_at.saturating_add(super::mobile::RETENTION) >= receipt.recorded_at
+            });
+            data.mobile_receipts.push(receipt);
         }
-        Command::AssignShop { key, shop_id } => data.assign(key, shop_id),
-        Command::Order { shop_id, keys } => data.order(shop_id, keys),
-        Command::Learning { enabled } => {
-            data.learning(enabled);
-            Ok(())
-        }
-        Command::ResetHistory => {
-            data.shops.sessions.clear();
-            Ok(())
-        }
-        Command::StartSession { shop_id } => data.start_session(shop_id),
-        Command::FinishSession { id, discard } => data.finish_session(&id, discard),
-        Command::AddManual {
-            source_id,
-            label,
-            ingredient_id,
-            quantity,
-        } => add_manual(data, ingredients, source_id, label, ingredient_id, quantity),
-        Command::RemoveSource { id } => {
-            data.sources
-                .iter_mut()
-                .find(|s| s.id == id)
-                .ok_or("shopping_source_not_found")?
-                .active = false;
-            Ok(())
-        }
-        Command::Check { key, checked } => data.check(&key, checked),
-        Command::AddRecipe { source_id, recipe } => sources::upsert(
-            data,
-            source_id,
-            sources::recipe(recipes.ok_or("recipe_store_unavailable")?, &recipe)?,
-        ),
-        Command::SyncPlan {
-            plan_revision,
-            slots,
-        } => sources::sync(
-            data,
-            recipes.ok_or("recipe_store_unavailable")?,
-            plans.shopping_recipes(plan_revision, &slots)?,
-        ),
+        Ok(())
     })
 }
 
@@ -246,7 +275,11 @@ fn add_manual(
     label: String,
     ingredient_id: Option<String>,
     quantity: Quantity,
+    purchased: bool,
 ) -> Result<(), &'static str> {
+    if purchased && source_id.is_some() {
+        return Err("shopping_request_invalid");
+    }
     if !text(&label, 200) {
         return Err("shopping_label_invalid");
     }
@@ -294,6 +327,22 @@ fn add_manual(
     if updating {
         sources::upsert(data, Some(id), draft)
     } else {
+        if purchased {
+            let requirement = draft
+                .requirements
+                .first()
+                .ok_or("shopping_request_invalid")?;
+            let purchase_id = data.allocate("purchase")?;
+            data.purchases.push(super::model::Purchase {
+                id: purchase_id,
+                source_id: id.clone(),
+                item: requirement.item.clone(),
+                amount: requirement.amount.clone(),
+                origin: draft.origin.clone(),
+                reversed: false,
+            });
+            data.record_check(&requirement.item.key, true, true)?;
+        }
         data.sources.push(super::model::Source {
             id,
             active: true,

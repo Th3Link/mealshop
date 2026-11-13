@@ -1,17 +1,18 @@
 # Flutter client decisions
 
-[ADR 0026](../../docs/adr/0026-flutter-phone-delivery.md) proposes five complete device-testable PRs,
-Nextcloud-first login/transport and a bounded shopping offline/replay boundary. Status: Proposed.
-The customer has requested a plan PR, followed by merge and explicit Go before implementation.
+[ADR 0026](../../docs/adr/0026-flutter-phone-delivery.md) accepts five complete device-testable PRs,
+Nextcloud-first login/transport and a bounded shopping offline/replay boundary. Status: Accepted.
+The customer selected Android, requested an emulator and explicitly gave implementation Go.
+[ADR 0027](../../docs/adr/0027-mobile-shopping-receipts.md) specifies P1 credentials, dependencies,
+protected cache, bounded request receipts and upgrade/downgrade semantics.
 
 Existing decisions remain authoritative: stack (0001), quantities (0002), persistence boundaries (0003),
 licensing/imported sharing (0004), privacy (0005), clients/localization (0007), household authority (0012),
 durable civil-time cooking (0016), preparation (0017), nutrition ranges (0019), sharing (0020), feedback
 (0021), scoped MCP (0022), reviewed import (0023), inventory (0024) and brewing (0025).
 
-No concrete Flutter state-management/database/OCR/notification package is accepted in this planning
-change. Choose them against the actual device/OS, migration, privacy and licence requirements when the
-corresponding slice starts. F18's unimplemented storage adapters are not silently replaced by a phone cache.
+P1 uses focused `ChangeNotifier` state, official Material controls and a bounded protected record;
+OCR, native reminders and broader database choices remain decisions of their later slices. F18's unimplemented storage adapters are not silently replaced by a phone cache.
 
 ## Source decision reconciliation
 

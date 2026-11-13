@@ -121,6 +121,8 @@ pub(crate) struct Purchase {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Data {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) mobile_receipts: Vec<super::mobile::Receipt>,
     #[serde(
         default,
         skip_serializing_if = "crate::inventory::model::Data::is_empty"
@@ -140,6 +142,7 @@ impl Default for Data {
     fn default() -> Self {
         Self {
             inventory: crate::inventory::model::Data::default(),
+            mobile_receipts: vec![],
             schema_version: 1,
             revision: 0,
             next_id: 1,

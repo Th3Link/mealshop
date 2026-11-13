@@ -1,6 +1,6 @@
 # Flutter delivery plan — five complete phone releases
 
-Status: Proposed; planning PR only. Implementation requires customer merge **and a separate Go**.
+Status: P1 In progress. Customer approved Android, requested an emulator and explicitly gave the Go on 2026-11-13.
 Task/checkpoint authority: this file, following the repository's spec-folder convention. Do not
 create a second `tasks/` backlog or mark the imported pack's checklist as delivered.
 
@@ -33,7 +33,7 @@ use airplane mode, terminate/reopen the app, reconnect and reconcile safely. No 
   Verify: a physical-device install/login/relaunch/sign-out; server owner/reader/denied tests;
   the ordinary Nextcloud client still works. Likely areas: new Flutter platform/config/network modules,
   `src/exapp/`, contract tests and CI. No unrelated authentication rewrite.
-- [ ] P1.2 **Add safe offline request semantics.** Extend the existing shopping transaction with
+- [x] P1.2 **Add safe offline request semantics.** Extend the existing shopping transaction with
   bounded durable operation receipts: actor/account/household scope, immutable payload/key, expected
   revision, atomic result and exact replay after lost responses. Revalidate current permission before
   replay. A reused key with a different request conflicts. Existing callers retain their current
@@ -41,7 +41,7 @@ use airplane mode, terminate/reopen the app, reconnect and reconcile safely. No 
   Verify: apply-then-drop-response/restart/replay produces exactly one entry/purchase; two clients
   cannot silently replace sources. Likely areas: `src/shopping/{api,model,store}.rs`, inventory receipt
   invariants, `tests/shopping.rs`, native client compatibility tests. Receipts are not a new sync engine.
-- [ ] P1.3 **Deliver the real list and persistent client outbox.** Manual items, exact units,
+- [x] P1.3 **Deliver the real list and persistent client outbox.** Manual items, exact units,
   check/undo, quantities, source details, ingredient/category sections, shops/order and existing manual product entry/consented lookup.
   Use existing ingredient groups; any new manual category metadata needs an explicit compatible contract.
   Foreground refresh and refresh-on-resume first; no assumed WebSocket or guaranteed background worker.
@@ -51,6 +51,10 @@ use airplane mode, terminate/reopen the app, reconnect and reconcile safely. No 
   confirmed, failed and conflict states separately. On account/home switch, isolate in-flight responses;
   sign-out wipes local credentials/data. Preserve drafts on errors and reader views without write actions.
   Verify: widget/decimal/DTO tests and two-device integration with process death and role revocation.
+
+P1 implementation evidence is recorded in [verification](verification.md#p1-implementation-evidence).
+P1.1 remains unchecked for the physical-handset acceptance; the Android toolchain, emulator, browser
+login, protected storage, live proxy shopping and installable development APK are implemented.
 
 **P1 release gate:** downloadable installable test artifact + checksum/commit/version, installation and
 upgrade instructions, real phone evidence, Rust/native regression and Flutter gates below. Initial active
@@ -223,7 +227,7 @@ including pending unsupported capabilities. Do not commit personal credentials o
 
 | Decision | Proposed treatment / owner | Required by |
 | --- | --- | --- |
-| First physical phone/platform | Customer question pending; Android APK proposal, no inferred approval | Before P1 implementation |
+| First physical phone/platform | Accepted: Android APK plus a real Android emulator; explicit customer Go received | Before P1 implementation |
 | Install origin/signing | Test setup with customer-controlled reachability and keys; no hostname baked into client | P1 |
 | Shared vs individual plans | Shared household default with per-person alternatives; preserve separate-plan extension | P2 model review |
 | Sensitive/child profile access and retention | Explicit policy/projections before any diagnosis fields or health-cache sync | P2 |

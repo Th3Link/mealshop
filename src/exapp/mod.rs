@@ -669,3 +669,6 @@ mod import_tests;
 
 #[cfg(test)]
 mod brewing_tests;
+
+#[cfg(test)]
+mod mobile_tests;

@@ -1,0 +1,373 @@
+[
+  {
+    "name": "async",
+    "version": "2.13.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73",
+    "sdk": false
+  },
+  {
+    "name": "boolean_selector",
+    "version": "2.1.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "b71519245009a3b8f126196a5408ec031e216e8e0d985085958c6543f82a8a2a",
+    "sdk": false
+  },
+  {
+    "name": "characters",
+    "version": "1.4.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "0371d1da6a57fb791db29d29b95333429205f51f3cb2eb3a0c12d91838a38744",
+    "sdk": false
+  },
+  {
+    "name": "clock",
+    "version": "1.1.3",
+    "licence": "Apache-2.0",
+    "licence_sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+    "sdk": false
+  },
+  {
+    "name": "collection",
+    "version": "1.19.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73",
+    "sdk": false
+  },
+  {
+    "name": "cupertino_ui",
+    "version": "1.1.6",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "fake_async",
+    "version": "1.3.3",
+    "licence": "Apache-2.0",
+    "licence_sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+    "sdk": false
+  },
+  {
+    "name": "file",
+    "version": "7.0.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "f6df86b1412172537273e8e80ee2fb8a66aa7307ce0b39ea5ddab47ca41b8c49",
+    "sdk": false
+  },
+  {
+    "name": "flutter",
+    "version": "Flutter SDK",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20",
+    "sdk": true
+  },
+  {
+    "name": "flutter_driver",
+    "version": "Flutter SDK",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20",
+    "sdk": true
+  },
+  {
+    "name": "flutter_lints",
+    "version": "6.0.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9",
+    "sdk": false
+  },
+  {
+    "name": "flutter_localizations",
+    "version": "Flutter SDK",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20",
+    "sdk": true
+  },
+  {
+    "name": "flutter_test",
+    "version": "Flutter SDK",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20",
+    "sdk": true
+  },
+  {
+    "name": "flutter_web_plugins",
+    "version": "Flutter SDK",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20",
+    "sdk": true
+  },
+  {
+    "name": "fuchsia_remote_debug_protocol",
+    "version": "Flutter SDK",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20",
+    "sdk": true
+  },
+  {
+    "name": "http",
+    "version": "1.6.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16",
+    "sdk": false
+  },
+  {
+    "name": "http_parser",
+    "version": "4.1.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16",
+    "sdk": false
+  },
+  {
+    "name": "integration_test",
+    "version": "Flutter SDK",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20",
+    "sdk": true
+  },
+  {
+    "name": "intl",
+    "version": "0.20.3",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "7e124af6a556f045cb3a20cafbdaa31602ac2c82cbcb3c3b15faaaf514b06028",
+    "sdk": false
+  },
+  {
+    "name": "leak_tracker",
+    "version": "11.0.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "08a004aa8956c3cf3b24f7f69c966247233953e18e6afaa61191ea47b7eb70f6",
+    "sdk": false
+  },
+  {
+    "name": "leak_tracker_flutter_testing",
+    "version": "3.0.10",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "08a004aa8956c3cf3b24f7f69c966247233953e18e6afaa61191ea47b7eb70f6",
+    "sdk": false
+  },
+  {
+    "name": "leak_tracker_testing",
+    "version": "3.0.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "08a004aa8956c3cf3b24f7f69c966247233953e18e6afaa61191ea47b7eb70f6",
+    "sdk": false
+  },
+  {
+    "name": "lints",
+    "version": "6.1.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "421fe78c3b5df297f8b4ab2c74f2450a274ee6d245a113091f6b9f90570af193",
+    "sdk": false
+  },
+  {
+    "name": "listen",
+    "version": "1.0.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "matcher",
+    "version": "0.12.20",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16",
+    "sdk": false
+  },
+  {
+    "name": "material_color_utilities",
+    "version": "0.13.0",
+    "licence": "Apache-2.0",
+    "licence_sha256": "d103f246ef4c18dab8af0c1dcf6a8af884e5cff554da7261a48ac43c17d98f2e",
+    "sdk": false
+  },
+  {
+    "name": "material_ui",
+    "version": "1.1.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "meta",
+    "version": "1.19.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "b71519245009a3b8f126196a5408ec031e216e8e0d985085958c6543f82a8a2a",
+    "sdk": false
+  },
+  {
+    "name": "path",
+    "version": "1.9.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16",
+    "sdk": false
+  },
+  {
+    "name": "platform",
+    "version": "3.2.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "143839f62c9b7f88143ea9f688361c27050888acde7696b34e04414bd254fafc",
+    "sdk": false
+  },
+  {
+    "name": "plugin_platform_interface",
+    "version": "2.1.8",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9",
+    "sdk": false
+  },
+  {
+    "name": "process",
+    "version": "5.0.6",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "5f018bbc25a55406d7a4e1d3229135439e315210b0050ca56dbb367a4934e85d",
+    "sdk": false
+  },
+  {
+    "name": "sky_engine",
+    "version": "Flutter SDK",
+    "licence": "MIT",
+    "licence_sha256": "0d5050142d6b4605704d8844fcd5656ac23e718cf8f7d1e41149950da5edb4ef",
+    "sdk": true
+  },
+  {
+    "name": "source_span",
+    "version": "1.10.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16",
+    "sdk": false
+  },
+  {
+    "name": "stack_trace",
+    "version": "1.12.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ff0b91d4f3c32b25cb6ec84985e8da89b0ba2a2b2f7eef353cda5e5423a20390",
+    "sdk": false
+  },
+  {
+    "name": "stream_channel",
+    "version": "2.1.4",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73",
+    "sdk": false
+  },
+  {
+    "name": "string_scanner",
+    "version": "1.4.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16",
+    "sdk": false
+  },
+  {
+    "name": "sync_http",
+    "version": "0.3.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "b9b748d4dd6f725387bf69e96df4e4ebff167ae83547954242a731504d037644",
+    "sdk": false
+  },
+  {
+    "name": "term_glyph",
+    "version": "1.2.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ea97a7558a7bd7cee4e2355f7529e3cbebb0dcbb546ddb9a90f10c9eb6b08da5",
+    "sdk": false
+  },
+  {
+    "name": "test_api",
+    "version": "0.7.14",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ff1b9f0df9036c04be424b1e3ce12789bea880ad5ffc3a48e069ae2d40a087a4",
+    "sdk": false
+  },
+  {
+    "name": "typed_data",
+    "version": "1.4.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73",
+    "sdk": false
+  },
+  {
+    "name": "url_launcher",
+    "version": "6.3.3",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "url_launcher_android",
+    "version": "6.3.33",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "url_launcher_ios",
+    "version": "6.4.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "url_launcher_linux",
+    "version": "3.2.3",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "url_launcher_macos",
+    "version": "3.2.6",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "url_launcher_platform_interface",
+    "version": "2.3.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9",
+    "sdk": false
+  },
+  {
+    "name": "url_launcher_web",
+    "version": "2.4.3",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "url_launcher_windows",
+    "version": "3.1.6",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "vector_math",
+    "version": "2.4.3",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "vm_service",
+    "version": "15.4.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ad6a71997da90924b2cfb1fb47ec46537f70faf469efe016168794ae45ed6888",
+    "sdk": false
+  },
+  {
+    "name": "web",
+    "version": "1.1.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "aa913ff50d7542eb8cc35b9f48a80928ac6819ba9057f85d424655e3e8dc271c",
+    "sdk": false
+  },
+  {
+    "name": "webdriver",
+    "version": "3.2.0",
+    "licence": "Apache-2.0",
+    "licence_sha256": "74cb46b123c9fa918ea8e0a0f5be736a1cd661edf145ccc723dc7ce30324ebab",
+    "sdk": false
+  }
+]

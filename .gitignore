@@ -13,3 +13,13 @@ __pycache__/
 /clients/nextcloud/playwright-report/
 /test-results/
 /playwright-report/
+
+/clients/flutter/.dart_tool/
+/clients/flutter/build/
+/clients/flutter/*.iml
+/clients/flutter/android/local.properties
+/clients/flutter/android/.gradle/
+/clients/flutter/android/.kotlin/
+/clients/flutter/android/key.properties
+*.keystore
+*.jks

@@ -1,6 +1,6 @@
 # ADR 0026: Flutter phone delivery and the first offline boundary
 
-Status: Proposed — customer review of the planning PR and explicit implementation Go required
+Status: Accepted — customer Android/emulator decision and explicit implementation Go, 2026-11-13
 Date: 2026-11-13
 
 ## Context
@@ -26,7 +26,7 @@ native mobile push. These risks must be resolved in their user-facing slices, no
    greatly delays a usable Nextcloud app without a corresponding accepted requirement.
 4. Deliver five coherent end-to-end PRs with smaller internal commits and explicit install evidence.
 
-## Proposed decision
+## Decision
 
 Choose option 4. P1 connects a real native Flutter app to Nextcloud and completes independent shopping;
 P2 adds people/content/activity, P3 week/physical mealprep/stock, P4 cooking/fermentation/history, P5
@@ -52,7 +52,7 @@ Later offline domains must audit their own replay and irreversible effects befor
 Offline devices cannot observe immediate remote revocation: define bounded cache retention and local
 protections, revalidate on reconnect, and stop pending writes/clear protected data when revocation is known.
 
-Android APK is a proposed initial distribution path pending the customer's device answer. Establish
+Android APK is the accepted initial distribution path, with an accelerated Android emulator explicitly requested. Establish
 application ID, stable development signing/upgrade path and physical-device reachability in P1. For
 iPhone-first delivery, establish macOS/Xcode/provisioning there instead; an unsigned build is not phone
 acceptance. Do not leak signing keys to untrusted PR jobs. Protected distribution/local retained-key
@@ -65,9 +65,9 @@ The planner and mobile notification work remain larger separate review units bec
 different correctness/OS risks. Each can contain thin, tested commits without multiplying customer PRs.
 
 The imported source remains byte-preserved in `references/mobile-product-spec-2026-11-12/`; its agent
-file is renamed `.md.reference` to prevent activation. F35 stays Draft for this planning PR. F18, F29,
+file is renamed `.md.reference` to prevent activation. F35 is In progress after the explicit Go. F18, F29,
 F30, hosted admission and unimplemented storage adapters retain their honest independent statuses.
-No application code, server schema, private household state or deployment configuration changes now.
+P1 adds the Android app and shopping receipts under ADR 0027; the preserved source remains unchanged.
 
 ## Primary references
 
