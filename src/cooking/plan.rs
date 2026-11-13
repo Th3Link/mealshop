@@ -50,6 +50,9 @@ pub(crate) fn order(stages: &[Stage]) -> Result<Vec<usize>, &'static str> {
     Ok(result)
 }
 pub(crate) fn expand(stages: &[Stage]) -> Result<Vec<Step>, &'static str> {
+    expand_limit(stages, 604_800)
+}
+pub(crate) fn expand_limit(stages: &[Stage], maximum: u32) -> Result<Vec<Step>, &'static str> {
     order(stages)?;
     let last: BTreeMap<_, _> = stages
         .iter()
@@ -57,7 +60,7 @@ pub(crate) fn expand(stages: &[Stage]) -> Result<Vec<Step>, &'static str> {
         .collect();
     let mut steps = Vec::new();
     for stage in stages {
-        stage.validate()?;
+        stage.validate_limit(maximum)?;
         for cycle in 1..=stage.repeat {
             let mut value = stage.clone();
             value.id = format!("{}-{cycle}", stage.id);
@@ -71,7 +74,7 @@ pub(crate) fn expand(stages: &[Stage]) -> Result<Vec<Step>, &'static str> {
                     .dependencies
                     .push(format!("{}-{}", stage.id, cycle - 1));
             }
-            value.validate()?;
+            value.validate_limit(maximum)?;
             steps.push(Step {
                 stage: value,
                 cycle,

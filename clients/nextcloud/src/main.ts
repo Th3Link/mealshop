@@ -10,6 +10,7 @@ import MealPlan from './MealPlan.vue'
 import Shopping from './Shopping.vue'
 import Inventory from './Inventory.vue'
 import Cooking from './Cooking.vue'
+import Brewing from './Brewing.vue'
 import Collections from './Collections.vue'
 import History from './History.vue'
 import AssistantTools from './AssistantTools.vue'
@@ -42,6 +43,7 @@ const router = createRouter({
     { path: '/h/:home/shopping', component: Shopping },
     { path: '/h/:home/inventory/:section?', component: Inventory },
     { path: '/h/:home/cooking/:id?', component: Cooking },
+    { path: '/h/:home/brewing/:section?/:id?', component: Brewing },
     { path: '/:pathMatch(.*)*', redirect: '/households' },
   ],
 })

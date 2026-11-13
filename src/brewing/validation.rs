@@ -62,6 +62,20 @@ pub(super) fn recipe(r: &Recipe, fresh: bool) -> Result<(), &'static str> {
     {
         return Err("brewing_recipe_invalid");
     }
+    if let Some(p) = &r.yeast_preparation {
+        let probe = cooking::LocalTime {
+            local: format!("2026-11-13T{}", p.local_time),
+            timezone: "UTC".into(),
+            fold: p.fold,
+        };
+        if p.days_before > 30
+            || p.local_time.len() != 5
+            || probe.resolve().is_err()
+            || !text(&p.instruction, 4000)
+        {
+            return Err("brewing_preparation_invalid");
+        }
+    }
     let mash = matches!(
         r.method.strategy,
         templates::Strategy::PartialMash | templates::Strategy::AllGrain
@@ -78,7 +92,7 @@ pub(super) fn recipe(r: &Recipe, fresh: bool) -> Result<(), &'static str> {
         return Err("brewing_recipe_invalid");
     }
     for p in &r.phases {
-        p.stage.validate()?;
+        p.stage.validate_limit(31_536_000)?;
         if !matches!(p.stage.origin, StageOrigin::Custom { .. })
             || p.stage.start_at.is_some()
             || (!p.timing_known
@@ -168,15 +182,6 @@ pub(crate) fn validate(data: &Processes) -> Result<(), &'static str> {
     {
         return Err("brewing_capacity");
     }
-    if !b.batches.is_empty()
-        || !b.readings.is_empty()
-        || data
-            .runs
-            .iter()
-            .any(|r| r.kind == cooking::model::Kind::Beer)
-    {
-        return Err("brewing_data_invalid");
-    }
     let mut revisions = BTreeMap::new();
     for r in &b.recipes {
         if !cooking::store::allocated(data, &r.id, "brew-recipe-")
@@ -203,6 +208,31 @@ pub(crate) fn validate(data: &Processes) -> Result<(), &'static str> {
         }
         equipment(&e.details)?;
     }
+    receipts(data, &revisions, &ids)?;
+    for (id, batch) in &b.batches {
+        if !cooking::store::allocated(data, id, "cook-") {
+            return Err("brewing_data_invalid");
+        }
+        self::batch(data, data.run(id)?, batch)?;
+    }
+    if data
+        .runs
+        .iter()
+        .any(|r| (r.kind == cooking::model::Kind::Beer) != b.batches.contains_key(&r.id))
+    {
+        return Err("brewing_data_invalid");
+    }
+    super::readings::validate(data)?;
+    super::resources::validate_holds(data)?;
+    Ok(())
+}
+
+fn receipts(
+    data: &Processes,
+    revisions: &BTreeMap<&String, u64>,
+    ids: &BTreeSet<&String>,
+) -> Result<(), &'static str> {
+    let b = &data.brewing;
     let mut operation_ids = BTreeSet::new();
     let mut operation_keys = BTreeSet::new();
     for receipt in &b.operations {
@@ -220,6 +250,36 @@ pub(crate) fn validate(data: &Processes) -> Result<(), &'static str> {
             serde_json::from_value(receipt.command.clone()).map_err(|_| "brewing_data_invalid")?;
         let result = receipt.result_id.as_ref().ok_or("brewing_data_invalid")?;
         match command {
+            super::operations::Command::CreateBatch { draft } => {
+                let batch = b.batches.get(result).ok_or("brewing_data_invalid")?;
+                if batch.draft != draft
+                    || batch.actor != receipt.actor
+                    || batch.recorded_at != receipt.recorded_at
+                {
+                    return Err("brewing_data_invalid");
+                }
+            }
+            super::operations::Command::AddReading {
+                run_id,
+                reading,
+                corrects,
+                reason,
+            } => {
+                let r = b
+                    .readings
+                    .iter()
+                    .find(|r| &r.id == result)
+                    .ok_or("brewing_data_invalid")?;
+                if r.run_id != run_id
+                    || r.input != reading
+                    || r.corrects != corrects
+                    || r.reason != reason
+                    || r.actor != receipt.actor
+                    || r.recorded_at != receipt.recorded_at
+                {
+                    return Err("brewing_data_invalid");
+                }
+            }
             super::operations::Command::SaveRecipe {
                 id,
                 expected_recipe_revision,
@@ -253,7 +313,91 @@ pub(crate) fn validate(data: &Processes) -> Result<(), &'static str> {
                     return Err("brewing_data_invalid");
                 }
             }
+            command => super::controls::validate(data, &command, result, &receipt.actor)?,
         }
+    }
+    Ok(())
+}
+
+pub(super) fn batch(
+    data: &Processes,
+    run: &cooking::Run,
+    batch: &super::model::Batch,
+) -> Result<(), &'static str> {
+    let draft = &batch.draft;
+    let recipe = &data
+        .brewing
+        .recipe(&draft.recipe_id, draft.recipe_revision)?
+        .recipe;
+    let crate::cooking::run_source::Source::Beer { recipe: reference } = &run.source else {
+        return Err("brewing_data_invalid");
+    };
+    if !cooking::actor_valid(&batch.actor)
+        || !cooking::time::valid(batch.recorded_at)
+        || draft.brew_day.resolve().is_err()
+        || run.created_at != batch.recorded_at
+        || run.name != draft.name
+        || !text(&draft.name, 200)
+        || run.timezone != draft.brew_day.timezone
+        || reference.id != draft.recipe_id
+        || reference.revision != draft.recipe_revision
+        || reference.title != recipe.title
+        || reference.language != recipe.language
+        || reference.volume != recipe.volume
+        || (batch.archived && run.status == cooking::RunState::Active)
+    {
+        return Err("brewing_data_invalid");
+    }
+    let used = draft.equipment.values().flatten().collect::<BTreeSet<_>>();
+    let snapshots = batch
+        .equipment
+        .iter()
+        .map(|e| &e.id)
+        .collect::<BTreeSet<_>>();
+    if used != snapshots
+        || snapshots.len() != batch.equipment.len()
+        || draft
+            .equipment
+            .keys()
+            .any(|id| !recipe.phases.iter().any(|p| &p.stage.id == id))
+        || draft
+            .equipment
+            .values()
+            .any(|ids| ids.len() > 20 || ids.iter().collect::<BTreeSet<_>>().len() != ids.len())
+    {
+        return Err("brewing_data_invalid");
+    }
+    for e in &batch.equipment {
+        equipment(&e.details)?;
+        if e.archived
+            || !data
+                .brewing
+                .equipment
+                .iter()
+                .any(|current| current.id == e.id)
+        {
+            return Err("brewing_data_invalid");
+        }
+    }
+    let prep = super::batches::preparation(recipe, draft)?;
+    if prep.as_ref().is_some_and(|p| {
+        p.at.timezone != run.timezone
+            || p.at.resolve().is_err()
+            || p.at.resolve().is_ok_and(|at| {
+                at < batch.recorded_at || at > draft.brew_day.resolve().unwrap_or(0)
+            })
+            || !text(&p.instruction, 4000)
+    }) {
+        return Err("brewing_data_invalid");
+    }
+    let stages = super::batches::stages(recipe, draft, prep)?;
+    let expected = cooking::plan::expand_limit(&stages, 31_536_000)?;
+    if expected.len() != run.steps.len()
+        || expected.iter().zip(&run.steps).any(|(a, b)| {
+            a.stage != b.stage || a.cycle != b.cycle || a.lag_seconds != b.lag_seconds
+        })
+    {
+        return Err("brewing_data_invalid");
     }
     Ok(())
 }

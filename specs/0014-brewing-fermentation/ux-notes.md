@@ -11,7 +11,7 @@ provide editable phase structure, with no invented universal rest temperatures o
 
 Recipe editing keeps batch volume, measured ingredients, method and equipment together. Phases stay
 open and show the main timing/resource fields compactly; optional details use explicit plus actions.
-Users can add/reorder phases, actual extract/hop additions and measurements without leaving context.
+Users can add/edit phases, their explicit dependencies, actual extract/hop additions and measurements without leaving context.
 Save an immutable revision; changing a recipe must not rewrite a running batch's recipe snapshot.
 
 Starting a batch chooses a saved revision, brew-day civil time, optional explicit yeast-preparation

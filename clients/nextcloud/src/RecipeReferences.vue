@@ -4,7 +4,11 @@ import NcSelect from '@nextcloud/vue/components/NcSelect'
 import { z } from 'zod'
 import { t } from './i18n'
 const model = defineModel<string[]>({ required: true })
-const props = defineProps<{ label: string; options: { id: string; label: string }[] }>()
+const props = defineProps<{
+  label: string
+  disabled?: boolean
+  options: { id: string; label: string }[]
+}>()
 const id = useId()
 const selected = computed(() => props.options.filter((o) => model.value.includes(o.id)))
 function update(value: unknown) {
@@ -17,6 +21,7 @@ function update(value: unknown) {
     <label :for="id">{{ label }}</label
     ><NcSelect
       :input-id="id"
+      :disabled="disabled"
       :input-label="label"
       label-outside
       :model-value="selected"

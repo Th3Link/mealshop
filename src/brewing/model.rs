@@ -73,6 +73,8 @@ pub(crate) struct Phase {
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Recipe {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) yeast_preparation: Option<RecipePreparation>,
     pub(crate) beverage: Beverage,
     pub(crate) title: String,
     pub(crate) language: String,
@@ -122,6 +124,21 @@ pub(crate) struct Equipment {
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
+pub(crate) struct RecipePreparation {
+    pub(crate) days_before: u8,
+    pub(crate) local_time: String,
+    pub(crate) fold: crate::cooking::time::Fold,
+    pub(crate) instruction: String,
+}
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(tag = "choice", rename_all = "snake_case", deny_unknown_fields)]
+pub(crate) enum PreparationChoice {
+    Recipe,
+    Skip,
+    Custom { at: LocalTime, instruction: String },
+}
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct YeastPreparation {
     pub(crate) at: LocalTime,
     pub(crate) instruction: String,
@@ -133,7 +150,7 @@ pub(crate) struct BatchDraft {
     pub(crate) recipe_id: String,
     pub(crate) recipe_revision: u64,
     pub(crate) brew_day: LocalTime,
-    pub(crate) yeast_preparation: Option<YeastPreparation>,
+    pub(crate) yeast_preparation: PreparationChoice,
     pub(crate) equipment: BTreeMap<String, Vec<String>>,
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]

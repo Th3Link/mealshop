@@ -1609,3 +1609,192 @@
   font-size: 14px;
   overflow-wrap: anywhere;
 }
+
+.mealshop .brew-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.mealshop .brew-tabs a {
+  padding: 12px 16px;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-maxcontrast);
+  text-decoration: none;
+}
+.mealshop .brew-tabs a[aria-current='page'] {
+  border-color: var(--color-primary-element);
+  color: var(--color-main-text);
+  font-weight: 600;
+}
+.mealshop .brew-tabs a:focus-visible {
+  outline: 2px solid var(--color-primary-element);
+  outline-offset: -2px;
+}
+.mealshop .brew-editor {
+  max-width: 1000px;
+}
+.mealshop .brew-editor > fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+.mealshop .brew-editor section {
+  margin-block: 12px;
+}
+.mealshop .brew-quantity {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  min-width: 0;
+}
+.mealshop .brew-quantity > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+.mealshop .brew-quantity > label {
+  flex: 0 0 90px;
+}
+.mealshop .brew-phase-heading,
+.mealshop .brew-line-heading {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  min-width: 0;
+}
+.mealshop .brew-phase-heading > .labeled-field,
+.mealshop .brew-line-heading > .labeled-field {
+  flex: 1;
+  min-width: 0;
+}
+.mealshop .brew-step-number {
+  font-size: 20px;
+  font-weight: 600;
+  align-self: center;
+  min-width: 24px;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .brew-input-line {
+  padding-block: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .brew-input-line .form-row {
+  margin-block: 8px;
+}
+.mealshop .brew-assignment {
+  padding-block: 10px;
+  display: grid;
+  gap: 4px;
+}
+.mealshop .brew-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin-block: 20px;
+}
+.mealshop .brew-facts > div {
+  display: block;
+  min-width: 0;
+  padding: 0;
+}
+.mealshop .brew-facts :is(dt, dd) {
+  display: block;
+  padding: 0;
+  text-align: start;
+}
+.mealshop .brew-facts dt {
+  color: var(--color-text-maxcontrast);
+  font-size: var(--default-font-size);
+}
+.mealshop .brew-facts dd {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+.mealshop .brew-phase-list {
+  padding-inline-start: 24px;
+}
+.mealshop .brew-phase-list > li {
+  padding: 12px 0 16px 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+.mealshop .brew-instruction {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mealshop .brew-sources {
+  margin-block: 24px;
+  overflow-wrap: anywhere;
+}
+.mealshop .brew-sources li {
+  margin-block: 8px;
+}
+.mealshop .brew-readings {
+  margin-block: 32px;
+}
+.mealshop .brew-review {
+  max-width: 1000px;
+  padding-block: 16px;
+}
+@media (max-width: 600px) {
+  .mealshop .brew-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+  .mealshop .brew-tabs a {
+    padding: 12px 4px;
+    text-align: center;
+    font-size: 14px;
+  }
+  .mealshop .brew-phase-heading {
+    gap: 8px;
+  }
+  .mealshop .brew-facts {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .mealshop .brew-facts > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+  .mealshop .brew-facts dd {
+    margin: 0;
+  }
+  .mealshop .brew-readings .section-heading {
+    align-items: start;
+    flex-wrap: wrap;
+  }
+}
+
+.mealshop .brewing-page p a,
+.mealshop .brew-sources a {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.mealshop .brew-resource-uses {
+  font-size: 13px;
+  margin-block: 4px;
+  padding-inline-start: 20px;
+}
+.mealshop .brew-resource-uses a {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.mealshop .brewing-page .cooking-timeline h4 {
+  font-size: 14px;
+  margin: 12px 0 6px;
+}
+.mealshop .brewing-page .cooking-timeline dl {
+  font-size: 14px;
+  gap: 6px 16px;
+  grid-template-columns: minmax(100px, 0.4fr) minmax(0, 1fr);
+}
+.mealshop .brewing-page .cooking-timeline dt {
+  text-align: start;
+}

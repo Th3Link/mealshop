@@ -160,7 +160,8 @@ async fn send(app: &App, home: &str, job: &Job) -> Outcome {
         .unwrap_or(&app.config.nextcloud_url)
         .trim_end_matches('/');
     let link = format!(
-        "{public}/index.php/apps/app_api/embedded/mealshop/main/h/{home}/cooking/{}",
+        "{public}/index.php/apps/app_api/embedded/mealshop/main/h/{home}/{}/{}",
+        job.destination.path(),
         job.run_id
     );
     let url = format!(

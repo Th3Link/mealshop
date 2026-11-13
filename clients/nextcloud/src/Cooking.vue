@@ -284,6 +284,7 @@ const stateKeys = {
           <p class="muted">{{ t('cookPinnedIngredients') }}</p>
         </details>
         <CookingSteps
+          :language="detail.run.recipe.language"
           :run="detail.run"
           :now="now"
           :disabled="disabled"

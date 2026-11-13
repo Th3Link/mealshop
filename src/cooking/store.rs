@@ -261,8 +261,13 @@ fn validate(data: &Data) -> Result<(), &'static str> {
         let stages: Vec<_> = run.steps.iter().map(|s| s.stage.clone()).collect();
         plan::order(&stages)?;
         for step in &run.steps {
-            step.stage.validate()?;
-            if !model::timer_valid(&step.timer)
+            let maximum = if run.kind == model::Kind::Beer {
+                31_536_000
+            } else {
+                604_800
+            };
+            step.stage.validate_limit(maximum)?;
+            if !model::timer_valid(&step.timer, maximum * 2)
                 || step.not_before.is_some_and(|at| !time::valid(at))
                 || step.generation == 0
                 || step.cycle == 0

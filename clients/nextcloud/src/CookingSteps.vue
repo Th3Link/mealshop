@@ -4,16 +4,36 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import type { CookingRun, CookingCommand } from './cooking-api'
 import { duration, localDate } from './cooking-format'
 import { t } from './i18n'
-const props = defineProps<{ run: CookingRun; now: number; disabled: boolean }>()
+type ProcessRun = Pick<
+  CookingRun,
+  'id' | 'status' | 'steps' | 'schedule' | 'timezone' | 'local_schedule'
+>
+const props = defineProps<{
+  run: ProcessRun
+  now: number
+  disabled: boolean
+  language: string
+  brewing?: boolean
+  equipmentNames?: Record<string, string>
+}>()
 const emit = defineEmits<{
   command: [value: CookingCommand]
   replan: [stepId: string, kind: 'delay' | 'timer']
   announce: [value: string]
 }>()
 const ordered = computed(() => [...props.run.steps].sort((a, b) => rank(a) - rank(b)))
+function untimed(step: CookingRun['steps'][number]) {
+  return (
+    props.brewing &&
+    step.stage.active_seconds + step.stage.passive_seconds === 0 &&
+    (step.timer.state === 'running'
+      ? step.timer.deadline === step.timer.started_at
+      : step.timer.state !== 'paused')
+  )
+}
 function rank(step: CookingRun['steps'][number]) {
   return step.timer.state === 'running'
-    ? step.timer.deadline <= props.now
+    ? step.timer.deadline <= props.now && !untimed(step)
       ? 0
       : 1
     : step.timer.state === 'paused'
@@ -26,6 +46,7 @@ function rank(step: CookingRun['steps'][number]) {
 }
 function phase(step: CookingRun['steps'][number]) {
   const timer = step.timer
+  if (untimed(step) && timer.state === 'running') return 'brewWorking'
   return timer.state === 'running'
     ? timer.deadline <= props.now
       ? 'cookElapsed'
@@ -43,7 +64,7 @@ function phase(step: CookingRun['steps'][number]) {
 }
 const elapsed = computed(() =>
   props.run.steps
-    .filter((s) => s.timer.state === 'running' && s.timer.deadline <= props.now)
+    .filter((s) => s.timer.state === 'running' && !untimed(s) && s.timer.deadline <= props.now)
     .map((s) => s.stage.id),
 )
 watch(elapsed, (value, previous) => {
@@ -83,7 +104,7 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
     <ol class="cooking-timeline">
       <li v-for="step in ordered" :key="step.stage.id" :data-cooking-step="step.stage.id">
         <div class="section-heading">
-          <h3 :lang="run.recipe.language">
+          <h3 :lang="language">
             {{ step.stage.name
             }}<template v-if="step.stage.repeat > 1">
               · {{ step.cycle }}/{{ step.stage.repeat }}</template
@@ -91,12 +112,17 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
           </h3>
           <span class="cooking-state">{{ t(phase(step)) }}</span>
         </div>
-        <p v-if="step.stage.instruction !== step.stage.name">{{ step.stage.instruction }}</p>
-        <p v-if="step.timer.state === 'running'" class="cooking-countdown">
+        <p v-if="step.stage.instruction !== step.stage.name" :lang="language">
+          {{ step.stage.instruction }}
+        </p>
+        <p v-if="step.timer.state === 'running' && !untimed(step)" class="cooking-countdown">
           <span v-if="step.timer.deadline < now">{{ t('cookOverdueBy') }} </span
           ><span role="timer" aria-live="off">{{
             duration(Math.abs(step.timer.deadline - now))
           }}</span>
+        </p>
+        <p v-if="untimed(step)" class="muted">
+          {{ t('brewUnknownTiming') }}
         </p>
         <p v-if="step.timer.state === 'paused'" class="cooking-countdown">
           {{ duration(step.timer.remaining) }} <span class="muted">{{ t('cookRemaining') }}</span>
@@ -104,10 +130,12 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
         <p v-if="step.timer.state === 'pending'" class="muted">
           {{ t('cookPreset') }}:
           {{
-            duration(
-              (step.stage.start_after_work ? 0 : step.stage.active_seconds) +
-                step.stage.passive_seconds,
-            )
+            untimed(step)
+              ? t('brewUnknownTiming')
+              : duration(
+                  (step.stage.start_after_work ? 0 : step.stage.active_seconds) +
+                    step.stage.passive_seconds,
+                )
           }}
           · {{ t('cookPlannedStart') }}:
           {{
@@ -126,7 +154,8 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
           }}
         </p>
         <p v-if="step.stage.equipment.length">
-          {{ t('cookEquipment') }}: {{ step.stage.equipment.join(', ') }}
+          {{ t('cookEquipment') }}:
+          {{ step.stage.equipment.map((id) => equipmentNames?.[id] ?? id).join(', ') }}
         </p>
         <div v-if="run.status === 'active'" class="actions">
           <NcButton
@@ -136,7 +165,7 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
             @click="action(step.stage.id, 'start')"
             >{{
               t(
-                step.stage.active_seconds + step.stage.passive_seconds === 0
+                step.stage.active_seconds + step.stage.passive_seconds === 0 && !brewing
                   ? 'cookCompleteStep'
                   : (step.stage.start_after_work || step.stage.active_seconds === 0) &&
                       step.stage.passive_seconds > 0
@@ -145,7 +174,7 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
               )
             }}</NcButton
           ><NcButton
-            v-if="step.timer.state === 'running'"
+            v-if="step.timer.state === 'running' && !untimed(step)"
             :disabled="disabled"
             @click="action(step.stage.id, 'pause')"
             >{{ t('cookPause') }}</NcButton
@@ -173,19 +202,37 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
             >{{ t('cookChangeTimer') }}</NcButton
           >
         </div>
-        <details>
-          <summary>{{ t('cookTimingDetails') }}</summary>
+        <component :is="brewing ? 'div' : 'details'">
+          <component :is="brewing ? 'h4' : 'summary'">{{ t('cookTimingDetails') }}</component>
           <dl>
             <dt>{{ t('cookActiveDuration') }}</dt>
-            <dd>{{ duration(step.stage.active_seconds) }}</dd>
+            <dd>
+              {{
+                brewing && step.stage.active_seconds + step.stage.passive_seconds === 0
+                  ? t('unknown')
+                  : duration(step.stage.active_seconds)
+              }}
+            </dd>
             <dt>{{ t('cookPassiveDuration') }}</dt>
-            <dd>{{ duration(step.stage.passive_seconds) }}</dd>
+            <dd>
+              {{
+                brewing && step.stage.active_seconds + step.stage.passive_seconds === 0
+                  ? t('unknown')
+                  : duration(step.stage.passive_seconds)
+              }}
+            </dd>
             <dt>{{ t('cookUncertainty') }}</dt>
             <dd>{{ step.stage.uncertainty || t('unknown') }}</dd>
             <dt>{{ t('cookPlannedFinish') }}</dt>
-            <dd>{{ run.local_schedule.find((s) => s.id === step.stage.id)?.finish }}</dd>
+            <dd>
+              {{
+                brewing && step.stage.active_seconds + step.stage.passive_seconds === 0
+                  ? t('unknown')
+                  : run.local_schedule.find((s) => s.id === step.stage.id)?.finish
+              }}
+            </dd>
           </dl>
-        </details>
+        </component>
       </li>
     </ol>
   </section>

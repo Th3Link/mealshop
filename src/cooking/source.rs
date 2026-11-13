@@ -201,7 +201,7 @@ pub(crate) fn ensure_ready(run: &Run, id: &str, now: i64) -> Result<usize, &'sta
     if !run.steps[index].stage.dependencies.iter().all(|id| {
         run.steps
             .iter()
-            .any(|s| s.stage.id == *id && completed_or_wait_end(s).is_some_and(|at| at <= now))
+            .any(|s| s.stage.id == *id && dependency_end(run, s).is_some_and(|at| at <= now))
     }) {
         return Err("cooking_dependencies_incomplete");
     }
@@ -226,18 +226,34 @@ pub(crate) fn available_at(
     let mut earliest = run
         .created_at
         .max(step.not_before.unwrap_or(run.created_at));
+    if run.kind == Kind::Beer {
+        if let Some(anchor) = &step.stage.start_at {
+            earliest = earliest.max(anchor.resolve()?);
+        }
+    }
     for id in &step.stage.dependencies {
         let dependency = run
             .steps
             .iter()
             .find(|s| &s.stage.id == id)
             .ok_or("cooking_dependencies_invalid")?;
-        let Some(completed_at) = completed_or_wait_end(dependency) else {
+        let Some(completed_at) = dependency_end(run, dependency) else {
             return Ok(None);
         };
         earliest = earliest.max(time::add(completed_at, i64::from(step.lag_seconds))?);
     }
     Ok(Some(earliest))
+}
+
+fn dependency_end(run: &Run, step: &super::model::Step) -> Option<i64> {
+    if run.kind == Kind::Beer {
+        match step.timer {
+            Timer::Completed { completed_at, .. } => Some(completed_at),
+            _ => None,
+        }
+    } else {
+        completed_or_wait_end(step)
+    }
 }
 
 // Advancing acknowledges an elapsed passive timer, not physical food readiness.

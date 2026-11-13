@@ -82,3 +82,15 @@ and links, not reproduced manuals, diagrams, recipe text or example temperature/
 Older manuals' legal, nutritional and troubleshooting claims are not adopted as current application
 rules. Model capacities and recipes must remain explicitly supplied/reviewed facts. No comparative
 product recommendation or claim that one brewing method is superior is made here.
+
+## Measurement and yeast handling references
+
+Original instrument calibration is part of the observation, not an application-wide correction.
+The [iSpindel calibration documentation](https://www.ispindel.de/docs/Calibration_en.html) describes
+instrument-specific calibration; [Tilt's manufacturer FAQ](https://tilthydrometer.com/pages/faqs)
+describes its device readings and calibration. The model therefore retains the raw unit, source,
+calibration declaration and separate measurement/entry times, without assuming a configured connector.
+[Fermentis' product-specific usage guidance](https://fermentis.com/en/easy-2-use/) is another reason
+not to impose a universal day-before yeast treatment. F14 offers an explicitly authored recipe reminder,
+resolved by local calendar day, instead. These are primary-reference-informed implementation decisions;
+no numeric beer chemistry, device credential contract or food-safety conclusion is inferred.

@@ -1,7 +1,11 @@
 //! Source-linked beer workflows use the existing protected durable process engine.
 mod api;
+mod batches;
+mod controls;
 pub(crate) mod model;
 mod operations;
+mod readings;
+mod resources;
 pub(crate) mod templates;
 pub(crate) mod validation;
 mod view;

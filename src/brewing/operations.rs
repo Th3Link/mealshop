@@ -7,6 +7,44 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
 pub(crate) enum Command {
+    CreateBatch {
+        draft: super::model::BatchDraft,
+    },
+    Replan {
+        run_id: String,
+        change: crate::cooking::operations::PlanChange,
+    },
+    Timer {
+        run_id: String,
+        step_id: String,
+        action: crate::cooking::operations::TimerAction,
+    },
+    Cancel {
+        run_id: String,
+    },
+    ArchiveBatch {
+        run_id: String,
+        archived: bool,
+    },
+    Subscribe {
+        run_id: String,
+        enabled: bool,
+        language: String,
+        permission: crate::cooking::model::Permission,
+    },
+    Acknowledge {
+        notice_id: String,
+    },
+    Retry {
+        notice_id: String,
+        duplicate_risk_accepted: bool,
+    },
+    AddReading {
+        run_id: String,
+        reading: super::model::ReadingInput,
+        corrects: Option<String>,
+        reason: Option<String>,
+    },
     SaveRecipe {
         id: Option<String>,
         expected_recipe_revision: Option<u64>,
@@ -18,6 +56,8 @@ pub(crate) enum Command {
     },
     SaveEquipment {
         id: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        expected_equipment: Option<EquipmentInput>,
         equipment: EquipmentInput,
     },
     ArchiveEquipment {
@@ -49,47 +89,42 @@ pub(super) fn replay(
 }
 pub(super) fn execute(
     data: &mut Processes,
-    actor: &str,
+    identity: &crate::cooking::Actor,
     key: &str,
     expected: u64,
     command: Command,
     now: i64,
 ) -> Result<String, &'static str> {
+    let actor = &identity.user;
     let id = data.allocate("brew-operation")?;
     let result_id = match &command {
+        Command::CreateBatch { draft } => Some(super::batches::create(data, draft, actor, now)?),
+        Command::AddReading {
+            run_id,
+            reading,
+            corrects,
+            reason,
+        } => Some(super::readings::append(
+            data,
+            run_id,
+            reading,
+            corrects.as_deref(),
+            reason.as_deref(),
+            actor,
+            now,
+        )?),
         Command::SaveRecipe {
             id,
             expected_recipe_revision,
             recipe,
-        } => {
-            validation::recipe(recipe, true)?;
-            let head = id.as_ref().and_then(|id| {
-                data.brewing
-                    .recipes
-                    .iter()
-                    .filter(|r| r.id == *id)
-                    .map(|r| r.revision)
-                    .max()
-            });
-            if id.is_some() && head.is_none() {
-                return Err("brewing_recipe_not_found");
-            }
-            if head != *expected_recipe_revision {
-                return Err("brewing_recipe_conflict");
-            }
-            let id = match id {
-                Some(id) => id.clone(),
-                None => data.allocate("brew-recipe")?,
-            };
-            data.brewing.recipes.push(Record {
-                id: id.clone(),
-                revision: head.unwrap_or(0).checked_add(1).ok_or("brewing_capacity")?,
-                recipe: recipe.clone(),
-                actor: actor.to_owned(),
-                recorded_at: now,
-            });
-            Some(id)
-        }
+        } => Some(save_recipe(
+            data,
+            actor,
+            now,
+            id.as_deref(),
+            *expected_recipe_revision,
+            recipe,
+        )?),
         Command::ArchiveRecipe { id, archived } => {
             if !data.brewing.recipes.iter().any(|r| r.id == *id) {
                 return Err("brewing_recipe_not_found");
@@ -100,7 +135,11 @@ pub(super) fn execute(
             }
             Some(id.clone())
         }
-        Command::SaveEquipment { id, equipment } => {
+        Command::SaveEquipment {
+            id,
+            expected_equipment,
+            equipment,
+        } => {
             validation::equipment(equipment)?;
             let id = if let Some(id) = id {
                 let e = data
@@ -109,9 +148,15 @@ pub(super) fn execute(
                     .iter_mut()
                     .find(|e| e.id == *id)
                     .ok_or("brewing_equipment_not_found")?;
+                if expected_equipment.as_ref() != Some(&e.details) {
+                    return Err("brewing_equipment_conflict");
+                }
                 e.details = equipment.clone();
                 id.clone()
             } else {
+                if expected_equipment.is_some() {
+                    return Err("brewing_equipment_conflict");
+                }
                 let id = data.allocate("brew-equipment")?;
                 data.brewing.equipment.push(Equipment {
                     id: id.clone(),
@@ -132,15 +177,53 @@ pub(super) fn execute(
             e.archived = *archived;
             Some(id.clone())
         }
+        other => Some(super::controls::execute(data, other, identity, now)?),
     };
     data.brewing.operations.push(Receipt {
         id: id.clone(),
-        actor: actor.to_owned(),
+        actor: actor.clone(),
         key: key.to_owned(),
         expected_revision: expected,
         command: serde_json::to_value(command).map_err(|_| "brewing_storage_failed")?,
         recorded_at: now,
         result_id,
+    });
+    Ok(id)
+}
+
+fn save_recipe(
+    data: &mut Processes,
+    actor: &str,
+    now: i64,
+    id: Option<&str>,
+    expected_recipe_revision: Option<u64>,
+    recipe: &Recipe,
+) -> Result<String, &'static str> {
+    validation::recipe(recipe, true)?;
+    let head = id.and_then(|id| {
+        data.brewing
+            .recipes
+            .iter()
+            .filter(|r| r.id == id)
+            .map(|r| r.revision)
+            .max()
+    });
+    if id.is_some() && head.is_none() {
+        return Err("brewing_recipe_not_found");
+    }
+    if head != expected_recipe_revision {
+        return Err("brewing_recipe_conflict");
+    }
+    let id = match id {
+        Some(id) => id.to_owned(),
+        None => data.allocate("brew-recipe")?,
+    };
+    data.brewing.recipes.push(Record {
+        id: id.clone(),
+        revision: head.unwrap_or(0).checked_add(1).ok_or("brewing_capacity")?,
+        recipe: recipe.clone(),
+        actor: actor.to_owned(),
+        recorded_at: now,
     });
     Ok(id)
 }

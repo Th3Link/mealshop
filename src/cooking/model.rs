@@ -54,6 +54,9 @@ impl Stage {
         i64::from(self.timer_active_seconds()) + i64::from(self.passive_seconds)
     }
     pub(crate) fn validate(&self) -> Result<(), &'static str> {
+        self.validate_limit(604_800)
+    }
+    pub(crate) fn validate_limit(&self, maximum: u32) -> Result<(), &'static str> {
         if self
             .start_at
             .as_ref()
@@ -66,8 +69,8 @@ impl Stage {
             || !text(&self.instruction, 4000)
             || self.dependencies.len() > 100
             || self.dependencies.iter().any(|v| !id(v))
-            || self.active_seconds > 604_800
-            || self.passive_max_seconds > 604_800
+            || self.active_seconds > maximum
+            || self.passive_max_seconds > maximum
             || self.passive_min_seconds > self.passive_seconds
             || self.passive_seconds > self.passive_max_seconds
             || self.lead_seconds > 604_800
@@ -260,7 +263,7 @@ impl Data {
             .ok_or("cooking_run_not_found")
     }
 }
-pub(crate) fn timer_valid(timer: &Timer) -> bool {
+pub(crate) fn timer_valid(timer: &Timer, maximum: u32) -> bool {
     match timer {
         Timer::Pending | Timer::Cancelled => true,
         Timer::Running {
@@ -283,7 +286,7 @@ pub(crate) fn timer_valid(timer: &Timer) -> bool {
                 && time::valid(*paused_at)
                 && started_at <= paused_at
                 && active_remaining <= remaining
-                && *remaining <= 1_209_600
+                && *remaining <= maximum
         }
         Timer::Completed {
             started_at,

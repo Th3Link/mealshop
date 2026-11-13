@@ -14,6 +14,7 @@ import {
   mdiHomeOutline,
   mdiBasketOutline,
   mdiChefHat,
+  mdiBeerOutline,
   mdiFolderMultipleOutline,
   mdiShareVariantOutline,
   mdiHistory,
@@ -34,6 +35,7 @@ const links = [
   { key: 'shoppingList', icon: mdiBasketOutline },
   { key: 'inventory', icon: mdiArchiveOutline },
   { key: 'cookingSessions', icon: mdiChefHat },
+  { key: 'brewing', icon: mdiBeerOutline },
   { key: 'ingredients', icon: mdiCarrot },
   { key: 'household', icon: mdiAccountGroupOutline },
   { key: 'assistants', icon: mdiRobotOutline },
@@ -48,6 +50,7 @@ const links = [
     | 'shoppingList'
     | 'inventory'
     | 'cookingSessions'
+    | 'brewing'
     | 'assistants'
   icon: string
 }[]
