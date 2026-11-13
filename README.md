@@ -115,3 +115,8 @@ plus independently researched cider, white/red wine and traditional mead process
 immutable brew recipes, reviewed independent batches, physical equipment reservations, personal reminders
 and exact instrument/manual reading history. [Brewing guide](docs/guides/brewing.md) ·
 [F14 research](specs/0014-brewing-fermentation/research.md).
+
+The Flutter phone client is now planned in [F35](specs/0035-flutter-mobile-client/specification.md).
+[Five device-testable implementation PRs](specs/0035-flutter-mobile-client/plan.md) reconcile the
+[customer mobile pack](references/mobile-product-spec-2026-11-12/README.md) with existing APIs.
+This is planning only; no Flutter application or mobile runtime acceptance is delivered yet.

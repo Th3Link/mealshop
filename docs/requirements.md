@@ -125,3 +125,13 @@ servings, unconfigured live connector, automatic equipment control or non-beer c
 Separate typed fermentation methods and phase orders satisfy the original AC 5 independent-validation
 guard; no grain-processing assumptions are reused for these drinks. N03/N07/N09/N10 apply; see
 [brewing guide](guides/brewing.md), research and ADR 0025. Acceptance evidence is tracked in F14.
+
+## F35 Flutter delivery planning
+
+The customer supplied a mobile target specification on 2026-11-13 and requested fewer, larger PRs,
+with a smartphone-usable result from the first implementation delivery. F35 imports the unchanged
+reference pack, audits the current server/web contracts and proposes five complete phone releases.
+This planning PR needs customer review/merge and explicit Go before implementation. Flutter remains
+unimplemented; F18/F29/F30 and their original acceptance criteria retain their existing statuses.
+N01/N03/N04/N06–N10 apply. See [F35](../specs/0035-flutter-mobile-client/specification.md) and
+[the plan](../specs/0035-flutter-mobile-client/plan.md).
