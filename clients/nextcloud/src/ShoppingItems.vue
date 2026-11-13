@@ -82,7 +82,13 @@ function label(item: Shopping['items'][number]) {
       <div class="shopping-tile__footer">
         <span class="shopping-tile__state"
           >{{ t(isPurchased(item) ? 'shoppingBoughtState' : 'shoppingOpenState')
-          }}<template v-if="!isPurchased(item) && !/^0(?:\.0+)?$/.test(item.purchased)">
+          }}<template v-if="!/^0(?:\.0+)?$/.test(item.reserved)">
+            · {{ t('stockReserved') }}: {{ compactExact(item.reserved) }}
+            {{ shoppingUnit(item.unit, item.reserved) }}</template
+          ><template v-if="!/^0(?:\.0+)?$/.test(item.used)">
+            · {{ t('stockUsed') }}: {{ compactExact(item.used) }}
+            {{ shoppingUnit(item.unit, item.used) }}</template
+          ><template v-if="!isPurchased(item) && !/^0(?:\.0+)?$/.test(item.purchased)">
             · {{ t('shoppingBought') }}: {{ compactExact(item.purchased) }}
             {{ shoppingUnit(item.unit, item.purchased) }}
           </template></span

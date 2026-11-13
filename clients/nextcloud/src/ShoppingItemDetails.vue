@@ -55,6 +55,11 @@ function assign(event: Event) {
           {{ t('shoppingBought') }}: {{ compactExact(part.purchased) }}
           {{ item.unit === 'piece' ? t('shoppingPieces') : item.unit }}
         </p>
+        <p v-if="!/^0(?:\.0+)?$/.test(part.reserved) || !/^0(?:\.0+)?$/.test(part.used)">
+          {{ t('stockReserved') }}: {{ compactExact(part.reserved) }} · {{ t('stockUsed') }}:
+          {{ compactExact(part.used) }}
+          {{ item.unit === 'piece' ? t('shoppingPieces') : item.unit }}
+        </p>
         <p v-for="(receipt, index) in part.receipts" :key="index">
           {{ t('shoppingBought') }}: {{ compactExact(receipt.amount) }}
           {{ item.unit === 'piece' ? t('shoppingPieces') : item.unit }} ·

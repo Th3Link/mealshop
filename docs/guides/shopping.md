@@ -81,3 +81,10 @@ Recipe contributions buy measured base inputs. An explicit homemade output (`pre
 is displayed in the recipe but excluded from purchases; its preparation's measured ingredients
 count once. This also applies to meal-plan synchronization and rescaling. Availability is never
 inferred globally from the ingredient name.
+
+## Household stock and offers
+
+Use **Inventory** or **Use stock** to review reservations before reducing purchases. Covered-by-stock
+entries remain separate from purchase receipts. Recording purchased stock and completed cooking is
+explicit; booked receipts must be reversed before unchecking. Offers retain frozen package/price/source
+facts and recheck current dietary constraints. See the [inventory guide](inventory.md).

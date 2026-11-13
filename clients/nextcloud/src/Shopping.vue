@@ -16,10 +16,10 @@ import { recipesSchema } from './contracts'
 import type { z } from 'zod'
 import { api, domain } from './api'
 import { homes, loadCatalogue, useTask } from './state'
-import { locale, t } from './i18n'
+import { locale, t, compactExact, shoppingUnit } from './i18n'
 import { mdiPlus, mdiUndo, mdiTune } from '@mdi/js'
 import Icon from './Icon.vue'
-import { matchingShoppingItems, isPurchased } from './shopping-display'
+import { matchingShoppingItems, isPurchased, isStockCovered } from './shopping-display'
 import ShoppingItems from './ShoppingItems.vue'
 import { useUnsavedChanges } from './useUnsavedChanges'
 import type { Catalogue } from './contracts'
@@ -65,7 +65,10 @@ const label = ref(''),
   ingredient = ref(''),
   quantity = ref<ShoppingQuantity>({ amount: '1', unit: 'piece' }),
   message = ref('')
-const open = computed(() => matching.value.filter((item) => !isPurchased(item)))
+const covered = computed(() => matching.value.filter(isStockCovered))
+const open = computed(() =>
+  matching.value.filter((item) => !isPurchased(item) && !isStockCovered(item)),
+)
 const purchased = computed(() => matching.value.filter(isPurchased))
 watch(
   () => data.value?.shops.entries,
@@ -249,6 +252,12 @@ onMounted(load)
         <p v-if="!shoppingMode">{{ t('shoppingIntro') }}</p>
       </div>
       <div class="actions">
+        <NcButton :to="`/h/${home}/inventory`">{{ t('inventory') }}</NcButton>
+        <NcButton
+          v-if="writable"
+          :to="{ path: `/h/${home}/inventory`, query: { task: 'reserve' } }"
+          >{{ t('stockReserve') }}</NcButton
+        >
         <NcButton
           v-if="writable && data && !adding"
           :aria-label="t('shoppingAddManual')"
@@ -405,6 +414,20 @@ onMounted(load)
           @command="command"
           @check="checkItem"
         />
+      </section>
+      <section v-if="covered.length" class="stock-covered">
+        <h2>{{ t('stockCovered') }}</h2>
+        <ul class="record-list">
+          <li v-for="item in covered" :key="item.key">
+            <div>
+              <strong>{{ item.translations[locale] ?? item.name }}</strong
+              ><span
+                >{{ t('stockReserved') }}: {{ compactExact(item.reserved) }} · {{ t('stockUsed') }}:
+                {{ compactExact(item.used) }} {{ shoppingUnit(item.unit, item.used) }}</span
+              >
+            </div>
+          </li>
+        </ul>
       </section>
       <details v-if="purchased.length" id="mealshop-purchased">
         <summary>{{ t('shoppingBought') }} · {{ purchased.length }}</summary>

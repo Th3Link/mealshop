@@ -80,6 +80,13 @@ pub(crate) fn upsert(
     draft: Draft,
 ) -> Result<(), &'static str> {
     if let Some(id) = id {
+        let changed = data.sources.iter().find(|s| s.id == id).is_some_and(|s| {
+            serde_json::to_value((&s.origin, &s.requirements)).ok()
+                != serde_json::to_value((&draft.origin, &draft.requirements)).ok()
+        });
+        if changed {
+            crate::inventory::allocations::release_source(data, &id);
+        }
         let source = data
             .sources
             .iter_mut()

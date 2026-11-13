@@ -301,6 +301,12 @@ const stateKeys = {
           <NcButton
             v-if="detail.run.status === 'completed'"
             :disabled="disabled"
+            :to="{ path: `/h/${home}/inventory`, query: { task: 'consume', run: detail.run.id } }"
+            >{{ t('stockConsume') }}</NcButton
+          >
+          <NcButton
+            v-if="detail.run.status === 'completed'"
+            :disabled="disabled"
             :to="{ path: `/h/${home}/history/new`, query: { session: detail.run.id } }"
             >{{ t('historyNew') }}</NcButton
           >

@@ -105,3 +105,7 @@ Native reviewed recipe import fetches supported public structured sources after 
 retains original fields separately, and offers manual private entry when retrieval is blocked.
 Ingredient/quantity review is mandatory and imported sharing remains source-link-only.
 [Import, source boundaries and recovery](docs/guides/recipe-import.md).
+
+Household inventory records exact lots, reviewed shopping reservations, explicit purchased/completed-cooking
+bookings, reversals and manually entered shop offers. [Inventory guide](docs/guides/inventory.md) ·
+[F15 evidence](specs/0015-inventory-offers/validation.md).

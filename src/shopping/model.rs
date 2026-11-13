@@ -56,6 +56,10 @@ pub(crate) fn text(value: &str, max: usize) -> bool {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub(crate) enum Origin {
+    Offer {
+        offer: Box<crate::inventory::model::Offer>,
+        packages: u32,
+    },
     Product {
         product: super::products::Product,
         packages: u32,
@@ -117,6 +121,11 @@ pub(crate) struct Purchase {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Data {
+    #[serde(
+        default,
+        skip_serializing_if = "crate::inventory::model::Data::is_empty"
+    )]
+    pub(crate) inventory: crate::inventory::model::Data,
     pub(crate) schema_version: u32,
     pub(crate) revision: u64,
     pub(crate) next_id: u64,
@@ -130,6 +139,7 @@ pub(crate) struct Data {
 impl Default for Data {
     fn default() -> Self {
         Self {
+            inventory: crate::inventory::model::Data::default(),
             schema_version: 1,
             revision: 0,
             next_id: 1,
@@ -139,6 +149,14 @@ impl Default for Data {
             products: super::products::Products::default(),
         }
     }
+}
+struct Row {
+    item: Item,
+    remaining: u128,
+    purchased: u128,
+    reserved: u128,
+    used: u128,
+    contributions: Vec<serde_json::Value>,
 }
 impl Data {
     pub(crate) fn allocate(&mut self, kind: &str) -> Result<String, &'static str> {
@@ -175,7 +193,10 @@ impl Data {
                         .map(move |r| (s, r))
                 })
                 .filter_map(|(s, r)| {
-                    let remaining = r.amount.atoms().saturating_sub(self.purchased(&s.id, key));
+                    let remaining = r.amount.atoms().saturating_sub(
+                        self.purchased(&s.id, key)
+                            + crate::inventory::allocations::covered(self, s, key),
+                    );
                     (remaining > 0)
                         .then(|| (s.id.clone(), r.item.clone(), s.origin.clone(), remaining))
                 })
@@ -192,6 +213,13 @@ impl Data {
                 });
             }
         } else {
+            if self
+                .purchases
+                .iter()
+                .any(|p| p.item.key == key && !p.reversed && self.inventory.purchase_booked(&p.id))
+            {
+                return Err("inventory_receipt_booked");
+            }
             for purchase in self.purchases.iter_mut().filter(|p| p.item.key == key) {
                 purchase.reversed = true;
             }
@@ -200,8 +228,7 @@ impl Data {
         Ok(())
     }
     pub(crate) fn rows(&self) -> Vec<serde_json::Value> {
-        let mut rows: BTreeMap<String, (Item, u128, u128, Vec<serde_json::Value>)> =
-            BTreeMap::new();
+        let mut rows: BTreeMap<String, Row> = BTreeMap::new();
         let mut receipts_by_source: BTreeMap<&str, BTreeMap<&str, Vec<&Purchase>>> =
             BTreeMap::new();
         for purchase in self.purchases.iter().filter(|p| !p.reversed) {
@@ -243,17 +270,38 @@ impl Data {
                     .cloned()
                     .unwrap_or_default();
                 let purchased = receipts.iter().map(|p| p.amount.atoms()).sum();
-                let remaining = required.saturating_sub(purchased);
-                if purchased == 0 && remaining == 0 {
+                let reserved = crate::inventory::allocations::coverage(
+                    self,
+                    source,
+                    &key,
+                    crate::inventory::model::AllocationState::Held,
+                );
+                let used = crate::inventory::allocations::coverage(
+                    self,
+                    source,
+                    &key,
+                    crate::inventory::model::AllocationState::Consumed,
+                );
+                let remaining = required.saturating_sub(purchased + reserved + used);
+                if purchased == 0 && remaining == 0 && reserved == 0 && used == 0 {
                     continue;
                 }
-                let contribution = serde_json::json!({"source_id":source.id,"origin":source.origin,"required":decimal(required),"purchased":decimal(purchased),"receipts":receipts});
-                let row = rows.entry(key).or_insert_with(|| (item, 0, 0, vec![]));
-                row.1 += remaining;
-                row.2 += purchased;
-                row.3.push(contribution);
+                let contribution = serde_json::json!({"source_id":source.id,"origin":source.origin,"required":decimal(required),"purchased":decimal(purchased),"reserved":decimal(reserved),"used":decimal(used),"receipts":receipts});
+                let row = rows.entry(key).or_insert_with(|| Row {
+                    item,
+                    remaining: 0,
+                    purchased: 0,
+                    reserved: 0,
+                    used: 0,
+                    contributions: vec![],
+                });
+                row.remaining += remaining;
+                row.purchased += purchased;
+                row.reserved += reserved;
+                row.used += used;
+                row.contributions.push(contribution);
             }
         }
-        rows.into_values().map(|(item,remaining,purchased,contributions)| serde_json::json!({"key":item.key,"ingredient_id":item.ingredient_id,"name":item.name,"translations":item.translations,"unit":item.unit,"remaining":decimal(remaining),"purchased":decimal(purchased),"total":decimal(remaining+purchased),"contributions":contributions})).collect()
+        rows.into_values().map(|Row{item,remaining,purchased,reserved,used,contributions}| serde_json::json!({"key":item.key,"ingredient_id":item.ingredient_id,"name":item.name,"translations":item.translations,"unit":item.unit,"remaining":decimal(remaining),"purchased":decimal(purchased),"reserved":decimal(reserved),"used":decimal(used),"total":decimal(remaining+purchased+reserved+used),"contributions":contributions})).collect()
     }
 }

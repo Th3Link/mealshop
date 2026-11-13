@@ -26,13 +26,16 @@ fn item_valid(item: &Item, source: &str) -> bool {
             .iter()
             .all(|(lang, name)| text(lang, 20) && text(name, 200))
 }
-fn origin_valid(origin: &Origin) -> bool {
+pub(crate) fn origin_valid(origin: &Origin) -> bool {
     if let Origin::Meal { date, meal, .. } = origin {
         if !crate::planning::date(date) || !text(meal, 80) {
             return false;
         }
     }
     match origin {
+        Origin::Offer { offer, packages } => {
+            crate::inventory::validation::offer(offer) && (1..=1_000_000).contains(packages)
+        }
         Origin::Product { product, packages } => {
             super::products::product_valid(product) && (1..=1_000_000).contains(packages)
         }
@@ -105,6 +108,7 @@ fn validate(data: &Data) -> Result<(), &'static str> {
     }
     data.validate_shops()?;
     data.validate_products()?;
+    crate::inventory::validation::validate(data)?;
     Ok(())
 }
 impl Store {
@@ -137,19 +141,25 @@ impl Store {
             writable: true,
         })
     }
-    pub(crate) fn change(
-        &mut self,
+    pub(crate) fn ready(&self) -> Result<(), &'static str> {
+        if self.writable {
+            Ok(())
+        } else {
+            Err("shopping_storage_failed")
+        }
+    }
+    pub(crate) fn prepare(
+        &self,
         expected: u64,
         action: impl FnOnce(&mut Data) -> Result<(), &'static str>,
-    ) -> Result<(), &'static str> {
-        if !self.writable {
-            return Err("shopping_storage_failed");
-        }
+    ) -> Result<Data, &'static str> {
+        self.ready()?;
         if expected != self.data.revision {
             return Err("shopping_revision_conflict");
         }
         let mut next = self.data.clone();
         action(&mut next)?;
+        crate::inventory::allocations::reconcile(&mut next)?;
         next.prune_shop_metadata();
         next.revision = next.revision.checked_add(1).ok_or("shopping_capacity")?;
         validate(&next)?;
@@ -157,6 +167,15 @@ impl Store {
         if bytes.len() > 4_194_304 {
             return Err("shopping_capacity");
         }
+        Ok(next)
+    }
+    pub(crate) fn change(
+        &mut self,
+        expected: u64,
+        action: impl FnOnce(&mut Data) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        let next = self.prepare(expected, action)?;
+        let bytes = serde_json::to_vec(&next).map_err(|_| "shopping_storage_failed")?;
         let pending = self.path.with_file_name(".shopping.pending");
         let persist = || -> std::io::Result<()> {
             let mut options = OpenOptions::new();

@@ -106,3 +106,10 @@ native ingredient/quantity/source review and manual private fallback. DNS/peer/r
 protect the fetch surface. Atomic first-revision import receipts retain original fields separately
 from reviewed values and preserve source-only sharing through later edits, collections and MCP.
 N03/N04/N06/N09/N10 apply; see [import guide](guides/recipe-import.md) and ADR 0023.
+
+## F15 Nextcloud delivery boundary
+
+F15 delivers exact household lots, reviewed reservations, explicit purchase/completed-cooking stock
+bookings, durable idempotency/reversals and manual shop offers with current dietary checks. Plans and
+shopping check-off never consume physical stock. No offer provider, scraping or automatic purchasing
+is implied. N03/N04/N09/N10 apply; see [inventory guide](guides/inventory.md) and ADR 0024.

@@ -5,3 +5,5 @@
 
 ## Feature-local decisions
 2026-11-07: Acceptance criteria capture the customer vision; unspecified implementation choices remain proposals. No future feature is implemented by this bootstrap.
+
+- [ADR 0024](../../docs/adr/0024-household-stock-and-offers.md): atomic stock, reviewed source allocations, manual offers and operation receipts.
