@@ -42,3 +42,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0023: Safe public retrieval and reviewed recipe import](0023-reviewed-recipe-link-import.md)
 
 - [0024 Household stock and offers](0024-household-stock-and-offers.md)
+
+- [0025: Native brewing processes](0025-native-brewing-processes.md) — Accepted for F14.

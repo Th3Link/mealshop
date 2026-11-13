@@ -1,14 +1,20 @@
-# Plan for Brewing and fermentation workflows
+# F14 delivery plan
 
-## Affected modules
-To be selected when the feature becomes Ready; no placeholder crates.
+1. Research requested methods with primary sources; record the native UX and source/timer/storage boundary.
+2. Separate real food/brew process references while proving old wire/storage/timer behaviour unchanged.
+3. Deliver source-linked method/equipment templates, immutable brew recipes, exact readings/calibration,
+   reviewed batches/reservations and durable independent phase/reminder actions through real APIs.
+4. Build the native batch/recipe/equipment/reading workflow with typed EN/DE contracts and recovery.
+5. Validate every criterion with isolated domain tests, real Nextcloud owner/reader and restart flows,
+   responsive/axe/screens, rootless transports and the required full gate. Clean only owned fixtures.
+6. Complete one reviewable PR against current main; all current-head CI checks must pass before handoff.
 
-## Tasks
-- [ ] Design and implement the behaviour for AC 1; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 2; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 3; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 4; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 5; add acceptance evidence.
-
-## Validation
-Before implementation, derive acceptance tests from each numbered criterion. Include failure cases, household authorization and quantity/provenance checks where applicable. Record commands and results here at delivery.
+- [x] Read requirements, F14, accepted timer/delivery architecture and current main/F15 merge.
+- [x] Research BIAB, partial/extract/all-grain and named/DIY equipment; retain source/model distinctions.
+- [x] Record native UX and the shared-process/source decision before implementation.
+- [ ] AC 1: distinct process/equipment templates and exact recipe/batch/reading facts.
+- [ ] AC 2: explicit pre-brew yeast reminder, phase timers and durable personal delivery.
+- [ ] AC 3: original units, calibration, timestamp, source and reasoned reading corrections.
+- [ ] AC 4: atomic equipment reservations and independent simultaneous batches.
+- [ ] AC 5: beer-only validated templates; reject unvalidated cider/wine/mead assumptions.
+- [ ] Native acceptance, all gates, installed evidence, owned-fixture cleanup and current-head CI.
