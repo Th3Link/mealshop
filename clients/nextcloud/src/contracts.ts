@@ -77,6 +77,7 @@ export const organizationSchema = z.object({
   group_id: z.string().nullable().default(null),
   diet: z.enum(['unknown', 'vegan', 'vegetarian', 'meat_fish']).default('unknown'),
   origin: z.enum(['unknown', 'plant', 'animal', 'mixed']).default('unknown'),
+  production: z.enum(['unknown', 'purchased', 'household_produced']).optional(),
   nutrition: z
     .discriminatedUnion('mode', [
       z.object({ mode: z.literal('reference') }),
@@ -299,7 +300,29 @@ export const recipesSchema = z.object({
   ),
 })
 export type Recipe = z.infer<typeof recipeSchema>
+export const personRulesSchema = z.object({
+  version: z.literal(1),
+  preset: z.enum(['unrestricted', 'vegetarian', 'vegan']).default('unrestricted'),
+  exceptions: z
+    .array(
+      z.object({ ingredient_id: z.string(), household_produced_only: z.boolean().default(false) }),
+    )
+    .default([]),
+  max_active_seconds: z.number().int().min(1).max(604800).nullable().default(null),
+  availability: z
+    .array(
+      z.object({
+        weekdays: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+        meal: z.enum(['breakfast', 'lunch', 'snack', 'dinner']),
+      }),
+    )
+    .max(28)
+    .default([]),
+})
+export type PersonRules = z.infer<typeof personRulesSchema>
 export const memberSchema = z.object({
+  rules: personRulesSchema.optional(),
+  avatar: z.object({ image_id: z.string().nullable() }).optional(),
   id: z.string(),
   name: z.string(),
   allergies: z.array(z.string()),

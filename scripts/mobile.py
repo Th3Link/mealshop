@@ -128,6 +128,11 @@ def emulator(headless=False, host_gpu=False):
     if not (avd / 'config.ini').exists():
         run([SDK / 'cmdline-tools/latest/bin/avdmanager', 'create', 'avd', '-n', CONFIG['emulator_avd'],
              '-k', f"system-images;android-{CONFIG['emulator_api']};google_apis;x86_64", '-d', 'pixel_6', '-p', avd], input='no\n', text=True)
+    # Android must advertise a physical keyboard for desktop typing to reach text fields.
+    config = avd / 'config.ini'
+    values = config.read_text().splitlines()
+    values = [line for line in values if not line.startswith('hw.keyboard=')]
+    config.write_text('\n'.join([*values, 'hw.keyboard=yes']) + '\n')
     devices = subprocess.check_output([str(ADB), '-P', str(CONFIG['adb_server_port']), 'devices'], env=environment(), text=True)
     if SERIAL not in devices:
         with (BASE / 'emulator.log').open('ab') as log:
@@ -151,6 +156,7 @@ def signing_key():
 
 
 def main():
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['bootstrap', 'doctor', 'emulator', 'status', 'build', 'test', 'integration', 'install', 'browser', 'flutter'])
     parser.add_argument('arguments', nargs=argparse.REMAINDER)
@@ -176,10 +182,13 @@ def main():
     else:
         signing_key()
         if args.action == 'integration':
+            # flutter drive uninstalls its target: isolate it from the upgradeable user app.
+            os.environ['MEALSHOP_ANDROID_VERIFICATION'] = '1'
             prepare_emulator()
+            run([FLUTTER / 'bin/flutter', 'build', 'apk', '--debug', '--target=integration_test/shopping_smoke_test.dart'], cwd=APP)
         command = {
             'doctor': ['doctor', '-v'], 'build': ['build', 'apk', '--debug', '--split-per-abi', '--target=lib/main.dart'],
-            'test': ['test'], 'integration': ['drive', '--driver=test_driver/integration_test.dart', '--target=integration_test/shopping_smoke_test.dart', '-d', SERIAL, '--no-dds'],
+            'test': ['test'], 'integration': ['drive', '--driver=test_driver/integration_test.dart', '--target=integration_test/shopping_smoke_test.dart', '-d', SERIAL, '--no-dds', '--use-application-binary=' + str(APP / 'build/app/outputs/flutter-apk/app-debug.apk')],
             'flutter': [],
         }[args.action] + args.arguments
         run([FLUTTER / 'bin/flutter', *command], cwd=APP)

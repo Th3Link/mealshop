@@ -29,7 +29,10 @@ Future<bool> confirm(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               context.t(switch (title) {
-                'confirm_delete' => 'delete',
+                'confirm_delete' ||
+                'delete_all' ||
+                'delete_person' ||
+                'revoke' => 'delete',
                 'discard_draft' => 'discard_changes',
                 _ => title,
               }),

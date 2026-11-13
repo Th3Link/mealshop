@@ -15,7 +15,9 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.mealshop.pocket.dev"
+        applicationId = if (System.getenv("MEALSHOP_ANDROID_VERIFICATION") == "1")
+            "org.mealshop.pocket.verification" else "org.mealshop.pocket.dev"
+        manifestPlaceholders["mealshopLabel"] = if (System.getenv("MEALSHOP_ANDROID_VERIFICATION") == "1") "Mealshop verification" else "Mealshop"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

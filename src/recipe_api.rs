@@ -200,13 +200,32 @@ async fn detail(
     let record = blocking(state, move |store, _| store.get(&id, query.revision)).await?;
     response(&record, StatusCode::OK, query.display_unit)
 }
+#[derive(Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CreateQuery {
+    expected_count: Option<usize>,
+}
 async fn create(
     State(state): State<Shared>,
+    query: Result<Query<CreateQuery>, axum::extract::rejection::QueryRejection>,
     input: Result<Json<Recipe>, JsonRejection>,
 ) -> Result<Response, ApiError> {
+    let Query(query) = query.map_err(|_| {
+        ApiError(
+            StatusCode::BAD_REQUEST,
+            "invalid_revision",
+            "Use an integer expected_count".to_owned(),
+        )
+    })?;
     let recipe = body(input)?;
     validate_image(&state, &recipe)?;
     let record = blocking(state, move |store, catalogue| {
+        if query
+            .expected_count
+            .is_some_and(|expected| expected != store.recipe_count())
+        {
+            return Err(recipes::Error::Conflict);
+        }
         store.save(recipe, None, catalogue)
     })
     .await?;

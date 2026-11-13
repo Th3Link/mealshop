@@ -12,7 +12,8 @@ Nextcloud installation. Prefer a few substantial, complete user journeys over se
 backend-only and screen-only PRs. Each delivery extends an installable app.
 
 The customer approved Android APK delivery, explicitly requested an Android emulator, and gave the
-implementation Go on 2026-11-13. P1 is now in progress on `story/flutter-pocket-shopping`.
+implementation Go on 2026-11-13. P1 was merged in PR #44. The customer approved P2 on 2026-11-13; implementation is on
+`story/flutter-people-library`.
 The earlier planning PR remains a separate review record; its preserved source import is unchanged.
 
 The [original pack](../../references/mobile-product-spec-2026-11-12/README.md) remains a preserved
@@ -84,3 +85,12 @@ need defensible inputs and uncertainty, not clinical claims or mandatory calorie
 Review [plan.md](plan.md), [ux-notes.md](ux-notes.md), [adrs.md](adrs.md) and proposed ADR 0026.
 N01/N03/N04/N06–N10 apply. F18 AC4 and the Flutter part of F29 are related contracts, not closed by
 this planning PR. All implementation checklist entries remain unchecked until delivered and verified.
+
+## P2 person privacy decision
+
+Activities have person-specific read/edit grants, including care without a child login. The customer
+selected owner-managed permissions **without automatic owner access**: an owner must visibly grant
+permission to their own account before reading/editing activity. Existing shared dietary profiles keep
+their household roles; no new medical/weight fields are introduced. ADR 0028 defines atomic storage,
+revocation, generation/revision guards and live deletion/export. P2 remains part of the same substantial
+frontend/backend PR; P3–P5 are not marked delivered.

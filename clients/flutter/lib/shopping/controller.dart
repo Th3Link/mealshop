@@ -16,6 +16,17 @@ class ShoppingController extends ChangeNotifier {
   List<Home> homes = [], invitations = [];
   String? selected, error;
   String language = 'en';
+  bool imageInterrupted = false;
+  void photoInterrupted() {
+    imageInterrupted = true;
+    notifyListeners();
+  }
+
+  void dismissPhotoNotice() {
+    imageInterrupted = false;
+    notifyListeners();
+  }
+
   bool initialized = false,
       busy = false,
       online = false,
@@ -23,6 +34,7 @@ class ShoppingController extends ChangeNotifier {
   int _epoch = 0, _offset = 0;
   bool _selectionRequired = false;
   Json _records = {};
+  Json _drafts = {};
   Timer? _timer;
   Future<void>? _refreshing;
   Future<void> _storageTail = Future<void>.value();
@@ -59,6 +71,7 @@ class ShoppingController extends ChangeNotifier {
         selected = value['selected'] as String?;
         _selectionRequired = value['selection_required'] as bool? ?? false;
         _records = object(value['records']);
+        _drafts = object(value['drafts'] ?? <String, dynamic>{});
         _offset = value['clock_offset'] as int;
         if (_expireRecords()) await _save();
       }
@@ -82,6 +95,7 @@ class ShoppingController extends ChangeNotifier {
     'selected': selected,
     'selection_required': _selectionRequired,
     'records': _records,
+    'drafts': _drafts,
     'clock_offset': _offset,
   };
   Future<void> _save() async {
@@ -119,6 +133,7 @@ class ShoppingController extends ChangeNotifier {
     selected = null;
     _selectionRequired = false;
     _records = {};
+    _drafts = {};
     error = null;
     busy = false;
     online = false;
@@ -148,6 +163,12 @@ class ShoppingController extends ChangeNotifier {
   bool _expireRecords() {
     var changed = false;
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    _drafts.removeWhere((_, value) {
+      final saved = object(value)['saved_at'] as int;
+      final expired = now - saved > 604800 || now < saved - 300;
+      changed = changed || expired;
+      return expired;
+    });
     _records.removeWhere((_, value) {
       final synced = object(value)['synced_at'] as int;
       final expired = now - synced > 604800 || now < synced - 300;
@@ -203,6 +224,7 @@ class ShoppingController extends ChangeNotifier {
       final allowed = homes.map((h) => h.id).toSet();
       final removed = selected != null && !allowed.contains(selected);
       _records.removeWhere((key, _) => !allowed.contains(key));
+      _drafts.removeWhere((key, _) => !allowed.contains(key.split(':').first));
       if (!allowed.contains(selected)) {
         if (selected != null) {
           _selectionRequired = true;
@@ -249,9 +271,11 @@ class ShoppingController extends ChangeNotifier {
       if (e.denied) {
         if (e.status == 401) {
           _records = {};
+          _drafts = {};
           error = 'login_expired';
         } else if (selected != null) {
           _records.remove(selected);
+          _drafts.removeWhere((key, _) => key.startsWith('$selected:'));
           error = 'access_removed';
         }
         await _save();
@@ -434,6 +458,37 @@ class ShoppingController extends ChangeNotifier {
       original: entry.original,
       expectedRevision: expectedRevision,
     );
+  }
+
+  Json? draft(String key) {
+    final record = _drafts['$selected:$key'];
+    return record == null ? null : object(object(record)['value']);
+  }
+
+  Future<void> saveDraft(String key, Json? value) async {
+    if (credential == null || selected == null || storageBlocked) {
+      throw const ApiFailure('storage_failed');
+    }
+    final id = '$selected:$key';
+    if (value == null) {
+      _drafts.remove(id);
+    } else {
+      if (!_drafts.containsKey(id) && _drafts.length >= 25) {
+        throw const ApiFailure('cache_capacity');
+      }
+      final candidate = {
+        ..._drafts,
+        id: {
+          'saved_at': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          'value': value,
+        },
+      };
+      if (utf8.encode(jsonEncode(candidate)).length > 262144) {
+        throw const ApiFailure('cache_capacity');
+      }
+      _drafts = candidate;
+    }
+    await _save();
   }
 
   Future<void> createHome(String name) async {

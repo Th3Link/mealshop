@@ -1,5 +1,17 @@
 import { z } from 'zod'
 export const reviewSchema = z.object({
+  dietary_rules: z
+    .array(
+      z.object({
+        member_id: z.string(),
+        preset: z.enum(['unrestricted', 'vegetarian', 'vegan']),
+        has_exceptions: z.boolean(),
+        excluded_ingredients: z.array(z.string()),
+        unknown_ingredients: z.array(z.string()),
+        exceptions: z.array(z.string()),
+      }),
+    )
+    .default([]),
   status: z.enum(['blocked', 'review_required']),
   excluded_ingredients: z.array(z.string()),
   allergen_matches: z.array(

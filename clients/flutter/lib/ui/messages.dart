@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 
+import 'content_messages.dart';
+
 const messages = <String, (String, String)>{
+  ...contentMessages,
   'licences': ('Open-source licences', 'Open-Source-Lizenzen'),
   'preferred_shop': ('Preferred shop', 'Bevorzugtes Geschäft'),
   'fallback_shop': ('Alternative shop', 'Alternatives Geschäft'),
@@ -163,8 +166,8 @@ const messages = <String, (String, String)>{
   'language': ('Language', 'Sprache'),
   'privacy': ('On this device', 'Auf diesem Gerät'),
   'privacy_body': (
-    'Your app credential and shopping cache are encrypted. Shopping data expires after 7 days without an update. Offline changes need current permission when reconnecting. Signing out clears local account data; revoke this device in Nextcloud to end its server access.',
-    'App-Passwort und Einkaufsdaten werden verschlüsselt gespeichert. Einkaufsdaten verfallen nach 7 Tagen ohne Aktualisierung. Offline-Änderungen benötigen beim Verbinden aktuelle Rechte. Abmelden entfernt die lokalen Kontodaten; widerrufe das Gerät in Nextcloud, um seinen Serverzugriff zu beenden.',
+    'Your app credential, shopping cache and person drafts are encrypted. Cached data and drafts expire after 7 days without an update. Activity and incoming shared content are online only. Offline changes need current permission when reconnecting. Signing out clears local account data; revoke this device in Nextcloud to end its server access.',
+    'App-Passwort, Einkaufsdaten und Personenentwürfe werden verschlüsselt gespeichert. Zwischengespeicherte Daten und Entwürfe verfallen nach 7 Tagen ohne Aktualisierung. Aktivitäten und eingehende Freigaben sind nur online verfügbar. Offline-Änderungen benötigen beim Verbinden aktuelle Rechte. Abmelden entfernt die lokalen Kontodaten; widerrufe das Gerät in Nextcloud, um seinen Serverzugriff zu beenden.',
   ),
   'sign_out': ('Sign out', 'Abmelden'),
   'sign_out_body': (

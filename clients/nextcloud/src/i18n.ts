@@ -1,3 +1,4 @@
+import { peopleEnglish, peopleGerman, peopleExplanations } from './people-messages'
 import { brewingEnglish, brewingGerman, brewingExplanations } from './brewing-messages'
 import { inventoryEnglish, inventoryGerman, inventoryExplanations } from './inventory-messages'
 import { importEnglish, importGerman, importExplanations } from './import-messages'
@@ -66,6 +67,7 @@ const en = {
   ...cookingEnglish,
   ...brewingEnglish,
   ...sharingEnglish,
+  ...peopleEnglish,
   ...feedbackEnglish,
   ...mcpEnglish,
   ...importEnglish,
@@ -409,6 +411,7 @@ const de: Record<keyof typeof en, string> = {
   ...cookingGerman,
   ...brewingGerman,
   ...sharingGerman,
+  ...peopleGerman,
   ...feedbackGerman,
   ...mcpGerman,
   ...importGerman,
@@ -781,6 +784,7 @@ const explanations: Record<string, { en: string; de: string }> = {
   ...cookingExplanations,
   ...brewingExplanations,
   ...sharingExplanations,
+  ...peopleExplanations,
   ...feedbackExplanations,
   ...mcpExplanations,
   ...importExplanations,

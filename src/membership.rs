@@ -28,6 +28,8 @@ struct Registry {
     version: u32,
     next_id: u64,
     homes: Vec<Home>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    activity_epochs: BTreeMap<String, BTreeMap<String, u64>>,
 }
 pub(crate) fn valid_user(user: &str) -> bool {
     !user.is_empty() && user.len() <= 255 && !user.chars().any(char::is_control)
@@ -37,6 +39,15 @@ impl Registry {
         let mut ids = BTreeSet::new();
         if self.version != 1 || self.homes.len() > 1000 || self.next_id == 0 {
             return Err("Invalid membership registry version or capacity".to_owned());
+        }
+        if self.activity_epochs.iter().any(|(home, epochs)| {
+            !self.homes.iter().any(|h| &h.id == home)
+                || epochs.len() > 10000
+                || epochs
+                    .iter()
+                    .any(|(user, epoch)| !valid_user(user) || *epoch == 0)
+        }) {
+            return Err("Invalid activity membership epochs".to_owned());
         }
         for home in &self.homes {
             let number = home
@@ -140,6 +151,7 @@ impl Membership {
                     version: 1,
                     next_id: 1,
                     homes: vec![],
+                    activity_epochs: BTreeMap::new(),
                 }
             };
             data.validate()?;
@@ -176,6 +188,13 @@ impl Membership {
             })
             .collect();
         serde_json::json!({"households":homes,"invitations":invitations,"user":user})
+    }
+    pub(crate) fn activity_epochs(&self, id: &str) -> BTreeMap<String, u64> {
+        self.data
+            .activity_epochs
+            .get(id)
+            .cloned()
+            .unwrap_or_default()
     }
     pub(crate) fn members(&self, id: &str) -> Option<BTreeMap<String, Role>> {
         Some(
@@ -350,6 +369,14 @@ impl Membership {
         } else {
             h.members.remove(user);
             h.invitations.remove(user);
+            let epochs = data.activity_epochs.entry(id.to_owned()).or_default();
+            let epoch = epochs
+                .get(user)
+                .copied()
+                .unwrap_or(0)
+                .checked_add(1)
+                .ok_or("membership_capacity")?;
+            epochs.insert(user.to_owned(), epoch);
         }
         self.commit(data)
     }

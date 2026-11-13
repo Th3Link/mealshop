@@ -85,6 +85,21 @@ function names(id: string) {
     ><NcNoteCard v-else type="warning"
       >{{ t('reviewRequired') }} · {{ t('profileIntro') }}</NcNoteCard
     >
+    <section v-for="rule in value.preview.review?.dietary_rules ?? []" :key="rule.member_id">
+      <h3>{{ profiles.find((p) => p.id === rule.member_id)?.name }}</h3>
+      <p>
+        {{ t(rule.preset) }}<span v-if="rule.has_exceptions"> · {{ t('ruleExceptions') }}</span>
+      </p>
+      <p v-if="rule.exceptions.length">
+        {{ t('ruleExceptions') }}: {{ rule.exceptions.map(names).join(', ') }}
+      </p>
+      <NcNoteCard v-if="rule.unknown_ingredients.length" type="warning"
+        >{{ t('reviewRequired') }}: {{ rule.unknown_ingredients.map(names).join(', ') }}</NcNoteCard
+      >
+      <p v-if="rule.excluded_ingredients.length">
+        {{ t('excluded') }}: {{ rule.excluded_ingredients.map(names).join(', ') }}
+      </p>
+    </section>
     <template v-if="value.preview.review"
       ><div v-for="note in value.preview.review.review_notes" :key="note.member_id">
         <h3>{{ note.name }}</h3>

@@ -7,6 +7,12 @@ import 'messages.dart';
 import 'pending.dart';
 import 'products.dart';
 import 'shops.dart';
+import '../content/api.dart';
+import 'content_common.dart';
+import 'people.dart';
+import 'ingredients.dart';
+import 'collections.dart';
+import 'sharing.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen(this.c, {super.key});
@@ -27,7 +33,41 @@ class MoreScreen extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right),
         onTap: () => showHomes(context, c),
       ),
+      ListTile(
+        leading: const Icon(Icons.folder_shared_outlined),
+        title: Text(context.t('shared')),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => openPage<void>(context, SharedScreen(HouseholdApi(c))),
+      ),
       if (c.home != null) ...[
+        SectionTitle(context.t('library')),
+        for (final item in <(String, IconData, Widget)>[
+          ('people', Icons.people_outline, PeopleScreen(HouseholdApi(c))),
+          (
+            'activities',
+            Icons.directions_run,
+            PeopleScreen(HouseholdApi(c), activity: true),
+          ),
+          (
+            'ingredients',
+            Icons.eco_outlined,
+            IngredientsScreen(HouseholdApi(c)),
+          ),
+          (
+            'collections',
+            Icons.collections_bookmark_outlined,
+            CollectionsScreen(HouseholdApi(c)),
+          ),
+
+          if (c.home!.role == 'owner')
+            ('shares', Icons.share_outlined, SharesScreen(HouseholdApi(c))),
+        ])
+          ListTile(
+            leading: Icon(item.$2),
+            title: Text(context.t(item.$1)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => openPage<void>(context, item.$3),
+          ),
         SectionTitle(context.t('shopping')),
         ListTile(
           leading: const Icon(Icons.storefront_outlined),
@@ -95,13 +135,13 @@ class MoreScreen extends StatelessWidget {
         onTap: () => showLicensePage(
           context: context,
           applicationName: 'Mealshop',
-          applicationVersion: '0.1.0',
+          applicationVersion: '0.2.0',
           applicationLegalese: 'AGPL-3.0-only',
         ),
       ),
       const Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Text('Mealshop · 0.1.0 · AGPL-3.0-only'),
+        child: Text('Mealshop · 0.2.0 · AGPL-3.0-only'),
       ),
     ],
   );

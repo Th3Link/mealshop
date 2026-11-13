@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'connection/nextcloud.dart';
 import 'connection/vault.dart';
@@ -15,6 +16,13 @@ Future<void> main() async {
     deviceLanguage:
         WidgetsBinding.instance.platformDispatcher.locale.languageCode,
   );
+  // Consume abandoned gallery results without attaching them to a different account/draft.
+  try {
+    final lost = await ImagePicker().retrieveLostData();
+    if (!lost.isEmpty) controller.photoInterrupted();
+  } catch (_) {
+    controller.photoInterrupted();
+  }
 }
 
 class MealshopApp extends StatefulWidget {

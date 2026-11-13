@@ -20,6 +20,8 @@ pub(crate) struct Organization {
     pub(crate) diet: Diet,
     #[serde(default)]
     pub(crate) origin: Origin,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) production: Option<Production>,
 }
 #[derive(Clone, Default, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(tag = "mode", rename_all = "snake_case", deny_unknown_fields)]
@@ -57,6 +59,15 @@ pub(crate) enum Origin {
     Plant,
     Animal,
     Mixed,
+}
+
+#[derive(Clone, Default, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum Production {
+    #[default]
+    Unknown,
+    Purchased,
+    HouseholdProduced,
 }
 
 fn inherited_evidence(parent: &Ingredient) -> Vec<crate::nutrition::estimates::Profile> {

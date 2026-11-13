@@ -139,3 +139,71 @@ name/code, source commit, dirty-source flag and verified SHA-256 alongside each 
 complete PR CI run passed Rust, Vue, MCP, image/rootless TCP+Unix, security, Android native tests and APK
 upload; the final-head CI is required again after this evidence/version-metadata update. No signing
 key, device credential, raw UI dump or private household data is committed.
+
+
+## P2 implementation evidence
+
+P1 was merged as PR #44. P2 supplies Flutter, Rust and compatible Nextcloud editing in one PR;
+F35 remains **In progress** for P3–P5 and the separately recorded physical-handset acceptance.
+Customer decisions: activity permissions belong to people, and owners administer grants without
+implicit read/edit access. [ADR 0028](../../docs/adr/0028-person-rules-and-activity.md) and the
+[API/privacy guide](../../docs/guides/people-activity.md) record the exact boundary.
+
+### Local checks
+
+- All AGENTS gates: catalogue import check/verifier, Node i18n tests, Rust format, strict Clippy,
+  **189 Rust tests**, deny licences, audit; generated docs and strict rustdoc also pass.
+- Flutter format/strict analyze and **32 unit/widget tests** pass. New coverage includes minimized,
+  scoped, expiring drafts, durable restart, revoked membership, pending invitations without content/a selected household, capacity rejection without losing the
+  previous draft; localized search/focus/inline-create entry, original language/exact multipart recipe
+  round trip, 320dp/200% DE/EN recipe ranges, activity duration without weight and clearing a revoked form.
+- **68 locked package licences**, **60 external Pub versions** checked with OSV, no matched advisory.
+  `image_picker` 1.2.4 is the only new direct package, from the official Flutter publisher. No new Rust crate.
+- **39 Vue tests**, strict typecheck/production build, Prettier and production npm audit pass.
+  Five live shopping regressions plus the new rule-editor browser journey pass against Nextcloud;
+  mouse selection, save/reload and Axe WCAG tags cover the new editor.
+  Profile rules/avatar and omitted-vs-explicit production declarations survive typed legacy round trips.
+- Native API 36/Pixel 6: **11 tests pass**, including the P2 journeys and protected-storage/shopping
+  regressions. The helper prebuilds the verification APK and passes its explicit binary to Flutter drive.
+  This is necessary: deriving a package from stale project metadata selected the development app for
+  driver cleanup. Retesting with an exact merged P1 build proved the corrected driver preserves its
+  package, encrypted record, login and selected synthetic household.
+
+### Real Nextcloud 35 and Android proxy journey
+
+Only freshly generated ledger-owned fixtures were used. Retained customer household directories were
+not inspected, copied or backed up. The existing Nextcloud 35.0.2/AppAPI installation served the locally
+built P2 backend and Vue assets; Android connected through Login Flow v2 and the real `index.php` proxy.
+
+The live contract run created two synthetic people, a declared household-produced ingredient with a
+nutrient range and optional constituent, an image/avatar, and an explicit own-ingredient exception.
+It proved owner denial before a self-grant, mandatory self-confirmation, reader read/edit separation,
+45-minute running and 60-minute cycling without weight, null energy, export/profile isolation,
+pagination and denied old grants after leaving and rejoining. It also proved exact recipe scaling,
+prepared-part links, reverse ingredient lookup, pinned collection/shared revisions and source-link-only
+imported projections. A retry of guarded recipe creation cannot duplicate after a lost response/restart.
+
+The exact merged **P1 0.1.0+2 / `x86_64` version 4002** was built separately with the retained development
+key, connected to the synthetic household and cached **200.000001 g**. With emulator forwarding removed,
+**P2 0.2.0+3 / 4003** was installed using `install -r`; account, selected household, encrypted record and
+exact cached amount remained. Forwarding was restored for online library checks. No application data
+reset or uninstall was used for this upgrade. Instrumentation uses its own application package.
+
+Synthetic native views were visually inspected: [shopping](screenshots/p2-shopping.png),
+[recipe library](screenshots/p2-recipes.png), [recipe detail](screenshots/p2-recipe-detail.png),
+[activity people](screenshots/p2-people-activities.png) and [history](screenshots/p2-activity-history.png).
+No authentication page, arbitrary UI tree, private household content or real health entry was captured.
+
+Physical handset, `TalkBack`, release-mode frame/memory profiling, iOS, camera/OCR, device reminders,
+full native plan/stock/cooking and P3–P5 are not claimed. Gallery entry and document export use Android
+system UI; OS cancellation leaves the owning form intact. Library/activity writes remain online-only.
+Android gallery cancellation was exercised on the synthetic recipe; its image and exact input survived
+native save. The system document export produced the two synthetic activities with null energy; the
+uniquely named test file was verified in memory and removed.
+The emulator's physical keyboard is enabled persistently; Android reports its alphanumeric keyboard.
+
+All twelve recorded synthetic households from this run were archived with the sole writer stopped.
+Retained household directories were not inspected or copied; retained membership/library/epoch
+metadata was checked unchanged and allocation counters were preserved. The emulator returned to
+explicit household selection after the removed fixture lost access.
+Final PR-head CI and clean-source APK metadata are recorded in the PR description.
