@@ -113,6 +113,7 @@ Commands save/archive recipes/equipment, create/replan/operate/cancel/archive ba
 actor's subscription/notices, or append/correct a reading. `save_recipe` checks its pinned expected recipe
 revision. Equipment edits include `expected_equipment`; new equipment omits it or supplies null.
 Retries require identical parsed payload, expected revision, actor and key, plus current write authority.
+Responses include the receipt's stable `result_id` so duplicate recipe/batch titles cannot select a different entity, including on replay.
 Receipt keys never appear in normal reads. Reusing a key for a different action conflicts.
 
 Independently sourced cider-from-juice, white wine, red wine and traditional mead templates include

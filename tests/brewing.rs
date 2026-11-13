@@ -194,6 +194,7 @@ async fn reviewed_recipe_versions_retain_exact_facts_and_retry_after_restart_wit
     let reopened = directory.app().unwrap();
     let replay = ok(&reopened, "POST", ROOT, request.clone()).await;
     assert_eq!(replay["operation_id"], created["operation_id"]);
+    assert_eq!(replay["result_id"], created["result_id"]);
     assert_eq!(replay["replayed"], true);
     assert_eq!(replay["brewing"]["recipes"][0]["record"]["revision"], 2);
     let mut changed = request;
@@ -350,6 +351,7 @@ async fn batches_reserve_exact_equipment_atomically_and_keep_calendrical_recipe_
     let reopened = directory.app().unwrap();
     let replay = ok(&reopened, "POST", ROOT, request).await;
     assert_eq!(replay["operation_id"], created["operation_id"]);
+    assert_eq!(replay["result_id"], created["result_id"]);
     assert_eq!(replay["brewing"]["batches"].as_array().unwrap().len(), 2);
 }
 #[tokio::test]
@@ -577,6 +579,75 @@ async fn restart_rejects_two_physical_holds_for_one_equipment_record() {
     assert!(directory.app().is_err());
 }
 
+async fn fermentation_case(app: &axum::Router, template: &str, beverage: &str) -> (Value, Value) {
+    let draft = recipe_for(app, template).await;
+    assert!(draft["method"].get("strategy").is_none());
+    let saved = apply(
+        app,
+        json!({"operation":"save_recipe","id":null,"expected_recipe_revision":null,"recipe":draft}),
+    )
+    .await;
+    let recipe_id = saved["brewing"]["recipes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["record"]["recipe"]["template"]["id"] == template)
+        .unwrap()["record"]["id"]
+        .clone();
+    let request = input(app, json!({"operation":"create_batch","draft":{"name":format!("Independent brewing {template}"),"recipe_id":recipe_id,"recipe_revision":1,"brew_day":{"local":"2030-01-15T08:00:00","timezone":"UTC","fold":"reject"},"yeast_preparation":{"choice":"skip"},"equipment":{}}})).await;
+    let result = ok(app, "POST", ROOT, request.clone()).await;
+    let run = result["brewing"]["batches"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["run"]["brew_recipe"]["id"] == recipe_id)
+        .unwrap()["run"]
+        .clone();
+    assert_eq!(saved["result_id"], recipe_id);
+    assert_eq!(result["result_id"], run["id"]);
+    assert_eq!(run["kind"], beverage);
+    assert_eq!(run["brew_recipe"]["beverage"], beverage);
+    assert!(run.get("recipe").is_none() && run.get("servings").is_none());
+    assert_eq!(run["brew_recipe"]["volume"]["amount"], "20.000001");
+    let run_id = run["id"].as_str().unwrap();
+    let before = ok(app, "GET", ROOT, Value::Null).await;
+    assert!(
+        call(
+            app,
+            Some(OWNER),
+            "POST",
+            "/api/household/cooking",
+            json!({"expected_revision":before["revision"],"command":{"operation":"timer","run_id":run_id,"step_id":"p1-1","action":"start"}})
+        )
+        .await
+        .0
+        .is_client_error()
+    );
+    let reading = json!({"phase_id":null,"measurement":{"value":"12.345678","unit":"brix"},"measured_at":{"local":"2026-11-13T08:00:00","timezone":"UTC","fold":"reject"},"source":{"kind":"manual"},"calibration":{"kind":"unknown"},"notes":"Unconverted original reading"});
+    apply(app,json!({"operation":"add_reading","run_id":run_id,"reading":reading,"corrects":null,"reason":null})).await;
+    let shown = ok(app, "GET", &format!("{ROOT}/batches/{run_id}"), Value::Null).await;
+    assert_eq!(shown["measurements"]["readings"][0]["input"], reading);
+    assert_eq!(shown["recipe"]["recipe"], draft);
+    let mut wrong_method = draft.clone();
+    wrong_method["method"] = recipe(app).await["method"].clone();
+    let mut wrong_template = draft.clone();
+    wrong_template["template"]["id"] = json!("biab");
+    let mut wrong_phase = draft.clone();
+    wrong_phase["phases"][0]["kind"] = json!("mash");
+    for (invalid_recipe, code) in [
+        (wrong_method, "brewing_method_invalid"),
+        (wrong_template, "brewing_method_invalid"),
+        (wrong_phase, "brewing_phase_invalid"),
+    ] {
+        let invalid = input(app,json!({"operation":"save_recipe","id":null,"expected_recipe_revision":null,"recipe":invalid_recipe})).await;
+        assert_eq!(
+            call(app, Some(OWNER), "POST", ROOT, invalid).await.1["code"],
+            code
+        );
+    }
+    (request, result["operation_id"].clone())
+}
+
 #[tokio::test]
 async fn independently_validated_cider_wine_and_mead_survive_restart_without_food_or_beer_assumptions()
  {
@@ -589,73 +660,7 @@ async fn independently_validated_cider_wine_and_mead_survive_restart_without_foo
         ("red-wine", "wine"),
         ("traditional-mead", "mead"),
     ] {
-        let draft = recipe_for(&app, template).await;
-        assert!(draft["method"].get("strategy").is_none());
-        let saved = apply(&app, json!({"operation":"save_recipe","id":null,"expected_recipe_revision":null,"recipe":draft})).await;
-        let recipe_id = saved["brewing"]["recipes"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .find(|r| r["record"]["recipe"]["template"]["id"] == template)
-            .unwrap()["record"]["id"]
-            .clone();
-        let request = input(&app, json!({"operation":"create_batch","draft":{"name":format!("Independent brewing {template}"),"recipe_id":recipe_id,"recipe_revision":1,"brew_day":{"local":"2030-01-15T08:00:00","timezone":"UTC","fold":"reject"},"yeast_preparation":{"choice":"skip"},"equipment":{}}})).await;
-        let result = ok(&app, "POST", ROOT, request.clone()).await;
-        let run = result["brewing"]["batches"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .find(|r| r["run"]["brew_recipe"]["id"] == recipe_id)
-            .unwrap()["run"]
-            .clone();
-        assert_eq!(run["kind"], beverage);
-        assert_eq!(run["brew_recipe"]["beverage"], beverage);
-        assert!(run.get("recipe").is_none() && run.get("servings").is_none());
-        assert_eq!(run["brew_recipe"]["volume"]["amount"], "20.000001");
-        let run_id = run["id"].as_str().unwrap();
-        let before = ok(&app, "GET", ROOT, Value::Null).await;
-        assert!(
-            call(
-                &app,
-                Some(OWNER),
-                "POST",
-                "/api/household/cooking",
-                json!({"expected_revision":before["revision"],"command":{"operation":"timer","run_id":run_id,"step_id":"p1-1","action":"start"}})
-            )
-            .await
-            .0
-            .is_client_error()
-        );
-        let reading = json!({"phase_id":null,"measurement":{"value":"12.345678","unit":"brix"},"measured_at":{"local":"2026-11-13T08:00:00","timezone":"UTC","fold":"reject"},"source":{"kind":"manual"},"calibration":{"kind":"unknown"},"notes":"Unconverted original reading"});
-        apply(&app,json!({"operation":"add_reading","run_id":run_id,"reading":reading,"corrects":null,"reason":null})).await;
-        let shown = ok(
-            &app,
-            "GET",
-            &format!("{ROOT}/batches/{run_id}"),
-            Value::Null,
-        )
-        .await;
-        assert_eq!(shown["measurements"]["readings"][0]["input"], reading);
-        assert_eq!(shown["recipe"]["recipe"], draft);
-        let mut wrong = draft.clone();
-        wrong["method"] = recipe(&app).await["method"].clone();
-        let invalid = input(&app,json!({"operation":"save_recipe","id":null,"expected_recipe_revision":null,"recipe":wrong})).await;
-        assert!(
-            call(&app, Some(OWNER), "POST", ROOT, invalid)
-                .await
-                .0
-                .is_client_error()
-        );
-        let mut wrong_template = draft.clone();
-        wrong_template["template"]["id"] = json!("biab");
-        let invalid = input(&app,json!({"operation":"save_recipe","id":null,"expected_recipe_revision":null,"recipe":wrong_template})).await;
-        assert!(
-            call(&app, Some(OWNER), "POST", ROOT, invalid)
-                .await
-                .0
-                .is_client_error()
-        );
-        receipts.push((request, result["operation_id"].clone()));
+        receipts.push(fermentation_case(&app, template, beverage).await);
     }
     drop(app);
     let app = directory.app().unwrap();
@@ -670,6 +675,11 @@ async fn independently_validated_cider_wine_and_mead_survive_restart_without_foo
         let result = ok(&app, "POST", ROOT, request.clone()).await;
         assert_eq!(result["replayed"], true);
         assert_eq!(result["operation_id"], operation);
+        assert!(
+            result["result_id"]
+                .as_str()
+                .is_some_and(|id| id.starts_with("cook-"))
+        );
         assert_eq!(
             call(&app, Some(READER), "POST", ROOT, request).await.0,
             StatusCode::FORBIDDEN

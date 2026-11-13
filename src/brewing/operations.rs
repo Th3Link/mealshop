@@ -87,6 +87,14 @@ pub(super) fn replay(
     }
     Ok(Some(r.id.clone()))
 }
+pub(super) fn result(data: &Processes, operation: &str) -> Result<Option<String>, &'static str> {
+    data.brewing
+        .operations
+        .iter()
+        .find(|r| r.id == operation)
+        .map(|r| r.result_id.clone())
+        .ok_or("brewing_data_invalid")
+}
 pub(super) fn execute(
     data: &mut Processes,
     identity: &crate::cooking::Actor,

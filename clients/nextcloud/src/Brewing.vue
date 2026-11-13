@@ -252,21 +252,16 @@ async function commit(input: BrewRequest) {
     correcting.value = undefined
     replan.value = undefined
     announcement.value = t('brewSaved')
-    if (input.command.operation === 'save_recipe') {
-      const command = input.command
-      const saved = result.brewing.recipes.find((r) =>
-        command.id
-          ? r.record.id === command.id
-          : r.record.recipe.title === command.recipe.title && r.record.revision === 1,
+    if (input.command.operation === 'save_recipe')
+      await router.push(
+        `${base.value}/recipes${result.result_id ? `/${encodeURIComponent(result.result_id)}` : ''}`,
       )
-      if (saved) await router.push(`${base.value}/recipes/${saved.record.id}`)
-    } else if (input.command.operation === 'save_equipment')
+    else if (input.command.operation === 'save_equipment')
       await router.push(`${base.value}/equipment`)
-    else if (input.command.operation === 'create_batch') {
-      const saved = result.brewing.batches.find((b) => !reviewIds.value.includes(b.run.id))
-      if (saved) await router.push(`${base.value}/batches/${saved.run.id}`)
-      else await router.push(`${base.value}/batches`)
-    }
+    else if (input.command.operation === 'create_batch')
+      await router.push(
+        `${base.value}/batches${result.result_id ? `/${encodeURIComponent(result.result_id)}` : ''}`,
+      )
     if (epoch === generation) await refresh(true)
   } catch (e) {
     if (epoch !== generation) return
@@ -281,14 +276,12 @@ async function commit(input: BrewRequest) {
     if (epoch === generation) busy.value = false
   }
 }
-const reviewIds = ref<string[]>([])
 function retrySave() {
   if (request.value) void commit(structuredClone(toRaw(request.value)))
 }
 
 function confirmReview() {
   if (!request.value || !reviewed.value || disabled.value) return
-  reviewIds.value = review.value?.before.batches.map((b) => b.run.id) ?? []
   void commit({ ...structuredClone(toRaw(request.value)), reviewed: true })
 }
 function back() {

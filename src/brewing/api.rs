@@ -234,7 +234,7 @@ fn transact(
             return Err("brewing_already_applied");
         }
         return Ok(
-            json!({"operation_id":id,"replayed":true,"brewing":view::view(&store.data,time::now()?, actor, &store.health())?}),
+            json!({"operation_id":id,"result_id":operations::result(&store.data,&id)?,"replayed":true,"brewing":view::view(&store.data,time::now()?, actor, &store.health())?}),
         );
     }
     if let Command::SaveRecipe { recipe, .. } = &input.command {
@@ -267,7 +267,7 @@ fn transact(
     if apply {
         store.change(Some(input.expected_revision), mutate)?;
         Ok(
-            json!({"operation_id":operation_id,"replayed":false,"brewing":view::view(&store.data,now, actor, &store.health())?}),
+            json!({"operation_id":operation_id,"result_id":operations::result(&store.data,&operation_id)?,"replayed":false,"brewing":view::view(&store.data,now, actor, &store.health())?}),
         )
     } else {
         let next = store.prepare_change(Some(input.expected_revision), mutate)?;

@@ -68,13 +68,15 @@ def verify_brewing(container, unix, prefix, home):
     recipe = {"beverage":"beer","title":"Container brewing recipe","language":"en","volume":{"amount":"0.100001","unit":"l"},"template":{"id":"biab","version":1,"sources":[s for s in catalogue["sources"] if s["id"] in template["sources"]]},"method":{"strategy":"all_grain","layout":"bag","heat":"manual","sparge":"none","mash":"infusion"},"ingredients":[],"phases":[{"kind":"water","timing_known":False,"stage":stage,"temperature":None,"volume":None}],"notes":"Original synthetic process"}
     _, result = change({"operation":"save_recipe","id":None,"expected_recipe_revision":None,"recipe":recipe},"container-brewing-recipe-0001")
     recipe_id = result["brewing"]["recipes"][0]["record"]["id"]
+    assert result["result_id"] == recipe_id
     _, result = change({"operation":"save_equipment","id":None,"equipment":{"name":"Container brewing vessel","kind":"kettle","model":"Synthetic vessel","capacity":{"amount":"1.000001","unit":"l"},"notes":"Synthetic only"}},"container-brewing-equipment-0001")
     equipment = result["brewing"]["equipment"][0]["id"]
     original, result = change({"operation":"create_batch","draft":{"name":"Container brewing batch","recipe_id":recipe_id,"recipe_revision":1,"brew_day":{"local":"2030-01-15T08:00:00","timezone":"UTC","fold":"reject"},"yeast_preparation":{"choice":"skip"},"equipment":{"water":[equipment]}}},"container-brewing-batch-0001")
     run = result["brewing"]["batches"][0]["run"]
+    assert result["result_id"] == run["id"]
     assert "recipe" not in run and "servings" not in run and run["brew_recipe"]["volume"]["amount"] == "0.100001"
     status, body = request(container, unix, root, user="alice", method="POST", data=original)
-    assert status == 200 and json.loads(body)["replayed"] and len(json.loads(body)["brewing"]["batches"]) == 1, body
+    assert status == 200 and json.loads(body)["replayed"] and json.loads(body)["result_id"] == run["id"] and len(json.loads(body)["brewing"]["batches"]) == 1, body
     assert request(container, unix, root, user="bob", method="POST", data=original)[0] == 403
     reading = {"phase_id":"water-1","measurement":{"value":"1.050001","unit":"sg"},"measured_at":{"local":"2026-11-01T08:00:00","timezone":"UTC","fold":"reject"},"source":{"kind":"manual"},"calibration":{"kind":"unknown"},"notes":"Synthetic transcription"}
     change({"operation":"add_reading","run_id":run["id"],"reading":reading,"corrects":None,"reason":None},"container-brewing-reading-0001")

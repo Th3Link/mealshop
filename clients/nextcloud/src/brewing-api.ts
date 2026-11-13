@@ -327,7 +327,12 @@ export const brewPreviewSchema = z
   .strict()
 export type BrewPreview = z.infer<typeof brewPreviewSchema>
 export const brewResultSchema = z
-  .object({ operation_id: z.string(), replayed: z.boolean(), brewing: brewStateSchema })
+  .object({
+    operation_id: z.string(),
+    result_id: z.string().nullable(),
+    replayed: z.boolean(),
+    brewing: brewStateSchema,
+  })
   .strict()
 export type BrewCommand =
   | {
