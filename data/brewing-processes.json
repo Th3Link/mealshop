@@ -7,98 +7,112 @@
       "publisher": "American Homebrewers Association",
       "title": "How Malt Extract is Made",
       "url": "https://www.homebrewersassociation.org/how-to-brew/how-malt-extract-is-made/",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "aha-partial",
       "publisher": "American Homebrewers Association",
       "title": "Partial Mash Homebrewing",
       "url": "https://homebrewersassociation.org/tutorials/partial-mash-homebrewing/partial-mash-homebrewing/",
-      "document_version": "2018-02-07"
+      "document_version": "2018-02-07",
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "aha-biab",
       "publisher": "American Homebrewers Association",
       "title": "Brew in a Bag",
       "url": "https://www.homebrewersassociation.org/wp-content/uploads/How-To-Brew-in-a-Bag.pdf",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "aha-allgrain",
       "publisher": "American Homebrewers Association",
       "title": "All-Grain (Batch Sparge) Homebrewing",
       "url": "https://homebrewersassociation.org/tutorials/all-grain-batch-sparge-homebrewing/all-grain-batch-sparge-homebrewing/",
-      "document_version": "2018-03-23"
+      "document_version": "2018-03-23",
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "aha-sparge",
       "publisher": "American Homebrewers Association",
       "title": "Fly Sparging vs Batch Sparging",
       "url": "https://www.homebrewersassociation.org/how-to-brew/fly-sparing-vs-batch-sparging/",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "grainfather-g30",
       "publisher": "Grainfather",
       "title": "G30 English instructions",
       "url": "https://help.grainfather.com/hc/en-us/article_attachments/15548590179345",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "brewmonk-b",
       "publisher": "Brouwland / Brew Monk",
       "title": "B40 / B50 / B70 user manual",
       "url": "https://brouwland.com/brldocs/057.702.xx_BrewMonk_Manual.pdf",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "speidel-plus",
       "publisher": "Speidel",
       "title": "Braumeister PLUS 10 / 20 / 50 / 100 litres original English manual",
       "url": "https://www.speidels-braumeister.de/en/service/instruction-manuals/original-instruction-manual-speidels-braumeister-plus-10-20-50-100-litres.html",
-      "document_version": "2020-09"
+      "document_version": "2020-09",
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "electric-three",
       "publisher": "The Electric Brewery",
       "title": "Kettles overview",
       "url": "https://shop.theelectricbrewery.com/pages/kettles-overview",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "electric-herms",
       "publisher": "The Electric Brewery",
       "title": "Hot Liquor Tank / HERMS design",
       "url": "https://shop.theelectricbrewery.com/pages/hot-liquor-tank",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "blichmann-rims",
       "publisher": "Blichmann Engineering",
       "title": "Electric TOWER of POWER controller manual",
       "url": "https://www.blichmannengineering.com/wp-content/uploads/UpdatedManuals/Electric_TOP_240V_Controller_Manual_V3_0.pdf",
-      "document_version": "3.0"
+      "document_version": "3.0",
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "aha-steep",
       "publisher": "American Homebrewers Association",
       "title": "Working with Extract Recipes",
       "url": "https://www.homebrewersassociation.org/how-to-brew/working-with-extract-recipes/",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "aha-decoction",
       "publisher": "American Homebrewers Association",
       "title": "Decoction Mashing: History and Modern Approaches",
       "url": "https://www.homebrewersassociation.org/zymurgy-article/decoction-mashing-history-and-modern-approaches/",
-      "document_version": "2019-05/06"
+      "document_version": "2019-05/06",
+      "retrieved_on": "2026-11-13"
     },
     {
       "id": "blichmann-two",
       "publisher": "Blichmann Engineering",
       "title": "BrewEasy two-vessel design",
       "url": "https://www.blichmannengineering.com/product/breweasy-compact-all-grain-brewing-system/",
-      "document_version": null
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
     }
   ],
   "templates": [

@@ -95,11 +95,18 @@ impl Store {
             .map_err(|_| "Cannot recover interrupted notification attempts")?;
         Ok(store)
     }
-    pub(crate) fn change(
-        &mut self,
+    pub(crate) fn ready(&self) -> Result<(), &'static str> {
+        if self.writable {
+            Ok(())
+        } else {
+            Err("cooking_storage_failed")
+        }
+    }
+    pub(crate) fn prepare_change(
+        &self,
         expected: Option<u64>,
         action: impl FnOnce(&mut Data) -> Result<(), &'static str>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Data, &'static str> {
         if !self.writable {
             return Err("cooking_storage_failed");
         }
@@ -109,7 +116,7 @@ impl Store {
         let mut next = self.data.clone();
         action(&mut next)?;
         if next == self.data {
-            return Ok(());
+            return Ok(next);
         }
         if expected.is_some() {
             next.revision = next.revision.checked_add(1).ok_or("cooking_capacity")?;
@@ -124,6 +131,18 @@ impl Store {
         if bytes.len() > 4_194_304 {
             return Err("cooking_capacity");
         }
+        Ok(next)
+    }
+    pub(crate) fn change(
+        &mut self,
+        expected: Option<u64>,
+        action: impl FnOnce(&mut Data) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        let next = self.prepare_change(expected, action)?;
+        if next == self.data {
+            return Ok(());
+        }
+        let bytes = serde_json::to_vec(&next).map_err(|_| "cooking_storage_failed")?;
         let pending = self.path.with_file_name(".cooking.pending");
         let persist = || -> std::io::Result<()> {
             let mut options = OpenOptions::new();
@@ -215,6 +234,7 @@ impl Store {
     }
 }
 fn validate(data: &Data) -> Result<(), &'static str> {
+    crate::brewing::validation::validate(data)?;
     if data.schema_version != 1
         || data.next_id == 0
         || data.runs.len() > 100

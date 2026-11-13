@@ -1,5 +1,10 @@
 //! Source-linked beer workflows use the existing protected durable process engine.
+mod api;
+pub(crate) mod model;
+mod operations;
 pub(crate) mod templates;
+pub(crate) mod validation;
+mod view;
 use crate::household::{self, Shared};
 use axum::{
     Router,
@@ -9,7 +14,9 @@ use axum::{
     routing::get,
 };
 pub(crate) fn routes() -> Router<Shared> {
-    Router::new().route("/api/household/brewing/templates", get(read_templates))
+    Router::new()
+        .route("/api/household/brewing/templates", get(read_templates))
+        .merge(api::routes())
 }
 async fn read_templates(State(state): State<Shared>, headers: HeaderMap) -> Response {
     if !household::authorized(&state, &headers) {

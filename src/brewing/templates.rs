@@ -35,7 +35,30 @@ pub(crate) enum Sparge {
     Batch,
     Fly,
 }
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum PhaseKind {
+    Water,
+    Steep,
+    Mash,
+    Lauter,
+    BagLift,
+    BasketLift,
+    MaltPipeLift,
+    Sparge,
+    Extract,
+    Boil,
+    Addition,
+    Cool,
+    Transfer,
+    Pitch,
+    Ferment,
+    Package,
+    Clean,
+    YeastPreparation,
+    Custom,
+}
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Evidence {
     pub(crate) id: String,
@@ -43,11 +66,12 @@ pub(crate) struct Evidence {
     pub(crate) title: String,
     pub(crate) url: String,
     pub(crate) document_version: Option<String>,
+    pub(crate) retrieved_on: String,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct PhaseSeed {
-    pub(crate) kind: String,
+    pub(crate) kind: PhaseKind,
     pub(crate) name: String,
     pub(crate) translations: BTreeMap<String, String>,
     pub(crate) instruction: String,
