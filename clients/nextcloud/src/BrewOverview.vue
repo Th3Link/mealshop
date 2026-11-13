@@ -119,6 +119,7 @@ function methodName(id: string) {
     </li>
   </ul>
   <NcEmptyContent
+    class="brew-overview-empty"
     v-if="
       section === 'recipes'
         ? !data.recipes.some((r) => showArchived || !r.archived)
@@ -137,10 +138,31 @@ function methodName(id: string) {
     "
     ><template #icon><Icon :path="mdiBeerOutline" /></template
     ><template #description
-      ><p>{{ t('brewFirstRecipe') }}</p>
-      <NcButton v-if="writable" :to="`${base}/recipes/new`">{{
-        t('brewNewRecipe')
-      }}</NcButton></template
+      ><p>
+        {{
+          t(
+            section === 'equipment' ||
+              (section === 'batches' && data.recipes.some((r) => !r.archived))
+              ? 'brewEquipmentHelp'
+              : section === 'recipes'
+                ? 'brewTemplateHelp'
+                : 'brewFirstRecipe',
+          )
+        }}
+      </p>
+      <NcButton
+        v-if="writable"
+        :to="`${base}/${section === 'equipment' ? 'equipment' : section === 'batches' && data.recipes.some((r) => !r.archived) ? 'batches' : 'recipes'}/new`"
+        >{{
+          t(
+            section === 'equipment'
+              ? 'brewNewEquipment'
+              : section === 'batches' && data.recipes.some((r) => !r.archived)
+                ? 'brewNewBatch'
+                : 'brewNewRecipe',
+          )
+        }}</NcButton
+      ></template
     ></NcEmptyContent
   >
 </template>

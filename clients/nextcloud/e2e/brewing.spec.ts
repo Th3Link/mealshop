@@ -374,3 +374,28 @@ test('brewing keeps drafts on concurrent changes and retries an uncertain save w
   ).toHaveLength(1)
   expect(state.equipment).toHaveLength(2)
 })
+
+test('empty brewing views lead directly to the matching recipe or equipment form', async ({
+  page,
+}) => {
+  const { base } = await setup(page)
+  await page.goto(`${base}/batches`)
+  await page
+    .locator('.brew-overview-empty')
+    .getByRole('link', { name: 'Create brew recipe', exact: true })
+    .click()
+  await expect(page.getByRole('heading', { name: 'Create brew recipe', exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Equipment', exact: true }).click()
+  await page
+    .locator('.brew-overview-empty')
+    .getByRole('link', { name: 'Add equipment', exact: true })
+    .click()
+  await expect(page.getByRole('heading', { name: 'Add equipment', exact: true })).toBeVisible()
+  await expect(page.getByLabel('Name', { exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Brew recipes', exact: true }).click()
+  await page
+    .locator('.brew-overview-empty')
+    .getByRole('link', { name: 'Create brew recipe', exact: true })
+    .click()
+  await expect(page.getByRole('combobox', { name: 'Starting template', exact: true })).toBeVisible()
+})
