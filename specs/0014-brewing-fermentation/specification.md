@@ -1,6 +1,6 @@
 # Brewing and fermentation workflows
 
-Status: In progress
+Status: Done
 Priority: Could
 Origin: Customer
 Milestone: M4
@@ -44,3 +44,8 @@ specific. Independently reviewed cider-juice, white-wine, red-wine and tradition
 use their own process classifications; see the primary-source validation in research.md.
 
 Decision: [ADR 0025](../../docs/adr/0025-native-brewing-processes.md).
+
+## Acceptance evidence
+
+See [validation.md](validation.md) for all five criteria, source review, real Nextcloud/browser/restart
+checks, identified defects and their passing repeats, privacy-preserving cleanup and publication gates.

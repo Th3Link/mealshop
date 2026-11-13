@@ -105,6 +105,13 @@ async function audit(page: Page, name: string) {
           await page.locator('.mealshop').evaluate((e) => e.scrollWidth <= e.clientWidth),
         ).toBe(true)
         expect(
+          await page
+            .locator('.brew-facts dt, .brew-facts dd, .brew-tabs a')
+            .evaluateAll((elements) =>
+              elements.every((element) => element.scrollWidth <= element.clientWidth),
+            ),
+        ).toBe(true)
+        expect(
           (
             await new AxeBuilder({ page })
               .include('.mealshop')

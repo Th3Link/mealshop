@@ -36,3 +36,14 @@ responses after navigation. Offline views remain visibly stale and read-only unt
 Verify keyboard focus, labels/errors/status announcements, responsive overflow and axe WCAG 2.2 AA
 in real Nextcloud owner/reader flows, EN/DE, light/dark and 1440/390/320 px. Use only ledger-owned
 synthetic households and stop the sole writer before targeted cleanup; never inspect retained folders.
+
+## Validated final refinements
+
+Group starter templates by beverage. Cider, white/red wine and mead show their own process name, with
+beer-method controls reserved for beer. All phases stay open. Saving a recipe or batch navigates by the
+receipt's exact result ID, including duplicate titles and uncertain-response retries.
+
+At narrow widths, stack fact labels above values to keep long German words and exact quantities legible.
+Keep tab targets distinct. Validate text bounds as well as page overflow and axe in both languages,
+both themes and 1440/390/320 px. Retain all accessibility rules and wait for native theme transitions
+before measuring contrast. Screenshots complement the automated checks.

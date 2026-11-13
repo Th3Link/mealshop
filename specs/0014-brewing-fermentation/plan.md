@@ -16,9 +16,12 @@
 - [x] AC 2: explicit pre-brew yeast reminder, phase timers and durable personal delivery.
 - [x] AC 3: original units, calibration, timestamp, source and reasoned reading corrections.
 - [x] AC 4: atomic equipment reservations and independent simultaneous batches.
-- [ ] AC 5: independently researched cider, white/red wine and traditional mead templates; validate their own typed processes, native authoring and restart.
-- [ ] Native acceptance, all gates, installed evidence, owned-fixture cleanup and current-head CI.
+- [x] AC 5: independently researched cider, white/red wine and traditional mead templates; their own typed processes, native authoring and restart are verified.
+- [x] Native acceptance, installed/restart evidence, all local gates and owned-fixture cleanup.
 
-Implementation checkpoint: the twelve beer templates have passed initial domain/native/installed checks.
-Four independently sourced fermentation templates are now being validated in the same PR. Final full
-scope evidence, exact-head CI and owned-fixture cleanup remain required before Done.
+Acceptance is complete: 181 Rust tests, 36 native contracts and all 41 distinct browser cases pass,
+including targeted repeats for duplicate titles and stable theme audits. All four brewing scenes have
+48 passing language/theme/width combinations and final text-bound checks. The installed final CSS image
+retains byte-identical tested backend/JavaScript; only owned synthetic fixtures were cleaned.
+[Evidence and findings](validation.md) records exact scope, artifacts and limits. Final-head CI must
+be green before PR handoff; no merge is automated.

@@ -1704,6 +1704,9 @@
   display: block;
   padding: 0;
   text-align: start;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .mealshop .brew-facts dt {
   color: var(--color-text-maxcontrast);
@@ -1741,8 +1744,9 @@
 @media (max-width: 600px) {
   .mealshop .brew-tabs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0;
+    grid-template-columns: repeat(3, max-content);
+    justify-content: space-between;
+    gap: 8px;
   }
   .mealshop .brew-tabs a {
     padding: 12px 4px;
@@ -1755,14 +1759,6 @@
   .mealshop .brew-facts {
     grid-template-columns: 1fr;
     gap: 8px;
-  }
-  .mealshop .brew-facts > div {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 12px;
-  }
-  .mealshop .brew-facts dd {
-    margin: 0;
   }
   .mealshop .brew-readings .section-heading {
     align-items: start;

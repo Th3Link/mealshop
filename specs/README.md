@@ -13,7 +13,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | Requirement | Feature | Priority | Milestone |
 |---|---|---|---|
 | F18 | [Storage adapters, Nextcloud `ExApp` and Flutter](0018-storage-deployment/specification.md) | Must | M1 |
-| F14 | [Brewing and fermentation workflows](0014-brewing-fermentation/specification.md) | Could | M4 |
 
 ## Draft
 
@@ -56,3 +55,4 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F15 | [Inventory and shopping offers](0015-inventory-offers/specification.md) | Should | M3 |
 | F16 | [Customer-operated recipe link import](0016-recipe-import/specification.md) | Should | M3 |
 | F17 | [MCP recipe tools](0017-mcp/specification.md) | Should | M3 |
+| F14 | [Brewing and fermentation workflows](0014-brewing-fermentation/specification.md) | Could | M4 |
