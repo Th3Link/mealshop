@@ -42,7 +42,8 @@ use airplane mode, terminate/reopen the app, reconnect and reconcile safely. No 
   cannot silently replace sources. Likely areas: `src/shopping/{api,model,store}.rs`, inventory receipt
   invariants, `tests/shopping.rs`, native client compatibility tests. Receipts are not a new sync engine.
 - [ ] P1.3 **Deliver the real list and persistent client outbox.** Manual items, exact units,
-  check/undo, quantities, source details, shops/order and existing manual product entry/consented lookup.
+  check/undo, quantities, source details, ingredient/category sections, shops/order and existing manual product entry/consented lookup.
+  Use existing ingredient groups; any new manual category metadata needs an explicit compatible contract.
   Foreground refresh and refresh-on-resume first; no assumed WebSocket or guaranteed background worker.
   Scope encrypted/minimized cache and outbox by canonical server/account/household.
   Define offline retention/authorization limits; remote revocation cannot erase an offline copy.
@@ -75,7 +76,7 @@ The diet label must reflect exceptions rather than silently claiming an unmodifi
   Nextcloud evaluation/suggestions/plan apply; do not store a rule the server then ignores.
   Verify: conflicting presets/exceptions, unknown origin, unrelated allergy, revoked access, export/
   deletion and legacy profile round trips; adapt existing typed Vue contracts in this same PR.
-- [ ] P2.2 **Build the resumable profile flow.** One or two questions per step, optional skip,
+- [ ] P2.2 **Build the resumable profile flow.** One or two questions per step, optional name/avatar capture, optional skip,
   protected local drafts, explicit save/review and editable summary. No required diagnosis, weight or
   calorie target. A login account and a household person remain distinct identities.
   Verify: interruption/relaunch, no cross-person draft leakage, screen reader/large text and DE/EN.
@@ -106,7 +107,9 @@ portions. A plan edit must neither erase manual purchases nor count cooked produ
 - [ ] P3.1 **Implement a server-owned full-week proposal.** Reuse current evaluation, slot suggestions,
   pinned recipes and profile/allergen revisions. Add proposal identity/expiry, per-slot confirmation,
   effective recurring attendance/date overrides/windows and optional prep/time preferences. Explain
-  infeasibility; rank only supported soft criteria. Missing price/nutrition data is not zero cost/energy.
+  infeasibility; rank declared preferences, variety, ingredient reuse and preparation/time trade-offs.
+  Include cost only with applicable offer data and nutrition only with meaningful source coverage;
+  record the chosen criteria/limits and do not claim global optimality. Missing price/nutrition data is not zero cost/energy.
   Verify: two-person hard-rule fixtures, impossible week, stale profile/recipe, DST/date boundaries and
   deterministic recommendation evidence. Any new persisted constraint also protects existing web paths.
 - [ ] P3.2 **Deliver mobile Today/Plan and reviewed shopping changes.** Day/week navigation, participant/
@@ -154,7 +157,7 @@ limits. No medical claim or physical fermentation-complete claim follows from el
 ## P5 — Camera and reviewed capture
 
 Phone demo: share a supported public recipe URL, import a photo with an unresolved cup measurement,
-review ingredient mappings/quantities, scan a product and recover after camera/lookup denial. Save and
+review ingredient mappings/quantities, scan a product/nutrition label and recover after camera/lookup denial. Save and
 reopen the original source and reviewed values; share an imported recipe as its source link only.
 
 - [ ] P5.1 **Share-sheet and URL review.** Reuse F16 network bounds and explicit retrieval consent.
@@ -162,7 +165,9 @@ reopen the original source and reviewed values; share an imported recipe as its 
   exports must preserve the same rules as Nextcloud. Verify blocked/private/redirect URLs and retries.
 - [ ] P5.2 **Camera/barcode and on-device OCR candidates.** Review platform/plugin/licence support and
   privacy before dependencies. Default proposal: local OCR, explicit photo access and retained original
-  candidates with confidence/unknowns; no external upload. Use manual GTIN and consented existing lookup
+  recipe and nutrition-label candidates with confidence/unknowns; no external upload. Preserve the
+  original label basis/units/definitions and review declared product values instead of copying a
+  nearby generic ingredient profile. Use manual GTIN and consented existing lookup
   when camera support fails. Verify real phone permissions, cancellation, large/rotated images,
   unresolved `1 cup`, exact known decimals and no silent ingredient or medical inference.
 - [ ] P5.3 **Complete the release and portability audit.** Test all enabled journeys on each supported

@@ -34,6 +34,7 @@ text/icons, not colour alone. Presets with exceptions display their actual meani
 cannot waive an unrelated allergy or treat unknown provenance as known.
 
 Keep sensitive medical context optional and hidden until its access/retention contract is approved.
+Optional profile avatars never replace accessible person names. Solo users need no extra account.
 No required diagnosis/weight/calorie target. Activity entry remains a small optional personal log.
 
 Recipes have compact always-open ingredient/part/step composition, inline ingredient creation, explicit

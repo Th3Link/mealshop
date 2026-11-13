@@ -64,6 +64,7 @@ there is no extra technical-foundation PR before the first usable app.
 
 The five-tab target is Today / Plan / Shopping / Recipes / More. Enable a tab when its real workflow
 ships; do not fill the initial build with dead or dummy destinations. The first launch opens Shopping.
+Solo use follows the same journey with one person; additional accounts/profiles are not mandatory.
 Shared household planning is proposed, with per-person attendance/alternatives; independent personal
 plans remain an explicit later extension. No irreversible model decision is inferred from the pack.
 
