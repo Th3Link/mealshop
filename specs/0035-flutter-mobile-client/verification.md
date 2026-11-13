@@ -61,10 +61,11 @@ provided; emulator evidence is not relabelled as physical-phone evidence.
   and generated-document synchronization. The suite now contains **186 Rust tests**, including five
   mobile receipt/group tests: restart/replay, concurrent duplicate check, authority removal, stale
   contribution scope, expiry/capacity/corrupt receipts, purchase-only-new-source and legacy projection.
-- Flutter format and strict analysis; **19 unit/widget tests** cover exact localized input, original
+- Flutter format and strict analysis; **22 unit/widget tests** cover exact localized input, original
   precision, anonymous Login Flow polling, origin/prefix/redirect boundaries, frozen outbox after
   lost/malformed responses, durable-write failure, revocation, explicit first household choice,
-  household removal while a draft is open, restart and local purchase state.
+  household removal while a draft is open, restart and local purchase state. Three shop-menu scenarios
+  verify that starting a round requires consent and no already active round, matching server constraints.
 - Real API 36 Android integration through `python3 scripts/mobile.py integration`: two named native
   tests (plus framework teardown) pass. They exercise the Android Keystore/atomic-file adapter and
   native German shopping/navigation with synthetic HTTP transport; this is separate from live login.
@@ -104,8 +105,37 @@ browser URL, poll token or app password is retained in evidence.
    demand remains entirely unpurchased, with a visible conflict. Explicit native review/confirmation
    then purchases the reviewed 250.000001 g. No blind rebase or duplicate source occurs.
 
+5. Select the actual type-550 ingredient through the native search, add **30 g**, and verify its
+   existing wheat-flour group in the live minimized projection. Switch the app to German.
+6. Install the retained-key build **0.1.0+2** over **0.1.0+1** (`x86_64` Android version codes **4002 over
+   4001**) using `adb install -r`. The existing device credential, selected household and three-source
+   shopping snapshot survive. No browser approval or data reset is needed for this actual update.
+   This check runs separately from the integration driver, whose cleanup intentionally uninstalls
+   its test application.
+
+Visually inspected own-fixture native screenshots: [light](screenshots/android-shopping-light.png),
+[dark](screenshots/android-shopping-dark.png), [200% text](screenshots/android-shopping-large-text.png).
+System theme/font settings are restored after capture. Screenshots contain only the synthetic household
+and shopping data, not browser authentication or retained customer content.
+
 Network loss above is simulated by removing ADB reverse forwarding; it is not a claim of an airplane-mode
 OS test. Lost-response replay/restart and permission revocation are additionally proved by executable
 server/controller tests. Manual product entry/shops reuse the existing server contracts; consented
 Open Food Facts lookup remains dependent on the external service. Camera capture, background sync,
 production signing, iOS, physical handset/`TalkBack`/performance profiling and P2–P5 are not claimed.
+
+### Cleanup and artifact identity
+
+Only the six fixtures created in this run (one mobile fixture, four shopping fixtures and one visual
+shopping fixture) were selected from the ledger. With the sole backend writer stopped, the strict
+fixture cleanup archived only those synthetic records; retained household membership/library entries
+were compared unchanged, and retained household directories were not inspected. The backend returned
+healthy. The native app was signed out and its production protected record was confirmed absent;
+temporary UI-probe/optional browser packages were removed from the owned emulator. The normal app,
+Chrome and the working emulator remain available.
+
+Local handset APKs use the retained development key and build **0.1.0+2**, with actual manifest version
+name/code, source commit, dirty-source flag and verified SHA-256 alongside each artifact. The first
+complete PR CI run passed Rust, Vue, MCP, image/rootless TCP+Unix, security, Android native tests and APK
+upload; the final-head CI is required again after this evidence/version-metadata update. No signing
+key, device credential, raw UI dump or private household data is committed.

@@ -189,7 +189,11 @@ def main():
                 with apk.open('rb') as stream:
                     digest = hashlib.file_digest(stream, 'sha256').hexdigest()
                 apk.with_suffix('.apk.sha256').write_text(digest + '  ' + apk.name + '\n')
-                apk.with_suffix('.apk.build.json').write_text(json.dumps({'commit': commit, 'flutter': CONFIG['flutter_version'], 'application_id': 'org.mealshop.pocket.dev', 'sha256': digest, 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())}, indent=2) + '\n')
+                versions = {field.replace('-', '_'): subprocess.check_output(
+                    [str(SDK / 'cmdline-tools/latest/bin/apkanalyzer'), 'manifest', field, str(apk)],
+                    env=environment(), text=True, stderr=subprocess.DEVNULL).strip()
+                    for field in ['version-name', 'version-code']}
+                apk.with_suffix('.apk.build.json').write_text(json.dumps({'commit': commit, 'flutter': CONFIG['flutter_version'], 'application_id': 'org.mealshop.pocket.dev', **versions, 'sha256': digest, 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())}, indent=2) + '\n')
 
 
 if __name__ == '__main__':

@@ -61,7 +61,7 @@ local credential/cache. Production release signing and store distribution remain
 - `clients/flutter/build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk`: most current Android phones.
 - `app-armeabi-v7a-debug.apk`: supported older ARM phones.
 - `app-x86_64-debug.apk`: this emulator.
-- Matching `.apk.sha256` and `.apk.build.json`: checksum, source commit, dirty-source flag and app ID.
+- Matching `.apk.sha256` and `.apk.build.json`: checksum, source commit, dirty-source flag, app ID and actual APK version name/code.
 
 Install an upgrade with `adb install -r <apk>` using the same retained signing identity. Do not uninstall
 or clear application data as an upgrade step. Debug build numbers can be overridden using the Flutter
@@ -142,7 +142,9 @@ python3 scripts/mobile.py build
 ```
 
 Run integration tests on the dedicated synthetic-data emulator, not on a personal installation: the
-Flutter integration runner installs/replaces its test app and can uninstall after a failed run.
+official Flutter integration driver installs/replaces its test app and **uninstalls it during cleanup**,
+including after success. This intentionally clears that installation’s local key/cache; perform the
+separate same-key APK-upgrade test only after restoring and signing into the normal app.
 `integration_test` runs through the official `flutter drive` integration driver with `--no-dds`.
 Flutter 3.50's direct test runner failed to start DDS on this host, and its no-DDS golden-stream
 subscription failed even though both native tests passed. The integration driver keeps every native

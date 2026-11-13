@@ -30,6 +30,8 @@ class ShopsScreen extends StatelessWidget {
       final shops = data?.shops ?? [];
       final sessions =
           (data?.json['shops'] as Json?)?['sessions'] as List? ?? [];
+      final learning = (data?.json['shops'] as Json?)?['learning'] == true;
+      final activeRound = sessions.any((s) => object(s)['completed'] == false);
       final can = c.writable && c.online && !c.busy && c.pending.isEmpty;
       return Scaffold(
         appBar: AppBar(title: Text(context.t('shops'))),
@@ -103,10 +105,16 @@ class ShopsScreen extends StatelessWidget {
                           ),
                           PopupMenuItem(
                             value: 'round',
+                            enabled: learning && !activeRound,
                             child: Text(context.t('start_round')),
                           ),
                           PopupMenuItem(
                             value: 'delete',
+                            enabled: !sessions.any(
+                              (s) =>
+                                  object(s)['completed'] == false &&
+                                  object(s)['shop_id'] == shop.id,
+                            ),
                             child: Text(context.t('delete')),
                           ),
                         ],
@@ -169,7 +177,7 @@ class ShopsScreen extends StatelessWidget {
             SwitchListTile(
               title: Text(context.t('learning')),
               subtitle: Text(context.t('learning_body')),
-              value: (data?.json['shops'] as Json?)?['learning'] == true,
+              value: learning,
               onChanged: can
                   ? (v) => apply({'operation': 'learning', 'enabled': v})
                   : null,
