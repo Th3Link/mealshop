@@ -260,7 +260,7 @@ test('manual offer keeps localized exact price and package provenance through pu
   await expect(page.locator('.shopping-items')).toContainText('1000.000002 g')
   await oats.focus()
   await page.keyboard.press('Space')
-  await expect(oats).toBeChecked()
+  await expect(page.getByRole('status').filter({ hasText: 'Marked as purchased' })).toBeVisible()
   await page.goto(`${base}/inventory?task=receive`)
   const receipt = page.getByRole('checkbox', { name: /Oats.*1000.000002|Oats.*1000.000002/ })
   await receipt.focus()

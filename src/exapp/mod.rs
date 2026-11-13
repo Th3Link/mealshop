@@ -666,3 +666,6 @@ mod mcp_tests;
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]
 mod import_tests;
+
+#[cfg(test)]
+mod brewing_tests;

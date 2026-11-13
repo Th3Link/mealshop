@@ -38,7 +38,8 @@ impl Store {
         if run.status != RunState::Completed || run.steps.iter().any(|s| !s.timer.complete()) {
             return Err("history_session_incomplete");
         }
-        Ok((run.recipe.id.clone(), run.recipe.revision, run.servings))
+        let (recipe, servings) = run.food()?;
+        Ok((recipe.id.clone(), recipe.revision, servings))
     }
 
     pub(crate) fn health(&self) -> serde_json::Value {
@@ -94,11 +95,18 @@ impl Store {
             .map_err(|_| "Cannot recover interrupted notification attempts")?;
         Ok(store)
     }
-    pub(crate) fn change(
-        &mut self,
+    pub(crate) fn ready(&self) -> Result<(), &'static str> {
+        if self.writable {
+            Ok(())
+        } else {
+            Err("cooking_storage_failed")
+        }
+    }
+    pub(crate) fn prepare_change(
+        &self,
         expected: Option<u64>,
         action: impl FnOnce(&mut Data) -> Result<(), &'static str>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<Data, &'static str> {
         if !self.writable {
             return Err("cooking_storage_failed");
         }
@@ -108,7 +116,7 @@ impl Store {
         let mut next = self.data.clone();
         action(&mut next)?;
         if next == self.data {
-            return Ok(());
+            return Ok(next);
         }
         if expected.is_some() {
             next.revision = next.revision.checked_add(1).ok_or("cooking_capacity")?;
@@ -123,6 +131,18 @@ impl Store {
         if bytes.len() > 4_194_304 {
             return Err("cooking_capacity");
         }
+        Ok(next)
+    }
+    pub(crate) fn change(
+        &mut self,
+        expected: Option<u64>,
+        action: impl FnOnce(&mut Data) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        let next = self.prepare_change(expected, action)?;
+        if next == self.data {
+            return Ok(());
+        }
+        let bytes = serde_json::to_vec(&next).map_err(|_| "cooking_storage_failed")?;
         let pending = self.path.with_file_name(".cooking.pending");
         let persist = || -> std::io::Result<()> {
             let mut options = OpenOptions::new();
@@ -194,6 +214,7 @@ impl Store {
         if prepared.revision != expected {
             return Err("cooking_revision_conflict");
         }
+        prepared.run.food()?;
         let mut run = prepared.run;
         let mut result = run.id.clone();
         self.change(Some(expected), |data| {
@@ -213,6 +234,7 @@ impl Store {
     }
 }
 fn validate(data: &Data) -> Result<(), &'static str> {
+    crate::brewing::validation::validate(data)?;
     if data.schema_version != 1
         || data.next_id == 0
         || data.runs.len() > 100
@@ -225,12 +247,7 @@ fn validate(data: &Data) -> Result<(), &'static str> {
         if !ids.insert(&run.id)
             || !allocated(data, &run.id, "cook-")
             || !model::text(&run.name, 200)
-            || !crate::recipes::valid_id(&run.recipe.id)
-            || run.recipe.revision == 0
-            || !model::text(&run.recipe.title, 200)
-            || !matches!(run.recipe.language.as_str(), "en" | "de")
-            || !(1..=1_000_000).contains(&run.servings)
-            || !(1..=1_000_000).contains(&run.recipe.reference_servings)
+            || run.source.validate(run.kind).is_err()
             || !time::valid(run.created_at)
             || time::zone(&run.timezone).is_err()
             || run
@@ -244,8 +261,13 @@ fn validate(data: &Data) -> Result<(), &'static str> {
         let stages: Vec<_> = run.steps.iter().map(|s| s.stage.clone()).collect();
         plan::order(&stages)?;
         for step in &run.steps {
-            step.stage.validate()?;
-            if !model::timer_valid(&step.timer)
+            let maximum = if run.kind.is_brewing() {
+                31_536_000
+            } else {
+                604_800
+            };
+            step.stage.validate_limit(maximum)?;
+            if !model::timer_valid(&step.timer, maximum * 2)
                 || step.not_before.is_some_and(|at| !time::valid(at))
                 || step.generation == 0
                 || step.cycle == 0

@@ -7,7 +7,10 @@ import type { CookingDetail, CookingCommand, DevicePermission } from './cooking-
 import { localDate } from './cooking-format'
 import { locale, t, explanation } from './i18n'
 const props = defineProps<{
-  detail: CookingDetail
+  detail: Pick<CookingDetail, 'notification_transport' | 'notices' | 'scheduler'> & {
+    run: Pick<CookingDetail['run'], 'id' | 'timezone' | 'status' | 'steps' | 'subscription'>
+  }
+  open?: boolean
   disabled: boolean
   writable: boolean
   now: number
@@ -53,7 +56,7 @@ const deliveryKeys = {
 } as const
 </script>
 <template>
-  <details class="cooking-notifications">
+  <details class="cooking-notifications" :open="open">
     <summary>{{ t('cookNotifications') }}</summary>
     <p>{{ t('cookNotificationHelp') }}</p>
     <NcNoteCard v-if="!detail.notification_transport" type="info">{{

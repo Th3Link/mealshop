@@ -54,6 +54,9 @@ impl Stage {
         i64::from(self.timer_active_seconds()) + i64::from(self.passive_seconds)
     }
     pub(crate) fn validate(&self) -> Result<(), &'static str> {
+        self.validate_limit(604_800)
+    }
+    pub(crate) fn validate_limit(&self, maximum: u32) -> Result<(), &'static str> {
         if self
             .start_at
             .as_ref()
@@ -66,8 +69,8 @@ impl Stage {
             || !text(&self.instruction, 4000)
             || self.dependencies.len() > 100
             || self.dependencies.iter().any(|v| !id(v))
-            || self.active_seconds > 604_800
-            || self.passive_max_seconds > 604_800
+            || self.active_seconds > maximum
+            || self.passive_max_seconds > maximum
             || self.passive_min_seconds > self.passive_seconds
             || self.passive_seconds > self.passive_max_seconds
             || self.lead_seconds > 604_800
@@ -99,6 +102,15 @@ pub(crate) enum Kind {
     Rolls,
     Pizza,
     Baguette,
+    Beer,
+    Cider,
+    Wine,
+    Mead,
+}
+impl Kind {
+    pub(crate) fn is_brewing(self) -> bool {
+        matches!(self, Self::Beer | Self::Cider | Self::Wine | Self::Mead)
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -199,15 +211,14 @@ pub(crate) enum Permission {
     Unsupported,
 }
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serde(try_from = "super::run_source::Wire", into = "super::run_source::Wire")]
 pub(crate) struct Run {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub(crate) plan_slot: Option<PlanSlot>,
     pub(crate) id: String,
     pub(crate) name: String,
     pub(crate) kind: Kind,
-    pub(crate) recipe: RecipeRef,
-    pub(crate) servings: u32,
+    pub(crate) source: super::run_source::Source,
     pub(crate) timezone: String,
     pub(crate) target: Option<LocalTime>,
     pub(crate) created_at: i64,
@@ -219,6 +230,8 @@ pub(crate) struct Run {
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Data {
+    #[serde(default, skip_serializing_if = "crate::brewing::model::Data::is_empty")]
+    pub(crate) brewing: crate::brewing::model::Data,
     pub(crate) schema_version: u32,
     pub(crate) revision: u64,
     pub(crate) delivery_revision: u64,
@@ -229,6 +242,7 @@ pub(crate) struct Data {
 impl Default for Data {
     fn default() -> Self {
         Self {
+            brewing: crate::brewing::model::Data::default(),
             schema_version: 1,
             revision: 0,
             delivery_revision: 0,
@@ -257,7 +271,7 @@ impl Data {
             .ok_or("cooking_run_not_found")
     }
 }
-pub(crate) fn timer_valid(timer: &Timer) -> bool {
+pub(crate) fn timer_valid(timer: &Timer, maximum: u32) -> bool {
     match timer {
         Timer::Pending | Timer::Cancelled => true,
         Timer::Running {
@@ -280,7 +294,7 @@ pub(crate) fn timer_valid(timer: &Timer) -> bool {
                 && time::valid(*paused_at)
                 && started_at <= paused_at
                 && active_remaining <= remaining
-                && *remaining <= 1_209_600
+                && *remaining <= maximum
         }
         Timer::Completed {
             started_at,

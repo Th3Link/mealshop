@@ -12,6 +12,9 @@ use crate::{
 use std::collections::{BTreeMap, BTreeSet};
 
 pub(super) fn eligible(source: &Source, run: &Run, required: &[Requirement]) -> bool {
+    let Ok((recipe, _)) = run.food() else {
+        return false;
+    };
     if !source.active
         || !source
             .requirements
@@ -25,7 +28,7 @@ pub(super) fn eligible(source: &Source, run: &Run, required: &[Requirement]) -> 
             recipe_id,
             revision,
             ..
-        } => *recipe_id == run.recipe.id && *revision == run.recipe.revision,
+        } => *recipe_id == recipe.id && *revision == recipe.revision,
         Origin::Meal {
             date,
             meal,
@@ -33,8 +36,8 @@ pub(super) fn eligible(source: &Source, run: &Run, required: &[Requirement]) -> 
             revision,
             ..
         } => {
-            *recipe_id == run.recipe.id
-                && *revision == run.recipe.revision
+            *recipe_id == recipe.id
+                && *revision == recipe.revision
                 && run
                     .plan_slot
                     .as_ref()
@@ -218,6 +221,7 @@ pub(super) fn consume(
     if !crate::planning::date(today) {
         return Err("inventory_date_invalid");
     }
+    let (recipe, servings) = run.food()?;
     if run.status != RunState::Completed {
         return Err("inventory_cooking_incomplete");
     }
@@ -230,9 +234,9 @@ pub(super) fn consume(
     let requirements = sources::recipe(
         recipes,
         &Selection {
-            recipe_id: run.recipe.id.clone(),
-            revision: run.recipe.revision,
-            servings: run.servings,
+            recipe_id: recipe.id.clone(),
+            revision: recipe.revision,
+            servings,
         },
     )?
     .requirements;
@@ -289,9 +293,9 @@ pub(super) fn consume(
     Ok((
         MovementKind::Cooking {
             run_id: run.id.clone(),
-            recipe_id: run.recipe.id.clone(),
-            revision: run.recipe.revision,
-            servings: run.servings,
+            recipe_id: recipe.id.clone(),
+            revision: recipe.revision,
+            servings,
             requirements,
             unbooked,
             use_on: today.to_owned(),
@@ -305,15 +309,16 @@ pub(super) fn selection(
     recipes: &crate::recipes::Store,
     run: &Run,
 ) -> Result<serde_json::Value, &'static str> {
+    let (recipe, servings) = run.food()?;
     if run.status != RunState::Completed {
         return Err("inventory_cooking_incomplete");
     }
     let requirements = sources::recipe(
         recipes,
         &Selection {
-            recipe_id: run.recipe.id.clone(),
-            revision: run.recipe.revision,
-            servings: run.servings,
+            recipe_id: recipe.id.clone(),
+            revision: recipe.revision,
+            servings,
         },
     )?
     .requirements;

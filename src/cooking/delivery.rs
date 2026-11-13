@@ -101,9 +101,26 @@ pub(crate) fn retry(
     Ok(())
 }
 
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum Destination {
+    #[default]
+    Cooking,
+    Brewing,
+}
+impl Destination {
+    pub(crate) fn path(self) -> &'static str {
+        match self {
+            Self::Cooking => "cooking",
+            Self::Brewing => "brewing/batches",
+        }
+    }
+}
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Job {
+    #[serde(default)]
+    pub(crate) destination: Destination,
     pub(crate) id: String,
     pub(crate) run_id: String,
     pub(crate) step_id: String,
@@ -137,6 +154,9 @@ fn events(run: &super::model::Run, step: &super::model::Step) -> Vec<(Event, i64
             active_until,
             deadline,
         } => {
+            if run.kind.is_brewing() && step.stage.timer_seconds() == 0 && deadline == started_at {
+                return vec![];
+            }
             let mut events = vec![];
             if active_until > started_at && active_until < deadline {
                 events.push((Event::ActiveEnded, active_until));
@@ -270,13 +290,29 @@ pub(crate) fn claim(data: &mut super::model::Data, now: i64) -> Result<Vec<Job>,
             .get(&notice.user)
             .ok_or("cooking_data_invalid")?;
         jobs.push(Job {
+            destination: if run.kind.is_brewing() {
+                Destination::Brewing
+            } else {
+                Destination::Cooking
+            },
             id: notice.id.clone(),
             run_id: run.id.clone(),
             step_id: step.stage.id.clone(),
             user: notice.user.clone(),
             event: notice.event,
             action: step.stage.name.clone(),
-            equipment: step.stage.equipment.clone(),
+            equipment: step
+                .stage
+                .equipment
+                .iter()
+                .map(|id| {
+                    data.brewing
+                        .batches
+                        .get(&run.id)
+                        .and_then(|b| b.equipment.iter().find(|e| &e.id == id))
+                        .map_or_else(|| id.clone(), |e| e.details.name.clone())
+                })
+                .collect(),
             language: subscription.language.clone(),
             attempted_at: now,
             due: notice.due,

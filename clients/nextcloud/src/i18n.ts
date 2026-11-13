@@ -1,3 +1,4 @@
+import { brewingEnglish, brewingGerman, brewingExplanations } from './brewing-messages'
 import { inventoryEnglish, inventoryGerman, inventoryExplanations } from './inventory-messages'
 import { importEnglish, importGerman, importExplanations } from './import-messages'
 import { mcpEnglish, mcpGerman, mcpExplanations } from './mcp-messages'
@@ -63,6 +64,7 @@ const en = {
   originalLanguage: 'Original language',
   ...shoppingEnglish,
   ...cookingEnglish,
+  ...brewingEnglish,
   ...sharingEnglish,
   ...feedbackEnglish,
   ...mcpEnglish,
@@ -405,6 +407,7 @@ const de: Record<keyof typeof en, string> = {
   maximumWait: 'Längste Ruhezeit',
 
   ...cookingGerman,
+  ...brewingGerman,
   ...sharingGerman,
   ...feedbackGerman,
   ...mcpGerman,
@@ -776,6 +779,7 @@ const explanations: Record<string, { en: string; de: string }> = {
   },
 
   ...cookingExplanations,
+  ...brewingExplanations,
   ...sharingExplanations,
   ...feedbackExplanations,
   ...mcpExplanations,

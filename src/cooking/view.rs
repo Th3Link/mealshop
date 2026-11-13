@@ -43,11 +43,12 @@ pub(crate) fn prepared(value: &Prepared, actor: &super::Actor) -> Result<Value, 
     )
 }
 pub(crate) fn list(data: &Data, actor: &super::Actor, now: i64) -> Value {
-    let mut runs=data.runs.iter().map(|run| {
+    let mut runs=data.runs.iter().filter_map(|run| {
+        let Ok((recipe, servings)) = run.food() else { return None; };
         let upcoming=run.schedule.iter().filter(|t|run.steps.iter().any(|s|s.stage.id==t.id&&matches!(s.timer,Timer::Pending))).min_by_key(|t|t.start);
         let running=run.steps.iter().filter(|s|matches!(s.timer,Timer::Running {..})).count();
         let overdue=run.steps.iter().filter(|s|matches!(s.timer,Timer::Running {deadline,..} if deadline<=now)).count();
-        json!({"plan_slot":run.plan_slot,"calendar_entries":run.schedule.iter().filter(|t| run.status == RunState::Active && run.steps.iter().any(|s| s.stage.id == t.id && !matches!(s.timer, Timer::Completed {..} | Timer::Cancelled))).map(|t| { let name=run.steps.iter().find(|s| s.stage.id == t.id).map(|s| &s.stage.name); json!({"step_id":t.id,"at":t.start,"name":name}) }).collect::<Vec<_>>(),"id":run.id,"name":run.name,"kind":run.kind,"recipe":run.recipe,"servings":run.servings,"timezone":run.timezone,"status":run.status,"created_at":run.created_at,"running":running,"overdue":overdue,"next":upcoming.map(|t|json!({"step_id":t.id,"at":t.start,"name":run.steps.iter().find(|s|s.stage.id==t.id).map(|s|&s.stage.name)}))})
+        Some(json!({"plan_slot":run.plan_slot,"calendar_entries":run.schedule.iter().filter(|t| run.status == RunState::Active && run.steps.iter().any(|s| s.stage.id == t.id && !matches!(s.timer, Timer::Completed {..} | Timer::Cancelled))).map(|t| { let name=run.steps.iter().find(|s| s.stage.id == t.id).map(|s| &s.stage.name); json!({"step_id":t.id,"at":t.start,"name":name}) }).collect::<Vec<_>>(),"id":run.id,"name":run.name,"kind":run.kind,"recipe":recipe,"servings":servings,"timezone":run.timezone,"status":run.status,"created_at":run.created_at,"running":running,"overdue":overdue,"next":upcoming.map(|t|json!({"step_id":t.id,"at":t.start,"name":run.steps.iter().find(|s|s.stage.id==t.id).map(|s|&s.stage.name)}))}))
     }).collect::<Vec<_>>();
     runs.sort_by_key(|run| {
         (

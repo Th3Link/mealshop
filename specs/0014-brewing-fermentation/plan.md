@@ -1,14 +1,27 @@
-# Plan for Brewing and fermentation workflows
+# F14 delivery plan
 
-## Affected modules
-To be selected when the feature becomes Ready; no placeholder crates.
+1. Research requested methods with primary sources; record the native UX and source/timer/storage boundary.
+2. Separate real food/brew process references while proving old wire/storage/timer behaviour unchanged.
+3. Deliver source-linked method/equipment templates, immutable brew recipes, exact readings/calibration,
+   reviewed batches/reservations and durable independent phase/reminder actions through real APIs.
+4. Build the native batch/recipe/equipment/reading workflow with typed EN/DE contracts and recovery.
+5. Validate every criterion with isolated domain tests, real Nextcloud owner/reader and restart flows,
+   responsive/axe/screens, rootless transports and the required full gate. Clean only owned fixtures.
+6. Complete one reviewable PR against current main; all current-head CI checks must pass before handoff.
 
-## Tasks
-- [ ] Design and implement the behaviour for AC 1; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 2; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 3; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 4; add acceptance evidence.
-- [ ] Design and implement the behaviour for AC 5; add acceptance evidence.
+- [x] Read requirements, F14, accepted timer/delivery architecture and current main/F15 merge.
+- [x] Research BIAB, partial/extract/all-grain and named/DIY equipment; retain source/model distinctions.
+- [x] Record native UX and the shared-process/source decision before implementation.
+- [x] AC 1: distinct process/equipment templates and exact recipe/batch/reading facts.
+- [x] AC 2: explicit pre-brew yeast reminder, phase timers and durable personal delivery.
+- [x] AC 3: original units, calibration, timestamp, source and reasoned reading corrections.
+- [x] AC 4: atomic equipment reservations and independent simultaneous batches.
+- [x] AC 5: independently researched cider, white/red wine and traditional mead templates; their own typed processes, native authoring and restart are verified.
+- [x] Native acceptance, installed/restart evidence, all local gates and owned-fixture cleanup.
 
-## Validation
-Before implementation, derive acceptance tests from each numbered criterion. Include failure cases, household authorization and quantity/provenance checks where applicable. Record commands and results here at delivery.
+Acceptance is complete: 181 Rust tests, 36 native contracts and all 41 distinct browser cases pass,
+including targeted repeats for duplicate titles and stable theme audits. All four brewing scenes have
+48 passing language/theme/width combinations and final text-bound checks. The installed final CSS image
+retains byte-identical tested backend/JavaScript; only owned synthetic fixtures were cleaned.
+[Evidence and findings](validation.md) records exact scope, artifacts and limits. Final-head CI must
+be green before PR handoff; no merge is automated.

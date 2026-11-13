@@ -3,8 +3,8 @@ use super::{
     plan,
     time::{self, LocalTime},
 };
-use serde::Deserialize;
-#[derive(Clone, Deserialize)]
+use serde::{Deserialize, Serialize};
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub(crate) enum PlanChange {
     Target {
@@ -58,7 +58,14 @@ pub(crate) fn replan(
                 return Err("cooking_timezone_invalid");
             }
             let at = deadline.resolve()?;
-            if at < now || at - now > 1_209_600 {
+            if at < now
+                || at - now
+                    > if run.kind.is_brewing() {
+                        63_072_000
+                    } else {
+                        1_209_600
+                    }
+            {
                 return Err("cooking_time_invalid");
             }
             let step = run
@@ -109,7 +116,7 @@ pub(crate) fn replan(
     run.schedule.clone_from(&proposal.schedule);
     Ok((run, proposal))
 }
-#[derive(Clone, Copy, Deserialize)]
+#[derive(Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum TimerAction {
     Start,
@@ -155,14 +162,24 @@ pub(crate) fn timer(
 ) -> Result<(), &'static str> {
     let run = data.run_mut(run_id)?;
     let index = super::source::ensure_ready(run, step_id, now)?;
-    if matches!(action, TimerAction::Start) && matches!(run.steps[index].timer, Timer::Pending) {
+    let brewing = run.kind.is_brewing();
+    if !brewing
+        && matches!(action, TimerAction::Start)
+        && matches!(run.steps[index].timer, Timer::Pending)
+    {
         acknowledge_elapsed_dependencies(run, index, now)?;
+    }
+    if brewing
+        && matches!(action, TimerAction::Pause)
+        && matches!(run.steps[index].timer, Timer::Running {started_at, deadline, ..} if deadline == started_at)
+    {
+        return Err("cooking_timer_transition_invalid");
     }
     let step = &mut run.steps[index];
     let started = super::source::started(&step.timer);
     step.timer = match (action, &step.timer) {
         (TimerAction::Start, Timer::Pending) => {
-            if step.stage.timer_seconds() == 0 {
+            if step.stage.timer_seconds() == 0 && !brewing {
                 Timer::Completed {
                     started_at: Some(now),
                     completed_at: now,

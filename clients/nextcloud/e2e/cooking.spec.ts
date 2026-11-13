@@ -190,6 +190,18 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
   await page.screenshot({ path: 'var/nextcloud/cooking-desktop.png', fullPage: true })
   for (const scheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' })
+    await page.evaluate(async () => {
+      await document.fonts.ready
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      )
+      await Promise.all(
+        document
+          .getAnimations()
+          .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+          .map((a) => a.finished.catch(() => {})),
+      )
+    })
     const a11y = await new AxeBuilder({ page })
       .include('.mealshop')
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])

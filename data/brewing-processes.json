@@ -1,0 +1,911 @@
+{
+  "schema_version": 1,
+  "retrieved_on": "2026-11-13",
+  "sources": [
+    {
+      "id": "aha-extract",
+      "publisher": "American Homebrewers Association",
+      "title": "How Malt Extract is Made",
+      "url": "https://www.homebrewersassociation.org/how-to-brew/how-malt-extract-is-made/",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-partial",
+      "publisher": "American Homebrewers Association",
+      "title": "Partial Mash Homebrewing",
+      "url": "https://homebrewersassociation.org/tutorials/partial-mash-homebrewing/partial-mash-homebrewing/",
+      "document_version": "2018-02-07",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-biab",
+      "publisher": "American Homebrewers Association",
+      "title": "Brew in a Bag",
+      "url": "https://www.homebrewersassociation.org/wp-content/uploads/How-To-Brew-in-a-Bag.pdf",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-allgrain",
+      "publisher": "American Homebrewers Association",
+      "title": "All-Grain (Batch Sparge) Homebrewing",
+      "url": "https://homebrewersassociation.org/tutorials/all-grain-batch-sparge-homebrewing/all-grain-batch-sparge-homebrewing/",
+      "document_version": "2018-03-23",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-sparge",
+      "publisher": "American Homebrewers Association",
+      "title": "Fly Sparging vs Batch Sparging",
+      "url": "https://www.homebrewersassociation.org/how-to-brew/fly-sparing-vs-batch-sparging/",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "grainfather-g30",
+      "publisher": "Grainfather",
+      "title": "G30 English instructions",
+      "url": "https://help.grainfather.com/hc/en-us/article_attachments/15548590179345",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "brewmonk-b",
+      "publisher": "Brouwland / Brew Monk",
+      "title": "B40 / B50 / B70 user manual",
+      "url": "https://brouwland.com/brldocs/057.702.xx_BrewMonk_Manual.pdf",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "speidel-plus",
+      "publisher": "Speidel",
+      "title": "Braumeister PLUS 10 / 20 / 50 / 100 litres original English manual",
+      "url": "https://www.speidels-braumeister.de/en/service/instruction-manuals/original-instruction-manual-speidels-braumeister-plus-10-20-50-100-litres.html",
+      "document_version": "2020-09",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "electric-three",
+      "publisher": "The Electric Brewery",
+      "title": "Kettles overview",
+      "url": "https://shop.theelectricbrewery.com/pages/kettles-overview",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "electric-herms",
+      "publisher": "The Electric Brewery",
+      "title": "Hot Liquor Tank / HERMS design",
+      "url": "https://shop.theelectricbrewery.com/pages/hot-liquor-tank",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "blichmann-rims",
+      "publisher": "Blichmann Engineering",
+      "title": "Electric TOWER of POWER controller manual",
+      "url": "https://www.blichmannengineering.com/wp-content/uploads/UpdatedManuals/Electric_TOP_240V_Controller_Manual_V3_0.pdf",
+      "document_version": "3.0",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-steep",
+      "publisher": "American Homebrewers Association",
+      "title": "Working with Extract Recipes",
+      "url": "https://www.homebrewersassociation.org/how-to-brew/working-with-extract-recipes/",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-decoction",
+      "publisher": "American Homebrewers Association",
+      "title": "Decoction Mashing: History and Modern Approaches",
+      "url": "https://www.homebrewersassociation.org/zymurgy-article/decoction-mashing-history-and-modern-approaches/",
+      "document_version": "2019-05/06",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "blichmann-two",
+      "publisher": "Blichmann Engineering",
+      "title": "BrewEasy two-vessel design",
+      "url": "https://www.blichmannengineering.com/product/breweasy-compact-all-grain-brewing-system/",
+      "document_version": null,
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-cider",
+      "publisher": "American Homebrewers Association",
+      "title": "How to Make Cider",
+      "url": "https://homebrewersassociation.org/tutorials/how-to-make-cider/how-to-make-cider/",
+      "document_version": "2018-02-15",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "aha-mead",
+      "publisher": "American Homebrewers Association",
+      "title": "How to Make Mead",
+      "url": "https://homebrewersassociation.org/tutorials/how-to-make-mead/how-to-make-mead/",
+      "document_version": "2018-02-07",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "morewine-white",
+      "publisher": "MoreWine / MoreFlavor",
+      "title": "Guide to White Winemaking",
+      "url": "https://morewinemaking.com/web_files/intranet.morebeer.com/files/wwhiw.pdf",
+      "document_version": "Copyright 2009; chapters 2–4, 6–7",
+      "retrieved_on": "2026-11-13"
+    },
+    {
+      "id": "morewine-red",
+      "publisher": "MoreWine / MoreFlavor",
+      "title": "Guide to Red Winemaking",
+      "url": "https://morewinemaking.com/web_files/intranet.morebeer.com/files/wredw.pdf",
+      "document_version": "Copyright 2008; chapters 2–4, 7–9",
+      "retrieved_on": "2026-11-13"
+    }
+  ],
+  "templates": [
+    {
+      "id": "extract",
+      "version": 1,
+      "beverage": "beer",
+      "name": "Malt extract",
+      "translations": {
+        "de": "Malzextrakt"
+      },
+      "strategy": "extract",
+      "layout": "kettle",
+      "heat": "direct",
+      "sparge": "none",
+      "sources": [
+        "aha-extract"
+      ],
+      "phases": [
+        "water",
+        "extract",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "extract-steep",
+      "version": 1,
+      "beverage": "beer",
+      "name": "Extract with specialty grains",
+      "translations": {
+        "de": "Extrakt mit Spezialmalz"
+      },
+      "strategy": "extract_steep",
+      "layout": "kettle",
+      "heat": "direct",
+      "sparge": "none",
+      "sources": [
+        "aha-steep"
+      ],
+      "phases": [
+        "water",
+        "steep",
+        "lauter",
+        "extract",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "partial-mash",
+      "version": 1,
+      "beverage": "beer",
+      "name": "Partial mash",
+      "translations": {
+        "de": "Teilmaische / Partial Mash"
+      },
+      "strategy": "partial_mash",
+      "layout": "bag",
+      "heat": "manual",
+      "sparge": "none",
+      "sources": [
+        "aha-partial"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "bag_lift",
+        "extract",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "biab",
+      "version": 1,
+      "beverage": "beer",
+      "name": "Brew in a bag",
+      "translations": {
+        "de": "Brew in a Bag"
+      },
+      "strategy": "all_grain",
+      "layout": "bag",
+      "heat": "manual",
+      "sparge": "none",
+      "sources": [
+        "aha-biab"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "bag_lift",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "grainfather",
+      "version": 1,
+      "beverage": "beer",
+      "name": "Grainfather-style basket system",
+      "translations": {
+        "de": "Korb-System wie Grainfather"
+      },
+      "strategy": "all_grain",
+      "layout": "top_return",
+      "heat": "direct",
+      "sparge": "basket_rinse",
+      "sources": [
+        "grainfather-g30"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "basket_lift",
+        "sparge",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "brewmonk",
+      "version": 1,
+      "beverage": "beer",
+      "name": "Brew Monk-style basket system",
+      "translations": {
+        "de": "Korb-System wie Brew Monk"
+      },
+      "strategy": "all_grain",
+      "layout": "top_return",
+      "heat": "direct",
+      "sparge": "basket_rinse",
+      "sources": [
+        "brewmonk-b"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "basket_lift",
+        "sparge",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "braumeister",
+      "version": 1,
+      "beverage": "beer",
+      "name": "Braumeister-style malt-pipe system",
+      "translations": {
+        "de": "Malzrohr-System wie Braumeister"
+      },
+      "strategy": "all_grain",
+      "layout": "malt_pipe",
+      "heat": "direct",
+      "sparge": "none",
+      "sources": [
+        "speidel-plus"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "malt_pipe_lift",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "diy-mash-tun",
+      "version": 1,
+      "beverage": "beer",
+      "name": "DIY mash tun and kettle",
+      "translations": {
+        "de": "DIY-Maischebottich und Kessel"
+      },
+      "strategy": "all_grain",
+      "layout": "separate_tun",
+      "heat": "manual",
+      "sparge": "batch",
+      "sources": [
+        "aha-allgrain",
+        "aha-sparge"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "lauter",
+        "sparge",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "diy-two-vessel",
+      "version": 1,
+      "beverage": "beer",
+      "name": "DIY two-vessel system",
+      "translations": {
+        "de": "DIY-Zwei-Gefäß-Anlage"
+      },
+      "strategy": "all_grain",
+      "layout": "two_vessel",
+      "heat": "direct",
+      "sparge": "none",
+      "sources": [
+        "blichmann-two",
+        "aha-allgrain"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "lauter",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "diy-three-vessel",
+      "version": 1,
+      "beverage": "beer",
+      "name": "DIY three-vessel system",
+      "translations": {
+        "de": "DIY-Drei-Gefäß-Anlage"
+      },
+      "strategy": "all_grain",
+      "layout": "three_vessel",
+      "heat": "direct",
+      "sparge": "fly",
+      "sources": [
+        "electric-three",
+        "aha-sparge"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "lauter",
+        "sparge",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "diy-herms",
+      "version": 1,
+      "beverage": "beer",
+      "name": "DIY HERMS",
+      "translations": {
+        "de": "DIY-HERMS"
+      },
+      "strategy": "all_grain",
+      "layout": "three_vessel",
+      "heat": "herms",
+      "sparge": "fly",
+      "sources": [
+        "electric-herms"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "lauter",
+        "sparge",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "diy-rims",
+      "version": 1,
+      "beverage": "beer",
+      "name": "DIY RIMS",
+      "translations": {
+        "de": "DIY-RIMS"
+      },
+      "strategy": "all_grain",
+      "layout": "three_vessel",
+      "heat": "rims",
+      "sparge": "fly",
+      "sources": [
+        "blichmann-rims",
+        "aha-sparge"
+      ],
+      "phases": [
+        "water",
+        "mash",
+        "lauter",
+        "sparge",
+        "boil",
+        "cool",
+        "transfer",
+        "pitch",
+        "ferment",
+        "package",
+        "clean"
+      ]
+    },
+    {
+      "id": "cider-juice",
+      "version": 1,
+      "beverage": "cider",
+      "name": "Cider from apple juice",
+      "translations": {
+        "de": "Cider aus Apfelsaft"
+      },
+      "process": "cider_juice",
+      "sources": [
+        "aha-cider"
+      ],
+      "phases": [
+        "sanitation",
+        "cider-juice",
+        "fermentation-pitch",
+        "wine-ferment",
+        "rack",
+        "mature",
+        "fermentation-package"
+      ]
+    },
+    {
+      "id": "white-wine",
+      "version": 1,
+      "beverage": "wine",
+      "name": "White wine from grapes",
+      "translations": {
+        "de": "Weißwein aus Trauben"
+      },
+      "process": "white_wine",
+      "sources": [
+        "morewine-white"
+      ],
+      "phases": [
+        "sanitation",
+        "fruit-prepare",
+        "wine-press",
+        "wine-juice",
+        "fermentation-pitch",
+        "wine-ferment",
+        "rack",
+        "mature",
+        "fermentation-package"
+      ]
+    },
+    {
+      "id": "red-wine",
+      "version": 1,
+      "beverage": "wine",
+      "name": "Red wine with skin fermentation",
+      "translations": {
+        "de": "Rotwein mit Maischegärung"
+      },
+      "process": "red_wine",
+      "sources": [
+        "morewine-red"
+      ],
+      "phases": [
+        "sanitation",
+        "fruit-prepare",
+        "fermentation-pitch",
+        "red-macerate",
+        "wine-press",
+        "rack",
+        "mature",
+        "fermentation-package"
+      ]
+    },
+    {
+      "id": "traditional-mead",
+      "version": 1,
+      "beverage": "mead",
+      "name": "Traditional mead without boiling",
+      "translations": {
+        "de": "Traditioneller Met ohne Kochen"
+      },
+      "process": "traditional_mead",
+      "sources": [
+        "aha-mead"
+      ],
+      "phases": [
+        "sanitation",
+        "mead-must",
+        "fermentation-pitch",
+        "mead-monitor",
+        "rack",
+        "mature",
+        "fermentation-package"
+      ]
+    }
+  ],
+  "phases": {
+    "water": {
+      "kind": "water",
+      "name": "Prepare brewing water",
+      "translations": {
+        "de": "Brauwasser vorbereiten"
+      },
+      "instruction": "Record the water volume and recipe-specific target temperature.",
+      "instruction_translations": {
+        "de": "Erfasse Wassermenge und rezeptabhängige Zieltemperatur."
+      }
+    },
+    "extract": {
+      "kind": "extract",
+      "name": "Add malt extract",
+      "translations": {
+        "de": "Malzextrakt zugeben"
+      },
+      "instruction": "Record the actual extract type, quantity and addition time.",
+      "instruction_translations": {
+        "de": "Erfasse die tatsächliche Extraktart, Menge und den Zugabezeitpunkt."
+      }
+    },
+    "boil": {
+      "kind": "boil",
+      "name": "Boil and record additions",
+      "translations": {
+        "de": "Würzekochen und Zugaben erfassen"
+      },
+      "instruction": "Enter recipe-specific boil time and individual hop or extract additions.",
+      "instruction_translations": {
+        "de": "Erfasse rezeptabhängige Kochdauer und einzelne Hopfen- oder Extraktzugaben."
+      }
+    },
+    "cool": {
+      "kind": "cool",
+      "name": "Cool wort",
+      "translations": {
+        "de": "Würze kühlen"
+      },
+      "instruction": "Record your actual chiller, target and measured temperature.",
+      "instruction_translations": {
+        "de": "Erfasse deinen tatsächlichen Kühler sowie Ziel- und Messtemperatur."
+      }
+    },
+    "transfer": {
+      "kind": "transfer",
+      "name": "Transfer and measure wort",
+      "translations": {
+        "de": "Würze umfüllen und messen"
+      },
+      "instruction": "Record the transferred volume and original gravity in their actual units.",
+      "instruction_translations": {
+        "de": "Erfasse umgefüllte Menge und Stammwürze in den tatsächlichen Einheiten."
+      }
+    },
+    "pitch": {
+      "kind": "pitch",
+      "name": "Pitch selected yeast",
+      "translations": {
+        "de": "Gewählte Hefe anstellen"
+      },
+      "instruction": "Use the selected yeast instructions and record quantity and actual temperature.",
+      "instruction_translations": {
+        "de": "Verwende die Anleitung der gewählten Hefe und erfasse Menge und tatsächliche Temperatur."
+      }
+    },
+    "ferment": {
+      "kind": "ferment",
+      "name": "Monitor fermentation",
+      "translations": {
+        "de": "Gärung beobachten"
+      },
+      "instruction": "Record the planned observation window and original readings. Completion is explicit.",
+      "instruction_translations": {
+        "de": "Erfasse den geplanten Beobachtungszeitraum und originale Messwerte. Der Abschluss wird ausdrücklich bestätigt."
+      }
+    },
+    "package": {
+      "kind": "package",
+      "name": "Review and package",
+      "translations": {
+        "de": "Abfüllung prüfen und durchführen"
+      },
+      "instruction": "Record the actual packaging actions and measurements from your recipe.",
+      "instruction_translations": {
+        "de": "Erfasse tatsächliche Abfüllschritte und Messwerte aus deinem Rezept."
+      }
+    },
+    "clean": {
+      "kind": "clean",
+      "name": "Clean equipment",
+      "translations": {
+        "de": "Ausrüstung reinigen"
+      },
+      "instruction": "Use the actual equipment instructions and release resources when finished.",
+      "instruction_translations": {
+        "de": "Beachte die tatsächlichen Geräteanleitungen und gib Ressourcen nach Abschluss frei."
+      }
+    },
+    "steep": {
+      "kind": "steep",
+      "name": "Steep specialty grains",
+      "translations": {
+        "de": "Spezialmalz einweichen"
+      },
+      "instruction": "Use the selected recipe and record the steeping time and temperature.",
+      "instruction_translations": {
+        "de": "Übernimm Einweichdauer und Temperatur aus dem gewählten Rezept."
+      }
+    },
+    "lauter": {
+      "kind": "lauter",
+      "name": "Separate grain and wort",
+      "translations": {
+        "de": "Läutern"
+      },
+      "instruction": "Record the actual grain-separation step for your equipment.",
+      "instruction_translations": {
+        "de": "Erfasse die tatsächliche Trennung von Treber und Würze für deine Anlage."
+      }
+    },
+    "mash": {
+      "kind": "mash",
+      "name": "Mash",
+      "translations": {
+        "de": "Maischen"
+      },
+      "instruction": "Enter the actual mash rests and measured temperatures from your recipe.",
+      "instruction_translations": {
+        "de": "Erfasse die tatsächlichen Maischerasten und gemessenen Temperaturen deines Rezepts."
+      }
+    },
+    "bag_lift": {
+      "kind": "bag_lift",
+      "name": "Lift and drain the bag",
+      "translations": {
+        "de": "Maischesack herausheben und abtropfen"
+      },
+      "instruction": "Follow the actual bag and kettle instructions; record the drained volume.",
+      "instruction_translations": {
+        "de": "Beachte die Anleitung für deinen Sack und Kessel; erfasse die abgelaufene Menge."
+      }
+    },
+    "basket_lift": {
+      "kind": "basket_lift",
+      "name": "Lift and drain the malt basket",
+      "translations": {
+        "de": "Malzkorb herausheben und abtropfen"
+      },
+      "instruction": "Follow the selected model manual before lifting or draining the basket.",
+      "instruction_translations": {
+        "de": "Beachte vor dem Herausheben und Abtropfen die Anleitung deines Modells."
+      }
+    },
+    "sparge": {
+      "kind": "sparge",
+      "name": "Sparge as selected",
+      "translations": {
+        "de": "Gewählten Nachguss durchführen"
+      },
+      "instruction": "Enter the chosen sparge volumes and collection phases.",
+      "instruction_translations": {
+        "de": "Erfasse die gewählten Nachgussmengen und Auffangschritte."
+      }
+    },
+    "malt_pipe_lift": {
+      "kind": "malt_pipe_lift",
+      "name": "Remove and drain the malt pipe",
+      "translations": {
+        "de": "Malzrohr herausheben und abtropfen"
+      },
+      "instruction": "Follow the selected Braumeister model instructions for malt-pipe removal.",
+      "instruction_translations": {
+        "de": "Beachte beim Herausheben des Malzrohrs die Anleitung deines Braumeister-Modells."
+      }
+    },
+    "sanitation": {
+      "kind": "clean",
+      "name": "Prepare clean equipment",
+      "translations": {
+        "de": "Saubere Ausrüstung vorbereiten"
+      },
+      "instruction": "Record cleaning and sanitation according to the equipment and product instructions.",
+      "instruction_translations": {
+        "de": "Reinigung und Desinfektion nach Geräte- und Produktanleitung festhalten."
+      }
+    },
+    "cider-juice": {
+      "kind": "juice",
+      "name": "Prepare apple juice",
+      "translations": {
+        "de": "Apfelsaft vorbereiten"
+      },
+      "instruction": "Record the juice source, amount and initial measurements. This template starts with juice, not whole apples.",
+      "instruction_translations": {
+        "de": "Saftquelle, Menge und Ausgangsmessungen erfassen. Diese Vorlage beginnt mit Saft, nicht mit ganzen Äpfeln."
+      }
+    },
+    "fruit-prepare": {
+      "kind": "fruit_preparation",
+      "name": "Prepare grapes",
+      "translations": {
+        "de": "Trauben vorbereiten"
+      },
+      "instruction": "Record grape preparation and the actual fruit source.",
+      "instruction_translations": {
+        "de": "Traubenvorbereitung und tatsächliche Herkunft der Früchte festhalten."
+      }
+    },
+    "wine-press": {
+      "kind": "press",
+      "name": "Press and separate solids",
+      "translations": {
+        "de": "Pressen und Feststoffe trennen"
+      },
+      "instruction": "Record the pressing operation, yield and equipment.",
+      "instruction_translations": {
+        "de": "Pressvorgang, Ausbeute und verwendete Ausrüstung erfassen."
+      }
+    },
+    "wine-juice": {
+      "kind": "juice",
+      "name": "Review prepared grape juice",
+      "translations": {
+        "de": "Vorbereiteten Traubensaft prüfen"
+      },
+      "instruction": "Record juice measurements and recipe-specific decisions before inoculation.",
+      "instruction_translations": {
+        "de": "Saftmessungen und rezeptbezogene Entscheidungen vor dem Anstellen festhalten."
+      }
+    },
+    "mead-must": {
+      "kind": "must",
+      "name": "Dissolve honey in water",
+      "translations": {
+        "de": "Honig in Wasser lösen"
+      },
+      "instruction": "Record honey and water amounts and initial must readings. This is a no-boil traditional mead workflow.",
+      "instruction_translations": {
+        "de": "Honig- und Wassermengen sowie Ausgangsmessungen des Ansatzes erfassen. Dieser Ablauf für traditionellen Met kommt ohne Kochen aus."
+      }
+    },
+    "fermentation-pitch": {
+      "kind": "pitch",
+      "name": "Inoculate prepared juice or must",
+      "translations": {
+        "de": "Vorbereiteten Saft oder Ansatz anstellen"
+      },
+      "instruction": "Record selected yeast and its product instructions; enter any additions explicitly.",
+      "instruction_translations": {
+        "de": "Gewählte Hefe und ihre Produktanleitung festhalten; Zusätze ausdrücklich eintragen."
+      }
+    },
+    "wine-ferment": {
+      "kind": "ferment",
+      "name": "Monitor juice fermentation",
+      "translations": {
+        "de": "Saftgärung beobachten"
+      },
+      "instruction": "Record readings and recipe-specific observations; confirm completion explicitly.",
+      "instruction_translations": {
+        "de": "Messungen und rezeptbezogene Beobachtungen erfassen; Abschluss ausdrücklich bestätigen."
+      }
+    },
+    "red-macerate": {
+      "kind": "macerate",
+      "name": "Ferment on grape skins",
+      "translations": {
+        "de": "Auf der Maische vergären"
+      },
+      "instruction": "Record readings and cap-management actions from your wine recipe before pressing.",
+      "instruction_translations": {
+        "de": "Messungen und Tresterhut-Behandlung aus deinem Weinrezept vor dem Pressen festhalten."
+      }
+    },
+    "mead-monitor": {
+      "kind": "ferment",
+      "name": "Monitor mead fermentation",
+      "translations": {
+        "de": "Metgärung beobachten"
+      },
+      "instruction": "Record readings and any recipe-specific nutrient schedule. A timer does not prove fermentation completion.",
+      "instruction_translations": {
+        "de": "Messungen und gegebenenfalls den rezeptbezogenen Nährstoffplan erfassen. Ein Timer bestätigt keinen Gärabschluss."
+      }
+    },
+    "rack": {
+      "kind": "rack",
+      "name": "Rack off sediment",
+      "translations": {
+        "de": "Vom Bodensatz abziehen"
+      },
+      "instruction": "Record transfer, sediment observations and destination vessel.",
+      "instruction_translations": {
+        "de": "Umfüllen, Beobachtungen zum Bodensatz und Zielgefäß festhalten."
+      }
+    },
+    "mature": {
+      "kind": "mature",
+      "name": "Mature and review",
+      "translations": {
+        "de": "Reifen lassen und prüfen"
+      },
+      "instruction": "Record the planned observation window and actual measurements.",
+      "instruction_translations": {
+        "de": "Geplanten Beobachtungszeitraum und tatsächliche Messungen erfassen."
+      }
+    },
+    "fermentation-package": {
+      "kind": "package",
+      "name": "Review and package finished drink",
+      "translations": {
+        "de": "Fertiges Getränk prüfen und abfüllen"
+      },
+      "instruction": "Record the recipe-specific finishing and packaging decision after reviewing fermentation measurements. No automatic priming or stabilization is applied.",
+      "instruction_translations": {
+        "de": "Rezeptbezogene Entscheidung zu Fertigstellung und Abfüllung nach Prüfung der Gärmessungen festhalten. Keine automatische Karbonisierung oder Stabilisierung."
+      }
+    }
+  }
+}

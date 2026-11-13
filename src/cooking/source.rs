@@ -107,7 +107,8 @@ pub(crate) fn template(
     Ok(draft)
 }
 fn validate(draft: &Draft, record: &Record) -> Result<(), &'static str> {
-    if !(1..=1_000_000).contains(&draft.servings)
+    if draft.kind.is_brewing()
+        || !(1..=1_000_000).contains(&draft.servings)
         || !super::model::text(&draft.name, 200)
         || draft.stages.len() > 100
         || draft.stages.is_empty()
@@ -151,14 +152,16 @@ pub(crate) fn create(
         id: String::new(),
         name: draft.name,
         kind: draft.kind,
-        recipe: RecipeRef {
-            id: record.id.clone(),
-            revision: record.revision,
-            title: record.recipe.title.clone(),
-            language: record.recipe.language.clone(),
-            reference_servings: record.recipe.servings,
+        source: super::run_source::Source::Food {
+            recipe: RecipeRef {
+                id: record.id.clone(),
+                revision: record.revision,
+                title: record.recipe.title.clone(),
+                language: record.recipe.language.clone(),
+                reference_servings: record.recipe.servings,
+            },
+            servings: draft.servings,
         },
-        servings: draft.servings,
         timezone: draft.timezone,
         target: draft.target,
         created_at: now,
@@ -198,7 +201,7 @@ pub(crate) fn ensure_ready(run: &Run, id: &str, now: i64) -> Result<usize, &'sta
     if !run.steps[index].stage.dependencies.iter().all(|id| {
         run.steps
             .iter()
-            .any(|s| s.stage.id == *id && completed_or_wait_end(s).is_some_and(|at| at <= now))
+            .any(|s| s.stage.id == *id && dependency_end(run, s).is_some_and(|at| at <= now))
     }) {
         return Err("cooking_dependencies_incomplete");
     }
@@ -223,18 +226,34 @@ pub(crate) fn available_at(
     let mut earliest = run
         .created_at
         .max(step.not_before.unwrap_or(run.created_at));
+    if run.kind.is_brewing() {
+        if let Some(anchor) = &step.stage.start_at {
+            earliest = earliest.max(anchor.resolve()?);
+        }
+    }
     for id in &step.stage.dependencies {
         let dependency = run
             .steps
             .iter()
             .find(|s| &s.stage.id == id)
             .ok_or("cooking_dependencies_invalid")?;
-        let Some(completed_at) = completed_or_wait_end(dependency) else {
+        let Some(completed_at) = dependency_end(run, dependency) else {
             return Ok(None);
         };
         earliest = earliest.max(time::add(completed_at, i64::from(step.lag_seconds))?);
     }
     Ok(Some(earliest))
+}
+
+fn dependency_end(run: &Run, step: &super::model::Step) -> Option<i64> {
+    if run.kind.is_brewing() {
+        match step.timer {
+            Timer::Completed { completed_at, .. } => Some(completed_at),
+            _ => None,
+        }
+    } else {
+        completed_or_wait_end(step)
+    }
 }
 
 // Advancing acknowledges an elapsed passive timer, not physical food readiness.
