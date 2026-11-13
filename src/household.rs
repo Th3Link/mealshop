@@ -254,6 +254,7 @@ pub(crate) fn router(
         .merge(crate::planning::routes())
         .merge(crate::shopping::routes())
         .merge(crate::inventory::routes())
+        .merge(crate::brewing::routes())
         .merge(crate::cooking::routes())
         .merge(crate::feedback::routes())
         .merge(crate::mcp::routes())
