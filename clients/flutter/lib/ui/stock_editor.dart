@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import '../connection/nextcloud.dart';
 import '../content/api.dart';
 import '../planning/data.dart';
-import '../shopping/models.dart' show Shop;
 import 'common.dart';
 import 'content_common.dart';
 import 'messages.dart';
@@ -34,6 +33,7 @@ class _StockEditorState extends State<StockEditor> {
   final form = GlobalKey<FormState>();
   late final language = widget.api.controller.language;
   String mode = 'update_lot';
+  late Json directory = clone(widget.data.shopping);
   late String kind = widget.offer ? 'ingredient' : 'unmatched',
       ingredient = '',
       barcode = '',
@@ -47,7 +47,8 @@ class _StockEditorState extends State<StockEditor> {
       url = '';
   late String? shop =
       widget.offerRecord?['shop_id'] as String? ??
-      widget.api.controller.shopping?.shops.firstOrNull?.id;
+      objects(object(directory['shops'])['entries']).firstOrNull?['id']
+          as String?;
   late String from = isoDay(DateTime.now()), until = from;
   late Json metadata = widget.lot == null
       ? {'location': '', 'batch': '', 'expiry': null}
@@ -145,10 +146,7 @@ class _StockEditorState extends State<StockEditor> {
                   'source_product',
                   barcode,
                   {
-                    for (final e
-                        in (widget.api.controller.shopping?.products ??
-                                <String, dynamic>{})
-                            .entries)
+                    for (final e in object(directory['products']).entries)
                       e.key: object(e.value)['name'] as String,
                   },
                   (v) => setState(() {
@@ -246,10 +244,10 @@ class _StockEditorState extends State<StockEditor> {
                 'shop',
                 shop,
                 {
-                  for (final s
-                      in widget.api.controller.shopping?.shops ??
-                          const <Shop>[])
-                    s.id: s.name,
+                  for (final s in objects(
+                    object(directory['shops'])['entries'],
+                  ))
+                    s['id'] as String: s['name'] as String,
                 },
                 (v) => setState(() {
                   shop = v;
@@ -262,7 +260,11 @@ class _StockEditorState extends State<StockEditor> {
                     context,
                     ShopsScreen(widget.api.controller),
                   );
-                  if (mounted) setState(() {});
+                  if (!context.mounted) return;
+                  await runAction(context, () async {
+                    final latest = await widget.api.household('/shopping');
+                    if (mounted) setState(() => directory = latest);
+                  });
                 },
                 child: Text(context.t('shops')),
               ),
@@ -442,6 +444,13 @@ class _StockSourceEditorState extends State<StockSourceEditor> {
                   widget.receive ? 'receive_stock_note' : 'reserve_stock_note',
                 ),
               ),
+              if (selected.isNotEmpty)
+                TextButton(
+                  onPressed: busy ? null : () => setState(selected.clear),
+                  child: Text(
+                    '${selected.length} · ${context.t('clear_source_selection')}',
+                  ),
+                ),
               for (final row
                   in widget.receive
                       ? objects(widget.data.stock['purchases'])

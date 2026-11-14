@@ -40,7 +40,8 @@ productions; retain other desired plan sources. Review the exact current list be
 This replaces only selected plan sources, counting each production once across multiple eating days.
 Manual entries and purchased receipts remain. The preview displays remaining purchase amounts after
 existing stock coverage, not just a blind ingredient difference. Concurrent changes reject a stale
-request. A lost response is reconciled by refreshing and reviewing; there is no unadvertised sync replay.
+request. The source selector loads the current household shopping directory rather than an older
+offline shopping projection. A lost response is reconciled by refreshing and reviewing; there is no unadvertised sync replay.
 
 ## Record actual food and leftovers
 
@@ -65,7 +66,14 @@ Ingredients & products provides exact lots, original quantities, location/batch/
 corrections, reservation/release, explicit purchase-receipt booking, history and reversal. Mass,
 volume and count never cross implicitly; unmatched stock never matches a recipe by text. Offers retain
 explicit shop/product/ingredient/package/price/currency/date/source, with review and current dietary
-checks before adding packages to shopping. Existing [F15 rules](inventory.md) remain authoritative.
+checks before adding packages to shopping. Ingredient/product and shop choices use the current
+directory; returning from shop management reloads it. Selected source rows can be cleared explicitly
+when another client removes them. Existing [F15 rules](inventory.md) remain authoritative.
+
+Before a new stock preview, the phone compares the current revision with the editor snapshot. If it
+changed, explicitly accept **Compare current stock** to preview the retained draft against that state,
+or cancel and keep editing. This does not change a previously confirmed request. A further race still
+conflicts; it never silently overwrites a concurrent edit.
 
 ## New/extended API contracts
 

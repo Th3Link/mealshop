@@ -126,5 +126,6 @@ See the [mobile guide](docs/guides/mobile.md) for the pinned emulator, APKs and 
 and F35 verification for actual evidence and physical-handset testing limits.
 
 F35 P3 adds native Today/Plan, reviewed server-owned household weeks, recurring attendance and
-explicit physical prepared portions alongside existing inventory. P3 verification is in progress;
+explicit physical prepared portions alongside existing inventory. P3 emulator/live-proxy verification is recorded in
+[F35 evidence](specs/0035-flutter-mobile-client/verification.md#p3-implementation-evidence);
 [week/stock contract](docs/guides/mobile-planning.md). Cooking and device reminders remain P4.

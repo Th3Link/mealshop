@@ -16,8 +16,19 @@ Future<bool> reviewStock(
   PlanningData data,
   Json command,
 ) async {
+  final latest = await api.household('/inventory?limit=1&history_limit=1');
+  if (!context.mounted) return false;
+  if (latest['revision'] != data.stock['revision'] &&
+      !await confirm(
+        context,
+        'review_current_stock',
+        body: 'stock_changed_draft',
+      )) {
+    return false;
+  }
+  if (!context.mounted) return false;
   final input = <String, dynamic>{
-    'expected_revision': data.stock['revision'],
+    'expected_revision': latest['revision'],
     'idempotency_key': newId('stock-'),
     'reviewed': false,
     'command': clone(command),

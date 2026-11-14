@@ -32,8 +32,9 @@ class PlanningData {
     this.recipes,
     this.catalogue,
     this.stock,
+    this.shopping,
   );
-  final Json plan, profiles, stock;
+  final Json plan, profiles, stock, shopping;
   final List<Json> recipes;
   final Catalogue catalogue;
   List<Json> get meals => objects(plan['meals']);
@@ -46,6 +47,7 @@ class PlanningData {
       api.recipes(),
       api.household('/ingredients'),
       api.household('/inventory?limit=500'),
+      api.household('/shopping'),
     ]);
     return PlanningData(
       values[0],
@@ -53,6 +55,7 @@ class PlanningData {
       objects(values[2]['recipes']),
       Catalogue(values[3]),
       values[4],
+      values[5],
     );
   }
 

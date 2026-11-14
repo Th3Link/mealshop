@@ -14,8 +14,10 @@ import 'package:mealshop/ui/stock_review.dart';
 import 'package:mealshop/ui/stock.dart';
 import 'package:mealshop/ui/prepared_editor.dart';
 import 'package:mealshop/ui/attendance.dart';
+import 'package:mealshop/ui/stock_editor.dart';
 
 import 'content_fixtures.dart';
+import 'fixtures.dart' show shopping;
 
 Json emptyPlan() => {
   'revision': 0,
@@ -71,6 +73,7 @@ Future<ContentFixture> fixture({
     if (custom != null) return custom;
     if (r.url.path.endsWith('/mealplan')) return response(emptyPlan());
     if (r.url.path.endsWith('/inventory')) return response(emptyStock());
+    if (r.url.path.endsWith('/shopping')) return response(shopping(0));
     if (r.url.path.endsWith('/recipes')) {
       return response({
         'recipes': [
@@ -102,6 +105,200 @@ Widget app(Widget child, {String language = 'en', double scale = 1}) =>
       home: Scaffold(body: child),
     );
 void main() {
+  testWidgets(
+    'a retained stock draft explicitly compares fresh state before a new preview',
+    (tester) async {
+      var current = 0;
+      Json? previewed;
+      final f = await fixture(
+        respond: (r) async {
+          if (r.url.path.endsWith('/inventory')) {
+            return response({...emptyStock(), 'revision': current});
+          }
+          if (r.url.path.endsWith('/inventory/preview')) {
+            previewed = object(jsonDecode(r.body));
+            return response({
+              'changes': <Json>[],
+              'shopping': <Json>[],
+              'prepared_before': <Json>[],
+              'prepared_after': <Json>[],
+              'offers': <Json>[],
+              'movements': <Json>[],
+            });
+          }
+          return null;
+        },
+      );
+      final api = HouseholdApi(f.controller),
+          data = await PlanningData.load(HouseholdApi(f.controller));
+      current = 1;
+      final command = <String, dynamic>{
+        'operation': 'release',
+        'allocation_ids': ['allocation-1'],
+      };
+      await tester.pumpWidget(
+        app(
+          Builder(
+            builder: (context) => FilledButton(
+              onPressed: () => reviewStock(context, api, data, command),
+              child: const Text('Review retained draft'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Review retained draft'));
+      await tester.pumpAndSettle();
+      expect(previewed, isNull);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(previewed, isNull);
+      await tester.tap(find.text('Review retained draft'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Compare current stock').last);
+      await tester.pumpAndSettle();
+      expect(previewed?['expected_revision'], 1);
+      expect(previewed?['command'], command);
+      expect(previewed?['reviewed'], false);
+      await tester.pumpWidget(const SizedBox());
+      f.controller.dispose();
+    },
+  );
+  testWidgets(
+    'German exact lot entry reaches stock preview without losing precision',
+    (tester) async {
+      Json? previewed;
+      final f = await fixture(
+        respond: (r) async {
+          if (r.url.path.endsWith('/inventory/preview')) {
+            previewed = object(jsonDecode(r.body));
+            return response({
+              'changes': <Json>[],
+              'shopping': <Json>[],
+              'prepared_before': <Json>[],
+              'prepared_after': <Json>[],
+              'offers': <Json>[],
+              'movements': <Json>[],
+            });
+          }
+          return null;
+        },
+      );
+      await f.controller.setLanguage('de');
+      final api = HouseholdApi(f.controller),
+          data = await PlanningData.load(HouseholdApi(f.controller));
+      await tester.pumpWidget(app(StockEditor(api, data), language: 'de'));
+      await tester.pumpAndSettle();
+      for (final e in {
+        'name': 'Synthetic exact stock',
+        'quantity': '200,000001',
+        'storage_location': 'Test pantry',
+      }.entries) {
+        final field = find.byKey(ValueKey(e.key));
+        await tester.scrollUntilVisible(
+          field,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.enterText(field, e.value);
+      }
+      final button = find.text('Bestandsänderungen prüfen');
+      await tester.scrollUntilVisible(
+        button,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(previewed, isNotNull);
+      expect(object(previewed!['command'])['quantity'], {
+        'amount': '200.000001',
+        'unit': 'g',
+      });
+      expect(object(previewed!['command'])['target'], {
+        'kind': 'unmatched',
+        'label': 'Synthetic exact stock',
+      });
+      await tester.pumpWidget(const SizedBox());
+      f.controller.dispose();
+    },
+  );
+  testWidgets(
+    'offer editing uses fresh shop directory and exact localized price',
+    (tester) async {
+      Json? previewed;
+      final directory = shopping(0);
+      object(directory['shops'])['entries'] = <Json>[
+        {'id': 'shop-1', 'name': 'Synthetic current shop'},
+      ];
+      final f = await fixture(
+        respond: (r) async {
+          if (r.url.path.endsWith('/shopping')) return response(directory);
+          if (r.url.path.endsWith('/inventory/preview')) {
+            previewed = object(jsonDecode(r.body));
+            return response({
+              'changes': <Json>[],
+              'shopping': <Json>[],
+              'prepared_before': <Json>[],
+              'prepared_after': <Json>[],
+              'offers': <Json>[],
+              'movements': <Json>[],
+            });
+          }
+          return null;
+        },
+      );
+      await f.controller.setLanguage('de');
+      final api = HouseholdApi(f.controller),
+          data = await PlanningData.load(HouseholdApi(f.controller));
+      expect(f.controller.shopping!.shops, isEmpty);
+      final offer = <String, dynamic>{
+        'id': 'offer-1',
+        'shop_id': 'shop-1',
+        'binding': {'ingredient_id': 'oats', 'product': null},
+        'quantity': {'amount': '500.000001', 'unit': 'g'},
+        'price': '1.99',
+        'currency': 'EUR',
+        'valid_from': '2026-11-09',
+        'valid_until': '2026-11-30',
+        'source': 'Synthetic offer source',
+        'source_url': null,
+      };
+      await tester.pumpWidget(
+        app(
+          StockEditor(api, data, offer: true, offerRecord: offer),
+          language: 'de',
+        ),
+      );
+      await tester.pumpAndSettle();
+      final price = find.byKey(const ValueKey('offer_price'));
+      await tester.scrollUntilVisible(
+        price,
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.enterText(price, '2,49');
+      final button = find.text('Bestandsänderungen prüfen');
+      await tester.scrollUntilVisible(
+        button,
+        350,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      final submitted = object(object(previewed!['command'])['offer']);
+      expect(submitted['shop_id'], 'shop-1');
+      expect(submitted['price'], '2.49');
+      expect(submitted['quantity'], {'amount': '500.000001', 'unit': 'g'});
+      expect(submitted['target'], {
+        'kind': 'ingredient',
+        'ingredient_id': 'oats',
+      });
+      await tester.pumpWidget(const SizedBox());
+      f.controller.dispose();
+    },
+  );
   testWidgets(
     'deleted-person attendance references require explicit removal and retain empty overrides',
     (tester) async {

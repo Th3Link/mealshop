@@ -57,6 +57,13 @@ class _CookingStockEditorState extends State<CookingStockEditor> {
                     '${exactNumber(context, r['amount'] as String)} ${object(r['item'])['unit']}',
                   ),
                 ),
+              if (selected.isNotEmpty)
+                TextButton(
+                  onPressed: busy ? null : () => setState(selected.clear),
+                  child: Text(
+                    '${selected.length} · ${context.t('clear_source_selection')}',
+                  ),
+                ),
               for (final id in (selection['source_ids'] as List).cast<String>())
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,

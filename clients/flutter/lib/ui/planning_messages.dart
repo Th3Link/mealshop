@@ -52,6 +52,18 @@ const planningMessages = <String, (String, String)>{
     'Deleted people are still referenced. Remove their entries explicitly before saving. Empty date exceptions stay empty; historical meals are unchanged.',
     'Gelöschte Personen werden noch referenziert. Entferne ihre Einträge ausdrücklich vor dem Speichern. Leere Datumsausnahmen bleiben leer; bisherige Mahlzeiten bleiben unverändert.',
   ),
+  'review_current_stock': (
+    'Compare current stock',
+    'Aktuellen Bestand vergleichen',
+  ),
+  'stock_changed_draft': (
+    'Stock changed elsewhere. Your inputs are kept. Load the current balances and review a new before/after preview before confirming.',
+    'Der Bestand wurde anderswo geändert. Deine Eingaben bleiben erhalten. Lade die aktuellen Mengen und prüfe eine neue Vorher-/Nachher-Vorschau vor der Bestätigung.',
+  ),
+  'clear_source_selection': (
+    'Clear selected sources',
+    'Ausgewählte Quellen abwählen',
+  ),
   'today': ('Today', 'Heute'),
   'plan': ('Plan', 'Plan'),
   'stock': ('Stock & preparation', 'Vorrat & Vorbereitung'),

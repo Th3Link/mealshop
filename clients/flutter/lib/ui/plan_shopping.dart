@@ -19,15 +19,13 @@ class PlanShoppingScreen extends StatefulWidget {
 class _PlanShoppingScreenState extends State<PlanShoppingScreen> {
   late final selected = widget.data.meals
       .where((p) {
-        final current =
-            widget.api.controller.shopping?.sources.any((s) {
-              final origin = object(s['origin']);
-              return s['active'] == true &&
-                  origin['kind'] == 'meal' &&
-                  origin['date'] == p['date'] &&
-                  origin['meal'] == p['meal'];
-            }) ??
-            false;
+        final current = objects(widget.data.shopping['sources']).any((s) {
+          final origin = object(s['origin']);
+          return s['active'] == true &&
+              origin['kind'] == 'meal' &&
+              origin['date'] == p['date'] &&
+              origin['meal'] == p['meal'];
+        });
         final start = widget.start ?? isoDay(weekStart(DateTime.now()));
         final end = isoDay(addDays(civilDay(start), 6));
         final prepared = widget.data.prepared.any((r) {

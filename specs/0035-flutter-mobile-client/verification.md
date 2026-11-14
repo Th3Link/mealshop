@@ -212,24 +212,86 @@ metadata was checked unchanged and allocation counters were preserved. The emula
 explicit household selection after the removed fixture lost access.
 Final PR-head CI and clean-source APK metadata are recorded in the PR description.
 
-## P3 implementation verification (in progress, 2026-11-14)
+## P3 implementation evidence
 
-P2 was merged in PR #45; this slice is `story/flutter-week-preparation`. Acceptance remains
-F35 AC4/AC7, with ADR 0029 and the mobile planning guide as the explicit protocol/design contract.
+P2 was merged in PR #45; P3 is implemented for review in PR #48 on
+`story/flutter-week-preparation`. F35 stays **In progress** for P4/P5 and physical-handset acceptance.
+AC4/AC7, [ADR 0029](../../docs/adr/0029-mobile-week-and-prepared-stock.md) and the
+[mobile planning guide](../../docs/guides/mobile-planning.md) define the delivered boundary.
 
-- Focused backend planning/inventory tests cover civil attendance, hard exclusion/infeasibility,
-  server-owned confirmations, stale recipe heads/expiry/restart, harmless applied replay, actual
-  shopping preview/manual purchases, six/four/two prepared portions, allocation/use/release/storage/
-  reversal, duplicate linked output and protected production.
-- Flutter format/analyze and 44 unit/widget tests include P3 review/conflicts, immutable ambiguous
-  stock retry, retained destination, exact localized stock, observed-yield preview and 320dp/200%
-  reader/physical-stock layouts. Full final-head gates are still pending below.
-- [ ] Live Nextcloud proxy and two-role/second-client P3 journey with this run's synthetic household.
-- [ ] Retained P2-to-P3 Android upgrade, screenshots and actual emulator workflow.
-- [ ] Remove/archive only P3-owned fixtures, leaving retained records/directories untouched.
-- [ ] All AGENTS gates, native Vue regressions, package audit and final-head CI/APK identity.
+### Local and CI checks
 
-Physical-handset, TalkBack/release profiling and P4/P5 are not claimed by these local tests.
+- All mandatory AGENTS gates pass: catalogue import/verifier, keyed i18n, Rust format, strict Clippy,
+  **198 nextest tests**, licences and audit. Generated documentation and strict rustdoc also pass.
+  Backend cases include ordinary/date-override attendance, hard exclusion/infeasibility, per-slot
+  confirmations, stale recipe heads/expiry/restart, harmless applied replay, current shopping previews,
+  physical over-allocation/duplicate output and protected production.
+- Flutter format/strict analyze and **48 unit/widget tests** pass: retained destination, civil leap/DST
+  navigation, day/week 320dp/200% reader layouts, exact localized stock input/output, observed-yield
+  preview, retained conflict drafts, explicit current-stock comparison, fresh shop directory/exact
+  German offer price and identical frozen-key/body retry after an ambiguous result.
+- **39 Vue tests**, strict typecheck/production build, formatting and production npm audit pass.
+  Seven unique live browser regressions pass against Nextcloud: five inventory cases, the profile
+  rules editor and unified planned/physical preparation. The reader case was rerun with its required
+  reader credential after an initial environment omission; it passes without changing the test.
+- Pub audit: **68 locked licence records / 60 external package versions**, no matched OSV advisory.
+  No new direct package or Rust crate. The rootless TCP/Unix image smoke check passes.
+- All twelve CI checks passed for `9f6a673`, including **23 native API 36 tests**. The subsequent three
+  stock form/conflict regressions also run in the native suite; the final-head CI result and downloadable
+  artifacts are recorded in the PR description. No local integration-driver uninstall/reset was used.
+
+### Actual Nextcloud 35 / Android workflows
+
+The existing Nextcloud 35.0.2/AppAPI test instance runs the P3 backend and Vue assets. The retained
+Android 16/API 36 Pixel 6 AVD connects through the real authenticated `index.php` `AppAPI` proxy.
+Only this run's ledger-owned synthetic fixtures were used; retained household directories and the
+phone's protected record were never inspected, copied or hashed.
+
+1. The live proxy exercise uses two synthetic people and three recipes, proposes a seven-slot week,
+   skips one person's Thursday attendance, denies reader writes, confirms all six feasible meals and
+   verifies harmless replay. A second-client Thursday swap preserves other plan sources, manual
+   entries and exact purchased quantities. Impossible/unreviewed slots remain explicit.
+2. Exact mass/volume lots, a sourced manual offer, reservation, actual **six = four held + two available**
+   prepared portions, duplicate/over-allocation guards, storage change, eating/correction and request
+   replay match server state. Prepared output creates no raw-lot movement.
+3. An exact retained-key P2 build **0.2.0+3 / `x86_64` 4003** was installed and connected to the owned
+   fixture with **200.000001 g**. With emulator forwarding removed, ordinary `install -r` upgraded it
+   to P3 **0.3.0+4 / 4004**. Account, selected household and exact cached amount survived offline;
+   forwarding was restored. No app data reset, uninstall or vault inspection was used.
+4. The installed native UI records eating and its explicit correction; server counts change from
+   four held/zero used/two available to two held/two used/two available and back. The native next-week
+   review preserves two physically allocated slots and individually confirms/applies the other five.
+   An initial UI-driver visibility failure was corrected before the successful workflow; no product
+   bypass or direct API substitution was used for these native actions.
+5. Actual system dark mode and a **320dp / 200% system font** emulator configuration were visually
+   reviewed. Original density/font/theme settings were restored. Unit/widget semantics and layout
+   checks complement these screenshots; this is not a manual `TalkBack` or WCAG certification claim.
+
+Reviewed synthetic screenshots: [shopping](screenshots/p3-shopping.png),
+[Today](screenshots/p3-today.png), [week/day](screenshots/p3-plan.png),
+[physical allocation](screenshots/p3-plan-allocations.png), [week review](screenshots/p3-week-review.png),
+[six/four/two stock](screenshots/p3-prepared-stock.png), [dark mode](screenshots/p3-plan-dark.png),
+[320dp/200% text](screenshots/p3-plan-large-text.png). No authentication or retained customer content
+was captured. The ordinary app and physical keyboard remain available in the working emulator.
+
+### Cleanup and artifact identity
+
+All **nine** households created in this run (one P3 workflow and eight browser fixtures, including the
+reader rerun) were archived with the sole writer stopped. Exact ledger ownership and synthetic content
+were checked before cleanup. Retained membership/library/epoch metadata and allocation counters were
+preserved in memory; retained household directories were never opened, copied or hashed. Normal
+refresh removed the archived selected fixture from the app. The temporary verification helper was
+removed; the ordinary app and retained development signing key remain.
+
+The three local ABI APKs retain the same application ID/development key, version **0.3.0+4** and
+per-ABI manifest version code, source commit, clean-source flag and SHA-256 metadata. Their final
+identities, exact deployed source and final CI are recorded in PR #48. Untrusted CI uses its own
+independent ephemeral key; its artifacts are fresh-install tests, not upgrades over the retained key.
+No signing key, device credential, raw UI tree, fixture archive or private household record is committed.
+
+Planning/stock writes are online; the protected shopping outbox remains unchanged. Physical handset,
+manual `TalkBack`, release frame/memory profiling, independent personal plans, cooking screens,
+notifications/camera and P4/P5 are not claimed by this PR.
 
 ### P3 diagnostic performance case
 

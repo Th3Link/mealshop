@@ -1,6 +1,6 @@
 # Smartphone interaction plan
 
-Status: P1/P2 merged; P3 authorized and in progress. The ZIP's UX is a target;
+Status: P1/P2 merged; P3 implemented for review in PR #48. The ZIP's UX is a target;
 this document reconciles it with existing data and the five complete deliveries.
 
 ## Navigation and the first useful launch
@@ -90,7 +90,10 @@ are visible, never silently omitted or replaced. A stale review keeps the underl
 Stock distinguishes physical ingredient lots, observed prepared portions and manual offers. Show actual,
 held, used and available counts together; six/four/two is a count balance, never a mass conversion.
 Every write has a concrete before/after review and explicit confirmation. Unknown network outcomes keep
-the same stock request body/key; leaving warns about losing retry context. No raw JSON editing.
+the same stock request body/key; leaving warns about losing retry context. An unconfirmed draft can
+explicitly compare a changed current stock revision before creating a new preview; cancel retains
+its inputs. Ingredient/product/shop/source choices load the current directory, with an explicit clear
+action for source selections that disappeared. No raw JSON editing.
 
 Small screens/large text use wrapping controls, scrollable forms and selected-only bottom labels when
 space is constrained; all destinations keep semantic names. Planning/stock refresh on foreground or
