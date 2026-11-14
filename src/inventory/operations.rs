@@ -13,6 +13,7 @@ pub(super) struct Context<'a> {
     pub(super) profiles: &'a Profiles,
     pub(super) ingredients: &'a crate::ingredients::Store,
     pub(super) recipes: Option<&'a crate::recipes::Store>,
+    pub(super) plans: &'a crate::planning::PlanStore,
     pub(super) cooking: &'a crate::cooking::store::Store,
     pub(super) now: u64,
 }
@@ -54,6 +55,13 @@ pub(super) fn execute(
     let id = data.allocate("stock-op")?;
     let mut movement = None;
     match &command {
+        Command::RecordPrepared { .. }
+        | Command::StorePrepared { .. }
+        | Command::AllocatePrepared { .. }
+        | Command::ReleasePrepared { .. }
+        | Command::UsePrepared { .. }
+        | Command::UndoPreparedUse { .. }
+        | Command::ReversePrepared { .. } => super::prepared::execute(data, ctx, &id, &command)?,
         Command::CreateLot { .. }
         | Command::UpdateLot { .. }
         | Command::AdjustLot { .. }

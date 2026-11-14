@@ -717,3 +717,208 @@ async fn stock_history_pages_preserve_order_and_expose_no_operation_secrets() {
     .await;
     assert_eq!(beyond["movements"], json!([]));
 }
+
+fn prepared_storage(condition: &str) -> Value {
+    json!({"location":"Synthetic freezer","condition":condition,"declared_on":"2026-11-15","use_by":null})
+}
+#[tokio::test]
+#[allow(clippy::too_many_lines)]
+async fn prepared_six_equals_four_allocated_and_two_left_without_inventing_ingredient_stock() {
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    ok(&app,"PUT","/api/household/profiles",json!({"expected_revision":0,"members":[
+        {"id":"one","name":"Synthetic","allergies":[],"excluded_ingredients":[],"disliked_ingredients":[]}]})).await;
+    let recipe = ok(
+        &app,
+        "POST",
+        "/api/recipes",
+        json!({"title":"Synthetic prepared food","language":"en","servings":2,
+        "preparation":"as_recorded","lines":[{"ingredient_id":"oats","grams":"200.000001"}],
+        "steps":[{"instruction":"Synthetic preparation","active_seconds":60,"passive_seconds":0}]}),
+    )
+    .await;
+    let command = json!({"operation":"record_prepared","input":{"recipe_id":recipe["id"],"revision":1,"portions":6,
+        "produced_on":"2026-11-15","storage":prepared_storage("frozen"),"source":null}});
+    let body = request(&app, command).await;
+    let preview = ok(
+        &app,
+        "POST",
+        "/api/household/inventory/preview",
+        body.clone(),
+    )
+    .await;
+    assert_eq!(preview["prepared_after"][0]["available"], 6);
+    assert_eq!(inventory(&app).await["prepared"], json!([]));
+    let first = ok(&app, "POST", "/api/household/inventory", body.clone()).await;
+    let id = first["operation_id"].as_str().unwrap().to_owned();
+    assert_eq!(first["inventory"]["lots"], json!([]));
+    for date in ["2026-11-16", "2026-11-17"] {
+        apply(
+            &app,
+            json!({"operation":"allocate_prepared","batch_id":id,"date":date,"meal":"dinner",
+            "portions":2,"member_ids":["one"]}),
+        )
+        .await;
+    }
+    let v = inventory(&app).await;
+    let b = &v["prepared"][0];
+    assert_eq!(b["held"], 4);
+    assert_eq!(b["available"], 2);
+    assert_eq!(b["used"], 0);
+    let over = request(
+        &app,
+        json!({"operation":"allocate_prepared","batch_id":id,"date":"2026-11-18",
+        "meal":"dinner","portions":3,"member_ids":["one"]}),
+    )
+    .await;
+    assert_eq!(
+        call(&app, Some(OWNER), "POST", "/api/household/inventory", over)
+            .await
+            .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    let allocation = b["batch"]["allocations"][0]["id"].clone();
+    apply(
+        &app,
+        json!({"operation":"use_prepared","batch_id":id,"allocation_id":allocation}),
+    )
+    .await;
+    let v = inventory(&app).await;
+    assert_eq!(v["prepared"][0]["used"], 2);
+    assert_eq!(v["prepared"][0]["held"], 2);
+    assert_eq!(v["prepared"][0]["available"], 2);
+    let forbidden = request(
+        &app,
+        json!({"operation":"reverse_prepared","batch_id":id,"reason":"Synthetic correction"}),
+    )
+    .await;
+    assert_eq!(
+        call(
+            &app,
+            Some(OWNER),
+            "POST",
+            "/api/household/inventory",
+            forbidden
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    apply(
+        &app,
+        json!({"operation":"store_prepared","batch_id":id,"storage":prepared_storage("chilled")}),
+    )
+    .await;
+    drop(app);
+    let app = dir.app().unwrap();
+    let replay = ok(&app, "POST", "/api/household/inventory", body).await;
+    assert_eq!(replay["replayed"], true);
+    assert_eq!(replay["inventory"]["prepared"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        replay["inventory"]["prepared"][0]["batch"]["storage"]["condition"],
+        "chilled"
+    );
+    apply(&app,json!({"operation":"undo_prepared_use","batch_id":id,"allocation_id":allocation,"reason":"Synthetic correction"})).await;
+    for a in inventory(&app).await["prepared"][0]["batch"]["allocations"]
+        .as_array()
+        .unwrap()
+    {
+        apply(
+            &app,
+            json!({"operation":"release_prepared","batch_id":id,"allocation_id":a["id"]}),
+        )
+        .await;
+    }
+    assert_eq!(inventory(&app).await["prepared"][0]["available"], 6);
+    apply(
+        &app,
+        json!({"operation":"reverse_prepared","batch_id":id,"reason":"Observed yield corrected"}),
+    )
+    .await;
+    assert_eq!(inventory(&app).await["prepared"][0]["available"], 0);
+    assert_eq!(inventory(&app).await["lots"], json!([]));
+    let reader = request(&app, json!({"operation":"record_prepared","input":{}})).await;
+    assert_eq!(
+        call(
+            &app,
+            Some(READER),
+            "POST",
+            "/api/household/inventory",
+            reader
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+}
+
+#[tokio::test]
+async fn prepared_output_locks_linked_production_and_blocks_duplicate_output_or_overlapping_meals()
+{
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    ok(&app,"PUT","/api/household/profiles",json!({"expected_revision":0,"members":[{"id":"one","name":"Synthetic person","allergies":[],"excluded_ingredients":[],"disliked_ingredients":[]}]})).await;
+    let recipe=ok(&app,"POST","/api/recipes",json!({"title":"Synthetic linked production","language":"en","servings":2,"preparation":"as_recorded",
+        "lines":[{"ingredient_id":"oats","grams":"100"}],"steps":[{"instruction":"Prepare fixture","active_seconds":60,"passive_seconds":0}]})).await;
+    let plan = json!({"date":"2026-11-15","meal":"preparation","recipe":{"id":recipe["id"],"revision":1},"servings":6,
+        "attendees":["one"],"calendar":null,"active_seconds":600,"elapsed_seconds":3600,"advance_seconds":0,
+        "allocations":[{"date":"2026-11-16","meal":"dinner","servings":2},{"date":"2026-11-17","meal":"dinner","servings":2}]});
+    ok(
+        &app,
+        "POST",
+        "/api/household/mealplan/apply",
+        json!({"plan":plan,"expected_revision":0,"profile_revision":1,"reviewed":true}),
+    )
+    .await;
+    let command = json!({"operation":"record_prepared","input":{"recipe_id":recipe["id"],"revision":1,"portions":6,"produced_on":"2026-11-15",
+        "storage":prepared_storage("frozen"),"source":{"date":"2026-11-15","meal":"preparation"}}});
+    let result = apply(&app, command.clone()).await;
+    let id = result["operation_id"].clone();
+    let duplicate = request(&app, command).await;
+    assert_eq!(
+        call(
+            &app,
+            Some(OWNER),
+            "POST",
+            "/api/household/inventory",
+            duplicate
+        )
+        .await
+        .1["code"],
+        "prepared_production_already_recorded"
+    );
+    let mut changed = plan.clone();
+    changed["servings"] = json!(8);
+    let review = ok(&app, "POST", "/api/household/mealplan/preview", changed).await;
+    assert_eq!(review["feasible"], false);
+    assert!(
+        review["conflicts"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("prepared_production_frozen"))
+    );
+    apply(&app,json!({"operation":"allocate_prepared","batch_id":id,"date":"2026-11-16","meal":"dinner","portions":2,"member_ids":["one"]})).await;
+    let overlap=request(&app,json!({"operation":"allocate_prepared","batch_id":id,"date":"2026-11-16","meal":"dinner","portions":1,"member_ids":["one"]})).await;
+    assert_eq!(
+        call(
+            &app,
+            Some(OWNER),
+            "POST",
+            "/api/household/inventory",
+            overlap
+        )
+        .await
+        .1["code"],
+        "prepared_slot_conflict"
+    );
+    let refs = json!([{"date":"2026-11-16","meal":"dinner"},{"date":"2026-11-17","meal":"dinner"}]);
+    let shopping = ok(
+        &app,
+        "POST",
+        "/api/household/shopping/plan-preview",
+        json!({"expected_revision":2,"plan_revision":1,"slots":refs}),
+    )
+    .await;
+    assert_eq!(shopping["changes"][0]["after"]["remaining"], "300.000000");
+    assert_eq!(inventory(&app).await["prepared"][0]["available"], 4);
+}

@@ -131,7 +131,7 @@ guard; no grain-processing assumptions are reused for these drinks. N03/N07/N09/
 The customer supplied a mobile target specification on 2026-11-13 and requested fewer, larger PRs,
 with a smartphone-usable result from the first implementation delivery. F35 imports the unchanged
 reference pack, audits the current server/web contracts and proposes five complete phone releases.
-The customer merged the plan and P1, then authorized P2. Android now includes the P1 connection/shopping
+The customer merged the plan, P1 and P2, then authorized P3. Android now includes the P1 connection/shopping
 boundary and P2 person rules, private activity and content-library implementation. P3–P5, physical-phone
 acceptance and the original F18/F29/F30 cross-client criteria remain open; see F35 verification.
 N01/N03/N04/N06–N10 apply. See [F35](../specs/0035-flutter-mobile-client/specification.md) and

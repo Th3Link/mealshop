@@ -12,8 +12,8 @@ Nextcloud installation. Prefer a few substantial, complete user journeys over se
 backend-only and screen-only PRs. Each delivery extends an installable app.
 
 The customer approved Android APK delivery, explicitly requested an Android emulator, and gave the
-implementation Go on 2026-11-13. P1 was merged in PR #44. The customer approved P2 on 2026-11-13; implementation is on
-`story/flutter-people-library`.
+implementation Go on 2026-11-13. P1 was merged in PR #44. P2 was merged in PR #45. The customer approved P3 on 2026-11-14; implementation is on
+`story/flutter-week-preparation`.
 The earlier planning PR remains a separate review record; its preserved source import is unchanged.
 
 The [original pack](../../references/mobile-product-spec-2026-11-12/README.md) remains a preserved

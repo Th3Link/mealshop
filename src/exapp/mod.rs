@@ -457,6 +457,7 @@ fn read_action(method: &axum::http::Method, path: &str) -> bool {
                     | "/api/household/mealplan/preview"
                     | "/api/household/mealplan/remove-preview"
                     | "/api/household/mealplan/suggestions"
+                    | "/api/household/shopping/plan-preview"
                     | "/api/nutrition/calculate"
                     | "/api/quantities/convert"
                     | "/api/household/cooking/preview"
