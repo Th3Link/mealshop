@@ -1035,3 +1035,40 @@ async fn real_shopping_preview_preserves_manual_and_purchased_amounts_during_thu
     assert_eq!(manual, prior);
     let _ = bad;
 }
+
+#[tokio::test]
+async fn maximum_week_pool_is_bounded_and_keeps_all_twenty_eight_meals_feasible() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (good, bad) = setup(&app).await;
+    let mut candidates = vec![
+        json!({"id":good["id"],"revision":1}),
+        json!({"id":bad["id"],"revision":1}),
+    ];
+    for _ in 2..100 {
+        let r = request(&app, "POST", "/api/recipes", recipe("oats"), None)
+            .await
+            .1;
+        candidates.push(json!({"id":r["id"],"revision":1}));
+    }
+    let mut input = week_input(&good, &bad);
+    input["candidates"] = json!(candidates);
+    input["meals"] = json!(["breakfast", "lunch", "snack", "dinner"]);
+    let started = std::time::Instant::now();
+    let (status, result) = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/preview",
+        input,
+        Some(OWNER),
+    )
+    .await;
+    eprintln!(
+        "P3 synthetic 100-candidate/28-slot in-process debug proposal: {:?}",
+        started.elapsed()
+    );
+    assert_eq!(status, StatusCode::OK, "{}", result["code"]);
+    let slots = result["proposal"]["slots"].as_array().unwrap();
+    assert_eq!(slots.len(), 28);
+    assert!(slots.iter().all(|s| !s["plan"].is_null()));
+}

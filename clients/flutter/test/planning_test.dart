@@ -13,6 +13,7 @@ import 'package:mealshop/ui/week_proposal.dart';
 import 'package:mealshop/ui/stock_review.dart';
 import 'package:mealshop/ui/stock.dart';
 import 'package:mealshop/ui/prepared_editor.dart';
+import 'package:mealshop/ui/attendance.dart';
 
 import 'content_fixtures.dart';
 
@@ -101,6 +102,63 @@ Widget app(Widget child, {String language = 'en', double scale = 1}) =>
       home: Scaffold(body: child),
     );
 void main() {
+  testWidgets(
+    'deleted-person attendance references require explicit removal and retain empty overrides',
+    (tester) async {
+      Json? saved;
+      final f = await fixture(
+        respond: (r) async {
+          if (r.url.path.endsWith('/mealplan/attendance')) {
+            saved = object(jsonDecode(r.body));
+            return response({'revision': 1});
+          }
+          return null;
+        },
+      );
+      final api = HouseholdApi(f.controller),
+          data = await PlanningData.load(HouseholdApi(f.controller));
+      data.plan['attendance'] = {
+        'recurring': <Json>[
+          {
+            'member_id': 'deleted',
+            'weekdays': [0],
+            'meals': ['dinner'],
+          },
+        ],
+        'overrides': <Json>[
+          {
+            'date': '2026-11-09',
+            'meal': 'dinner',
+            'member_ids': ['deleted'],
+          },
+        ],
+      };
+      await tester.pumpWidget(app(AttendanceScreen(api, data)));
+      await tester.pumpAndSettle();
+      expect(saved, isNull);
+      await tester.tap(find.text('Remove obsolete attendance entries'));
+      await tester.pumpAndSettle();
+      final save = find.text('Save');
+      await tester.scrollUntilVisible(
+        save,
+        400,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(
+        objects(object(saved!['attendance'])['recurring'])
+            .any((r) => r['member_id'] == 'deleted'),
+        false,
+      );
+      expect(
+        objects(object(saved!['attendance'])['overrides']).single['member_ids'],
+        isEmpty,
+      );
+      await tester.pumpWidget(const SizedBox());
+      f.controller.dispose();
+    },
+  );
   testWidgets(
     'physical prepared detail shows six four two without duplicate production at large text',
     (tester) async {

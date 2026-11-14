@@ -24,6 +24,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     ),
   );
   bool dirty = false, busy = false, saved = false;
+  bool get hasObsoleteReferences {
+    final known = widget.data.people.map((p) => p['id']).toSet();
+    return objects(schedule['recurring'])
+            .any((r) => !known.contains(r['member_id'])) ||
+        objects(schedule['overrides']).any(
+          (o) => (o['member_ids'] as List).any((id) => !known.contains(id)),
+        );
+  }
+
   @override
   Widget build(BuildContext context) => DraftGuard(
     dirty: () => dirty && !saved,
@@ -33,6 +42,28 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           Note(context.t('attendance_note')),
+          if (hasObsoleteReferences) ...[
+            Note(context.t('obsolete_attendance_note'), warning: true),
+            OutlinedButton(
+              onPressed: busy
+                  ? null
+                  : () => setState(() {
+                      final known = widget.data.people
+                          .map((p) => p['id'])
+                          .toSet();
+                      schedule['recurring'] = objects(schedule['recurring'])
+                          .where((r) => known.contains(r['member_id']))
+                          .toList();
+                      for (final row in objects(schedule['overrides'])) {
+                        row['member_ids'] = (row['member_ids'] as List)
+                            .where(known.contains)
+                            .toList();
+                      }
+                      dirty = true;
+                    }),
+              child: Text(context.t('remove_obsolete_attendance')),
+            ),
+          ],
           for (final p in widget.data.people)
             Builder(
               builder: (context) {

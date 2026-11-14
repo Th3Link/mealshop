@@ -173,6 +173,7 @@ async fn generate(
             }
         }
         let mut slots = Vec::new();
+        let mut assessments = Assessments::new();
         for day in 0..7 {
             let date = start.checked_add(jiff::Span::new().days(day)).map_err(|_| "week_invalid")?.to_string();
             for meal in &input.meals {
@@ -201,7 +202,7 @@ async fn generate(
                     (None, Some("no_attendees".to_owned()), json!({}))
                 } else {
                     choose(state, profiles, recipes, ingredients, &working, &input, &feedback.data,
-                        &date, meal, &people, &used, &reused)?
+                        &date, meal, &people, &used, &reused, &mut assessments)?
                 };
                 if let Some(p) = &plan {
                     *used.entry(p.recipe.id.clone()).or_insert(0u32) += 1;
@@ -233,6 +234,8 @@ async fn generate(
     }).await
 }
 
+type Assessments = BTreeMap<(String, u64, Vec<String>, u32), super::assessment::Assessment>;
+
 type Choice = (Option<Plan>, Option<String>, Value);
 #[allow(clippy::too_many_arguments)]
 fn choose(
@@ -248,6 +251,7 @@ fn choose(
     people: &[String],
     used: &BTreeMap<String, u32>,
     reused: &BTreeSet<String>,
+    assessments: &mut Assessments,
 ) -> Result<Choice, &'static str> {
     let mut feasible = Vec::new();
     let mut rejection_counts = BTreeMap::<String, usize>::new();
@@ -268,7 +272,15 @@ fn choose(
             reviewed_profile_revision: None,
             reviewed_allergen_version: None,
         };
-        match preview(state, profiles, recipes, plans, &plan, ingredients) {
+        match cached_assessment(
+            state,
+            profiles,
+            recipes,
+            ingredients,
+            plans,
+            &plan,
+            assessments,
+        ) {
             Ok(p) if p["feasible"] == true => feasible.push((plan, p)),
             Ok(p) => {
                 for c in p["conflicts"].as_array().into_iter().flatten() {
@@ -341,6 +353,42 @@ fn choose(
         },
         |(_, p, e)| (Some(p), None, e),
     ))
+}
+fn cached_assessment(
+    state: &Household,
+    profiles: &Profiles,
+    recipes: &Store,
+    ingredients: &crate::ingredients::Store,
+    plans: &Plans,
+    plan: &Plan,
+    assessments: &mut Assessments,
+) -> Result<Value, &'static str> {
+    let key = (
+        plan.recipe.id.clone(),
+        plan.recipe.revision,
+        super::attendees(plan),
+        plan.servings,
+    );
+    if !assessments.contains_key(&key) {
+        if assessments.len() >= 100 {
+            assessments.clear();
+        }
+        let record = load_recipe(recipes, plan)?;
+        crate::nutrition::scaled_nutrition(
+            &record.catalogue,
+            &record.recipe.calculation(),
+            plan.servings,
+        )
+        .map_err(|_| "scaled_quantity_out_of_range")?;
+        assessments.insert(
+            key.clone(),
+            super::assessment::Assessment::new(state, profiles, &record, plan, ingredients)?,
+        );
+    }
+    assessments
+        .get(&key)
+        .ok_or("week_invalid")?
+        .rank_value(state, profiles, plans, plan)
 }
 fn delta(recipes: &Store, before: &[Plan], after: &[Plan]) -> Result<Vec<Value>, &'static str> {
     let mut amounts = BTreeMap::<String, i128>::new();

@@ -55,7 +55,7 @@ class _PlanScreenState extends State<PlanScreen> {
               Expanded(
                 child: DayButton(
                   'week_of',
-                  isoDay(day),
+                  isoDay(weekStart(day)),
                   (v) => setState(() => day = civilDay(v)),
                 ),
               ),
@@ -66,29 +66,57 @@ class _PlanScreenState extends State<PlanScreen> {
               ),
             ],
           ),
-          Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: [
-              for (var i = 0; i < 7; i++)
-                Builder(
-                  builder: (context) {
-                    final date = addDays(weekStart(day), i);
-                    return ChoiceChip(
-                      label: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          '${MaterialLocalizations.of(context).narrowWeekdays[date.weekday % 7]} ${date.day}',
-                        ),
-                      ),
-                      selected: isoDay(date) == isoDay(day),
-                      tooltip: MaterialLocalizations.of(context)
-                          .formatFullDate(date),
-                      onSelected: (_) => setState(() => day = date),
-                    );
-                  },
-                ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final large = MediaQuery.textScalerOf(context).scale(14) > 20;
+              final width = ((constraints.maxWidth - 24) / 7).clamp(
+                large ? 64.0 : 48.0,
+                120.0,
+              );
+              return Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: [
+                  for (var i = 0; i < 7; i++)
+                    Builder(
+                      builder: (context) {
+                        final date = addDays(weekStart(day), i),
+                            selected = isoDay(date) == isoDay(day);
+                        return SizedBox(
+                          width: width,
+                          child: ChoiceChip(
+                            showCheckmark: false,
+                            labelPadding: const EdgeInsets.symmetric(
+                              horizontal: 2,
+                            ),
+                            label: SizedBox(
+                              width: double.infinity,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(context.t('weekday_$i')),
+                                  Text(
+                                    '${date.day}',
+                                    style: TextStyle(
+                                      fontWeight: selected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            selected: selected,
+                            tooltip: MaterialLocalizations.of(context)
+                                .formatFullDate(date),
+                            onSelected: (_) => setState(() => day = date),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              );
+            },
           ),
         ],
         Padding(
@@ -180,6 +208,33 @@ class _PlanScreenState extends State<PlanScreen> {
           ),
         )
         .toList();
+    if (plans.isEmpty && batches.isEmpty) {
+      return Column(
+        children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(context.t(meal)),
+            subtitle: Text(context.t('no_meal_planned')),
+            trailing: widget.api.writable ? const Icon(Icons.add) : null,
+            onTap: !widget.api.writable
+                ? null
+                : () async {
+                    await openPage<void>(
+                      context,
+                      MealEditor(
+                        widget.api,
+                        data,
+                        date: isoDay(day),
+                        meal: meal,
+                      ),
+                    );
+                    await reload();
+                  },
+          ),
+          const Divider(),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -266,26 +321,6 @@ class _PlanScreenState extends State<PlanScreen> {
               await openPage<void>(context, StockScreen(widget.api));
               await reload();
             },
-          ),
-        if (plans.isEmpty && batches.isEmpty)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(context.t('no_meal_planned')),
-            trailing: widget.api.writable ? const Icon(Icons.add) : null,
-            onTap: !widget.api.writable
-                ? null
-                : () async {
-                    await openPage<void>(
-                      context,
-                      MealEditor(
-                        widget.api,
-                        data,
-                        date: isoDay(day),
-                        meal: meal,
-                      ),
-                    );
-                    await reload();
-                  },
           ),
         const Divider(),
       ],

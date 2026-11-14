@@ -22,7 +22,9 @@ and active/elapsed/advance budgets. The server preserves occupied meals and phys
 uses canonical dietary/time review, ranks feasible candidates deterministically, and explains each
 unfilled slot. Dislikes cost 1000 points, each previous recipe use in the week costs 100, opted-in
 history contributes its existing score clamped to ±100; optional active minutes add their count and
-up to ten reused ingredients subtract two each. Stable recipe IDs break ties. This greedy heuristic
+up to ten reused ingredients subtract two each. Stable recipe IDs break ties. Within a single locked request, at most 100 immutable
+recipe/participant/portion assessments are reused; every date/attendance/physical/time/slot check
+still runs per slot. Nothing is cached across requests or written to disk. This greedy heuristic
 is not a global optimizer. Cost and nutrition are not optimization inputs; missing information never
 means zero. Canonical per-recipe nutrition and sources remain available from inspection/meal review.
 

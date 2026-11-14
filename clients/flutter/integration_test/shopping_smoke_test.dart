@@ -91,6 +91,11 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('Mehr'));
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Geschäfte & Reihenfolge'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Geschäfte & Reihenfolge'), findsOneWidget);
       await tester.tap(
         find.descendant(

@@ -28,7 +28,9 @@ Apply accepts a proposal identity and explicit confirmations for its feasible sl
 constraints/references, and publishes the whole accepted set in one plan replacement. Unfilled slots
 stay explicitly infeasible/skipped; no exclusion is relaxed. Deterministic greedy ranking explains
 declared dislikes, variety, ingredient reuse and active time, without claiming global optimality.
-Price/nutrition are not optimized without comparable coverage; unknown is never zero. Nutrition remains
+Within one locked proposal request, at most 100 immutable recipe/participant/portion assessments
+are reused; date/attendance/physical-stock/time/slot constraints are still recomputed for every slot.
+There is no cross-request or disk cache. Price/nutrition are not optimized without comparable coverage; unknown is never zero. Nutrition remains
 the canonical per-meal evidence projection. Editing one meal continues to use F10 preview/apply.
 
 Actual prepared output is an explicit household observation, independently of planned production or

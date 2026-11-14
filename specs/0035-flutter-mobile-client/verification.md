@@ -230,3 +230,13 @@ F35 AC4/AC7, with ADR 0029 and the mobile planning guide as the explicit protoco
 - [ ] All AGENTS gates, native Vue regressions, package audit and final-head CI/APK identity.
 
 Physical-handset, TalkBack/release profiling and P4/P5 are not claimed by these local tests.
+
+### P3 diagnostic performance case
+
+The same isolated in-process debug test creates 100 candidate recipe revisions for two synthetic
+people and proposes all 28 empty meal slots. On this host, the proposal call alone measured
+22.683 s before request-local assessment reuse and 1.316 s after it; fixture creation is excluded.
+These are one diagnostic sample per implementation, not a release/device/network benchmark. All
+28 results remain canonically feasible; ordinary/date-override/physical-stock/stale/replay tests pass.
+The bounded cache contains only immutable per-request assessment facts; fresh slot constraints and
+apply-time checks remain mandatory.

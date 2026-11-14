@@ -1,8 +1,9 @@
 //! Protected, revision-pinned family plans and read-only calendar attendance imports.
+mod assessment;
 mod attendance;
 mod week;
 use crate::{
-    household::{self, Evaluation, Household, Profiles, Shared},
+    household::{self, Household, Profiles, Shared},
     quantities::SCALE,
     recipes::{Record, Store},
 };
@@ -488,84 +489,11 @@ fn preview(
     ingredients: &crate::ingredients::Store,
 ) -> Result<Value, &'static str> {
     validate(p)?;
-    let mut proposed = plans
-        .meals
-        .iter()
-        .filter(|old| old.date != p.date || old.meal != p.meal)
-        .cloned()
-        .collect::<Vec<_>>();
-    proposed.push(p.clone());
-    validate_meals(&proposed)?;
     let record = load_recipe(store, p)?;
-    let people = attendees(p);
-    let review = if people.is_empty() {
-        json!({"status":"review_required","excluded_ingredients":[],"allergen_matches":[],"review_notes":[],"disliked_ingredients":[],"unknown_ingredients":[],"warning_codes":["attendees_not_assigned"]})
-    } else {
-        household::review_snapshot(
-            state,
-            profiles,
-            &Evaluation {
-                member_ids: people.clone(),
-                ingredient_ids: record
-                    .recipe
-                    .lines
-                    .iter()
-                    .map(|l| l.ingredient_id.clone())
-                    .collect(),
-            },
-            ingredients,
-            Some(&record.catalogue),
-        )?
-    };
-    let active: u64 = record
-        .recipe
-        .steps
-        .iter()
-        .map(|s| u64::from(s.active_seconds))
-        .sum();
-    let elapsed = active
-        + record
-            .recipe
-            .steps
-            .iter()
-            .map(|s| u64::from(s.passive_seconds))
-            .sum::<u64>();
-    let mut conflicts = planning_conflicts(state, profiles, plans, p, &people, active)?;
-    if review["status"] == "blocked" {
-        conflicts.push("dietary_exclusion");
-    }
-    if record.recipe.steps.is_empty() {
-        conflicts.push("preparation_time_unknown");
-    }
-    if active > p.active_seconds {
-        conflicts.push("active_time_exceeded");
-    }
-    if elapsed > p.elapsed_seconds + p.advance_seconds {
-        conflicts.push("elapsed_time_exceeded");
-    }
-    let mut delta = masses(&record, p.servings)?
-        .into_iter()
-        .map(|(id, n)| signed_atoms(n).map(|n| (id, n)))
-        .collect::<Result<BTreeMap<_, _>, _>>()?;
-    if let Some(old) = plans
-        .meals
-        .iter()
-        .find(|old| old.date == p.date && old.meal == p.meal)
-    {
-        for (id, n) in masses(&load_recipe(store, old)?, old.servings)? {
-            *delta.entry(id).or_insert(0) -= i128::try_from(n).map_err(|_| "quantity_overflow")?;
-        }
-    }
-    let nutrition = crate::nutrition::scaled_nutrition(
-        &record.catalogue,
-        &record.recipe.calculation(),
-        p.servings,
-    )
-    .map_err(|_| "scaled_quantity_out_of_range")?;
-    Ok(
-        json!({"plan":p,"profile_revision":profiles.revision,"plan_revision":plans.revision,"attendees":people,"attendance_source":p.calendar.as_ref().map(|c|&c.source),"attendance_overridden":p.attendees.is_some() && p.calendar.is_some(),"review":review,"conflicts":conflicts,"feasible":conflicts.is_empty(),"timing":{"reference_servings":record.recipe.servings,"active_seconds":active,"elapsed_seconds":elapsed,"advance_preparation_seconds":elapsed.saturating_sub(p.elapsed_seconds)},"shopping_delta":delta.into_iter().filter(|(_,n)|*n!=0).map(|(id,n)|json!({"ingredient_id":id,"grams_delta":decimal(n)})).collect::<Vec<_>>(),"nutrition":nutrition}),
-    )
+    assessment::Assessment::new(state, profiles, &record, p, ingredients)?
+        .preview(state, profiles, store, plans, p, &record)
 }
+
 fn error(code: &'static str) -> Response {
     household::reply(
         match code {
