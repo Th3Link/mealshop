@@ -37,6 +37,18 @@ export const peopleGerman: Record<keyof typeof peopleEnglish, string> = {
   addRuleException: 'Zutatenausnahme hinzufügen',
 }
 export const peopleExplanations = {
+  attendance_excluded: {
+    en: 'A selected person is absent according to the household attendance schedule. Review attendance in the mobile plan.',
+    de: 'Laut Anwesenheitsplan ist eine ausgewählte Person abwesend. Prüfe die Teilnahme im mobilen Speiseplan.',
+  },
+  prepared_slot_conflict: {
+    en: 'Physical prepared portions already occupy this meal. Review their allocation before replacing it.',
+    de: 'Fertige Portionen sind dieser Mahlzeit bereits zugeteilt. Prüfe deren Zuteilung vor einem Austausch.',
+  },
+  prepared_production_frozen: {
+    en: 'Actual prepared output is linked to this production. Correct its stock record before changing the recipe or production amount.',
+    de: 'Mit dieser Produktion ist tatsächlich hergestelltes Essen verknüpft. Korrigiere dessen Vorratseintrag, bevor du Rezept oder Produktionsmenge änderst.',
+  },
   person_active_time_exceeded: {
     en: 'Active preparation exceeds a selected person’s limit.',
     de: 'Die aktive Zubereitung überschreitet die Grenze einer ausgewählten Person.',

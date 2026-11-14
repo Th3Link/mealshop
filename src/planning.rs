@@ -1,6 +1,9 @@
 //! Protected, revision-pinned family plans and read-only calendar attendance imports.
+mod assessment;
+mod attendance;
+mod week;
 use crate::{
-    household::{self, Evaluation, Household, Profiles, Shared},
+    household::{self, Household, Profiles, Shared},
     quantities::SCALE,
     recipes::{Record, Store},
 };
@@ -75,6 +78,12 @@ struct Plans {
     schema_version: u32,
     revision: u64,
     meals: Vec<Plan>,
+    #[serde(default)]
+    attendance: attendance::Schedule,
+    #[serde(default)]
+    proposals: Vec<week::Proposal>,
+    #[serde(default = "week::first_id")]
+    next_proposal: u64,
 }
 pub(crate) struct PlanStore {
     path: PathBuf,
@@ -82,6 +91,27 @@ pub(crate) struct PlanStore {
     writable: bool,
 }
 impl PlanStore {
+    pub(crate) fn attending(&self, id: &str, date: &str, meal: &str) -> bool {
+        self.data.attendance.available(id, date, meal)
+    }
+    pub(crate) fn production(
+        &self,
+        date: &str,
+        meal: &str,
+        recipe: &str,
+        revision: u64,
+    ) -> Option<u32> {
+        self.data
+            .meals
+            .iter()
+            .find(|p| {
+                p.date == date
+                    && p.meal == meal
+                    && p.recipe.id == recipe
+                    && p.recipe.revision == revision
+            })
+            .map(|p| p.servings)
+    }
     pub(crate) fn cooking_source(
         &self,
         date: &str,
@@ -156,6 +186,9 @@ impl PlanStore {
             schema_version: 1,
             revision: 0,
             meals: Vec::new(),
+            attendance: attendance::Schedule::default(),
+            proposals: Vec::new(),
+            next_proposal: 1,
         };
         if path.exists() {
             let mut bytes = Vec::new();
@@ -180,6 +213,8 @@ impl PlanStore {
             }
         }
         validate_meals(&data.meals).map_err(str::to_owned)?;
+        data.attendance.validate().map_err(str::to_owned)?;
+        week::validate_store(&data).map_err(str::to_owned)?;
         Ok(Self {
             path,
             data,
@@ -383,6 +418,68 @@ fn decimal(atoms: i128) -> String {
     let atoms = atoms.unsigned_abs();
     format!("{sign}{}.{:06}", atoms / SCALE, atoms % SCALE)
 }
+fn planning_conflicts(
+    state: &Household,
+    profiles: &Profiles,
+    plans: &Plans,
+    p: &Plan,
+    people: &[String],
+    active: u64,
+) -> Result<Vec<&'static str>, &'static str> {
+    let mut conflicts =
+        household::people::planning_conflicts(profiles, people, &p.date, &p.meal, active);
+    let shopping = state
+        .shopping
+        .lock()
+        .map_err(|_| "shopping_storage_failed")?;
+    shopping.ready()?;
+    for batch in shopping
+        .data
+        .inventory
+        .prepared
+        .iter()
+        .filter(|b| !b.reversed)
+    {
+        let origin = batch
+            .source
+            .as_ref()
+            .is_some_and(|s| s.date == p.date && s.meal == p.meal);
+        if origin {
+            if batch.recipe_id != p.recipe.id
+                || batch.revision != p.recipe.revision
+                || batch.planned_portions != Some(p.servings)
+            {
+                conflicts.push("prepared_production_frozen");
+            }
+        } else if batch.allocations.iter().any(|a| {
+            a.state != crate::inventory::model::AllocationState::Released
+                && includes(p, &a.date, &a.meal)
+        }) {
+            conflicts.push("prepared_slot_conflict");
+        }
+    }
+    drop(shopping);
+    for (date, meal) in slots(p) {
+        if people
+            .iter()
+            .any(|id| !plans.attendance.available(id, date, meal))
+        {
+            conflicts.push("attendance_excluded");
+        }
+    }
+    if p.allocations.is_some() {
+        // Attendance applies to eating slots, not the separate preparation slot.
+        conflicts.retain(|code| *code != "person_unavailable");
+        for (date, meal) in slots(p) {
+            conflicts.extend(household::people::planning_conflicts(
+                profiles, people, date, meal, 0,
+            ));
+        }
+        conflicts.sort_unstable();
+        conflicts.dedup();
+    }
+    Ok(conflicts)
+}
 fn preview(
     state: &Household,
     profiles: &Profiles,
@@ -392,101 +489,17 @@ fn preview(
     ingredients: &crate::ingredients::Store,
 ) -> Result<Value, &'static str> {
     validate(p)?;
-    let mut proposed = plans
-        .meals
-        .iter()
-        .filter(|old| old.date != p.date || old.meal != p.meal)
-        .cloned()
-        .collect::<Vec<_>>();
-    proposed.push(p.clone());
-    validate_meals(&proposed)?;
     let record = load_recipe(store, p)?;
-    let people = attendees(p);
-    let review = if people.is_empty() {
-        json!({"status":"review_required","excluded_ingredients":[],"allergen_matches":[],"review_notes":[],"disliked_ingredients":[],"unknown_ingredients":[],"warning_codes":["attendees_not_assigned"]})
-    } else {
-        household::review_snapshot(
-            state,
-            profiles,
-            &Evaluation {
-                member_ids: people.clone(),
-                ingredient_ids: record
-                    .recipe
-                    .lines
-                    .iter()
-                    .map(|l| l.ingredient_id.clone())
-                    .collect(),
-            },
-            ingredients,
-            Some(&record.catalogue),
-        )?
-    };
-    let active: u64 = record
-        .recipe
-        .steps
-        .iter()
-        .map(|s| u64::from(s.active_seconds))
-        .sum();
-    let elapsed = active
-        + record
-            .recipe
-            .steps
-            .iter()
-            .map(|s| u64::from(s.passive_seconds))
-            .sum::<u64>();
-    let mut conflicts =
-        household::people::planning_conflicts(profiles, &people, &p.date, &p.meal, active);
-    if p.allocations.is_some() {
-        // Attendance applies to eating slots, not the separate preparation slot.
-        conflicts.retain(|code| *code != "person_unavailable");
-        for (date, meal) in slots(p) {
-            conflicts.extend(household::people::planning_conflicts(
-                profiles, &people, date, meal, 0,
-            ));
-        }
-        conflicts.sort_unstable();
-        conflicts.dedup();
-    }
-    if review["status"] == "blocked" {
-        conflicts.push("dietary_exclusion");
-    }
-    if record.recipe.steps.is_empty() {
-        conflicts.push("preparation_time_unknown");
-    }
-    if active > p.active_seconds {
-        conflicts.push("active_time_exceeded");
-    }
-    if elapsed > p.elapsed_seconds + p.advance_seconds {
-        conflicts.push("elapsed_time_exceeded");
-    }
-    let mut delta = masses(&record, p.servings)?
-        .into_iter()
-        .map(|(id, n)| signed_atoms(n).map(|n| (id, n)))
-        .collect::<Result<BTreeMap<_, _>, _>>()?;
-    if let Some(old) = plans
-        .meals
-        .iter()
-        .find(|old| old.date == p.date && old.meal == p.meal)
-    {
-        for (id, n) in masses(&load_recipe(store, old)?, old.servings)? {
-            *delta.entry(id).or_insert(0) -= i128::try_from(n).map_err(|_| "quantity_overflow")?;
-        }
-    }
-    let nutrition = crate::nutrition::scaled_nutrition(
-        &record.catalogue,
-        &record.recipe.calculation(),
-        p.servings,
-    )
-    .map_err(|_| "scaled_quantity_out_of_range")?;
-    Ok(
-        json!({"plan":p,"profile_revision":profiles.revision,"plan_revision":plans.revision,"attendees":people,"attendance_source":p.calendar.as_ref().map(|c|&c.source),"attendance_overridden":p.attendees.is_some() && p.calendar.is_some(),"review":review,"conflicts":conflicts,"feasible":conflicts.is_empty(),"timing":{"reference_servings":record.recipe.servings,"active_seconds":active,"elapsed_seconds":elapsed,"advance_preparation_seconds":elapsed.saturating_sub(p.elapsed_seconds)},"shopping_delta":delta.into_iter().filter(|(_,n)|*n!=0).map(|(id,n)|json!({"ingredient_id":id,"grams_delta":decimal(n)})).collect::<Vec<_>>(),"nutrition":nutrition}),
-    )
+    assessment::Assessment::new(state, profiles, &record, p, ingredients)?
+        .preview(state, profiles, store, plans, p, &record)
 }
+
 fn error(code: &'static str) -> Response {
     household::reply(
         match code {
             "revision_conflict" => StatusCode::CONFLICT,
             "mealplan_storage_failed"
+            | "shopping_storage_failed"
             | "recipe_store_unavailable"
             | "ingredient_storage_failed"
             | "history_storage_failed" => StatusCode::SERVICE_UNAVAILABLE,
@@ -504,6 +517,8 @@ fn access(state: &Household, headers: &HeaderMap, write: bool) -> bool {
 }
 pub(crate) fn routes() -> Router<Shared> {
     Router::new()
+        .merge(attendance::routes())
+        .merge(week::routes())
         .route("/api/household/mealplan", get(list))
         .route("/api/household/mealplan/preview", post(show_preview))
         .route("/api/household/mealplan/apply", post(apply))
@@ -532,7 +547,7 @@ async fn list(State(state): State<Shared>, headers: HeaderMap) -> Response {
         let requirements=quantities.into_iter().map(|(id,n)|signed_atoms(n).map(|n|json!({"ingredient_id":id,"grams":decimal(n)}))).collect::<Result<Vec<_>,_>>()?;
         let allergen_version = household::allergen_version(state, ingredients);
         let pending=plans.data.meals.iter().filter(|p|p.reviewed_profile_revision!=Some(profiles.revision) || p.reviewed_allergen_version.as_deref()!=Some(allergen_version.as_str())).map(|p|json!({"date":p.date,"meal":p.meal})).collect::<Vec<_>>();
-        Ok(json!({"schema_version":1,"revision":plans.data.revision,"meals":plans.data.meals,"profile_revision":profiles.revision,"review_required_slots":pending,"shopping_requirements":requirements,"recipe_revisions":revisions}))
+        Ok(json!({"schema_version":1,"revision":plans.data.revision,"meals":plans.data.meals,"profile_revision":profiles.revision,"review_required_slots":pending,"shopping_requirements":requirements,"recipe_revisions":revisions,"attendance":plans.data.attendance}))
     }).await
 }
 async fn show_preview(
@@ -630,6 +645,7 @@ async fn apply(
                 schema_version: 1,
                 revision,
                 meals,
+                ..plans.data.clone()
             })?;
             Ok(json!({"revision":revision,"preview":result}))
         },
@@ -722,14 +738,14 @@ async fn work(
     + 'static,
 ) -> Response {
     tokio::task::spawn_blocking(move || {
+        let Ok(profiles) = state.store.lock() else {
+            return error("mealplan_storage_failed");
+        };
         let Some(recipes) = &state.recipes else {
             return error("recipe_store_unavailable");
         };
         let Ok(recipes) = recipes.lock() else {
             return error("recipe_store_unavailable");
-        };
-        let Ok(profiles) = state.store.lock() else {
-            return error("mealplan_storage_failed");
         };
         let Ok(mut plans) = state.plans.lock() else {
             return error("mealplan_storage_failed");
@@ -836,6 +852,9 @@ mod production_tests {
                 schema_version: 1,
                 revision: 1,
                 meals: vec![reopened],
+                attendance: attendance::Schedule::default(),
+                proposals: Vec::new(),
+                next_proposal: 1,
             },
             writable: true,
         };

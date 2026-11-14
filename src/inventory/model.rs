@@ -136,6 +136,37 @@ pub(crate) struct OfferInput {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
 pub(crate) enum Command {
+    RecordPrepared {
+        input: super::prepared::Input,
+    },
+    StorePrepared {
+        batch_id: String,
+        storage: super::prepared::Storage,
+    },
+    AllocatePrepared {
+        batch_id: String,
+        date: String,
+        meal: String,
+        portions: u32,
+        member_ids: Vec<String>,
+    },
+    ReleasePrepared {
+        batch_id: String,
+        allocation_id: String,
+    },
+    UsePrepared {
+        batch_id: String,
+        allocation_id: String,
+    },
+    UndoPreparedUse {
+        batch_id: String,
+        allocation_id: String,
+        reason: String,
+    },
+    ReversePrepared {
+        batch_id: String,
+        reason: String,
+    },
     CreateLot {
         target: Target,
         quantity: Quantity,
@@ -200,6 +231,8 @@ pub(crate) struct Operation {
 #[derive(Clone, Default, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Data {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) prepared: Vec<super::prepared::Batch>,
     pub(crate) lots: Vec<Lot>,
     pub(crate) allocations: Vec<Allocation>,
     pub(crate) movements: Vec<Movement>,
@@ -210,6 +243,7 @@ pub(crate) struct Data {
 impl Data {
     pub(crate) fn is_empty(&self) -> bool {
         self.lots.is_empty()
+            && self.prepared.is_empty()
             && self.allocations.is_empty()
             && self.movements.is_empty()
             && self.offers.is_empty()

@@ -16,6 +16,7 @@ class ShoppingController extends ChangeNotifier {
   List<Home> homes = [], invitations = [];
   String? selected, error;
   String language = 'en';
+  String destination = 'shopping';
   bool imageInterrupted = false;
   void photoInterrupted() {
     imageInterrupted = true;
@@ -68,6 +69,16 @@ class ShoppingController extends ChangeNotifier {
             ? null
             : Credential.parse(object(value['credential']));
         language = value['language'] as String;
+        final savedDestination = value['destination'];
+        if (const [
+          'today',
+          'plan',
+          'shopping',
+          'recipes',
+          'more',
+        ].contains(savedDestination)) {
+          destination = savedDestination as String;
+        }
         homes = (value['homes'] as List).map((v) => Home(object(v))).toList();
         selected = value['selected'] as String?;
         _selectionRequired = value['selection_required'] as bool? ?? false;
@@ -92,6 +103,7 @@ class ShoppingController extends ChangeNotifier {
     'version': 1,
     'credential': credential?.toJson(),
     'language': language,
+    'destination': destination,
     'homes': homes.map((h) => h.toJson()).toList(),
     'selected': selected,
     'selection_required': _selectionRequired,
@@ -133,6 +145,7 @@ class ShoppingController extends ChangeNotifier {
     homes = [];
     invitations = [];
     selected = null;
+    destination = 'shopping';
     _selectionRequired = false;
     _records = {};
     _drafts = {};
@@ -159,6 +172,20 @@ class ShoppingController extends ChangeNotifier {
     language = value;
     await _save();
     notifyListeners();
+  }
+
+  Future<void> setDestination(String value) async {
+    if (!const [
+      'today',
+      'plan',
+      'shopping',
+      'recipes',
+      'more',
+    ].contains(value)) {
+      return;
+    }
+    destination = value;
+    await _save();
   }
 
   Future<void> select(String id) async {

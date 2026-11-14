@@ -1,6 +1,6 @@
 # Flutter delivery plan — five complete phone releases
 
-Status: P1 merged in PR #44; P2 implemented; final PR verification below. Customer approved Android, requested an emulator and explicitly gave the Go on 2026-11-13.
+Status: P1 merged in PR #44; P2 merged in PR #45; P3 authorized on 2026-11-14 and in progress on `story/flutter-week-preparation`.
 Task/checkpoint authority: this file, following the repository's spec-folder convention. Do not
 create a second `tasks/` backlog or mark the imported pack's checklist as delivered.
 
@@ -123,6 +123,21 @@ owner read/edit access; see [ADR 0028](../../docs/adr/0028-person-rules-and-acti
    Nextcloud workflows with synthetic fixtures; clean only this run's fixtures and run all local gates. PR-head CI is the separate release gate recorded on the PR.
 
 ## P3 — Explainable household week, mealprep and stock
+
+Implementation checkpoints (one frontend/backend PR; ADR 0029):
+
+1. [ ] Persist bounded recurring attendance/date overrides; enforce them on every canonical preview/apply.
+   Verify precedence, empty attendance, leap/DST civil dates, restart and legacy snapshots.
+2. [ ] Add bounded, expiring server-owned week proposals and atomic reviewed apply, reusing current
+   dietary/time checks and explained deterministic ranking. Verify stale inputs, partial infeasibility,
+   per-slot confirmations, current permissions and Thursday-only changes.
+3. [ ] Deliver native Today/Plan, week review, individual meal/attendance/allocation editing and
+   explicit shopping source updates. Verify 320dp/200% text, reader/offline/conflict states and two clients.
+4. [ ] Record actual prepared batches and exact whole-portion allocation/release/use/reversal inside
+   the existing stock transaction; add native prepared stock, lots/offers/history/review. Verify
+   six = four held + two available, storage changes, over-allocation, replay/restart and no inferred stock.
+5. [ ] Upgrade the retained Android app, exercise synthetic live Nextcloud journeys, inspect native
+   screenshots, clean only this run's fixtures, run all gates and deliver current-head CI/APKs.
 
 Phone demo: generate/review a week for the two people, change Thursday dinner/attendance, inspect the
 shopping delta, then prepare six portions on Sunday, allocate four to later meals and retain two frozen

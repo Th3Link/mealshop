@@ -1,6 +1,6 @@
 # Smartphone interaction plan
 
-Status: P1 merged; P2 direction accepted with customer activity-access decisions. The ZIP's UX is a target;
+Status: P1/P2 merged; P3 authorized and in progress. The ZIP's UX is a target;
 this document reconciles it with existing data and the five complete deliveries.
 
 ## Navigation and the first useful launch
@@ -77,6 +77,26 @@ Quality targets: at least 48×48 logical-pixel touch areas, 4.5:1 normal text/co
 chosen platforms. Validate these alongside conflict/permission states, not just happy-path screenshots.
 [Flutter accessibility guidance](https://docs.flutter.dev/ui/accessibility) supports this proposed bar;
 no mobile conformance is claimed by this plan.
+
+## P3 interaction contract
+
+Keep the P2 Material theme/system typography. Today presents real preparation timestamps and ordered
+meals; Plan uses a week strip, selected-day list and one complete meal editor. A meal action menu also
+records actual output. All recipe parts remain in the existing always-open recipe views. Explicit
+checkboxes mean per-person attendance or per-slot week confirmation; they do not claim allergy safety.
+Unknown/ranged nutrition remains inspectable before apply. Existing/physical slots and infeasibility
+are visible, never silently omitted or replaced. A stale review keeps the underlying editor draft.
+
+Stock distinguishes physical ingredient lots, observed prepared portions and manual offers. Show actual,
+held, used and available counts together; six/four/two is a count balance, never a mass conversion.
+Every write has a concrete before/after review and explicit confirmation. Unknown network outcomes keep
+the same stock request body/key; leaving warns about losing retry context. No raw JSON editing.
+
+Small screens/large text use wrapping controls, scrollable forms and selected-only bottom labels when
+space is constrained; all destinations keep semantic names. Planning/stock refresh on foreground or
+explicit pull without repeatedly downloading the whole catalogue in the background. Private activity
+polling remains unchanged. Source guidance: [Flutter large-font design](https://docs.flutter.dev/ui/accessibility/ui-design-and-styling)
+and [date-only Material picker semantics](https://api.flutter.dev/flutter/material/showDatePicker.html).
 
 ## P2 screen contract
 

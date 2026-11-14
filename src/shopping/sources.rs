@@ -1,6 +1,6 @@
 use super::model::{Data, Item, Origin, Requirement, Source, Unit, amount};
 use crate::recipes::Store;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 #[derive(Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -9,7 +9,7 @@ pub(crate) struct Selection {
     pub(crate) revision: u64,
     pub(crate) servings: u32,
 }
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct MealSlot {
     pub(crate) date: String,

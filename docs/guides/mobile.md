@@ -1,8 +1,9 @@
 # Android app development and installation
 
 F35 P1 provides native shared shopping against the existing Nextcloud installation. Rust remains the
-authority for quantities, membership and shopping transactions. Shopping and More are the active
-navigation destinations; profiles, recipe authoring, plans, cooking and camera capture follow P2–P5.
+authority for quantities, membership and shopping transactions. P1 delivered Shopping/More and P2 delivered Recipes and people. P3 activates all five
+destinations: Today, Plan, Shopping, Recipes and More. [Planning and stock](mobile-planning.md)
+documents the P3 server/client contract; cooking and capture remain P4/P5.
 
 ## Toolchain and emulator
 
@@ -197,3 +198,14 @@ collections. Incoming shared content is never put into the offline cache.
 installed `org.mealshop.pocket.dev` record. Normal `build`/`install` still upgrade the development app
 with its retained key. Do not run raw driver commands against the development package when preserving
 an account/cache. Automated/mock native evidence and real Nextcloud proxy evidence are distinct.
+
+## P3 development upgrade
+
+Version `0.3.0+4` upgrades the same development package/key (`x86_64` version code 4004). It retains
+the existing protected credential, household, shopping outbox and person drafts. The selected tab
+is an optional protected field; older records default to Shopping. No plan/stock record is copied
+to disk on the phone. P3 writes need a connection; shopping keeps P1 offline behaviour.
+
+Normal installation inspects the actual APK application ID and uses `install -r`. The dedicated
+emulator cold-boots retained data without loading/saving Quick Boot snapshots; physical keyboard
+input stays enabled. Do not uninstall, reset the AVD or clear app data for this upgrade.

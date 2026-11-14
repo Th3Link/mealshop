@@ -211,3 +211,32 @@ Retained household directories were not inspected or copied; retained membership
 metadata was checked unchanged and allocation counters were preserved. The emulator returned to
 explicit household selection after the removed fixture lost access.
 Final PR-head CI and clean-source APK metadata are recorded in the PR description.
+
+## P3 implementation verification (in progress, 2026-11-14)
+
+P2 was merged in PR #45; this slice is `story/flutter-week-preparation`. Acceptance remains
+F35 AC4/AC7, with ADR 0029 and the mobile planning guide as the explicit protocol/design contract.
+
+- Focused backend planning/inventory tests cover civil attendance, hard exclusion/infeasibility,
+  server-owned confirmations, stale recipe heads/expiry/restart, harmless applied replay, actual
+  shopping preview/manual purchases, six/four/two prepared portions, allocation/use/release/storage/
+  reversal, duplicate linked output and protected production.
+- Flutter format/analyze and 44 unit/widget tests include P3 review/conflicts, immutable ambiguous
+  stock retry, retained destination, exact localized stock, observed-yield preview and 320dp/200%
+  reader/physical-stock layouts. Full final-head gates are still pending below.
+- [ ] Live Nextcloud proxy and two-role/second-client P3 journey with this run's synthetic household.
+- [ ] Retained P2-to-P3 Android upgrade, screenshots and actual emulator workflow.
+- [ ] Remove/archive only P3-owned fixtures, leaving retained records/directories untouched.
+- [ ] All AGENTS gates, native Vue regressions, package audit and final-head CI/APK identity.
+
+Physical-handset, TalkBack/release profiling and P4/P5 are not claimed by these local tests.
+
+### P3 diagnostic performance case
+
+The same isolated in-process debug test creates 100 candidate recipe revisions for two synthetic
+people and proposes all 28 empty meal slots. On this host, the proposal call alone measured
+22.683 s before request-local assessment reuse and 1.316 s after it; fixture creation is excluded.
+These are one diagnostic sample per implementation, not a release/device/network benchmark. All
+28 results remain canonically feasible; ordinary/date-override/physical-stock/stale/replay tests pass.
+The bounded cache contains only immutable per-request assessment facts; fresh slot constraints and
+apply-time checks remain mandatory.

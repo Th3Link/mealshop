@@ -43,6 +43,7 @@ pub(crate) fn offer(value: &Offer) -> bool {
         })
 }
 pub(crate) fn validate(data: &Shopping) -> Result<(), &'static str> {
+    super::prepared::validate(data)?;
     let state = &data.inventory;
     if state.lots.len() > 500
         || state.allocations.len() > 2000

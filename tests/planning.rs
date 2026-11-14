@@ -645,3 +645,430 @@ async fn mealprep_allocates_across_days_but_counts_production_once_after_restart
         listed["shopping_requirements"]
     );
 }
+
+fn week_input(good: &Value, bad: &Value) -> Value {
+    json!({"start_date":"2026-11-09","meals":["dinner"],"candidates":[
+        {"id":good["id"],"revision":good["revision"]},
+        {"id":bad["id"],"revision":bad["revision"]}],
+        "active_seconds":1800,"elapsed_seconds":3600,"advance_seconds":0,
+        "servings_per_person":1,"prefer_quick":true,"prefer_reuse":true})
+}
+fn week_confirm(proposal: &Value) -> Value {
+    json!({"proposal_id":proposal["id"],"reviewed":true,
+        "confirmed_slots":proposal["slots"].as_array().unwrap().iter().filter(|s| !s["plan"].is_null())
+            .map(|s| json!({"date":s["date"],"meal":s["meal"]})).collect::<Vec<_>>()})
+}
+#[tokio::test]
+async fn week_proposal_is_reviewed_atomic_dietary_safe_and_replayable_after_restart() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (good, bad) = setup(&app).await;
+    let schedule = json!({"expected_revision":0,"attendance":{"recurring":[
+        {"member_id":"one","weekdays":[0,1,2,3,4],"meals":["dinner"]}],
+        "overrides":[{"date":"2026-11-12","meal":"dinner","member_ids":["two"]},
+        {"date":"2026-11-14","meal":"dinner","member_ids":[]}]}});
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/attendance",
+            schedule,
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let (status, result) = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/preview",
+        week_input(&good, &bad),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{result}");
+    let p = &result["proposal"];
+    assert_eq!(p["slots"].as_array().unwrap().len(), 7);
+    assert_eq!(p["slots"][3]["plan"]["attendees"], json!(["two"]));
+    assert_eq!(p["slots"][5]["reason"], "no_attendees");
+    assert_eq!(p["slots"][0]["plan"]["recipe"]["id"], good["id"]);
+    let initial = request(
+        &app,
+        "GET",
+        "/api/household/mealplan",
+        Value::Null,
+        Some(READER),
+    )
+    .await
+    .1;
+    assert_eq!(initial["meals"], json!([]));
+    let body = week_confirm(p);
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/week/apply",
+            body.clone(),
+            Some(READER)
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    let mut partial = body.clone();
+    partial["confirmed_slots"].as_array_mut().unwrap().pop();
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/week/apply",
+            partial,
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/week/apply",
+            body.clone(),
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    drop(app);
+    let app = dir.app();
+    let (status, replay) = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/apply",
+        body,
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{replay}");
+    assert_eq!(replay["replayed"], true);
+    let saved = request(
+        &app,
+        "GET",
+        "/api/household/mealplan",
+        Value::Null,
+        Some(READER),
+    )
+    .await
+    .1;
+    assert_eq!(saved["meals"].as_array().unwrap().len(), 6);
+    assert_eq!(saved["revision"], 2);
+    assert_eq!(saved["attendance"], initial["attendance"]);
+    let invalid = plan(&good); // Thursday excludes person one on every legacy preview/apply path.
+    let mut invalid = invalid;
+    invalid["date"] = json!("2026-11-12");
+    let v = preview(&app, invalid).await;
+    assert_eq!(v["feasible"], false);
+    assert!(
+        v["conflicts"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("attendance_excluded"))
+    );
+}
+#[tokio::test]
+async fn week_stale_profiles_and_recipe_heads_cannot_be_confirmed() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (good, bad) = setup(&app).await;
+    let p = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/preview",
+        week_input(&good, &bad),
+        Some(OWNER),
+    )
+    .await
+    .1;
+    let revision = json!({"expected_revision":good["revision"],"recipe":recipe("oats")});
+    assert_eq!(
+        request(
+            &app,
+            "PUT",
+            &format!("/api/recipes/{}", good["id"].as_str().unwrap()),
+            revision,
+            None
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let v = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/apply",
+        week_confirm(&p["proposal"]),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(v.0, StatusCode::CONFLICT, "{}", v.1);
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/api/household/mealplan",
+            Value::Null,
+            Some(OWNER)
+        )
+        .await
+        .1["meals"],
+        json!([])
+    );
+}
+#[tokio::test]
+async fn impossible_week_keeps_exclusions_and_reports_every_unfilled_slot() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (good, bad) = setup(&app).await;
+    let mut input = week_input(&good, &bad);
+    input["candidates"] = json!([{"id":bad["id"],"revision":bad["revision"]}]);
+    let (status, v) = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/preview",
+        input,
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{v}");
+    for slot in v["proposal"]["slots"].as_array().unwrap() {
+        assert!(slot["plan"].is_null());
+        assert_eq!(slot["reason"], "no_feasible_meal");
+        assert_eq!(
+            slot["evidence"]["rejected_by_constraint"]["dietary_exclusion"],
+            1
+        );
+    }
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/week/apply",
+            week_confirm(&v["proposal"]),
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+}
+
+#[tokio::test]
+async fn an_expired_proposal_cannot_publish_after_server_restart() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (good, bad) = setup(&app).await;
+    let p = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/preview",
+        week_input(&good, &bad),
+        Some(OWNER),
+    )
+    .await
+    .1;
+    drop(app);
+    let path = dir.0.join("household/mealplan.json");
+    let mut saved: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    saved["proposals"][0]["expires_at"] = json!(1);
+    std::fs::write(path, saved.to_string()).unwrap();
+    let app = dir.app();
+    let v = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/apply",
+        week_confirm(&p["proposal"]),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(v.0, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(v.1["code"], "week_expired");
+}
+#[tokio::test]
+async fn real_shopping_preview_preserves_manual_and_purchased_amounts_during_thursday_swap() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (good, bad) = setup(&app).await;
+    let mut p = plan(&good);
+    p["date"] = json!("2026-11-12");
+    let v = preview(&app, p.clone()).await;
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/apply",
+            apply(&v, &p),
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let sync = json!({"operation":"sync_plan","plan_revision":1,"slots":[{"date":"2026-11-12","meal":"dinner"}]});
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/shopping",
+            json!({"expected_revision":0,"command":sync}),
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    for (revision, command) in [
+        (
+            1,
+            json!({"operation":"add_manual","label":"Synthetic extra oats","ingredient_id":"oats","quantity":{"amount":"5.000001","unit":"g"}}),
+        ),
+        (
+            2,
+            json!({"operation":"check","key":"ingredient:oats:g","checked":true}),
+        ),
+    ] {
+        assert_eq!(
+            request(
+                &app,
+                "POST",
+                "/api/household/shopping",
+                json!({"expected_revision":revision,"command":command}),
+                Some(OWNER)
+            )
+            .await
+            .0,
+            StatusCode::OK
+        );
+    }
+    p["servings"] = json!(6);
+    let v = preview(&app, p.clone()).await;
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/mealplan/apply",
+            apply(&v, &p),
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let before = request(
+        &app,
+        "GET",
+        "/api/household/shopping",
+        Value::Null,
+        Some(OWNER),
+    )
+    .await
+    .1;
+    let (status, change) = request(
+        &app,
+        "POST",
+        "/api/household/shopping/plan-preview",
+        json!({"expected_revision":3,"plan_revision":2,
+        "slots":[{"date":"2026-11-12","meal":"dinner"}]}),
+        Some(READER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{change}");
+    assert_eq!(change["changes"][0]["after"]["remaining"], "100.000000");
+    assert_eq!(change["changes"][0]["after"]["purchased"], "205.000001");
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/api/household/shopping",
+            Value::Null,
+            Some(OWNER)
+        )
+        .await
+        .1,
+        before
+    );
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/api/household/shopping",
+            json!({"expected_revision":3,"command":change["command"]}),
+            Some(OWNER)
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let after = request(
+        &app,
+        "GET",
+        "/api/household/shopping",
+        Value::Null,
+        Some(OWNER),
+    )
+    .await
+    .1;
+    let manual = after["sources"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|s| s["origin"]["kind"] == "manual")
+        .unwrap();
+    let prior = before["sources"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|s| s["id"] == manual["id"])
+        .unwrap();
+    assert_eq!(manual, prior);
+    let _ = bad;
+}
+
+#[tokio::test]
+async fn maximum_week_pool_is_bounded_and_keeps_all_twenty_eight_meals_feasible() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let (good, bad) = setup(&app).await;
+    let mut candidates = vec![
+        json!({"id":good["id"],"revision":1}),
+        json!({"id":bad["id"],"revision":1}),
+    ];
+    for _ in 2..100 {
+        let r = request(&app, "POST", "/api/recipes", recipe("oats"), None)
+            .await
+            .1;
+        candidates.push(json!({"id":r["id"],"revision":1}));
+    }
+    let mut input = week_input(&good, &bad);
+    input["candidates"] = json!(candidates);
+    input["meals"] = json!(["breakfast", "lunch", "snack", "dinner"]);
+    let started = std::time::Instant::now();
+    let (status, result) = request(
+        &app,
+        "POST",
+        "/api/household/mealplan/week/preview",
+        input,
+        Some(OWNER),
+    )
+    .await;
+    eprintln!(
+        "P3 synthetic 100-candidate/28-slot in-process debug proposal: {:?}",
+        started.elapsed()
+    );
+    assert_eq!(status, StatusCode::OK, "{}", result["code"]);
+    let slots = result["proposal"]["slots"].as_array().unwrap();
+    assert_eq!(slots.len(), 28);
+    assert!(slots.iter().all(|s| !s["plan"].is_null()));
+}
