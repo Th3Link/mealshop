@@ -17,11 +17,12 @@ class Resource<T> extends StatefulWidget {
     required this.load,
     required this.builder,
     this.sensitive = false,
+    this.inline = false,
     this.pollInterval = const Duration(seconds: 20),
   });
   final Future<T> Function() load;
   final Widget Function(BuildContext, T, Future<void> Function()) builder;
-  final bool sensitive;
+  final bool sensitive, inline;
   final Duration? pollInterval;
   @override
   State<Resource<T>> createState() => _ResourceState<T>();
@@ -94,6 +95,25 @@ class _ResourceState<T> extends State<Resource<T>> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    if (error != null && widget.inline) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Note(
+              context.t(
+                error is ApiFailure
+                    ? (error as ApiFailure).code
+                    : 'request_failed',
+              ),
+              warning: true,
+            ),
+            TextButton(onPressed: reload, child: Text(context.t('retry'))),
+          ],
+        ),
+      );
+    }
     if (error != null) {
       return EmptyContent(
         icon: Icons.cloud_off_outlined,
@@ -105,10 +125,10 @@ class _ResourceState<T> extends State<Resource<T>> with WidgetsBindingObserver {
       );
     }
     if (data == null) return const Center(child: CircularProgressIndicator());
-    return RefreshIndicator(
-      onRefresh: reload,
-      child: widget.builder(context, data as T, reload),
-    );
+    final content = widget.builder(context, data as T, reload);
+    return widget.inline
+        ? content
+        : RefreshIndicator(onRefresh: reload, child: content);
   }
 }
 

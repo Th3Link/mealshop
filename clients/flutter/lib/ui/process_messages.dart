@@ -1,5 +1,106 @@
 // Native process controls retain shared domain wording; device/recovery guidance is mobile-specific.
 const processMessages = <String, (String, String)>{
+  "brewTranscribed": (
+    "Transcribed from instrument",
+    "Vom Messgerät übertragen",
+  ),
+  "cookCancelStep": ("Cancel step", "Schritt abbrechen"),
+  "cookNotify": (
+    "Enable personal Nextcloud reminders",
+    "Persönliche Nextcloud-Erinnerungen aktivieren",
+  ),
+  "cookStopNotify": (
+    "Disable personal Nextcloud reminders",
+    "Persönliche Nextcloud-Erinnerungen deaktivieren",
+  ),
+  "cookRetry": (
+    "Retry reminder delivery",
+    "Erinnerungszustellung erneut versuchen",
+  ),
+
+  "refresh": ("Refresh", "Aktualisieren"),
+  "remove": ("Remove", "Entfernen"),
+  "remove_ingredient": ("Remove ingredient", "Zutat entfernen"),
+  "previous_page": ("Previous page", "Vorige Seite"),
+  "next_page": ("Next page", "Nächste Seite"),
+  "cooking_calendar_range_invalid": (
+    "Choose a preparation window of up to seven days.",
+    "Wähle ein Zubereitungsfenster von höchstens sieben Tagen.",
+  ),
+
+  "cook_agenda": ("Preparation agenda", "Anstehende Zubereitung"),
+  "cook_agenda_zone": (
+    "Each process uses its own time zone. Starts are planned; deadlines belong to actual running timers.",
+    "Jeder Ablauf verwendet seine eigene Zeitzone. Starts sind geplant; Fristen gehören zu tatsächlich laufenden Timern.",
+  ),
+  "cook_agenda_empty": (
+    "No preparation starts or timer deadlines on this day.",
+    "An diesem Tag stehen keine Zubereitungsstarts oder Timerfristen an.",
+  ),
+  "history_response_unknown": (
+    "The response was lost. Check saved cooking history before recording this cook again. This form will not resend automatically.",
+    "Die Antwort fehlt. Prüfe das gespeicherte Kochprotokoll, bevor du die Mahlzeit erneut einträgst. Dieses Formular sendet nicht automatisch erneut.",
+  ),
+  "history_rebase": (
+    "Reload saved record?",
+    "Gespeicherten Eintrag neu laden?",
+  ),
+  "history_rebase_help": (
+    "Replace your unsaved edits with the current saved record for a new correction.",
+    "Ersetze deine ungespeicherten Änderungen durch den aktuellen Eintrag für eine neue Korrektur.",
+  ),
+  "history_epoch": ("Learning period", "Lernzeitraum"),
+  "cooking_recovery_blocked": (
+    "The protected cooking recovery data cannot be read. Actions and device reminders are paused. Check the server state before signing out to clear this device copy.",
+    "Die geschützten Wiederherstellungsdaten sind nicht lesbar. Aktionen und Geräteerinnerungen sind angehalten. Prüfe den Serverstand, bevor du dich zum Löschen dieser Gerätekopie abmeldest.",
+  ),
+
+  "brew_show_archived": (
+    "Show archived records",
+    "Archivierte Einträge anzeigen",
+  ),
+  "brew_no_results": ("No matching records", "Keine passenden Einträge"),
+  "cook_local_exact": (
+    "Precise Android scheduling allowed · delivery unconfirmed",
+    "Genaue Android-Zeitplanung erlaubt · Zustellung unbestätigt",
+  ),
+  "brew_before": ("Before this change", "Vor dieser Änderung"),
+  "brew_after": ("After this change", "Nach dieser Änderung"),
+  "brew_review_changed": (
+    "Review concurrent changes",
+    "Parallele Änderungen prüfen",
+  ),
+  "brew_review_changed_help": (
+    "This recipe or equipment changed elsewhere. Keep your entries and explicitly review them against the latest saved version? The review shows both versions before saving.",
+    "Dieses Rezept oder Gerät wurde anderswo geändert. Deine Eingaben behalten und ausdrücklich mit dem aktuellen Stand prüfen? Die Prüfung zeigt beide Versionen vor dem Speichern.",
+  ),
+  "brew_archive": ("Archive", "Archivieren"),
+  "brew_restore": ("Restore from archive", "Aus Archiv wiederherstellen"),
+  "brew_original_language": (
+    "Original content language",
+    "Sprache des Originalinhalts",
+  ),
+  "brew_unlink_ingredient": (
+    "Remove catalogue link",
+    "Zutatenverknüpfung entfernen",
+  ),
+  "brew_linked_ingredient": (
+    "Catalogue ingredient linked",
+    "Katalogzutat verknüpft",
+  ),
+  "brew_duration_error": (
+    "Enter a whole duration from zero to 365 days.",
+    "Gib eine ganze Dauer von null bis 365 Tagen ein.",
+  ),
+  "brew_local_timer_notice": (
+    "The actual phase starts when you confirm. An estimate or elapsed time does not release equipment.",
+    "Die tatsächliche Phase beginnt mit deiner Bestätigung. Eine Schätzung oder abgelaufene Zeit gibt kein Gerät frei.",
+  ),
+  "brew_open_pending": (
+    "Open Brewing to review this retained change.",
+    "Öffne Brauen, um diese gespeicherte Änderung zu prüfen.",
+  ),
+  "cook_calendar_anchor": ("Calendar reminder", "Kalendererinnerung"),
   "cooking_operation_capacity": (
     "The saved action history is full. Deleting sessions does not remove retry evidence. Ask the administrator to review a verified backup and retention policy.",
     "Der Aktionsspeicher ist voll. Das Löschen von Plänen entfernt keine Wiederholungsbelege. Bitte den Administrator um Prüfung einer verifizierten Sicherung und Aufbewahrungsregel.",

@@ -12,8 +12,11 @@ import 'cooking_setup.dart';
 import 'cooking_review.dart';
 import 'messages.dart';
 import 'process_common.dart';
+import 'process_reminders.dart';
 import 'recipes.dart';
 import 'stock_cooking.dart';
+import 'history_editor.dart';
+import 'history.dart';
 
 class CookingScreen extends StatefulWidget {
   const CookingScreen(this.api, {super.key, this.controller});
@@ -269,7 +272,10 @@ class _CookingDetailScreenState extends State<CookingDetailScreen>
     if (local != null && local.length >= 16) {
       seed['local'] = local.substring(0, 16);
     }
-    final changed = await openPage<Json>(context, _ReplanMoment(seed, kind));
+    final changed = await openPage<Json>(
+      context,
+      ProcessMomentScreen(seed, kind),
+    );
     if (changed == null || !mounted) return;
     await act(() async {
       await widget.c.refresh();
@@ -382,125 +388,40 @@ class _CookingDetailScreenState extends State<CookingDetailScreen>
                     replan: replan,
                     pending: widget.c.pending,
                   ),
-                  SectionTitle(context.t('cookNotifications')),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(context.t('cook_local_reminders')),
-                    subtitle: Text(context.t('cook_local_inexact')),
-                    value: widget.c.enabled(widget.id),
-                    onChanged: acting
-                        ? null
-                        : (v) => act(() => widget.c.setReminders(widget.id, v)),
+                  ProcessReminders(
+                    widget.c,
+                    data!,
+                    command: (command) => widget.c.enqueue(
+                      command,
+                      expectedRevision: data!['revision'] as int,
+                    ),
                   ),
-                  Note(context.t('cook_local_help')),
-                  if (widget.c.deviceStatus['precision'] == 'inexact')
-                    TextButton.icon(
-                      icon: const Icon(Icons.alarm),
-                      label: Text(context.t('cook_allow_precise')),
-                      onPressed: acting
+                  if (object(data!['run'])['status'] == 'completed' &&
+                      widget.c.writable)
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.history),
+                      label: Text(context.t('historyNew')),
+                      onPressed: !widget.c.api.controller.online
                           ? null
-                          : () => act(() async {
-                              await widget.c.device.requestPrecision();
-                              await widget.c.reconcileReminders();
-                            }),
-                    ),
-                  Note(context.t('cook_local_horizon')),
-                  if (widget.c.deviceStatus['permission'] != 'granted')
-                    Note(
-                      context.t(
-                        widget.c.deviceStatus['permission'] == 'denied'
-                            ? 'cookPermissionDeniedShort'
-                            : 'cookPermissionUnsupportedShort',
-                      ),
-                      warning: true,
-                    ),
-                  if (widget.c.limitedReminders)
-                    Note(context.t('cook_local_limited'), warning: true),
-                  if (data!['notification_transport'] == true &&
-                      object(data!['run'])['status'] == 'active')
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.t('cookSubscribe')),
-                      subtitle: Text(context.t('cookNotificationHelp')),
-                      value:
-                          (object(data!['run'])['subscription']
-                              as Json?)?['enabled'] ==
-                          true,
-                      onChanged:
-                          !widget.c.writable ||
-                              acting ||
-                              !widget.c.api.controller.online
-                          ? null
-                          : (v) => act(
-                              () => widget.c.enqueue({
-                                'operation': 'subscribe',
-                                'run_id': widget.id,
-                                'enabled': v,
-                                'language': widget.c.api.controller.language,
-                                'permission': 'default',
-                              }, expectedRevision: data!['revision'] as int),
-                            ),
-                    ),
-                  for (final notice in objects(data!['notices']))
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        context.t(
-                          {
-                            'prepare': 'cookEventPrepare',
-                            'start': 'cookEventStart',
-                            'active_ended': 'cookEventActive',
-                            'timer_ended': 'cookEventEnd',
-                          }[notice['event']]!,
-                        ),
-                      ),
-                      subtitle: Text(
-                        '${context.t({'queued': 'cookDeliveryQueued', 'sending': 'cookDeliverySending', 'accepted': 'cookDeliveryAccepted', 'failed': 'cookDeliveryFailed', 'unknown': 'cookDeliveryUnknown', 'missed': 'cookDeliveryMissed', 'cancelled': 'cookCancelled'}[object(notice['delivery'])['state']]!)}${notice['acknowledged_at'] == null ? '' : ' · ${context.t('cookAcknowledged')}'}',
-                      ),
-                      trailing: PopupMenuButton<String>(
-                        tooltip: context.t('details'),
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'acknowledge',
-                            child: Text(context.t('cookAcknowledge')),
-                          ),
-                          if ([
-                            'failed',
-                            'unknown',
-                          ].contains(object(notice['delivery'])['state']))
-                            PopupMenuItem(
-                              value: 'retry',
-                              child: Text(context.t('retry')),
-                            ),
-                        ],
-                        enabled:
-                            widget.c.writable &&
-                            !acting &&
-                            widget.c.api.controller.online,
-                        onSelected: (action) async {
-                          final risk =
-                              object(notice['delivery'])['state'] == 'unknown';
-                          if (action == 'retry' &&
-                              risk &&
-                              !await confirm(
+                          : () => runAction(context, () async {
+                              final existing = await widget.c.api.household(
+                                '/history?session=${Uri.encodeComponent(widget.id)}',
+                              );
+                              if (!context.mounted) return;
+                              final entries = objects(existing['entries']);
+                              await openPage<void>(
                                 context,
-                                'retry',
-                                body: 'cookRetryRisk',
-                              )) {
-                            return;
-                          }
-                          if (mounted) {
-                            await act(
-                              () => widget.c.enqueue({
-                                'operation': action,
-                                'notice_id': notice['id'],
-                                if (action == 'retry')
-                                  'duplicate_risk_accepted': risk,
-                              }, expectedRevision: data!['revision'] as int),
-                            );
-                          }
-                        },
-                      ),
+                                entries.isEmpty
+                                    ? HistoryEditor(
+                                        widget.c.api,
+                                        run: object(data!['run']),
+                                      )
+                                    : HistoryDetail(
+                                        widget.c.api,
+                                        entries.first['id'] as String,
+                                      ),
+                              );
+                            }),
                     ),
                   if (object(data!['run'])['status'] == 'completed' &&
                       widget.c.writable)
@@ -562,14 +483,6 @@ class _CookingDetailScreenState extends State<CookingDetailScreen>
   );
 }
 
-class _ReplanMoment extends StatefulWidget {
-  const _ReplanMoment(this.value, this.kind);
-  final Json value;
-  final String kind;
-  @override
-  State<_ReplanMoment> createState() => _ReplanMomentState();
-}
-
 class CookingCacheScreen extends StatelessWidget {
   const CookingCacheScreen(this.c, {super.key});
   final CookingController c;
@@ -605,34 +518,6 @@ class CookingCacheScreen extends StatelessWidget {
             ),
         ],
       ),
-    ),
-  );
-}
-
-class _ReplanMomentState extends State<_ReplanMoment> {
-  late Json value = clone(widget.value);
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(context.t('cookPreview'))),
-    body: ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        LocalMomentEditor(
-          widget.kind == 'target'
-              ? 'cookTarget'
-              : widget.kind == 'delay'
-              ? 'cookStartAfter'
-              : 'cookDeadline',
-          value,
-          (v) => setState(() => value = v),
-          zone: false,
-        ),
-        Text(value['timezone'] as String),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, value),
-          child: Text(context.t('cookPreview')),
-        ),
-      ],
     ),
   );
 }

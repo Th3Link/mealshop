@@ -258,7 +258,8 @@ class CookingPending extends StatelessWidget {
               onPressed: c.busy ? null : () => c.refresh(),
               child: Text(context.t('cook_recheck')),
             ),
-            if (c.pending.first['status'] != 'unknown' &&
+            if (c.pending.first['domain'] != 'brewing' &&
+                c.pending.first['status'] != 'unknown' &&
                 c.pending.first['status'] != 'pending' &&
                 object(
                       object(c.pending.first['request'])['command'],

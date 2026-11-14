@@ -129,3 +129,9 @@ F35 P3 adds native Today/Plan, reviewed server-owned household weeks, recurring 
 explicit physical prepared portions alongside existing inventory. P3 emulator/live-proxy verification is recorded in
 [F35 evidence](specs/0035-flutter-mobile-client/verification.md#p3-implementation-evidence);
 [week/stock contract](docs/guides/mobile-planning.md). Cooking and device reminders remain P4.
+
+
+F35 P4 adds recoverable native cooking, reviewed multi-day/brew workflows, Android device reminders,
+preparation agenda and completed cooking history/owner learning controls. Absolute deadlines, offline
+intent, uncertain delivery and explicit physical-stock booking remain distinct. See
+[mobile cooking and recovery](docs/guides/mobile-cooking.md); final delivery evidence is in the P4 PR.

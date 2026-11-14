@@ -51,6 +51,7 @@ pub(crate) fn routes() -> Router<Shared> {
     Router::new()
         .route("/api/household/cooking", get(list).post(change))
         .route("/api/household/cooking/template", get(template))
+        .route("/api/household/cooking/calendar", get(calendar))
         .route("/api/household/cooking/preview", post(preview))
         .route(
             "/api/household/cooking/action-preview",
@@ -373,4 +374,22 @@ fn execute(
         value["replayed"] = json!(false);
     }
     Ok(value)
+}
+
+async fn calendar(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(range): Query<super::calendar::Range>,
+) -> Response {
+    if !household::authorized(&state, &headers) {
+        return household::denied();
+    }
+    response(
+        tokio::task::spawn_blocking(move || {
+            let store = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
+            store.ready()?;
+            super::calendar::agenda(&store.data, &range, time::now()?)
+        })
+        .await,
+    )
 }

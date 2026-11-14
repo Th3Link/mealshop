@@ -152,3 +152,19 @@ current access. Owners without a grant see Manage access; Grant myself access is
 Permission forms distinguish read and edit, with visible current recipients and a revocation action.
 Activity records are online-only; errors retain a draft, no kcal is calculated, and exports require
 current per-person access. A household/account switch disposes every open sensitive route.
+
+
+## P4 cooking, brewing and feedback
+
+Native Material surfaces retain the existing five destinations; Cooking & baking, Brewing and Cooking
+history live in More and have contextual meal/recipe links. Steps stay open with 22sp readable
+instructions, explicit ingredients/dependencies and independent absolute timers. Optional values use
+plus actions; unknown durations/calibration/ratings remain visible unknowns. Day agenda labels each
+process timezone and distinguishes planned start from actual deadline. Brewing uses three tabs with
+stable-focus search and separate recipe/equipment/batch review, not fake food servings.
+
+Local device reminders and personal server subscriptions are separate switches. Opt-in names Android
+permission/inexact delivery and the seven-day horizon. Pending, uncertain, rejected and confirmed work
+are distinct; review never silently changes a frozen request. Generic private notification text avoids
+recipe/profile names. History explains household visibility before collecting attendees/ratings and
+keeps learning/reset/bulk deletion owner-controlled. Large text uses wrapping controls and open steps.

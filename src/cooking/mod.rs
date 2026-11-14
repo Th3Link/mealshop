@@ -22,6 +22,7 @@ pub(crate) mod operations;
 pub(crate) mod view;
 
 mod api;
+mod calendar;
 mod commands;
 mod receipts;
 pub(crate) use api::routes;

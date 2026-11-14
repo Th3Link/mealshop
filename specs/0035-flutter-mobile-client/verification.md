@@ -325,3 +325,28 @@ uninstall/reset is used. Final source/APK identities and full gates are still re
 Remaining P4 checkpoints: combined preparation-calendar entry points, complete native brewing/history/
 learning flows, actual Nextcloud/emulator journeys, retained-key upgrade, synthetic fixture cleanup,
 all repository/browser/security gates and current-head CI. P4 is not marked delivered by this checkpoint.
+
+
+## P4 implementation evidence
+
+Status: implementation/local verification in progress on `story/flutter-cooking-fermentation`.
+This section will be completed with real test-instance/Android proof and exact-head CI before the PR
+is ready. No physical handset, TalkBack, release-mode performance or guaranteed notification delivery
+is inferred from these development checks.
+
+- `python3 scripts/mobile.py flutter analyze`: no issues; `python3 scripts/mobile.py test`: 63 tests.
+  Recovery covers immutable lost-response replay after restart, independent offline timer intents,
+  wall-clock/new-boot distinction, damaged envelopes, local-copy deletion, reader controls, original
+  readings/corrections, explicit manual history unknowns and 320dp/200% learning/planning views.
+- Mutation review: inverting the cache-version guard fails the actual lost-cooking-response/restart
+  test; the source was restored, and analysis plus the full 63-test suite passed again. The malformed
+  request test alone is intentionally insufficient for a valid-cache version inversion.
+- Mandatory catalogue, i18n, format, strict workspace Clippy, 204 nextest tests, licence, vulnerability
+  and strict generated-rustdoc checks passed. Cooking has nine integration cases, brewing eleven.
+  Calendar cases prove reader authorization, pagination/range bounds, actual timer deadlines and
+  separate manual fermentation. Legacy Vue callers retain their contract.
+- Nextcloud Vitest: 39 tests/12 files; Vite production build and production npm audit passed.
+  Flutter package verification: all 68 locked licences and OSV's 60 external Pub packages passed.
+  No Rust crate, Flutter package, new font or design system was added.
+- All three development APKs compile with the retained key. Their interim dirty-source metadata is
+  not final delivery identity; final clean-source versions/checksums belong to the P4 PR.

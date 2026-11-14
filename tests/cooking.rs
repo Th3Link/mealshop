@@ -617,3 +617,119 @@ async fn native_step_ingredients_preserve_explicit_links_and_unknown_assignment(
     assert_eq!(detail["step_ingredients"][1]["line_indexes"], json!([0, 1]));
     assert_eq!(detail["ingredients"][0]["grams"], "150.000002");
 }
+
+#[tokio::test]
+async fn preparation_agenda_is_bounded_authorized_paged_and_uses_actual_deadlines() {
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    let recipe = create_recipe(&app).await;
+    let draft = template(&app, &recipe).await;
+    let prepared = preview(&app, 0, json!({"kind":"create","draft":draft})).await;
+    let created = command(
+        &app,
+        0,
+        json!({"operation":"apply","preview_id":prepared["preview_id"],"reviewed":true}),
+    )
+    .await;
+    let id = created["run_id"].as_str().unwrap();
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let url = format!(
+        "/api/household/cooking/calendar?from={}&until={}&limit=1",
+        now - 1000,
+        now + 1000
+    );
+    assert_eq!(
+        request(&app, "GET", &url, Value::Null, None).await.0,
+        StatusCode::UNAUTHORIZED
+    );
+    let (status, page) = request(&app, "GET", &url, Value::Null, Some(READER)).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(page["total"], 2);
+    assert_eq!(page["entries"].as_array().unwrap().len(), 1);
+    assert_eq!(page["entries"][0]["event"], "start");
+    assert_eq!(page["entries"][0]["timezone"], "Europe/Berlin");
+    assert!(page["entries"][0]["local"].as_str().unwrap().contains('T'));
+    let second = request(
+        &app,
+        "GET",
+        &format!("{url}&offset=1"),
+        Value::Null,
+        Some(READER),
+    )
+    .await
+    .1;
+    assert_ne!(
+        page["entries"][0]["step_id"],
+        second["entries"][0]["step_id"]
+    );
+    let step = page["entries"][0]["step_id"].clone();
+    command(
+        &app,
+        1,
+        json!({"operation":"timer","run_id":id,"step_id":step,"action":"start"}),
+    )
+    .await;
+    let timers = request(
+        &app,
+        "GET",
+        &url.replace("limit=1", "limit=200"),
+        Value::Null,
+        Some(READER),
+    )
+    .await
+    .1;
+    let deadline = timers["entries"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|e| e["step_id"] == step)
+        .unwrap();
+    assert_eq!(deadline["event"], "deadline");
+    let actual = request(
+        &app,
+        "GET",
+        &format!("/api/household/cooking/{id}"),
+        Value::Null,
+        Some(READER),
+    )
+    .await
+    .1;
+    assert_eq!(
+        deadline["at"],
+        actual["run"]["steps"][0]["timer"]["deadline"]
+    );
+    command(&app, 2, json!({"operation":"cancel","run_id":id})).await;
+    assert_eq!(
+        request(&app, "GET", &url, Value::Null, Some(READER))
+            .await
+            .1["total"],
+        0
+    );
+}
+
+#[tokio::test]
+async fn preparation_agenda_rejects_invalid_or_unbounded_ranges() {
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    for query in [
+        "from=1&until=9999999999",
+        "from=1800000000&until=1800700000",
+        "from=1800000000&until=1800000001&limit=0",
+    ] {
+        assert_eq!(
+            request(
+                &app,
+                "GET",
+                &format!("/api/household/cooking/calendar?{query}"),
+                Value::Null,
+                Some(READER)
+            )
+            .await
+            .0,
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+}

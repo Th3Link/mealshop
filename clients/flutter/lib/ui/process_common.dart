@@ -152,7 +152,11 @@ class _DurationFieldState extends State<DurationField> {
           validator: (v) {
             final n = int.tryParse(v ?? '');
             return n == null || n < 0 || n > widget.maximum ~/ unit
-                ? context.t('cookDurationError')
+                ? context.t(
+                    widget.maximum == 604800
+                        ? 'cookDurationError'
+                        : 'brew_duration_error',
+                  )
                 : null;
           },
           onChanged: (_) => changed(),
@@ -192,7 +196,9 @@ class ProcessSteps extends StatefulWidget {
     required this.replan,
     this.detail,
     this.pending = const [],
+    this.equipmentNames = const {},
   });
+  final Map<String, String> equipmentNames;
   final Json run;
   final Json? detail;
   final CookingClock clock;
@@ -298,7 +304,10 @@ class _ProcessStepsState extends State<ProcessSteps> {
                     const SizedBox(height: 8),
                     SelectableText(
                       stage['instruction'] as String,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.normal,
+                        height: 1.4,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -325,11 +334,11 @@ class _ProcessStepsState extends State<ProcessSteps> {
                       ),
                     if ((stage['dependencies'] as List).isNotEmpty)
                       Text(
-                        '${context.t('cookDependencies')}: ${(stage['dependencies'] as List).map((id) => steps.where((s) => object(s['stage'])['id'] == id).firstOrNull?['stage']).map((s) => object(s)['name']).join(', ')}',
+                        '${context.t('cookDependencies')}: ${(stage['dependencies'] as List).map((id) => (steps.where((s) => object(s['stage'])['id'] == id).firstOrNull?['stage'] as Json?)?['name'] ?? id).join(', ')}',
                       ),
                     if ((stage['equipment'] as List).isNotEmpty)
                       Text(
-                        '${context.t('cookEquipment')}: ${(stage['equipment'] as List).join(', ')}',
+                        '${context.t('cookEquipment')}: ${(stage['equipment'] as List).map((id) => widget.equipmentNames[id] ?? id).join(', ')}',
                       ),
                     if ((stage['uncertainty'] as String? ?? '').isNotEmpty)
                       Note(stage['uncertainty'] as String),
@@ -364,8 +373,12 @@ class _ProcessStepsState extends State<ProcessSteps> {
                                 line['phase_id'] == null ||
                                 line['phase_id'] == id ||
                                 line['phase_id'] ==
-                                    (id.endsWith('-1')
-                                        ? id.substring(0, id.length - 2)
+                                    (id.endsWith('-${step['cycle']}')
+                                        ? id.substring(
+                                            0,
+                                            id.length -
+                                                '-${step['cycle']}'.length,
+                                          )
                                         : id),
                           ))
                         Text(
@@ -455,4 +468,40 @@ class _ProcessStepsState extends State<ProcessSteps> {
       ],
     );
   }
+}
+
+class ProcessMomentScreen extends StatefulWidget {
+  const ProcessMomentScreen(this.value, this.kind, {super.key});
+  final Json value;
+  final String kind;
+  @override
+  State<ProcessMomentScreen> createState() => _ProcessMomentScreenState();
+}
+
+class _ProcessMomentScreenState extends State<ProcessMomentScreen> {
+  late Json value = clone(widget.value);
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(context.t('cookPreview'))),
+    body: ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        LocalMomentEditor(
+          widget.kind == 'target'
+              ? 'cookTarget'
+              : widget.kind == 'delay'
+              ? 'cookStartAfter'
+              : 'cookDeadline',
+          value,
+          (v) => setState(() => value = v),
+          zone: false,
+        ),
+        Text(value['timezone'] as String),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, value),
+          child: Text(context.t('cookPreview')),
+        ),
+      ],
+    ),
+  );
 }

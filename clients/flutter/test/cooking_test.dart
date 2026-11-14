@@ -138,6 +138,32 @@ http.Response cookedResponse(Json value, [int status = 200]) => http.Response(
 );
 
 void main() {
+  test(
+    'damaged recovery data never drops pending actions or re-enables writes',
+    () async {
+      final f = ContentFixture(), d = FakeReminders();
+      await f.start();
+      final saved = <String, dynamic>{
+        'version': 1,
+        'sessions': <String, dynamic>{},
+        'enabled': <String, dynamic>{},
+        'pending': [
+          {'status': 'unknown', 'attempted': true, 'request': 'damaged'},
+        ],
+      };
+      await f.controller.saveDraft('cooking.v1', saved);
+      final c = CookingController(HouseholdApi(f.controller), device: d);
+      await c.initialize();
+      expect(c.recoveryBlocked, true);
+      expect(c.writable, false);
+      await c.refresh();
+      expect(f.controller.draft('cooking.v1'), saved);
+      expect(c.error, 'cooking_recovery_blocked');
+      c.dispose();
+      f.controller.dispose();
+    },
+  );
+
   test('forgetting one offline copy cancels only its local reminders and leaves server records', () async {
     final f = ContentFixture(), d = FakeReminders();
     f.respond = (r) async {

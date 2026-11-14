@@ -17,6 +17,8 @@ class ProcessStageEditor extends StatefulWidget {
     this.knownTiming = true,
     this.timezone = 'UTC',
     this.allowAnchor = true,
+    this.allowEquipment = true,
+    this.completionWait = true,
   });
   final Json stage;
   final List<Json> stages;
@@ -26,6 +28,7 @@ class ProcessStageEditor extends StatefulWidget {
   final bool knownTiming;
   final String timezone;
   final bool allowAnchor;
+  final bool allowEquipment, completionWait;
   @override
   State<ProcessStageEditor> createState() => _ProcessStageEditorState();
 }
@@ -107,15 +110,16 @@ class _ProcessStageEditorState extends State<ProcessStageEditor> {
               },
               maximum: widget.maximum,
             ),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(context.t('cook_work_finished')),
-              value: stage['start_after_work'] == true,
-              onChanged: (v) {
-                setState(() => stage['start_after_work'] = v == true);
-                widget.changed();
-              },
-            ),
+            if (widget.completionWait)
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(context.t('cook_work_finished')),
+                value: stage['start_after_work'] == true,
+                onChanged: (v) {
+                  setState(() => stage['start_after_work'] = v == true);
+                  widget.changed();
+                },
+              ),
           ],
           OutlinedButton.icon(
             icon: const Icon(Icons.account_tree_outlined),
@@ -140,7 +144,7 @@ class _ProcessStageEditorState extends State<ProcessStageEditor> {
               }
             },
           ),
-          if (visible.contains('equipment'))
+          if (widget.allowEquipment && visible.contains('equipment'))
             EditText(
               'cookEquipment',
               (stage['equipment'] as List).join('\n'),
@@ -156,7 +160,7 @@ class _ProcessStageEditorState extends State<ProcessStageEditor> {
               max: 2400,
               hint: 'cookEquipmentHelp',
             ),
-          if (visible.contains('windows')) ...[
+          if (widget.knownTiming && visible.contains('windows')) ...[
             DurationField(
               'cookPassiveMin',
               stage['passive_min_seconds'] as int,
@@ -213,11 +217,11 @@ class _ProcessStageEditorState extends State<ProcessStageEditor> {
             runSpacing: 8,
             children: [
               for (final option in <String, String>{
-                'equipment': 'cookEquipment',
-                'windows': 'cookPassiveMin',
+                if (widget.allowEquipment) 'equipment': 'cookEquipment',
+                if (widget.knownTiming) 'windows': 'cookPassiveMin',
                 'repeat': 'cookRepeat',
                 'uncertainty': 'cookUncertainty',
-                if (widget.allowAnchor) 'anchor': 'cookStartAfter',
+                if (widget.allowAnchor) 'anchor': 'cook_calendar_anchor',
               }.entries.where((e) => !visible.contains(e.key)))
                 TextButton.icon(
                   icon: const Icon(Icons.add),

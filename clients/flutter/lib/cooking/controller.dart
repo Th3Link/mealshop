@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../connection/nextcloud.dart';
 import '../content/api.dart';
 import 'device.dart';
+import 'cache.dart';
 
 /// Owns only one captured account/household. Domain transitions still belong to Rust.
 class CookingController extends ChangeNotifier {
@@ -28,6 +29,7 @@ class CookingController extends ChangeNotifier {
     'enabled': <String, dynamic>{},
   };
   Json deviceStatus = {'permission': 'unsupported'};
+  bool recoveryBlocked = false;
   bool initialized = false,
       busy = false,
       offline = false,
@@ -41,7 +43,7 @@ class CookingController extends ChangeNotifier {
   Json get sessions => object(state['sessions']);
   List<Json> get pending => objects(state['pending']);
   bool get current => !_closed && api.current;
-  bool get writable => current && api.writable;
+  bool get writable => current && !recoveryBlocked && api.writable;
   bool get protocol => list?['action_protocol'] == 1;
   bool get blocked => pending.any((p) => p['status'] != 'pending');
   bool enabled(String id) => object(state['enabled'])[id] == true;
@@ -57,11 +59,13 @@ class CookingController extends ChangeNotifier {
     if (!current) return;
     final saved = api.controller.draft('cooking.v1');
     if (saved != null) {
-      if (saved['version'] != 1 ||
-          saved['sessions'] is! Json ||
-          saved['pending'] is! List ||
-          saved['enabled'] is! Json) {
-        error = 'invalid_response';
+      if (!validCookingCache(saved)) {
+        recoveryBlocked = true;
+        error = 'cooking_recovery_blocked';
+        initialized = true;
+        await device.clear();
+        _notify();
+        return;
       } else {
         state = clone(saved);
         clock.anchor = state['clock'] as Json?;
@@ -70,6 +74,17 @@ class CookingController extends ChangeNotifier {
     await clock.observe();
     if (!current) return;
     initialized = true;
+    final authorized = state['authorized_at'] as int?;
+    final instant = clock.now ?? (clock.sample!.wall ~/ 1000);
+    if (authorized != null &&
+        (instant < authorized - 300 || instant >= authorized + 604800)) {
+      // Expire private snapshots, but retain immutable uncertain envelopes for exact server reconciliation.
+      state['sessions'] = <String, dynamic>{};
+      state['enabled'] = <String, dynamic>{};
+      state.remove('list');
+      error = 'cooking_cache_expired';
+      await _save();
+    }
     await reconcileReminders();
     _notify();
     if (list != null && api.controller.online) await refresh();
@@ -77,6 +92,7 @@ class CookingController extends ChangeNotifier {
 
   Future<void> _save() async {
     if (!current) throw const ApiFailure('access_removed', 403);
+    if (recoveryBlocked) throw const ApiFailure('cooking_recovery_blocked');
     final candidate = clone(state);
     candidate['clock'] = clock.anchor;
     if (utf8.encode(jsonEncode(candidate)).length > 245760) {
@@ -96,7 +112,7 @@ class CookingController extends ChangeNotifier {
   }
 
   Future<void> _refresh() async {
-    if (!current) return;
+    if (!current || recoveryBlocked) return;
     busy = true;
     _notify();
     try {
@@ -146,6 +162,7 @@ class CookingController extends ChangeNotifier {
   }
 
   Future<Json> load(String id, {bool brewing = false}) async {
+    if (recoveryBlocked) throw const ApiFailure('cooking_recovery_blocked');
     final knownKind = (detail(id)?['run'] as Json?)?['kind'];
     final brew =
         brewing || ['beer', 'cider', 'wine', 'mead'].contains(knownKind);
@@ -263,20 +280,28 @@ class CookingController extends ChangeNotifier {
       await _save(); // Immutable key, body and uncertain outcome survive before network dispatch.
       try {
         final request = object(entry['request']);
+        final brewing = entry['domain'] == 'brewing';
         final result = await api.household(
-          '/cooking',
+          brewing ? '/brewing' : '/cooking',
           method: 'POST',
           body: request,
         );
-        if (result['applied_revision'] !=
-                (request['expected_revision'] as int) + 1 ||
+        final revision = brewing
+            ? object(result['brewing'])['revision']
+            : result['revision'];
+        if ((brewing
+                ? result['operation_id'] is! String ||
+                      revision is! int ||
+                      revision < (request['expected_revision'] as int) + 1
+                : result['applied_revision'] !=
+                      (request['expected_revision'] as int) + 1) ||
             result['replayed'] is! bool) {
           throw const ApiFailure('invalid_response');
         }
         state['pending'] = pending.skip(1).toList();
-        lastResult = result['run_id'] as String?;
+        lastResult = result[brewing ? 'result_id' : 'run_id'] as String?;
         changed = true;
-        if (list != null) list!['revision'] = result['revision'];
+        if (list != null) list!['revision'] = revision;
         await _save();
       } on ApiFailure catch (failure) {
         if (!current) rethrow;
@@ -315,6 +340,42 @@ class CookingController extends ChangeNotifier {
     return (request, preview);
   }
 
+  Future<void> submitBrewing(Json input, {bool replaceRejected = false}) async {
+    if (!writable || !api.controller.online || busy) {
+      throw const ApiFailure('online_required');
+    }
+    if (pending.isNotEmpty &&
+        (!replaceRejected ||
+            ![
+              'rejected',
+              'review_required',
+            ].contains(pending.first['status']))) {
+      throw const ApiFailure('cooking_pending_review');
+    }
+    final entry = <String, dynamic>{
+      'domain': 'brewing',
+      'request': clone(input),
+      'status': 'pending',
+      'attempted': false,
+    };
+    final previous = clone(state);
+    state['pending'] = replaceRejected
+        ? [
+            entry,
+            for (final later in pending.skip(1))
+              {...later, 'status': 'review_required'},
+          ]
+        : [entry];
+    try {
+      await _save();
+    } catch (_) {
+      state = previous;
+      rethrow;
+    }
+    _notify();
+    await refresh();
+  }
+
   Future<void> confirmReviewed(Json request) async {
     if (!writable || pending.isEmpty || pending.first['status'] == 'unknown') {
       throw const ApiFailure('outcome_unknown');
@@ -345,6 +406,18 @@ class CookingController extends ChangeNotifier {
   Future<void> setReminders(String id, bool value) async {
     if (!current || detail(id) == null) {
       throw const ApiFailure('online_required');
+    }
+    if (value &&
+        (clock.now == null ||
+            state['authorized_at'] == null ||
+            clock.now! >= (state['authorized_at'] as int) + 604800)) {
+      if (!api.controller.online) {
+        throw const ApiFailure('cooking_clock_unverified');
+      }
+      await refresh();
+      if (clock.now == null || state['authorized_at'] == null) {
+        throw const ApiFailure('online_required');
+      }
     }
     if (value) deviceStatus = await device.requestPermission();
     if (!current) return;

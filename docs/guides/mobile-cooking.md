@@ -81,3 +81,41 @@ delivery. No mobile push provider, exact delivery guarantee or iOS reminder supp
 Primary platform sources: [Android alarms](https://developer.android.com/develop/background-work/services/alarms),
 [notification permission](https://developer.android.com/develop/ui/compose/notifications/notification-permission),
 [elapsed realtime](https://developer.android.com/reference/android/os/SystemClock#elapsedRealtime()).
+
+## Fermentation, agenda and actual cooking history
+
+More → Brewing includes source-linked beer, cider, wine and mead templates, exact recipe quantities,
+explicit unknown durations, original recipe language, equipment capacities and immutable revisions.
+Batches pin recipe/equipment snapshots. Every mutation has a canonical before/after review; current
+recipe/equipment changes require a fresh review before a new immutable envelope is created. Confirmed
+brew requests use the existing brewing receipts through the same protected cooking queue; a lost
+response is retried with the original key/body. Starting a brew timer uses server confirmation time;
+these reviewed writes require connectivity. No offline instrument connector or chemistry conversion
+is implied. Readings retain exact original units, measured civil time/fold, source/acquisition,
+calibration or unknown calibration. Corrections preserve the original and require a reason. Archived
+sources remain pinned and readable; batch equipment reservations continue to use the shared scheduler.
+
+Today and Plan link pinned meals/preparations to cooking with their actual production servings and
+source slot. The additive reader-authorized `GET /api/household/cooking/calendar` accepts Unix-second
+`from`, exclusive `until` (up to seven days), `offset` and `limit` (1–200, default 100). It returns
+`revision`, `server_now`, `total`, `offset`, `limit` and `entries`. Each entry identifies run/step, food
+or brew kind, planned `start` or actual running `deadline`, UTC `at`, resolved `local`, IANA timezone
+and optional plan slot. Completed/cancelled/archived processes, paused timers and untimed manual
+phases have no fake deadlines. Ordering is stable by instant/run/step. Native day views select each
+process's civil date and retain paging even when neighbouring time zones occupy a page.
+
+More → Cooking history records explicit completed-session or manual cooks, attendees, optional actual
+effort and 1–5 household/profile ratings. All household readers can see these reports; they are not
+private authenticated votes. Blank effort/ratings stay unknown. A completed session is linked only
+once while its history exists. Corrections, removed profiles, pinned recipe links and deletion use
+the existing F11 API. History writes remain online: an ambiguous response blocks automatic resubmit
+and asks the user to inspect saved history. They are not placed in an unreceipted offline outbox.
+Owner-only learning scope/reset and bulk deletion are separate confirmed actions. Retained old ratings
+are never silently replayed into a new learning period. Physical consumption/output still requires
+explicit inventory review; neither a completed timer nor a history record moves stock.
+
+Snapshot availability and local alarms expire after seven authorized days. Frozen uncertain request
+envelopes survive expiry and wall-clock edits until exact reconciliation, safe explicit discard,
+access removal or sign-out. Expired private snapshots are cleared; this bounded recovery envelope is
+not extended offline authorization. Damaged recovery data blocks actions without overwriting the
+stored unconfirmed requests. Native device reminders pause until recovery is resolved.

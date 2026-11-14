@@ -71,6 +71,15 @@ Future<ContentFixture> fixture({
   f.respond = (r) async {
     final custom = await respond?.call(r);
     if (custom != null) return custom;
+    if (r.url.path.endsWith('/cooking/calendar')) {
+      return response({
+        'revision': 0,
+        'entries': <Json>[],
+        'offset': 0,
+        'limit': 100,
+        'total': 0,
+      });
+    }
     if (r.url.path.endsWith('/mealplan')) return response(emptyPlan());
     if (r.url.path.endsWith('/inventory')) return response(emptyStock());
     if (r.url.path.endsWith('/shopping')) return response(shopping(0));
