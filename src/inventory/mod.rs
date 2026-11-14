@@ -6,6 +6,7 @@ mod lots;
 pub(crate) mod model;
 mod offers;
 mod operations;
+pub(crate) mod prepared;
 mod purchases;
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]

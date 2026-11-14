@@ -1,6 +1,6 @@
 # Flutter delivery plan — five complete phone releases
 
-Status: P1 merged in PR #44; P2 implemented; final PR verification below. Customer approved Android, requested an emulator and explicitly gave the Go on 2026-11-13.
+Status: P1 merged in PR #44; P2 merged in PR #45; P3 authorized on 2026-11-14 and implemented for review in PR #48 (`story/flutter-week-preparation`).
 Task/checkpoint authority: this file, following the repository's spec-folder convention. Do not
 create a second `tasks/` backlog or mark the imported pack's checklist as delivered.
 
@@ -124,11 +124,28 @@ owner read/edit access; see [ADR 0028](../../docs/adr/0028-person-rules-and-acti
 
 ## P3 — Explainable household week, mealprep and stock
 
+Implementation checkpoints (one frontend/backend PR; ADR 0029). Local/emulator/live-proxy evidence
+is in [verification](verification.md#p3-implementation-evidence); final-head CI and exact APK identities
+are recorded in PR #48 before it becomes ready. Physical-handset acceptance stays open under P1.1.
+
+1. [x] Persist bounded recurring attendance/date overrides; enforce them on every canonical preview/apply.
+   Verify precedence, empty attendance, leap/DST civil dates, restart and legacy snapshots.
+2. [x] Add bounded, expiring server-owned week proposals and atomic reviewed apply, reusing current
+   dietary/time checks and explained deterministic ranking. Verify stale inputs, partial infeasibility,
+   per-slot confirmations, current permissions and Thursday-only changes.
+3. [x] Deliver native Today/Plan, week review, individual meal/attendance/allocation editing and
+   explicit shopping source updates. Verify 320dp/200% text, reader/offline/conflict states and two clients.
+4. [x] Record actual prepared batches and exact whole-portion allocation/release/use/reversal inside
+   the existing stock transaction; add native prepared stock, lots/offers/history/review. Verify
+   six = four held + two available, storage changes, over-allocation, replay/restart and no inferred stock.
+5. [x] Upgrade the retained Android app, exercise synthetic live Nextcloud journeys, inspect native
+   screenshots, clean only this run's fixtures, run all gates and deliver current-head CI/APKs.
+
 Phone demo: generate/review a week for the two people, change Thursday dinner/attendance, inspect the
 shopping delta, then prepare six portions on Sunday, allocate four to later meals and retain two frozen
 portions. A plan edit must neither erase manual purchases nor count cooked production twice.
 
-- [ ] P3.1 **Implement a server-owned full-week proposal.** Reuse current evaluation, slot suggestions,
+- [x] P3.1 **Implement a server-owned full-week proposal.** Reuse current evaluation, slot suggestions,
   pinned recipes and profile/allergen revisions. Add proposal identity/expiry, per-slot confirmation,
   effective recurring attendance/date overrides/windows and optional prep/time preferences. Explain
   infeasibility; rank declared preferences, variety, ingredient reuse and preparation/time trade-offs.
@@ -136,11 +153,11 @@ portions. A plan edit must neither erase manual purchases nor count cooked produ
   record the chosen criteria/limits and do not claim global optimality. Missing price/nutrition data is not zero cost/energy.
   Verify: two-person hard-rule fixtures, impossible week, stale profile/recipe, DST/date boundaries and
   deterministic recommendation evidence. Any new persisted constraint also protects existing web paths.
-- [ ] P3.2 **Deliver mobile Today/Plan and reviewed shopping changes.** Day/week navigation, participant/
+- [x] P3.2 **Deliver mobile Today/Plan and reviewed shopping changes.** Day/week navigation, participant/
   portion edits and swaps preserve selected slots and protected source amounts. Show changes before
   apply and retain drafts after concurrency failures. Today links real meals/preparation/shopping actions.
   Verify: Thursday-only change, skipped attendee, manual/checked shopping preservation and two clients.
-- [ ] P3.3 **Unify physical batches and inventory carefully.** Extend current planned allocations and
+- [x] P3.3 **Unify physical batches and inventory carefully.** Extend current planned allocations and
   exact inventory transactions for actual prepared yield, storage location, portion allocation/release,
   leftovers, lots, offers and reversal. Track user-declared dates/conditions without invented safe shelf
   life. No allocation exceeds recorded available quantity; planning alone cannot create physical stock.

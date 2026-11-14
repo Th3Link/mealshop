@@ -12,8 +12,8 @@ Nextcloud installation. Prefer a few substantial, complete user journeys over se
 backend-only and screen-only PRs. Each delivery extends an installable app.
 
 The customer approved Android APK delivery, explicitly requested an Android emulator, and gave the
-implementation Go on 2026-11-13. P1 was merged in PR #44. The customer approved P2 on 2026-11-13; implementation is on
-`story/flutter-people-library`.
+implementation Go on 2026-11-13. P1 was merged in PR #44. P2 was merged in PR #45. The customer approved P3 on 2026-11-14; implementation is on
+`story/flutter-week-preparation`, with implementation and emulator/live-proxy evidence in PR #48.
 The earlier planning PR remains a separate review record; its preserved source import is unchanged.
 
 The [original pack](../../references/mobile-product-spec-2026-11-12/README.md) remains a preserved
@@ -93,4 +93,5 @@ selected owner-managed permissions **without automatic owner access**: an owner 
 permission to their own account before reading/editing activity. Existing shared dietary profiles keep
 their household roles; no new medical/weight fields are introduced. ADR 0028 defines atomic storage,
 revocation, generation/revision guards and live deletion/export. P2 remains part of the same substantial
-frontend/backend PR; P3–P5 are not marked delivered.
+frontend/backend PR. P3 is implemented for review with its emulator/live-proxy evidence; P4/P5 and
+physical-handset acceptance remain open.

@@ -89,6 +89,7 @@ pub(super) struct Mutation {
 }
 pub(crate) fn routes() -> Router<Shared> {
     Router::new()
+        .merge(super::plan_review::routes())
         .merge(super::mobile::routes())
         .route("/api/household/shopping", get(list).post(change))
         .route(

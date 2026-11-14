@@ -12,10 +12,12 @@ import 'package:mealshop/shopping/controller.dart';
 
 import '../test/fixtures.dart';
 import '../test/people_library_test.dart' as content_tests;
+import '../test/planning_test.dart' as planning_tests;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   content_tests.main();
+  planning_tests.main();
   testWidgets(
     'Android protected storage survives a new instance and clears only its namespace',
     (tester) async {
@@ -89,6 +91,11 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('Mehr'));
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Geschäfte & Reihenfolge'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Geschäfte & Reihenfolge'), findsOneWidget);
       await tester.tap(
         find.descendant(

@@ -48,3 +48,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0026: Flutter phone delivery and the first offline boundary](0026-flutter-phone-delivery.md) — Accepted for the customer-approved Android sequence; P1 merged and P2 implemented.
 
 - [0028: Effective person rules and private activity access](0028-person-rules-and-activity.md) — Accepted for F35 P2; explicit per-person rights without automatic owner access.
+
+- [0029: Mobile household weeks and prepared stock](0029-mobile-week-and-prepared-stock.md) — Accepted for F35 P3.

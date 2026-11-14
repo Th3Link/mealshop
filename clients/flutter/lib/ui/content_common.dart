@@ -8,16 +8,21 @@ import '../content/api.dart';
 import 'common.dart';
 import 'messages.dart';
 
+String exactNumber(BuildContext context, String value) =>
+    decimal(value, Localizations.localeOf(context).languageCode);
+
 class Resource<T> extends StatefulWidget {
   const Resource({
     super.key,
     required this.load,
     required this.builder,
     this.sensitive = false,
+    this.pollInterval = const Duration(seconds: 20),
   });
   final Future<T> Function() load;
   final Widget Function(BuildContext, T, Future<void> Function()) builder;
   final bool sensitive;
+  final Duration? pollInterval;
   @override
   State<Resource<T>> createState() => _ResourceState<T>();
 }
@@ -33,8 +38,8 @@ class _ResourceState<T> extends State<Resource<T>> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     unawaited(reload());
-    if (widget.sensitive) {
-      timer = Timer.periodic(const Duration(seconds: 20), (_) {
+    if (widget.sensitive && widget.pollInterval != null) {
+      timer = Timer.periodic(widget.pollInterval!, (_) {
         if (!loading) unawaited(reload());
       });
     }

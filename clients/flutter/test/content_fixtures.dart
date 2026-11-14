@@ -128,6 +128,7 @@ Json recipeRecord() => {
 class ContentFixture {
   final vault = MemoryVault();
   final List<http.Request> requests = [];
+  Future<http.Response?> Function(http.Request)? respond;
   late final ShoppingController controller;
   Json people = profiles(), foods = catalogue();
   Json shared = {'items': <Json>[], 'total': 0, 'page': 1, 'per_page': 50};
@@ -146,6 +147,8 @@ class ContentFixture {
       Nextcloud(
         client: MockClient((request) async {
           requests.add(request);
+          final overridden = await respond?.call(request);
+          if (overridden != null) return overridden;
           final path = request.url.path;
           Object value;
           if (path.endsWith('/api/households')) {

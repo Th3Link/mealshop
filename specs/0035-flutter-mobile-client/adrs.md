@@ -29,3 +29,5 @@ OCR, native reminders and broader database choices remain decisions of their lat
 | Incomplete nutrition | F34 already supports explicit bounded comparisons/unknowns; port its exact evidence semantics, never replace missing data with zero. |
 
 - [ADR 0028: Effective person rules and activity access](../../docs/adr/0028-person-rules-and-activity.md): customer-approved person grants with no implicit owner activity access.
+
+- [ADR 0029: Household week and physical prepared portions](../../docs/adr/0029-mobile-week-and-prepared-stock.md): bounded reviewed proposals, recurring attendance and separately observed physical output.

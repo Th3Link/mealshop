@@ -74,6 +74,7 @@ async fn read(State(state): State<Shared>, headers: HeaderMap, page: Query<Page>
             .map(|s| s.lock())
             .transpose()
             .map_err(|_| "recipe_store_unavailable")?;
+        let plans = state.plans.lock().map_err(|_| "mealplan_storage_failed")?;
         let cooking = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
         let ingredients = state
             .catalogue
@@ -91,6 +92,7 @@ async fn read(State(state): State<Shared>, headers: HeaderMap, page: Query<Page>
                 profiles: &profiles.data,
                 ingredients: &ingredients,
                 recipes: recipes.as_deref(),
+                plans: &plans,
                 cooking: &cooking,
                 now: super::now()?,
             },
@@ -167,6 +169,7 @@ fn transact(
         .map(|s| s.lock())
         .transpose()
         .map_err(|_| "recipe_store_unavailable")?;
+    let plans = state.plans.lock().map_err(|_| "mealplan_storage_failed")?;
     let cooking = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
     let ingredients = state
         .catalogue
@@ -182,6 +185,7 @@ fn transact(
         profiles: &profiles.data,
         ingredients: &ingredients,
         recipes: recipes.as_deref(),
+        plans: &plans,
         cooking: &cooking,
         now: super::now()?,
     };
