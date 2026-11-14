@@ -1,6 +1,6 @@
 # Smartphone interaction plan
 
-Status: Accepted P1 direction; implementation and emulator verification in progress. The ZIP's UX is a target;
+Status: P1 merged; P2 direction accepted with customer activity-access decisions. The ZIP's UX is a target;
 this document reconciles it with existing data and the five complete deliveries.
 
 ## Navigation and the first useful launch
@@ -77,3 +77,25 @@ Quality targets: at least 48×48 logical-pixel touch areas, 4.5:1 normal text/co
 chosen platforms. Validate these alongside conflict/permission states, not just happy-path screenshots.
 [Flutter accessibility guidance](https://docs.flutter.dev/ui/accessibility) supports this proposed bar;
 no mobile conformance is claimed by this plan.
+
+## P2 screen contract
+
+Keep the established Material theme, system typography and 4/8dp spacing. UI-UX-Pro-Max contributes
+small-step forms, escape/back paths, native controls and 48dp targets; Taste contributes consistent
+edges, hierarchy and actual screenshot review. Website heroes, palettes/fonts, effects and CSS gates
+are inapplicable to this native app and do not override the existing product system.
+
+Recipes opens a searchable compact library with explicit collection/shared destinations and one
+create action. Detail keeps ingredients, named parts and steps open; scaling is a preview of the
+selected revision. Authoring edits the existing domain fields with inline ingredient creation,
+button alternatives to reorder, optional plus actions and visible source/nutrition uncertainty.
+Ingredient forms group identity, classification and explicit nutrient/constituent declarations;
+blank values remain unknown. Complex evidence stays editable through labelled fields, not raw JSON.
+
+More exposes People and Activities. The person tour asks name/identity, diet/exceptions, hard
+constraints, preferences/availability and review in small steps, with protected resume/discard.
+People are never silently treated as login accounts. Activity screens state the selected person and
+current access. Owners without a grant see Manage access; Grant myself access is an explicit action.
+Permission forms distinguish read and edit, with visible current recipients and a revocation action.
+Activity records are online-only; errors retain a draft, no kcal is calculated, and exports require
+current per-person access. A household/account switch disposes every open sensitive route.

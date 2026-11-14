@@ -1,6 +1,6 @@
 # Flutter delivery plan — five complete phone releases
 
-Status: P1 In progress. Customer approved Android, requested an emulator and explicitly gave the Go on 2026-11-13.
+Status: P1 merged in PR #44; P2 implemented; final PR verification below. Customer approved Android, requested an emulator and explicitly gave the Go on 2026-11-13.
 Task/checkpoint authority: this file, following the repository's spec-folder convention. Do not
 create a second `tasks/` backlog or mark the imported pack's checklist as delivered.
 
@@ -72,7 +72,7 @@ omnivore; inspect the resolved rule summary; interrupt/resume the tour; author a
 inspect unknown/ranged nutrients, share the allowed projection, and record a 45-minute jog without weight.
 The diet label must reflect exceptions rather than silently claiming an unmodified vegan diet.
 
-- [ ] P2.1 **Extend effective rules and privacy together.** Resolve person-vs-account ownership,
+- [x] P2.1 **Extend effective rules and privacy together.** Resolve person-vs-account ownership,
   child-profile access and health-field permissions/retention before collection. Keep allergies and
   explicit exclusions hard, dislikes soft, goals optional and medical context non-prescriptive. Add
   reviewed presets/exceptions, ingredient-origin conditions, windows/attendance/prep settings only with
@@ -80,18 +80,18 @@ The diet label must reflect exceptions rather than silently claiming an unmodifi
   Nextcloud evaluation/suggestions/plan apply; do not store a rule the server then ignores.
   Verify: conflicting presets/exceptions, unknown origin, unrelated allergy, revoked access, export/
   deletion and legacy profile round trips; adapt existing typed Vue contracts in this same PR.
-- [ ] P2.2 **Build the resumable profile flow.** One or two questions per step, optional name/avatar capture, optional skip,
+- [x] P2.2 **Build the resumable profile flow.** One or two questions per step, optional name/avatar capture, optional skip,
   protected local drafts, explicit save/review and editable summary. No required diagnosis, weight or
   calorie target. A login account and a household person remain distinct identities.
   Verify: interruption/relaunch, no cross-person draft leakage, screen reader/large text and DE/EN.
-- [ ] P2.3 **Complete the mobile content library.** Search localized names/aliases; read/create/edit
+- [x] P2.3 **Complete the mobile content library.** Search localized names/aliases; read/create/edit
   recipes and ingredient groups/subtypes/nutrients/components/tags/images, with inline ingredient creation,
   source/range/unknown presentation, portions, always-visible parts/steps, homemade inputs and cycle
   rejection. Add collections, pinned shared revisions and invitations. Source-only imported projections
   must also govern local cache/export/share. Share sheets for URL capture follow P5.
   Verify: exact values and original language survive edits; restricted imports are not copied into shares;
   reader/revocation, conflicts and unknown ingredient identities preserve the server boundary.
-- [ ] P2.4 **Add the small personal activity log.** Type, date, duration and optional intensity with
+- [x] P2.4 **Add the small personal activity log.** Type, date, duration and optional intensity with
   save/history/edit/delete, independent of food restrictions. Review permission/retention and add a
   bounded versioned server record. Leave energy unknown without an accepted evidence/inputs model.
   Verify: a 45-minute jog and 60-minute ride save without weight; no kcal is fabricated or used to
@@ -101,6 +101,26 @@ The diet label must reflect exceptions rather than silently claiming an unmodifi
 Shopping/More; no inactive Plan/Today tab. All introduced hard rules have server enforcement evidence.
 Sensitive fields stay unavailable if their separate privacy decision is not approved; report that scope
 explicitly rather than claiming the full P2 acceptance complete.
+
+### P2 implementation checkpoints
+
+The customer selected person-specific activity rights and owner-managed grants without automatic
+owner read/edit access; see [ADR 0028](../../docs/adr/0028-person-rules-and-activity.md).
+
+1. [x] Add backward-compatible effective dietary rules and explicit ingredient production origin;
+   prove allergy precedence, unknown provenance, legacy preservation and canonical plan enforcement.
+2. [x] Add private person activity/access state with atomic profile deletion, export/delete-all,
+   membership-revocation handling and explicit owner self-grants. Prove reader isolation/restart.
+3. [x] Build the protected resumable person tour, rule summary and permission/activity forms;
+   include the required compatible Nextcloud contract/editor changes.
+4. [x] Build native recipe discovery/read/scale/revisions and always-open multipart authoring;
+   preserve exact conversion/temperature/homemade and imported provenance, with image selection.
+5. [x] Build ingredient discovery/groups/own declarations/nutrients/constituents/components/tags,
+   including inline ingredient creation inside recipe authoring and reverse recipe lookup.
+6. [x] Build pinned collections, recipient selection, outbound grants, incoming invitations and
+   protected shared reading using the existing server projections.
+7. [x] Prove P1-to-P2 Android upgrade, 320dp/200% text, role/revocation/unknown states and live
+   Nextcloud workflows with synthetic fixtures; clean only this run's fixtures and run all local gates. PR-head CI is the separate release gate recorded on the PR.
 
 ## P3 — Explainable household week, mealprep and stock
 

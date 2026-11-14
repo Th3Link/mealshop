@@ -324,6 +324,9 @@ impl Store {
                 .and_then(|a| a.organization.as_ref())
                 .or_else(|| self.base.find(&id).map(|i| &i.organization));
             if let Some(previous) = previous {
+                if current.production.is_none() {
+                    current.production.clone_from(&previous.production);
+                }
                 if current.intolerance_triggers.is_none() {
                     current
                         .intolerance_triggers

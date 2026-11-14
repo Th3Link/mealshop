@@ -38,7 +38,8 @@ and wake/unlock only this emulator. A cold restart otherwise loses its reverse f
 
 The emulator uses its own ADB server on
 5038 and console port 5556, leaving the default ADB server alone. Use `emulator --headless` in CI;
-the default opens a real emulator window. The helper retains an existing AVD. The pinned old
+the default opens a real emulator window. Physical keyboard input is enabled in the AVD: click a
+text field and use the desktop keyboard. The helper retains an existing AVD. The pinned old
 `avdmanager` compatibility command creates only this API 36 AVD; package installation uses the new
 Android CLI with metrics disabled. Tools/downloads/keys and emulator state are ignored, never committed.
 
@@ -162,3 +163,37 @@ The full repository Rust/catalogue/i18n/native-client gates still apply before p
 
 Do not downgrade a receipt-bearing shopping file into an older server writer. See ADR 0027 for
 fail-closed downgrade/recovery behaviour and F35 for actual acceptance evidence and remaining work.
+
+## P2: People, activities and the library
+
+Recipes joins Shopping and More. More opens People, Activities, Ingredients, Collections and incoming
+shares; household owners also manage outbound shares. Incoming shares remain reachable without a selected household, and pending invitations do not expose content before acceptance. The existing theme and DE/EN strings follow
+the phone, with explicit source language retained in authored records. Library/profile/activity changes
+require a live connection and server confirmation; shopping remains the P1 offline boundary.
+
+Create a person through the resumable tour, review presets/exceptions, allergies/exclusions and
+optional availability/active-time limits. A visible generic person label permits skipping a personal
+name. Children need no login account. See [person rules and activity access](people-activity.md) for
+the precise permissions, deletion/export, retention and legacy-client contract. Owners must explicitly
+grant themselves activity access; a household reader may have person-specific edit access.
+
+Recipe details keep ingredients, parts, dependencies and steps open. Serving changes scale only the
+selected revision; normalized grams/kilograms keep exact decimal digits. Editing preserves original
+language, quantity/conversion evidence, temperature extensions, handmade output links and imported
+provenance. The ingredient search offers direct creation when a match is missing. Galleries use the
+system photo picker; only JPEG/PNG/WebP up to 5 MiB are uploaded to the selected household. Cancelled
+selection leaves the form intact. Interrupted picker results are consumed at startup and prompt a new
+selection, never silently attached to a different account or draft. Camera/OCR and URL capture remain P5.
+
+Ingredients support explicit groups/subtypes, declarations/inheritance, ranged or unknown nutrients,
+optional constituents, composition, allergens/sorbitol, tags, favorites, archive and reverse recipe lookup.
+Reference records and comparison sources stay visible. No unknown value is replaced by zero and no
+constituent declaration implies a health benefit. Pinned collection revisions and shared invitations
+use existing server contracts. Incoming imported recipes expose only the source link, including in
+collections. Incoming shared content is never put into the offline cache.
+
+`python3 scripts/mobile.py integration` runs shopping and P2 native journeys using the separate
+`org.mealshop.pocket.verification` package. The helper verifies its manifest ID and uses a private stable APK copy, rejecting target/device/binary overrides. Flutter drive uninstalls that target; it cannot erase the
+installed `org.mealshop.pocket.dev` record. Normal `build`/`install` still upgrade the development app
+with its retained key. Do not run raw driver commands against the development package when preserving
+an account/cache. Automated/mock native evidence and real Nextcloud proxy evidence are distinct.

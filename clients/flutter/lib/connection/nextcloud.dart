@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -110,12 +111,13 @@ class Nextcloud {
   }) async {
     final request = http.Request(method, uri)..followRedirects = false;
     request.headers['accept'] = 'application/json';
-    request.headers['user-agent'] = 'Mealshop Android/0.1';
+    request.headers['user-agent'] = 'Mealshop Android/0.2';
     if (credential != null) {
       credential.server.validate(uri.toString());
       request.headers['authorization'] =
           'Basic ${base64Encode(utf8.encode('${credential.user}:${credential.password}'))}';
       request.headers['x-mealshop-request'] = '1';
+      request.headers['OCS-APIRequest'] = 'true';
     }
     if (form) {
       request.bodyFields = Map<String, String>.from(body! as Map);
@@ -150,6 +152,85 @@ class Nextcloud {
         }
         return value;
       })().timeout(const Duration(seconds: 15));
+    } on ApiFailure {
+      rethrow;
+    } catch (_) {
+      throw const ApiFailure('connection_failed');
+    }
+  }
+
+  Future<Uint8List> bytes(Credential who, String path) async {
+    final uri = who.server.path('/index.php/apps/app_api/proxy/mealshop$path');
+    who.server.validate(uri.toString());
+    final request = http.Request('GET', uri)..followRedirects = false;
+    request.headers['authorization'] =
+        'Basic ${base64Encode(utf8.encode('${who.user}:${who.password}'))}';
+    request.headers['x-mealshop-request'] = '1';
+    return _binary(request);
+  }
+
+  Future<Uint8List> _binary(http.Request request) async {
+    try {
+      return await (() async {
+        final response = await _client.send(request);
+        if (response.statusCode != 200) {
+          throw ApiFailure('request_failed', response.statusCode);
+        }
+        final bytes = BytesBuilder(copy: false);
+        await for (final chunk in response.stream) {
+          if (bytes.length + chunk.length > 5242880) {
+            throw const ApiFailure('response_too_large');
+          }
+          bytes.add(chunk);
+        }
+        return bytes.takeBytes();
+      })().timeout(const Duration(seconds: 20));
+    } on ApiFailure {
+      rethrow;
+    } catch (_) {
+      throw const ApiFailure('connection_failed');
+    }
+  }
+
+  Future<Json> upload(
+    Credential who,
+    String path,
+    Uint8List bytes,
+    String mime,
+  ) async {
+    if (bytes.length > 5242880 ||
+        !['image/jpeg', 'image/png', 'image/webp'].contains(mime)) {
+      throw const ApiFailure('image_invalid');
+    }
+    final uri = who.server.path('/index.php/apps/app_api/proxy/mealshop$path');
+    who.server.validate(uri.toString());
+    final request = http.Request('POST', uri)..followRedirects = false;
+    request.headers.addAll({
+      'authorization':
+          'Basic ${base64Encode(utf8.encode('${who.user}:${who.password}'))}',
+      'x-mealshop-request': '1',
+      'content-type': mime,
+    });
+    request.bodyBytes = bytes;
+    try {
+      return await (() async {
+        final response = await _client.send(request);
+        final data = BytesBuilder(copy: false);
+        await for (final chunk in response.stream) {
+          if (data.length + chunk.length > 65536) {
+            throw const ApiFailure('response_too_large');
+          }
+          data.add(chunk);
+        }
+        final result = object(jsonDecode(utf8.decode(data.takeBytes())));
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw ApiFailure(
+            result['code'] as String? ?? 'image_invalid',
+            response.statusCode,
+          );
+        }
+        return result;
+      })().timeout(const Duration(seconds: 20));
     } on ApiFailure {
       rethrow;
     } catch (_) {

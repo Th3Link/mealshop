@@ -5,6 +5,8 @@ import 'common.dart';
 import 'messages.dart';
 import 'shopping_list.dart';
 import 'more.dart';
+import '../content/api.dart';
+import 'recipes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(this.controller, {super.key});
@@ -20,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final c = widget.controller;
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.t(tab == 0 ? 'shopping' : 'more')),
+        title: Text(context.t(['shopping', 'recipes', 'more'][tab])),
         actions: [
           IconButton(
             tooltip: context.t('sync'),
@@ -37,6 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.shopping_basket_outlined),
             selectedIcon: const Icon(Icons.shopping_basket),
             label: context.t('shopping'),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.menu_book_outlined),
+            label: context.t('recipes'),
           ),
           NavigationDestination(
             icon: const Icon(Icons.more_horiz),
@@ -105,12 +111,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+            if (c.imageInterrupted)
+              ListTile(
+                leading: const Icon(Icons.photo_outlined),
+                title: Text(context.t('image_interrupted')),
+                trailing: IconButton(
+                  tooltip: context.t('close'),
+                  icon: const Icon(Icons.close),
+                  onPressed: c.dismissPhotoNotice,
+                ),
+              ),
             if (c.busy) const LinearProgressIndicator(minHeight: 2),
             Expanded(
-              child: tab == 1
+              child: tab == 2
                   ? MoreScreen(c)
                   : c.home == null
                   ? NoHousehold(c)
+                  : tab == 1
+                  ? RecipesScreen(HouseholdApi(c), key: ValueKey(c.selected))
                   : ShoppingListScreen(c),
             ),
           ],

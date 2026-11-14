@@ -539,21 +539,27 @@ async fn dispatch_household(
     if !(domain.starts_with("/api/recipes") || domain.starts_with("/api/household/")) {
         return StatusCode::NOT_FOUND.into_response();
     }
-    let (role, members) = match app.membership.lock() {
+    let (role, members, activity_epochs) = match app.membership.lock() {
         Ok(s) => (
             s.role(id, &actor),
-            if domain.starts_with("/api/household/mcp") {
+            if domain.starts_with("/api/household/mcp")
+                || domain.starts_with("/api/household/people/")
+            {
                 s.members(id).unwrap_or_default()
             } else {
                 BTreeMap::new()
             },
+            s.activity_epochs(id),
         ),
         Err(_) => return reply(StatusCode::SERVICE_UNAVAILABLE, "membership_storage_failed"),
     };
     let Some(role) = role else {
         return reply(StatusCode::FORBIDDEN, "household_access_denied");
     };
-    if role == Role::Reader && !read_action(request.method(), domain) {
+    if role == Role::Reader
+        && !read_action(request.method(), domain)
+        && !crate::household::people::activity_path(domain)
+    {
         return reply(StatusCode::FORBIDDEN, "household_read_only");
     }
     let router = match household_router(app.clone(), id.to_owned()).await {
@@ -583,6 +589,7 @@ async fn dispatch_household(
             user: actor.clone(),
             role,
             members,
+            activity_epochs,
         });
     request.extensions_mut().insert(crate::feedback::Actor {
         user: actor,
@@ -672,3 +679,6 @@ mod brewing_tests;
 
 #[cfg(test)]
 mod mobile_tests;
+
+#[cfg(test)]
+mod people_tests;

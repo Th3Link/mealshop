@@ -120,5 +120,7 @@ The native Android client starts in [F35](specs/0035-flutter-mobile-client/speci
 [Five device-testable implementation PRs](specs/0035-flutter-mobile-client/plan.md) reconcile the
 [customer mobile pack](references/mobile-product-spec-2026-11-12/README.md) with existing APIs.
 P1 implements Nextcloud Login Flow v2, shared shopping and a protected durable offline outbox.
+P2 adds the resumable person tour, explicit dietary rules, online recipe/ingredient/collection/sharing
+views and private person activities with explicit grants; [permissions and API](docs/guides/people-activity.md).
 See the [mobile guide](docs/guides/mobile.md) for the pinned emulator, APKs and upgrade instructions,
 and F35 verification for actual evidence and physical-handset testing limits.

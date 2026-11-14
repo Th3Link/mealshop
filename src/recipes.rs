@@ -304,6 +304,10 @@ impl Store {
         Ok(())
     }
 
+    pub(crate) fn recipe_count(&self) -> usize {
+        self.records.len()
+    }
+
     pub(crate) fn list(&self) -> Vec<Summary> {
         self.records
             .values()

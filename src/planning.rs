@@ -434,7 +434,19 @@ fn preview(
             .iter()
             .map(|s| u64::from(s.passive_seconds))
             .sum::<u64>();
-    let mut conflicts = Vec::new();
+    let mut conflicts =
+        household::people::planning_conflicts(profiles, &people, &p.date, &p.meal, active);
+    if p.allocations.is_some() {
+        // Attendance applies to eating slots, not the separate preparation slot.
+        conflicts.retain(|code| *code != "person_unavailable");
+        for (date, meal) in slots(p) {
+            conflicts.extend(household::people::planning_conflicts(
+                profiles, &people, date, meal, 0,
+            ));
+        }
+        conflicts.sort_unstable();
+        conflicts.dedup();
+    }
     if review["status"] == "blocked" {
         conflicts.push("dietary_exclusion");
     }
