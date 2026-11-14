@@ -230,6 +230,8 @@ pub(crate) struct Run {
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Data {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(crate) operations: Vec<super::receipts::Receipt>,
     #[serde(default, skip_serializing_if = "crate::brewing::model::Data::is_empty")]
     pub(crate) brewing: crate::brewing::model::Data,
     pub(crate) schema_version: u32,
@@ -242,6 +244,7 @@ pub(crate) struct Data {
 impl Default for Data {
     fn default() -> Self {
         Self {
+            operations: vec![],
             brewing: crate::brewing::model::Data::default(),
             schema_version: 1,
             revision: 0,

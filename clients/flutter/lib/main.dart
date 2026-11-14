@@ -7,6 +7,7 @@ import 'shopping/controller.dart';
 import 'ui/connect.dart';
 import 'ui/home.dart';
 import 'ui/messages.dart';
+import 'ui/cooking_scope.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,45 +67,48 @@ class _MealshopAppState extends State<MealshopApp> with WidgetsBindingObserver {
     listenable: widget.controller,
     builder: (context, _) {
       final c = widget.controller;
-      return MaterialApp(
-        // A household/account change disposes every open draft and detail route.
-        key: ValueKey((
-          c.credential?.server.root,
-          c.credential?.user,
-          c.selected,
-        )),
-        debugShowCheckedModeBanner: false,
-        title: 'Mealshop',
-        theme: theme(Brightness.light),
-        darkTheme: theme(Brightness.dark),
-        locale: Locale(c.language),
-        supportedLocales: const [Locale('en'), Locale('de')],
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        home: !c.initialized
-            ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-            : c.storageBlocked
-            ? Scaffold(
-                appBar: AppBar(title: const Text('Mealshop')),
-                body: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(message('storage_failed', c.language)),
-                      const SizedBox(height: 24),
-                      FilledButton(
-                        onPressed: () async {
-                          await c.signOut();
-                        },
-                        child: Text(message('clear_local', c.language)),
-                      ),
-                    ],
+      return CookingHost(
+        c,
+        child: MaterialApp(
+          // A household/account change disposes every open draft and detail route.
+          key: ValueKey((
+            c.credential?.server.root,
+            c.credential?.user,
+            c.selected,
+          )),
+          debugShowCheckedModeBanner: false,
+          title: 'Mealshop',
+          theme: theme(Brightness.light),
+          darkTheme: theme(Brightness.dark),
+          locale: Locale(c.language),
+          supportedLocales: const [Locale('en'), Locale('de')],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          home: !c.initialized
+              ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+              : c.storageBlocked
+              ? Scaffold(
+                  appBar: AppBar(title: const Text('Mealshop')),
+                  body: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(message('storage_failed', c.language)),
+                        const SizedBox(height: 24),
+                        FilledButton(
+                          onPressed: () async {
+                            await c.signOut();
+                          },
+                          child: Text(message('clear_local', c.language)),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              )
-            : c.credential == null
-            ? ConnectScreen(c)
-            : HomeScreen(c),
+                )
+              : c.credential == null
+              ? ConnectScreen(c)
+              : HomeScreen(c),
+        ),
       );
     },
   );

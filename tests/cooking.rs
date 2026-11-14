@@ -67,6 +67,99 @@ async fn create_recipe(app: &axum::Router) -> String {
     assert_eq!(status, StatusCode::CREATED, "{recipe}");
     recipe["id"].as_str().unwrap().to_owned()
 }
+
+#[tokio::test]
+async fn mobile_cooking_receipts_survive_lost_responses_restart_and_timer_replay() {
+    let directory = Directory::new();
+    let app = directory.app().unwrap();
+    let recipe = create_recipe(&app).await;
+    let draft = template(&app, &recipe).await;
+    let prepared = preview(&app, 0, json!({"kind":"create","draft":draft})).await;
+    let create = json!({"expected_revision":0,"idempotency_key":"mobile-cook-create-00000001","command":{"operation":"apply","preview_id":prepared["preview_id"],"reviewed":true}});
+    let (status, original) = request(
+        &app,
+        "POST",
+        "/api/household/cooking",
+        create.clone(),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{original}");
+    assert_eq!(original["applied_revision"], 1);
+    drop(app);
+    let app = directory.app().unwrap();
+    let (status, replay) = request(
+        &app,
+        "POST",
+        "/api/household/cooking",
+        create.clone(),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{replay}");
+    assert_eq!(replay["run_id"], original["run_id"]);
+    assert_eq!(replay["replayed"], true);
+    let run = original["run_id"].as_str().unwrap();
+    let (status, detail) = request(
+        &app,
+        "GET",
+        &format!("/api/household/cooking/{run}"),
+        Value::Null,
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{detail}");
+    let at = detail["server_now"].as_i64().unwrap();
+    let timer = json!({"expected_revision":1,"idempotency_key":"mobile-cook-timer-00000001","occurred_at":at,"command":{"operation":"timer","run_id":run,"step_id":detail["run"]["steps"][0]["stage"]["id"],"action":"start"}});
+    let (status, first) = request(
+        &app,
+        "POST",
+        "/api/household/cooking",
+        timer.clone(),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{first}");
+    drop(app);
+    let app = directory.app().unwrap();
+    let (status, again) = request(
+        &app,
+        "POST",
+        "/api/household/cooking",
+        timer.clone(),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{again}");
+    assert_eq!(again["replayed"], true);
+    assert_eq!(again["applied_revision"], 2);
+    let (_, detail) = request(
+        &app,
+        "GET",
+        &format!("/api/household/cooking/{run}"),
+        Value::Null,
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(detail["run"]["steps"][0]["timer"]["started_at"], at);
+    assert_eq!(detail["run"]["steps"][0]["timer"]["deadline"], at + 60);
+    assert!(detail.get("operations").is_none());
+    let mut changed = timer.clone();
+    changed["command"]["action"] = json!("complete");
+    let (status, rejected) =
+        request(&app, "POST", "/api/household/cooking", changed, Some(OWNER)).await;
+    assert_eq!(status, StatusCode::CONFLICT, "{rejected}");
+    let (status, denied) =
+        request(&app, "POST", "/api/household/cooking", timer, Some(READER)).await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "{denied}");
+    let mut invalid = create;
+    invalid["idempotency_key"] = json!("mobile-cook-time-000000001");
+    invalid["expected_revision"] = json!(2);
+    invalid["occurred_at"] = json!(at);
+    let (status, rejected) =
+        request(&app, "POST", "/api/household/cooking", invalid, Some(OWNER)).await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{rejected}");
+}
 async fn template(app: &axum::Router, recipe: &str) -> Value {
     let (status,value)=request(app,"GET",&format!("/api/household/cooking/template?recipe_id={recipe}&revision=1&servings=3&timezone=Europe%2FBerlin"),Value::Null,Some(OWNER)).await;
     assert_eq!(status, StatusCode::OK, "{value}");
@@ -429,4 +522,98 @@ async fn multipart_recipe_templates_preserve_parallel_parts_wait_ranges_and_merg
         request(&app, "POST", "/api/recipes", cycle, None).await.0,
         StatusCode::UNPROCESSABLE_ENTITY
     );
+}
+
+#[tokio::test]
+async fn mobile_action_review_preserves_reported_time_without_publishing_or_rebasing() {
+    let directory = Directory::new();
+    let app = directory.app().unwrap();
+    let recipe = create_recipe(&app).await;
+    let draft = template(&app, &recipe).await;
+    let review = preview(&app, 0, json!({"kind":"create","draft":draft})).await;
+    let applied = command(
+        &app,
+        0,
+        json!({"operation":"apply","preview_id":review["preview_id"],"reviewed":true}),
+    )
+    .await;
+    let id = applied["run_id"].as_str().unwrap();
+    let before = detail(&app, id).await;
+    let at = before["server_now"].as_i64().unwrap();
+    let input = json!({"expected_revision":1,"idempotency_key":"mobile-cook-preview-00000001","occurred_at":at,"command":{"operation":"timer","run_id":id,"step_id":before["run"]["steps"][0]["stage"]["id"],"action":"start"}});
+    let (status, preview) = request(
+        &app,
+        "POST",
+        "/api/household/cooking/action-preview",
+        input.clone(),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{preview}");
+    assert_eq!(preview["run"]["steps"][0]["timer"]["deadline"], at + 60);
+    let unchanged = detail(&app, id).await;
+    assert_eq!(unchanged["run"], before["run"]);
+    assert_eq!(unchanged["revision"], 1);
+    for invalid in [at + 86_400, at - 604_801] {
+        let mut input = input.clone();
+        input["occurred_at"] = json!(invalid);
+        let (status, _) = request(
+            &app,
+            "POST",
+            "/api/household/cooking/action-preview",
+            input,
+            Some(OWNER),
+        )
+        .await;
+        assert!(!status.is_success());
+    }
+    let (status, _) = request(
+        &app,
+        "POST",
+        "/api/household/cooking/action-preview",
+        input.clone(),
+        Some(READER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    let (status, done) = request(
+        &app,
+        "POST",
+        "/api/household/cooking",
+        input.clone(),
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{done}");
+    let (status, _) = request(
+        &app,
+        "POST",
+        "/api/household/cooking/action-preview",
+        input,
+        Some(OWNER),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT);
+}
+
+#[tokio::test]
+async fn native_step_ingredients_preserve_explicit_links_and_unknown_assignment() {
+    let directory = Directory::new();
+    let app = directory.app().unwrap();
+    let (status,recipe)=request(&app,"POST","/api/recipes",json!({"title":"Synthetic step scope","language":"en","servings":2,"preparation":"as_recorded","lines":[{"id":"line-oats","ingredient_id":"oats","grams":"100.000001"},{"id":"line-oats-later","ingredient_id":"oats","grams":"200"}],"steps":[{"instruction":"Use measured oats","ingredient_line_ids":["line-oats"],"active_seconds":30,"passive_seconds":0},{"instruction":"Unassigned ingredient reference","active_seconds":10,"passive_seconds":0}]}),None).await;
+    assert_eq!(status, StatusCode::CREATED, "{recipe}");
+    let draft = template(&app, recipe["id"].as_str().unwrap()).await;
+    let review = preview(&app, 0, json!({"kind":"create","draft":draft})).await;
+    let done = command(
+        &app,
+        0,
+        json!({"operation":"apply","preview_id":review["preview_id"],"reviewed":true}),
+    )
+    .await;
+    let detail = detail(&app, done["run_id"].as_str().unwrap()).await;
+    assert_eq!(detail["step_ingredients"][0]["scope"], "explicit");
+    assert_eq!(detail["step_ingredients"][0]["line_indexes"], json!([0]));
+    assert_eq!(detail["step_ingredients"][1]["scope"], "unassigned");
+    assert_eq!(detail["step_ingredients"][1]["line_indexes"], json!([0, 1]));
+    assert_eq!(detail["ingredients"][0]["grams"], "150.000002");
 }

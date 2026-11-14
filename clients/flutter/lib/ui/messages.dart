@@ -2,10 +2,12 @@ import 'package:flutter/widgets.dart';
 
 import 'content_messages.dart';
 import 'planning_messages.dart';
+import 'process_messages.dart';
 
 const messages = <String, (String, String)>{
   ...contentMessages,
   ...planningMessages,
+  ...processMessages,
   'licences': ('Open-source licences', 'Open-Source-Lizenzen'),
   'preferred_shop': ('Preferred shop', 'Bevorzugtes Geschäft'),
   'fallback_shop': ('Alternative shop', 'Alternatives Geschäft'),

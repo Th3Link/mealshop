@@ -1,7 +1,8 @@
 use super::{
     Actor,
-    model::{Draft, Permission},
-    operations::{self, PlanChange, TimerAction},
+    commands::Command,
+    model::Draft,
+    operations::{self, PlanChange},
     source,
     store::Store,
     time, view,
@@ -37,48 +38,24 @@ struct Preview {
     proposal: Proposal,
 }
 #[derive(Deserialize)]
-#[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
-enum Command {
-    Apply {
-        preview_id: String,
-        reviewed: bool,
-    },
-    Timer {
-        run_id: String,
-        step_id: String,
-        action: TimerAction,
-    },
-    Cancel {
-        run_id: String,
-    },
-    Remove {
-        run_id: String,
-    },
-    Subscribe {
-        run_id: String,
-        enabled: bool,
-        language: String,
-        permission: Permission,
-    },
-    Acknowledge {
-        notice_id: String,
-    },
-    Retry {
-        notice_id: String,
-        duplicate_risk_accepted: bool,
-    },
-}
-#[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Mutation {
     expected_revision: u64,
     command: Command,
+    #[serde(default)]
+    idempotency_key: Option<String>,
+    #[serde(default)]
+    occurred_at: Option<i64>,
 }
 pub(crate) fn routes() -> Router<Shared> {
     Router::new()
         .route("/api/household/cooking", get(list).post(change))
         .route("/api/household/cooking/template", get(template))
         .route("/api/household/cooking/preview", post(preview))
+        .route(
+            "/api/household/cooking/action-preview",
+            post(action_preview),
+        )
         .route(
             "/api/household/cooking/internal",
             post(super::internal::dispatch),
@@ -96,8 +73,8 @@ fn actor(value: Option<Extension<Actor>>) -> Actor {
 }
 fn failure(code: &str) -> Response {
     let status = match code {
-        "cooking_revision_conflict" => StatusCode::CONFLICT,
-        "cooking_preview_expired" => StatusCode::GONE,
+        "cooking_revision_conflict" | "cooking_request_conflict" => StatusCode::CONFLICT,
+        "cooking_operation_expired" | "cooking_preview_expired" => StatusCode::GONE,
         "cooking_run_not_found" | "cooking_step_not_found" => StatusCode::NOT_FOUND,
         "cooking_storage_failed" => StatusCode::SERVICE_UNAVAILABLE,
         _ => StatusCode::UNPROCESSABLE_ENTITY,
@@ -123,6 +100,7 @@ async fn list(
     response(
         tokio::task::spawn_blocking(move || {
             let store = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
+            store.ready()?;
             let mut value = view::list(&store.data, &actor, time::now()?);
             value["scheduler"] = store.health();
             Ok(value)
@@ -167,6 +145,7 @@ async fn detail(
                 .lock()
                 .map_err(|_| "recipe_store_unavailable")?;
             let store = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
+            store.ready()?;
             let run = store.data.run(&id)?;
             let (recipe, servings) = run.food()?;
             let record = source::recipe(&recipes, &recipe.id, recipe.revision)?;
@@ -178,6 +157,8 @@ async fn detail(
                 &source::ingredients(&record, servings)?,
             )?;
             value["scheduler"] = store.health();
+            value["step_ingredients"] = source::step_ingredients(&record);
+            value["parts"] = json!(record.recipe.parts);
             Ok(value)
         })
         .await,
@@ -204,6 +185,7 @@ async fn preview(
                 .ok_or("recipe_store_unavailable")?
                 .lock()
                 .map_err(|_| "recipe_store_unavailable")?;
+            let plans = state.plans.lock().map_err(|_| "mealplan_storage_failed")?;
             let mut store = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
             if input.expected_revision != store.data.revision {
                 return Err("cooking_revision_conflict");
@@ -212,18 +194,13 @@ async fn preview(
             let (run, previous, proposal) = match input.proposal {
                 Proposal::Create { draft } => {
                     if let Some(slot) = &draft.plan_slot {
-                        if !state
-                            .plans
-                            .lock()
-                            .map_err(|_| "mealplan_storage_failed")?
-                            .cooking_source(
-                                &slot.date,
-                                &slot.meal,
-                                &draft.recipe_id,
-                                draft.recipe_revision,
-                                draft.servings,
-                            )
-                        {
+                        if !plans.cooking_source(
+                            &slot.date,
+                            &slot.meal,
+                            &draft.recipe_id,
+                            draft.recipe_revision,
+                            draft.servings,
+                        ) {
                             return Err("cooking_plan_source_changed");
                         }
                     }
@@ -262,127 +239,138 @@ async fn change(
     let actor = actor(who);
     response(
         tokio::task::spawn_blocking(move || {
+            let plans = state.plans.lock().map_err(|_| "mealplan_storage_failed")?;
             let mut store = state.cooking.lock().map_err(|_| "cooking_storage_failed")?;
-            let run_id = execute(&mut store, input, &actor, time::now()?)?;
-            Ok(json!({"revision":store.data.revision,"run_id":run_id}))
+            execute(&plans, &mut store, &input, &actor, time::now()?)
         })
         .await,
     )
 }
-fn execute(
-    store: &mut Store,
-    input: Mutation,
-    actor: &Actor,
-    now: i64,
-) -> Result<Option<String>, &'static str> {
-    let expected = input.expected_revision;
-    match &input.command {
-        Command::Timer { run_id, .. }
-        | Command::Cancel { run_id }
-        | Command::Remove { run_id }
-        | Command::Subscribe { run_id, .. } => {
-            store.data.run(run_id)?.food()?;
-        }
-        _ => {}
+
+async fn action_preview(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    who: Option<Extension<Actor>>,
+    body: Result<Json<Mutation>, JsonRejection>,
+) -> Response {
+    if !household::can_write(&state, &headers) {
+        return household::reply(
+            StatusCode::FORBIDDEN,
+            json!({"code":"household_write_required"}),
+        );
     }
-    match input.command {
-        Command::Apply {
-            preview_id,
-            reviewed,
-        } => {
-            if !reviewed {
-                return Err("cooking_review_required");
-            }
-            store
-                .apply(&actor.user, &preview_id, expected, now)
-                .map(Some)
-        }
-        Command::Timer {
-            run_id,
-            step_id,
-            action,
-        } => {
-            store.change(Some(expected), |data| {
-                operations::timer(data, &run_id, &step_id, action, now)
-            })?;
-            Ok(Some(run_id))
-        }
-        Command::Cancel { run_id } => {
-            store.change(Some(expected), |data| operations::cancel(data, &run_id))?;
-            Ok(Some(run_id))
-        }
-        Command::Remove { run_id } => {
-            store.change(Some(expected), |data| {
-                if data.run(&run_id)?.status == super::model::RunState::Active {
-                    return Err("cooking_run_active");
-                }
-                data.runs.retain(|r| r.id != run_id);
-                data.notices.retain(|n| n.run_id != run_id);
-                Ok(())
-            })?;
-            Ok(None)
-        }
-        Command::Subscribe {
-            run_id,
-            enabled,
-            language,
-            permission,
-        } => {
-            store.change(Some(expected), |data| {
-                operations::subscribe(data, &run_id, actor, enabled, language, permission, now)
-            })?;
-            Ok(Some(run_id))
-        }
-        Command::Acknowledge { notice_id } => {
-            notice_action(store, expected, actor, &notice_id, false, false, now)
-        }
-        Command::Retry {
-            notice_id,
-            duplicate_risk_accepted,
-        } => notice_action(
-            store,
-            expected,
-            actor,
-            &notice_id,
-            true,
-            duplicate_risk_accepted,
-            now,
-        ),
-    }
+    let Ok(Json(input)) = body else {
+        return failure("cooking_request_invalid");
+    };
+    let actor = actor(who);
+    response(tokio::task::spawn_blocking(move || {
+        if !matches!(input.command,Command::Timer {..}) || !input.idempotency_key.as_deref().is_some_and(crate::recipes::Creation::valid_key) { return Err("cooking_request_invalid"); }
+        let now=time::now()?;
+        let at=reported_time(&input,now)?;
+        let store=state.cooking.lock().map_err(|_|"cooking_storage_failed")?;
+        store.ready()?;
+        let Command::Timer {run_id,..}=&input.command else { return Err("cooking_request_invalid"); };
+        let next=store.prepare_change(Some(input.expected_revision),|data| {
+            super::commands::execute(data,input.command.clone(),&actor,at,None)?;
+            Ok(())
+        })?;
+        Ok(json!({"revision":store.data.revision,"server_now":now,"previous":view::run(store.data.run(run_id)?,&actor,now)?,"run":view::run(next.run(run_id)?,&actor,now)?}))
+    }).await)
 }
-fn notice_action(
-    store: &mut Store,
-    expected: u64,
-    actor: &Actor,
-    id: &str,
-    retry: bool,
-    accepted_risk: bool,
-    now: i64,
-) -> Result<Option<String>, &'static str> {
-    if expected != store.data.revision {
-        return Err("cooking_revision_conflict");
+
+fn reported_time(input: &Mutation, now: i64) -> Result<i64, &'static str> {
+    let Some(at) = input.occurred_at else {
+        return Ok(now);
+    };
+    if input.idempotency_key.is_none() || !matches!(input.command, Command::Timer { .. }) {
+        return Err("cooking_request_invalid");
     }
-    let mut run_id = None;
-    store.change(None, |data| {
-        let index = data
-            .notices
-            .iter()
-            .position(|n| n.id == id && n.user == actor.user)
-            .ok_or("cooking_notice_not_found")?;
-        data.run(&data.notices[index].run_id)?.food()?;
-        if retry {
-            super::delivery::retry(data, index, accepted_risk, now)?;
-        } else {
-            data.notices[index].acknowledged_at = Some(now);
-            if matches!(
-                data.notices[index].delivery,
-                super::delivery::Delivery::Queued { .. }
+    if !time::valid(at) || at > now {
+        return Err("cooking_clock_invalid");
+    }
+    if now - at > 604_800 {
+        return Err("cooking_operation_expired");
+    }
+    Ok(at)
+}
+fn execute(
+    plans: &crate::planning::PlanStore,
+    store: &mut Store,
+    input: &Mutation,
+    actor: &Actor,
+    now: i64,
+) -> Result<Value, &'static str> {
+    store.ready()?;
+    if let Some(key) = &input.idempotency_key {
+        if !crate::recipes::Creation::valid_key(key) {
+            return Err("cooking_key_invalid");
+        }
+        if let Some(receipt) = super::receipts::replay(
+            &store.data,
+            &actor.user,
+            key,
+            input.expected_revision,
+            &input.command,
+            input.occurred_at,
+        )? {
+            return Ok(
+                json!({"revision":store.data.revision,"run_id":receipt.run_id,"applied_revision":receipt.expected_revision+1,"replayed":true}),
+            );
+        }
+    }
+    let at = reported_time(input, now)?;
+    let prepared = if let Command::Apply {
+        preview_id,
+        reviewed,
+    } = &input.command
+    {
+        if !reviewed {
+            return Err("cooking_review_required");
+        }
+        let prepared = store.reviewed(&actor.user, preview_id, input.expected_revision, now)?;
+        if let Some(slot) = &prepared.run.plan_slot {
+            let (recipe, servings) = prepared.run.food()?;
+            if !plans.cooking_source(
+                &slot.date,
+                &slot.meal,
+                &recipe.id,
+                recipe.revision,
+                servings,
             ) {
-                data.notices[index].delivery = super::delivery::Delivery::Cancelled;
+                return Err("cooking_plan_source_changed");
             }
         }
-        run_id = Some(data.notices[index].run_id.clone());
+        Some(prepared)
+    } else {
+        None
+    };
+    let mut run_id = None;
+    store.change(Some(input.expected_revision), |data| {
+        run_id = super::commands::execute(data, input.command.clone(), actor, at, prepared)?;
+        if let Some(key) = input.idempotency_key.as_ref() {
+            super::receipts::record(
+                data,
+                super::receipts::Receipt {
+                    actor: actor.user.clone(),
+                    key: key.clone(),
+                    expected_revision: input.expected_revision,
+                    command: serde_json::to_value(&input.command)
+                        .map_err(|_| "cooking_storage_failed")?,
+                    occurred_at: input.occurred_at,
+                    recorded_at: now,
+                    run_id: run_id.clone(),
+                },
+            )?;
+        }
         Ok(())
     })?;
-    Ok(run_id)
+    if let Command::Apply { preview_id, .. } = &input.command {
+        store.consume_review(preview_id);
+    }
+    let mut value = json!({"revision":store.data.revision,"run_id":run_id});
+    if input.idempotency_key.is_some() {
+        value["applied_revision"] = json!(input.expected_revision + 1);
+        value["replayed"] = json!(false);
+    }
+    Ok(value)
 }

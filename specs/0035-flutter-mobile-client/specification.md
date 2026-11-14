@@ -13,7 +13,8 @@ backend-only and screen-only PRs. Each delivery extends an installable app.
 
 The customer approved Android APK delivery, explicitly requested an Android emulator, and gave the
 implementation Go on 2026-11-13. P1 was merged in PR #44. P2 was merged in PR #45. The customer approved P3 on 2026-11-14; implementation is on
-`story/flutter-week-preparation`, with implementation and emulator/live-proxy evidence in PR #48.
+`story/flutter-week-preparation`, merged in PR #48 with emulator/live-proxy evidence. The customer
+then authorized P4 on `story/flutter-cooking-fermentation`; implementation/verification are in progress.
 The earlier planning PR remains a separate review record; its preserved source import is unchanged.
 
 The [original pack](../../references/mobile-product-spec-2026-11-12/README.md) remains a preserved

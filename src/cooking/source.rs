@@ -189,6 +189,20 @@ pub(crate) fn ingredients(
     }).collect::<Result<Vec<_>,&'static str>>()?;
     Ok(serde_json::json!(lines))
 }
+
+pub(crate) fn step_ingredients(record: &Record) -> serde_json::Value {
+    serde_json::json!(record.recipe.steps.iter().enumerate().map(|(index,step)| {
+        let scope=if !step.ingredient_line_ids.is_empty() {"explicit"} else if step.part_id.is_some() {"part"} else {"unassigned"};
+        let indexes=record.recipe.lines.iter().enumerate().filter(|(_,line)| {
+            match scope {
+                "explicit" => line.id.as_ref().is_some_and(|id|step.ingredient_line_ids.contains(id)),
+                "part" => line.part_id==step.part_id,
+                _ => true,
+            }
+        }).map(|(index,_)|index).collect::<Vec<_>>();
+        serde_json::json!({"index":index,"scope":scope,"line_indexes":indexes,"part_id":step.part_id,"prepared_parts":step.prepared_parts})
+    }).collect::<Vec<_>>())
+}
 pub(crate) fn ensure_ready(run: &Run, id: &str, now: i64) -> Result<usize, &'static str> {
     if run.status != RunState::Active {
         return Err("cooking_run_inactive");

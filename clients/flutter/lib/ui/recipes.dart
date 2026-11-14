@@ -8,6 +8,9 @@ import 'ingredients.dart';
 import 'messages.dart';
 import 'recipe_editor.dart';
 import 'sharing.dart';
+import 'cooking.dart';
+import 'cooking_scope.dart';
+import 'cooking_setup.dart';
 
 class RecipesScreen extends StatefulWidget {
   const RecipesScreen(this.api, {super.key});
@@ -107,11 +110,15 @@ class RecipeDetail extends StatefulWidget {
     super.key,
     this.revision,
     this.sharedPath,
+    this.cookingPlanSlot,
+    this.cookingServings,
   });
   final HouseholdApi api;
   final String id;
   final int? revision;
   final String? sharedPath;
+  final Json? cookingPlanSlot;
+  final int? cookingServings;
   @override
   State<RecipeDetail> createState() => _RecipeDetailState();
 }
@@ -220,6 +227,33 @@ class _RecipeDetailState extends State<RecipeDetail> {
         return ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            if (!shared &&
+                widget.api.writable &&
+                CookingScope.maybeOf(context) != null &&
+                (recipe['steps'] as List).isNotEmpty)
+              OutlinedButton.icon(
+                icon: const Icon(Icons.restaurant_outlined),
+                label: Text(context.t('cookNew')),
+                onPressed: () => runAction(context, () async {
+                  final c = CookingScope.maybeOf(context)!;
+                  final id = await openPage<String>(
+                    context,
+                    CookingSetupScreen(
+                      c,
+                      {
+                        'id': widget.id,
+                        'revision': data['revision'],
+                        'title': recipe['title'],
+                      },
+                      planSlot: widget.cookingPlanSlot,
+                      servings: widget.cookingServings ?? servings,
+                    ),
+                  );
+                  if (id != null && context.mounted) {
+                    await openPage<void>(context, CookingDetailScreen(c, id));
+                  }
+                }),
+              ),
             if (recipe['image_id'] != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),

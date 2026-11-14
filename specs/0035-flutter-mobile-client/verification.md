@@ -302,3 +302,26 @@ These are one diagnostic sample per implementation, not a release/device/network
 28 results remain canonically feasible; ordinary/date-override/physical-stock/stale/replay tests pass.
 The bounded cache contains only immutable per-request assessment facts; fresh slot constraints and
 apply-time checks remain mandatory.
+
+
+## P4 implementation checkpoints (in progress)
+
+The customer merged P3 in PR #48 and authorized P4 in one frontend/backend PR. Branch:
+`story/flutter-cooking-fermentation`, base `d3b6dc7`. No retained household data is used as fixtures.
+
+First cooking checkpoint: seven Rust cooking contracts pass, including immutable request replay after
+lost response/restart, explicit reported-action review without publication and exact per-step ingredient
+scope. Strict workspace Clippy passes. Food actions use the existing atomic 4 MiB process store;
+normal reads exclude private receipt keys. Preview and apply take plans before cooking, matching
+inventory lock order and rechecking a linked production before publication.
+
+Flutter format/analyze and **56 unit/widget tests** pass at this checkpoint. New cases cover exact
+request restoration, ordered independent offline intents, wall-clock change/new boot, generation-based
+private reminder projections, revocation cleanup, explicit schedule confirmation and always-open
+step ingredients at 320dp/200% German text. The Android platform adapter compiles into all three ABI
+APKs; actual OS permission/background/reboot delivery checks remain pending. No local integration
+uninstall/reset is used. Final source/APK identities and full gates are still required.
+
+Remaining P4 checkpoints: combined preparation-calendar entry points, complete native brewing/history/
+learning flows, actual Nextcloud/emulator journeys, retained-key upgrade, synthetic fixture cleanup,
+all repository/browser/security gates and current-head CI. P4 is not marked delivered by this checkpoint.

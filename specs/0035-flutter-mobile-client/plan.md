@@ -171,6 +171,33 @@ source/uncertainty explanations. Fully independent personal plans remain the exp
 
 ## P4 — Cooking, long preparations, fermentation and feedback
 
+Status: authorized after the customer merged P3 in PR #48; implementation uses
+`story/flutter-cooking-fermentation`, based on `d3b6dc7`. One frontend/backend PR.
+
+Implementation checkpoints (AC5/AC7; [ADR 0030](../../docs/adr/0030-mobile-cooking-recovery.md)):
+
+1. [x] **Recover an actual cooking action.** Add optional actor-bound immutable cooking receipts
+   in the existing atomic store; preserve legacy callers. Return exact step ingredient scope.
+   Verify lost response/restart/replay, changed payload/revision, reader/revocation, observed-time
+   bounds and legacy snapshots with focused Rust tests before wiring native actions.
+2. [ ] **Cook and replan natively.** Session creation/review, large always-open steps, independent
+   timers and explicit completion, dependencies, actual-action waits, calendar/target/delay review.
+   Retain bounded encrypted scoped cooking snapshots and frozen pending timer intents; reconcile
+   explicitly on conflicts, never silently rebase or mark disconnected work server-confirmed.
+   Verify widget/controller restart, clock changes, concurrent client and exact ingredient links.
+3. [ ] **Remember due actions on Android.** Use the existing native channel and Android framework
+   APIs rather than another notification package. Explicit opt-in/runtime permission, stable absolute
+   deadlines, private generic notifications, cancellation/replacement, reboot/resume reconciliation.
+   Verify actual foreground/background/reboot and denied/revoked permission on the dedicated AVD;
+   document inexact delivery, force-stop/offline revocation and unsupported-platform limits.
+4. [ ] **Finish fermentation and feedback.** Native source-linked brew recipe/template authoring,
+   equipment, batch review/control/replan, exact original readings/calibration/corrections/paging;
+   completed-session/manual history, ratings, owner learning scope/reset and explicit stock links.
+   Verify separate batches/equipment conflicts, archived/pinned sources and reader/owner boundaries.
+5. [ ] **Deliver the whole phone release.** Retained-key P3-to-P4 upgrade, synthetic real Nextcloud
+   and native journeys/screenshots, dark/large-text layouts, own-fixture cleanup, all mandatory gates,
+   exact-source healthy deployment and current-head CI/APKs. Keep F35 open for P5/handset acceptance.
+
 Phone demo: start two timers, close/kill the app and disconnect; reopen to the original deadlines and
 step recipe. Delay a multi-day baking task, reconcile reminders, complete actual work, book stock only
 through review, and inspect a separate brewing batch with its equipment/calibrated reading history.

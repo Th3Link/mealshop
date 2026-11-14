@@ -14,6 +14,7 @@ import 'ingredients.dart';
 import 'collections.dart';
 import 'sharing.dart';
 import 'stock.dart';
+import 'cooking.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen(this.c, {super.key});
@@ -43,6 +44,11 @@ class MoreScreen extends StatelessWidget {
       if (c.home != null) ...[
         SectionTitle(context.t('library')),
         for (final item in <(String, IconData, Widget)>[
+          (
+            'cookingSessions',
+            Icons.restaurant_outlined,
+            CookingScreen(HouseholdApi(c)),
+          ),
           ('stock', Icons.kitchen_outlined, StockScreen(HouseholdApi(c))),
           ('people', Icons.people_outline, PeopleScreen(HouseholdApi(c))),
           (
