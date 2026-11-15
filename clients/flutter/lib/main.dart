@@ -1,4 +1,6 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'connection/nextcloud.dart';
@@ -11,6 +13,15 @@ import 'ui/cooking_scope.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks([
+      'Tesseract4Android',
+      'Tesseract',
+      'Leptonica',
+      'ZXing',
+      'tessdata_fast',
+    ], await rootBundle.loadString('assets/capture-notices.txt'));
+  });
   final controller = ShoppingController(Nextcloud(), DeviceVault());
   runApp(MealshopApp(controller));
   await controller.initialize(

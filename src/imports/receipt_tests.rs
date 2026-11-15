@@ -37,6 +37,7 @@ fn receipt() -> Receipt {
         candidate: 0,
         recorded_at: 100,
         source: Source {
+            capture: None,
             requested_url: "https://example.org/source".to_owned(),
             final_url: Some("https://example.org/canonical".to_owned()),
             method: Method::JsonLd,
@@ -112,4 +113,55 @@ fn corrupt_or_misplaced_source_receipts_fail_closed() {
         serde_json::json!("https://example.org/replaced");
     std::fs::write(path, serde_json::to_vec(&data).unwrap()).unwrap();
     assert!(Store::open(&dir.0).is_err());
+}
+
+#[test]
+fn photo_originals_keep_exact_ocr_and_remain_restricted_after_reload_and_edits() {
+    let dir = Directory::new();
+    let catalogue = Catalogue::from_json(include_str!("../../data/catalogue.json")).unwrap();
+    let mut receipt = receipt();
+    receipt.source.method = Method::Photo;
+    receipt.source.requested_url.clear();
+    receipt.source.final_url = None;
+    receipt.source.retrieved_at = None;
+    receipt.source.capture = Some(crate::capture::Photo {
+        rotation: 0,
+        image_id: "image-00000001.png".to_owned(),
+        text: "1 cup oats\n0,250001 g salt".to_owned(),
+        engine: "tesseract-5.5.1-fast-eng-deu".to_owned(),
+        score: Some(72),
+    });
+    let mut recipe = recipe();
+    recipe.origin = receipt.source.origin();
+    let mut store = Store::open(&dir.0).unwrap();
+    let first = store
+        .save_imported(recipe.clone(), &catalogue, receipt.clone())
+        .unwrap();
+    drop(store);
+    let mut store = Store::open(&dir.0).unwrap();
+    let retry = store
+        .import_result(
+            &receipt.actor,
+            &receipt.key,
+            &receipt.preview_id,
+            0,
+            &recipe,
+        )
+        .unwrap()
+        .unwrap();
+    assert_eq!(retry.id, first.id);
+    assert_eq!(store.latest().count(), 1);
+    assert_eq!(
+        retry.import_receipt.unwrap().source.capture.unwrap().text,
+        "1 cup oats\n0,250001 g salt"
+    );
+    recipe.origin = crate::recipe_origin::Origin::Owned;
+    assert!(
+        store
+            .save(recipe, Some((&first.id, 1)), &catalogue)
+            .is_err()
+    );
+    let mut corrupted = receipt;
+    corrupted.source.requested_url = "https://example.org/fabricated".to_owned();
+    assert!(!corrupted.valid());
 }

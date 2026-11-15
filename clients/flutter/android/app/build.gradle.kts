@@ -57,3 +57,9 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// Local, bundled recognition. No Play Services, external inference or runtime model download.
+dependencies {
+    implementation(files("../../../../var/mobile/capture-libs/tesseract4android-4.9.0.aar"))
+    implementation(files("../../../../var/mobile/capture-libs/zxing-core-3.5.4.jar"))
+}

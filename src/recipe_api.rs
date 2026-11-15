@@ -304,6 +304,10 @@ async fn scale(
 }
 
 fn validate_image(state: &RecipeState, recipe: &Recipe) -> Result<(), ApiError> {
+    if let crate::recipe_origin::Origin::Captured { source_image_id } = &recipe.origin {
+        crate::recipe_images::validate_reference(state.images.as_deref(), Some(source_image_id))
+            .map_err(ApiError::from)?;
+    }
     crate::recipe_images::validate_reference(state.images.as_deref(), recipe.image_id.as_deref())
         .map_err(ApiError::from)
 }

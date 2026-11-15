@@ -21,6 +21,22 @@
           "properties": {
             "kind": {
               "type": "string",
+              "const": "captured"
+            },
+            "source_image_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "source_image_id"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
               "const": "imported"
             },
             "source_url": {

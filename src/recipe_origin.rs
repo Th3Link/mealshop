@@ -6,6 +6,9 @@ use serde::{Deserialize, Serialize};
 pub(crate) enum Origin {
     #[default]
     Owned,
+    Captured {
+        source_image_id: String,
+    },
     Imported {
         source_url: String,
     },
@@ -16,6 +19,11 @@ impl Origin {
     }
 
     pub(crate) fn validate(&self) -> Result<(), String> {
+        if let Self::Captured { source_image_id } = self {
+            if !crate::recipe_images::valid_id(source_image_id) {
+                return Err("Upload the original household photo first".to_owned());
+            }
+        }
         if let Self::Imported { source_url } = self {
             let valid = reqwest::Url::parse(source_url).is_ok_and(|url| {
                 url.scheme() == "https"

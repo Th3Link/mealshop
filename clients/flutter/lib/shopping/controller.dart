@@ -206,7 +206,9 @@ class ShoppingController extends ChangeNotifier {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     _drafts.removeWhere((key, value) {
       // Cooking owns its boot-relative cache horizon. Never erase an uncertain request on a wall-clock edit.
-      if (key.endsWith(':cooking.v1')) return false;
+      if (key.endsWith(':cooking.v1') || key.endsWith(':capture.v1')) {
+        return false;
+      }
       final saved = object(value)['saved_at'] as int;
       final expired = now - saved > 604800 || now < saved - 300;
       changed = changed || expired;

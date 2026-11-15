@@ -58,9 +58,33 @@ def download(url, sha256):
     return target
 
 
+def ocr_models():
+    manifest = json.loads((APP / 'ocr-models.json').read_text())
+    libraries = json.loads((APP / 'capture-libraries.json').read_text())
+    libroot = BASE / 'capture-libs'
+    libroot.mkdir(parents=True, exist_ok=True)
+    for filename, library in libraries.items():
+        path = libroot / filename
+        if not path.exists():
+            path.write_bytes(download(library['url'], library['sha256']).read_bytes())
+        with path.open('rb') as stream:
+            if hashlib.file_digest(stream, 'sha256').hexdigest() != library['sha256']:
+                raise SystemExit('Capture library checksum mismatch; refusing this build')
+    target = APP / 'android/app/src/main/assets/tessdata'
+    target.mkdir(parents=True, exist_ok=True)
+    for language, model in manifest['models'].items():
+        path = target / (language + '.traineddata')
+        if not path.exists():
+            path.write_bytes(download(model['url'], model['sha256']).read_bytes())
+        with path.open('rb') as stream:
+            if hashlib.file_digest(stream, 'sha256').hexdigest() != model['sha256']:
+                raise SystemExit('OCR model checksum mismatch; refusing this build')
+
+
 def bootstrap(include_emulator=True):
     BASE.mkdir(parents=True, exist_ok=True)
     BASE.chmod(0o700)
+    ocr_models()
     USER.mkdir(exist_ok=True)
     tools = SDK / 'cmdline-tools/latest'
     if not (tools / 'bin/android').exists():
@@ -190,6 +214,8 @@ def main():
     parser.add_argument('action', choices=['bootstrap', 'doctor', 'emulator', 'status', 'build', 'test', 'integration', 'install', 'browser', 'flutter'])
     parser.add_argument('arguments', nargs=argparse.REMAINDER)
     args = parser.parse_args()
+    if args.action in ('build', 'integration', 'test'):
+        ocr_models()
     if args.action == 'bootstrap':
         bootstrap(include_emulator="--build-only" not in args.arguments)
         return

@@ -226,6 +226,7 @@ export const originalRecipeUrlSchema = z
   })
 export const recipeOriginSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('owned') }),
+  z.object({ kind: z.literal('captured'), source_image_id: z.string() }),
   z.object({ kind: z.literal('imported'), source_url: originalRecipeUrlSchema }),
 ])
 export type RecipeOrigin = z.infer<typeof recipeOriginSchema>

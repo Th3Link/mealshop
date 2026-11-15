@@ -82,6 +82,7 @@ fn summary(record: &Value) -> Result<Value, Failure> {
         Origin::Imported { source_url } => {
             Ok(json!({"kind":"source_link","source_url":source_url}))
         }
+        Origin::Captured { .. } => Ok(json!({"kind":"private_source"})),
         Origin::Owned => Ok(
             json!({"kind":"recipe","title":record["recipe"]["title"],"language":record["recipe"]["language"],"servings":record["recipe"]["servings"],"revision":record["revision"],"has_image":record["recipe"].get("image_id").is_some_and(Value::is_string)}),
         ),
@@ -118,8 +119,12 @@ async fn projection(
         return Err(failure("share_not_found"));
     }
     let record = crate::exapp::library::source(app.clone(), home.clone(), reference).await?;
-    if let Origin::Imported { source_url } = origin(&record)? {
-        return Ok(json!({"kind":"source_link","source_url":source_url}));
+    match origin(&record)? {
+        Origin::Imported { source_url } => {
+            return Ok(json!({"kind":"source_link","source_url":source_url}));
+        }
+        Origin::Captured { .. } => return Ok(json!({"kind":"private_source"})),
+        Origin::Owned => {}
     }
     let scaled = if query.servings.is_some() || matches!(query.display_unit, Unit::Kg) {
         let original = record["recipe"]["servings"]

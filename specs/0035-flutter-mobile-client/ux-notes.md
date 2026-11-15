@@ -1,6 +1,6 @@
 # Smartphone interaction plan
 
-Status: P1/P2 merged; P3 implemented for review in PR #48. The ZIP's UX is a target;
+Status: P1–P4 merged; P5 implemented for review in PR #50. The ZIP's UX is a target;
 this document reconciles it with existing data and the five complete deliveries.
 
 ## Navigation and the first useful launch
@@ -168,3 +168,19 @@ permission/inexact delivery and the seven-day horizon. Pending, uncertain, rejec
 are distinct; review never silently changes a frozen request. Generic private notification text avoids
 recipe/profile names. History explains household visibility before collecting attendees/ratings and
 keeps learning/reset/bulk deletion owner-controlled. Large text uses wrapping controls and open steps.
+
+## P5 capture review
+
+Recipes offer Create, Import link and Photo as explicit choices. A received Android URL/text has a
+visible incoming banner with the current household; it never opens/fetches/saves automatically. URL
+retrieval needs F16 disclosure/consent; unsupported sources offer private manual entry. Choose among
+multiple structured candidates before the compact always-open editor. Original lines remain visible
+beside mapped ingredients. Unresolved cups/ranges never get guessed or silently omitted. Every edit
+clears the final review check. Frozen submissions block editing and retain Retry/Inspect/Discard.
+
+Photo capture offers camera or system photo picker, local OCR plus rotation/retry, and an editable
+classification of title/ingredient lines/instructions while showing the unchanged photo/OCR. Only
+Continue to household requests upload consent. The original is retained apart from the recipe image.
+Label capture uses the same local route, then explicit printed basis/value/unit/definition review; no
+nearby generic food is copied. Barcode candidates need a selection and valid GTIN; lookup remains an
+independent consented action. Cancellation/failure preserves surrounding fields and offers manual entry.

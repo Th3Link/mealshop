@@ -53,6 +53,18 @@ def main():
         target.write_text(content)
     elif target.read_text()!=content:
         raise SystemExit('Package inventory differs: review licences and run --write')
+    # Android capture archives/models are direct files, with no hidden transitive resolver.
+    for manifest, directory in [('capture-libraries.json', ROOT/'var/mobile/capture-libs'),
+                                ('ocr-models.json', APP/'android/app/src/main/assets/tessdata')]:
+        recorded=json.loads((APP/manifest).read_text())
+        for name, item in recorded.get('models', recorded).items():
+            path=directory/(name+'.traineddata' if manifest=='ocr-models.json' else name)
+            with path.open('rb') as stream:
+                if hashlib.file_digest(stream, 'sha256').hexdigest()!=item['sha256']:
+                    raise SystemExit('Capture dependency checksum differs: '+name)
+    if not (APP/'assets/capture-notices.txt').is_file():
+        raise SystemExit('Missing native capture licence notices')
+    print('PASS: 2 native capture archives and 2 bundled OCR models verified')
     print('PASS:',len(entries),'locked package licences verified')
     if args.audit:
         external=[entry for entry in entries if not entry['sdk']]
@@ -62,6 +74,14 @@ def main():
         affected=[entry['name'] for entry,value in zip(external,result['results'],strict=True) if value.get('vulns')]
         if affected:
             raise SystemExit('Review OSV advisories for: '+', '.join(affected))
-        print('PASS: OSV Pub audit:',len(external),'locked external packages, no matched advisories')
+        native=[{'package':{'name':name,'ecosystem':'Maven'},'version':version} for name,version in
+                [('com.google.zxing:core','3.5.4'),('cz.adaptech.tesseract4android:tesseract4android','4.9.0')]]
+        request=urllib.request.Request('https://api.osv.dev/v1/querybatch',data=json.dumps({'queries':native}).encode(),headers={'Content-Type':'application/json'})
+        with urllib.request.urlopen(request,timeout=30) as response:
+            result=json.load(response)
+        if any(value.get('vulns') for value in result['results']):
+            raise SystemExit('Review native capture OSV advisories')
+        print('PASS: OSV Maven audit: 2 direct capture coordinates, no matched advisories; native engine coverage is limited')
+        print('PASS: OSV Pub audit:' ,len(external),'locked external packages, no matched advisories')
 
 if __name__=='__main__':main()

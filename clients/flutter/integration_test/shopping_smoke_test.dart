@@ -16,6 +16,8 @@ import '../test/planning_test.dart' as planning_tests;
 import '../test/cooking_test.dart' as cooking_tests;
 import '../test/brewing_test.dart' as brewing_tests;
 import '../test/history_test.dart' as history_tests;
+import '../test/capture_test.dart' as capture_tests;
+import 'capture_native.dart' as capture_native;
 
 import 'package:mealshop/cooking/device.dart';
 
@@ -26,6 +28,8 @@ void main() {
   cooking_tests.main();
   brewing_tests.main();
   history_tests.main();
+  capture_tests.main();
+  capture_native.main();
   testWidgets(
     'Android reminder projection keeps absolute identities and clears only app notifications',
     (tester) async {

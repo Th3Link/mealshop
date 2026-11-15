@@ -53,8 +53,17 @@ fn writer(state: &crate::household::Household, headers: &HeaderMap, actor: &Auth
 #[derive(Deserialize)]
 #[serde(tag = "mode", rename_all = "snake_case", deny_unknown_fields)]
 enum Input {
-    Url { url: String, consent: bool },
-    Manual { url: String },
+    Url {
+        url: String,
+        consent: bool,
+    },
+    Manual {
+        url: String,
+    },
+    Photo {
+        capture: crate::capture::Photo,
+        original: Box<Candidate>,
+    },
 }
 struct FetchGuard {
     state: Shared,
@@ -69,6 +78,29 @@ impl Drop for FetchGuard {
 }
 async fn source(state: &Shared, actor: &str, input: Input) -> Result<PreviewData, &'static str> {
     match input {
+        Input::Photo { capture, original } => {
+            if !capture.valid() || !original.valid() {
+                return Err("capture_invalid");
+            }
+            crate::recipe_images::validate_reference(Some(&state.images), Some(&capture.image_id))
+                .map_err(|_| "capture_image_missing")?;
+            let data = PreviewData {
+                capture: Some(capture),
+                requested_url: String::new(),
+                final_url: None,
+                method: Method::Photo,
+                retrieved_at: None,
+                candidates: vec![*original],
+            };
+            if serde_json::to_vec(&data)
+                .map_err(|_| "import_storage_failed")?
+                .len()
+                > 98_304
+            {
+                return Err("capture_invalid");
+            }
+            Ok(data)
+        }
         Input::Manual { url } => {
             Origin::Imported {
                 source_url: url.clone(),
@@ -76,6 +108,7 @@ async fn source(state: &Shared, actor: &str, input: Input) -> Result<PreviewData
             .validate()
             .map_err(|_| "import_url_invalid")?;
             Ok(PreviewData {
+                capture: None,
                 requested_url: url,
                 final_url: None,
                 method: Method::Manual,
@@ -111,6 +144,7 @@ async fn source(state: &Shared, actor: &str, input: Input) -> Result<PreviewData
             .await
             .map_err(|_| "import_parser_failed")??;
             Ok(PreviewData {
+                capture: None,
                 requested_url: url,
                 final_url: Some(final_url),
                 method: Method::JsonLd,
@@ -241,6 +275,7 @@ async fn save(
             .ok_or("import_invalid_input")?
             .clone();
         let source = Source {
+            capture: preview.data.capture.clone(),
             requested_url: preview.data.requested_url.clone(),
             final_url: preview.data.final_url.clone(),
             method: preview.data.method,

@@ -23,10 +23,13 @@ pub(crate) struct SourceStep {
 pub(crate) enum Method {
     JsonLd,
     Manual,
+    Photo,
 }
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Source {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) capture: Option<crate::capture::Photo>,
     pub(crate) requested_url: String,
     pub(crate) final_url: Option<String>,
     pub(crate) method: Method,
@@ -77,24 +80,43 @@ impl Candidate {
     }
 }
 impl Source {
-    pub(crate) fn valid(&self) -> bool {
-        crate::recipe_origin::Origin::Imported {
-            source_url: self.requested_url.clone(),
+    pub(crate) fn origin(&self) -> crate::recipe_origin::Origin {
+        match &self.capture {
+            Some(photo) => crate::recipe_origin::Origin::Captured {
+                source_image_id: photo.image_id.clone(),
+            },
+            None => crate::recipe_origin::Origin::Imported {
+                source_url: self.requested_url.clone(),
+            },
         }
-        .validate()
-        .is_ok()
-            && self.final_url.as_ref().is_none_or(|u| {
-                crate::recipe_origin::Origin::Imported {
-                    source_url: u.clone(),
+    }
+    pub(crate) fn valid(&self) -> bool {
+        (if self.method == Method::Photo {
+            self.requested_url.is_empty()
+                && self
+                    .capture
+                    .as_ref()
+                    .is_some_and(crate::capture::Photo::valid)
+        } else {
+            self.capture.is_none()
+                && crate::recipe_origin::Origin::Imported {
+                    source_url: self.requested_url.clone(),
                 }
                 .validate()
                 .is_ok()
-            })
-            && self.importer_version == "schema-recipe-1"
+        }) && self.final_url.as_ref().is_none_or(|u| {
+            crate::recipe_origin::Origin::Imported {
+                source_url: u.clone(),
+            }
+            .validate()
+            .is_ok()
+        }) && self.importer_version == "schema-recipe-1"
             && self.retrieved_at.is_none_or(|n| n >= 0)
             && match self.method {
                 Method::JsonLd => self.final_url.is_some() && self.retrieved_at.is_some(),
-                Method::Manual => self.final_url.is_none() && self.retrieved_at.is_none(),
+                Method::Photo | Method::Manual => {
+                    self.final_url.is_none() && self.retrieved_at.is_none()
+                }
             }
             && self.original.valid()
             && serde_json::to_vec(self).is_ok_and(|v| v.len() <= 98_304)

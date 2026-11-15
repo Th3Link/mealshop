@@ -90,6 +90,7 @@ fn source(record: &Record) -> Option<Value> {
         crate::recipe_origin::Origin::Imported { source_url } => {
             Some(json!({"kind":"source_link","source_url":source_url}))
         }
+        crate::recipe_origin::Origin::Captured { .. } => Some(json!({"kind":"private_source"})),
         crate::recipe_origin::Origin::Owned => None,
     }
 }
@@ -172,6 +173,7 @@ pub(super) fn execute(ctx: &mut Context<'_>, name: &str, args: Value) -> Result<
                             values.push(json!({"id":record.id,"revision":record.revision,"content":{"kind":"source_link","source_url":source_url}}));
                         }
                     }
+                    crate::recipe_origin::Origin::Captured { .. } => {}
                     crate::recipe_origin::Origin::Owned => {
                         if record.recipe.title.to_lowercase().contains(&q) {
                             values.push(json!({"id":record.id,"revision":record.revision,"content":{"kind":"recipe_summary","title":record.recipe.title,"language":record.recipe.language,"servings":record.recipe.servings}}));

@@ -9,6 +9,7 @@ import '../content/api.dart';
 import 'recipes.dart';
 import 'plan.dart';
 import 'content_common.dart';
+import 'capture_incoming.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(this.controller, {super.key});
@@ -141,6 +142,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+            if (c.home != null)
+              IncomingCapture(HouseholdApi(c), key: ValueKey(c.selected)),
             if (c.imageInterrupted)
               ListTile(
                 leading: const Icon(Icons.photo_outlined),

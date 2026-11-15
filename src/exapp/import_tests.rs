@@ -93,3 +93,93 @@ async fn import_previews_follow_current_accounts_roles_and_household_boundaries(
         1
     );
 }
+
+#[tokio::test]
+async fn captured_photo_import_replays_but_never_leaks_through_shares_or_historical_images() {
+    let fixture = Fixture::new().await;
+    let app = fixture.app().await;
+    let id = home(&app, "alice").await;
+    let root = format!("/api/households/{id}");
+    let imports = format!("{root}/domain/api/household/imports");
+    let capture = json!({"image_id":"image-00000001.png","rotation":0,"text":"1 cup oats\n0,250001 g salt","engine":"tesseract-5.5.1-fast-eng-deu","score":71});
+    let original = json!({"title":"Synthetic photo","ingredients":["1 cup oats"],"steps":[]});
+    let input = json!({"mode":"photo","capture":capture,"original":original});
+    let missing = call(
+        &app,
+        Some("alice"),
+        "POST",
+        &format!("{imports}/preview"),
+        input.clone(),
+    )
+    .await;
+    assert_eq!(missing.1["code"], "capture_image_missing");
+    let images = fixture
+        .root
+        .join("data")
+        .join(&id)
+        .join("household")
+        .join("images");
+    std::fs::create_dir_all(&images).unwrap();
+    std::fs::write(
+        images.join("image-00000001.png"),
+        b"synthetic household source",
+    )
+    .unwrap();
+    let preview = call(
+        &app,
+        Some("alice"),
+        "POST",
+        &format!("{imports}/preview"),
+        input.clone(),
+    )
+    .await;
+    assert_eq!(preview.0, StatusCode::OK);
+    assert_eq!(preview.1["capture"], capture);
+    assert_eq!(preview.1["requested_url"].as_str().unwrap(), "");
+    let mut reviewed = recipe();
+    reviewed["origin"] = json!({"kind":"captured","source_image_id":"image-00000001.png"});
+    let payload = json!({"preview_id":preview.1["preview_id"],"candidate":0,"idempotency_key":"synthetic-photo-import-000001","reviewed":true,"recipe":reviewed});
+    let saved = call(&app, Some("alice"), "POST", &imports, payload.clone()).await;
+    assert_eq!(saved.0, StatusCode::CREATED);
+    let saved_id = saved.1["id"].as_str().unwrap();
+    let retry = call(&app, Some("alice"), "POST", &imports, payload).await;
+    assert_eq!(retry.1["id"], saved.1["id"]);
+    let detail = call(
+        &app,
+        Some("alice"),
+        "GET",
+        &format!("{root}/domain/api/recipes/{saved_id}"),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(detail.1["import_source"]["capture"], capture);
+    let granted=call(&app,Some("alice"),"POST",&format!("{root}/shares"),json!({"expected_revision":0,"resource":{"kind":"recipe","recipe_id":saved_id,"revision":1},"recipient":{"kind":"account","user":"eve"}})).await;
+    assert_eq!(granted.0, StatusCode::OK);
+    let path = format!("/api/shared/{id}/{}", granted.1["id"].as_str().unwrap());
+    let shared = call(&app, Some("eve"), "GET", &path, Value::Null).await;
+    assert_eq!(shared.1["content"], json!({"kind":"private_source"}));
+    assert_eq!(
+        call(
+            &app,
+            Some("eve"),
+            "GET",
+            &format!("{path}/image"),
+            Value::Null
+        )
+        .await
+        .0,
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(
+        call(
+            &app,
+            Some("eve"),
+            "POST",
+            &format!("{imports}/preview"),
+            input
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+}

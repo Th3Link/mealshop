@@ -9,6 +9,8 @@ import 'messages.dart';
 import 'recipe_editor.dart';
 import 'sharing.dart';
 import 'cooking.dart';
+import 'recipe_import.dart';
+import '../capture/device.dart';
 import 'cooking_scope.dart';
 import 'cooking_setup.dart';
 
@@ -43,6 +45,28 @@ class _RecipesScreenState extends State<RecipesScreen> {
         : null,
     body: Column(
       children: [
+        if (widget.api.writable)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextButton.icon(
+                icon: const Icon(Icons.download_outlined),
+                label: Text(context.t('capture_import')),
+                onPressed: () async {
+                  final id = await openPage<String>(
+                    context,
+                    RecipeImport(widget.api),
+                  );
+                  if (!context.mounted) return;
+                  setState(() => version++);
+                  if (id != null) {
+                    await openPage<void>(context, RecipeDetail(widget.api, id));
+                  }
+                },
+              ),
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: TextField(
@@ -140,6 +164,7 @@ class _RecipeDetailState extends State<RecipeDetail> {
         '${widget.sharedPath}${servings == null ? '' : '?servings=$servings&display_unit=$unit'}',
       );
       final content = object(v['content']);
+      if (content['kind'] == 'private_source') return {'private_source': true};
       if (content['kind'] == 'source_link') {
         return {'source_link': content['source_url']};
       }
@@ -189,6 +214,9 @@ class _RecipeDetailState extends State<RecipeDetail> {
       sensitive: shared,
       load: load,
       builder: (context, data, reload) {
+        if (data['private_source'] == true) {
+          return Note(context.t('capture_private_source'));
+        }
         if (data['source_link'] != null) {
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -227,6 +255,21 @@ class _RecipeDetailState extends State<RecipeDetail> {
         return ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            if (object(recipe['origin'] ?? <String, dynamic>{})['kind'] ==
+                'captured')
+              Note(context.t('capture_private_source')),
+            if (object(recipe['origin'] ?? <String, dynamic>{})['kind'] ==
+                'imported')
+              TextButton.icon(
+                icon: const Icon(Icons.share_outlined),
+                label: Text(context.t('capture_share_source')),
+                onPressed: () => runAction(
+                  context,
+                  () => const CaptureDevice().share(
+                    object(recipe['origin'])['source_url'] as String,
+                  ),
+                ),
+              ),
             if (!shared &&
                 widget.api.writable &&
                 CookingScope.maybeOf(context) != null &&
@@ -427,6 +470,13 @@ class _RecipeDetailState extends State<RecipeDetail> {
               const Divider(),
             ],
             NutritionView(object(scaled?['nutrition'] ?? data['nutrition'])),
+            if (!shared && data['import_source'] != null)
+              ImportOriginal(
+                widget.api,
+                object(data['import_source']),
+                object(object(data['import_source'])['original']),
+              ),
+
             if (!shared)
               OutlinedButton.icon(
                 onPressed: () =>

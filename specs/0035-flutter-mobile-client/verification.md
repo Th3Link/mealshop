@@ -416,3 +416,37 @@ All screenshots below contain synthetic records only.
 - [Dark mode with 200% text](screenshots/p4-brewing-dark-large.png)
 - [Explicit actual cooking history](screenshots/p4-history-form.png)
 - [Preparation agenda](screenshots/p4-plan-agenda.png)
+
+## P5 implementation and verification
+
+Branch: `story/flutter-capture-import`. Frontend and backend ship together. See
+[ADR 0031](../../docs/adr/0031-mobile-reviewed-capture.md) and the
+[capture/handset guide](../../docs/guides/mobile-capture.md).
+
+Local evidence on 2026-11-15:
+
+- Required repository gates pass: catalogue import/check, verifier, keyed messages, format, strict
+  Clippy, **207 Nextest tests**, licence deny, advisory audit and rustdoc with warnings denied.
+- Flutter analysis passes; widget/API tests cover exact decimals/unresolved cups, frozen body replay,
+  scoped recovery, classification, 320 dp/200% text and read-only label inspection.
+- Vue strict types and **39 tests** pass. Source/captured provenance and `private_source` projections
+  are recognized by the existing Nextcloud client in the same delivery.
+- Two direct native capture archives and two model files have pinned SHA-256; 68 Pub licence entries,
+  60 external Pub packages and the two direct Maven coordinates have no matched OSV advisory. OSV
+  matching does not establish full vulnerability coverage of native engine/model code.
+- Three ABI APKs build with retained key, package/version `org.mealshop.pocket.dev` / `0.5.0+6`.
+  The arm64 APK passes 16 KiB ZIP alignment and bundled OCR ELF load-segment alignment checks.
+- Mutation review: removing photo-detail share redaction makes the actual Axum privacy test fail;
+  restoring the source passes that unchanged test. No mutation remains in source.
+
+Android CI [43692753177](https://github.com/Th3Link/mealshop/actions/runs/43692753177) passed on
+`5d96d66`, including native OCR with unresolved cups/exact decimals, a rotated image, real EAN decoding,
+and a protected import envelope restored before identical replay. Local Flutter now passes **72 tests**.
+The real test proxy preserves the original photo, exact reviewed quantities and printed label basis/units,
+permits reader inspection and rejects reader import/private-target retrieval. Three existing embedded
+Nextcloud URL-import browser tests pass, including lost-response replay, source-only sharing and roles.
+The new photo browser test caught an omitted original-image element; the fix and its regression ship
+here. Current-head CI, final APK checksums, deployment identity and owned-fixture cleanup are included in
+PR #50's verification/artifact links; the APK's adjacent build metadata is authoritative for its bytes. Physical smartphone camera, USB/browser login,
+`TalkBack`, device upgrade and manufacturer behavior remain explicitly unverified until the customer
+tries the handset. F35 remains In progress; no iOS distribution/provider/commercial decision is implied.

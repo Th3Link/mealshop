@@ -102,6 +102,7 @@ export const shareMetadataSchema = z.object({
   resource_kind: z.enum(['recipe', 'collection']),
 })
 export type ShareMetadata = z.infer<typeof shareMetadataSchema>
+const privateSourceSchema = z.strictObject({ kind: z.literal('private_source') })
 export const sourceLinkSchema = z.strictObject({
   kind: z.literal('source_link'),
   source_url: originalRecipeUrlSchema,
@@ -129,6 +130,7 @@ export const sharedListSchema = z.object({
       share: shareMetadataSchema,
       content: z
         .discriminatedUnion('kind', [
+          privateSourceSchema,
           sourceLinkSchema,
           recipeSummarySchema,
           collectionSummarySchema,
@@ -151,6 +153,7 @@ export type SharedRecipe = z.infer<typeof sharedRecipeSchema>
 export const sharedDetailSchema = z.object({
   share: shareMetadataSchema,
   content: z.discriminatedUnion('kind', [
+    privateSourceSchema,
     sourceLinkSchema,
     sharedRecipeSchema,
     z.object({
@@ -164,7 +167,11 @@ export const sharedDetailSchema = z.object({
         z.object({
           recipe_id: z.string(),
           revision: z.number().int().positive(),
-          content: z.discriminatedUnion('kind', [sourceLinkSchema, recipeSummarySchema]),
+          content: z.discriminatedUnion('kind', [
+            privateSourceSchema,
+            sourceLinkSchema,
+            recipeSummarySchema,
+          ]),
         }),
       ),
     }),
