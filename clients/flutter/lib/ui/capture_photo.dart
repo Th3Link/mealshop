@@ -122,7 +122,7 @@ class _CapturePhotoState extends State<CapturePhoto> {
       if (mounted) {
         Navigator.pop(context, <String, dynamic>{
           'image_id': id,
-          if(rotation!=0) 'rotation': rotation,
+          if (rotation != 0) 'rotation': rotation,
           'text': result?['text'] ?? manual.text,
           'engine': result?['engine'] ?? 'manual_transcription',
           'score': result?['score'],
