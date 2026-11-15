@@ -90,10 +90,11 @@ function itemName(key: string) {
       <li v-for="shop in data.shops.entries" :key="shop.id">
         <strong>{{ shop.name }}</strong>
         <div v-if="writable" class="actions">
-          <NcButton :disabled="busy" @click="edit(shop)">{{ t('shopEdit') }}</NcButton
-          ><NcButton :disabled="busy || active?.shop_id === shop.id" @click="remove(shop)">{{
-            t('remove')
-          }}</NcButton>
+          <NcButton :disabled="busy" @click="edit(shop)">{{ t('shopEdit') }}</NcButton><NcButton
+            :disabled="busy || active?.shop_id === shop.id"
+            @click="remove(shop)"
+            >{{ t('remove') }}</NcButton
+          >
         </div>
       </li>
     </ul>
@@ -103,8 +104,7 @@ function itemName(key: string) {
         <div class="actions">
           <NcButton type="submit" :disabled="busy || !name.trim()">{{
             t(id ? 'save' : 'shopAdd')
-          }}</NcButton
-          ><NcButton v-if="id || dirty" :disabled="busy" @click="cancel">{{
+          }}</NcButton><NcButton v-if="id || dirty" :disabled="busy" @click="cancel">{{
             t('cancel')
           }}</NcButton>
         </div>

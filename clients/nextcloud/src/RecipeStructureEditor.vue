@@ -229,8 +229,7 @@ function addStep(partId: string | null = null) {
       <div class="recipe-ingredients-editor">
         <component :is="recipe.parts.length ? 'h3' : 'h2'">{{ t('lines') }}</component>
         <div class="ingredient-column-head" aria-hidden="true">
-          <span>{{ t('ingredientColumn') }}</span
-          ><span>{{ t('amount') }}</span
+          <span>{{ t('ingredientColumn') }}</span><span>{{ t('amount') }}</span
           ><span>{{ t('unit') }}</span
           ><span></span><span></span>
         </div>

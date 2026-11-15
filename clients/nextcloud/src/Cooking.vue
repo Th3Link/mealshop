@@ -227,8 +227,9 @@ const stateKeys = {
       >
     </header>
     <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
-    <NcNoteCard v-if="error" type="error" role="alert">{{ taskError(error) }}</NcNoteCard
-    ><NcNoteCard v-if="readError" type="error" role="alert"
+    <NcNoteCard v-if="error" type="error" role="alert">{{
+      taskError(error)
+    }}</NcNoteCard><NcNoteCard v-if="readError" type="error" role="alert"
       >{{ errorMessage(readError) }}
       <NcButton :disabled="busy" @click="refresh(true)">{{ t('retry') }}</NcButton></NcNoteCard
     ><NcNoteCard v-if="offline && detail" type="warning">{{ t('cookOffline') }}</NcNoteCard>
@@ -271,8 +272,9 @@ const stateKeys = {
           <summary>{{ t('ingredients') }} · {{ servingCount(detail.run.servings) }}</summary>
           <ul class="plain-list">
             <li v-for="(line, index) in detail.ingredients" :key="index">
-              <span>{{ line.translations[locale]?.name ?? line.name }}</span
-              ><strong>{{ exact(line.grams) }} g</strong>
+              <span>{{ line.translations[locale]?.name ?? line.name }}</span><strong
+                >{{ exact(line.grams) }} g</strong
+              >
               <small v-if="line.prepared_part_name"
                 >{{ t('homemade') }} · {{ line.prepared_part_name }}</small
               >
@@ -315,8 +317,7 @@ const stateKeys = {
             v-if="detail.run.status === 'active' && detail.run.target"
             :disabled="disabled"
             @click="replan = { kind: 'target' }"
-            >{{ t('cookChangeTarget') }}</NcButton
-          ><NcButton
+            >{{ t('cookChangeTarget') }}</NcButton><NcButton
             v-if="detail.run.status === 'active'"
             :disabled="disabled"
             variant="tertiary"

@@ -107,10 +107,10 @@ function paginate(delta: number) {
 </script>
 <template>
   <div class="actions">
-    <NcButton :to="back">{{ t('back') }}</NcButton
-    ><NcButton :disabled="busy" @click="load(data?.content.kind === 'recipe')">{{
-      t('refreshAccess')
-    }}</NcButton
+    <NcButton :to="back">{{ t('back') }}</NcButton><NcButton
+      :disabled="busy"
+      @click="load(data?.content.kind === 'recipe')"
+      >{{ t('refreshAccess') }}</NcButton
     ><NcButton v-if="canRemove" :disabled="busy" @click="remove">{{
       t('sharingRemoveIncoming')
     }}</NcButton>
@@ -188,8 +188,7 @@ function paginate(delta: number) {
                 :lang="entry.content.kind === 'recipe' ? entry.content.language : undefined"
                 >{{
                   entry.content.kind === 'recipe' ? entry.content.title : t('originalRecipe')
-                }}</strong
-              ><span v-if="entry.content.kind === 'source_link'" class="source-url">{{
+                }}</strong><span v-if="entry.content.kind === 'source_link'" class="source-url">{{
                 entry.content.source_url
               }}</span
               ><span v-else>{{ t('revision') }} {{ entry.revision }}</span>
@@ -204,8 +203,7 @@ function paginate(delta: number) {
       >
         <NcButton :disabled="busy || page <= 1" @click="paginate(-1)">{{
           t('libraryPreviousPage')
-        }}</NcButton
-        ><span>{{ t('libraryPage') }} {{ page }}</span
+        }}</NcButton><span>{{ t('libraryPage') }} {{ page }}</span
         ><NcButton
           :disabled="busy || page * data.content.per_page >= data.content.count"
           @click="paginate(1)"

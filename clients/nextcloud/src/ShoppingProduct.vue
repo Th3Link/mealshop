@@ -222,8 +222,7 @@ async function save(add: boolean) {
         <div class="actions">
           <NcButton :disabled="busy || !validCode" @click="resolve">{{
             t('barcodeResolve')
-          }}</NcButton
-          ><BarcodeCamera v-if="!busy" @barcode="code" />
+          }}</NcButton><BarcodeCamera v-if="!busy" @barcode="code" />
         </div>
         <p v-if="notice" role="status">{{ notice }}</p>
         <template v-if="resolved">
@@ -274,8 +273,7 @@ async function save(add: boolean) {
         <div class="actions">
           <NcButton type="submit" variant="primary" :disabled="busy || !valid">{{
             t('productSaveAdd')
-          }}</NcButton
-          ><NcButton v-if="resolved" :disabled="busy || !valid" @click="save(false)">{{
+          }}</NcButton><NcButton v-if="resolved" :disabled="busy || !valid" @click="save(false)">{{
             t('productSaveOnly')
           }}</NcButton
           ><NcButton :disabled="busy" @click="close">{{ t('cancel') }}</NcButton>

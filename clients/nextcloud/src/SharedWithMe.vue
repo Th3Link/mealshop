@@ -90,8 +90,7 @@ function paginate(delta: number) {
                 : item.content.kind === 'collection'
                   ? item.content.name
                   : t('originalRecipe')
-            }}</strong
-            ><span
+            }}</strong><span
               >{{ t('sharingFrom') }} {{ item.share.owner
               }}<template v-if="item.share.recipient.kind === 'household'">
                 · {{ item.share.recipient_label }}</template
@@ -113,8 +112,7 @@ function paginate(delta: number) {
   <nav v-if="data && data.total > data.per_page" class="actions" :aria-label="t('libraryPage')">
     <NcButton :disabled="busy || page <= 1" @click="paginate(-1)">{{
       t('libraryPreviousPage')
-    }}</NcButton
-    ><span>{{ t('libraryPage') }} {{ page }}</span
+    }}</NcButton><span>{{ t('libraryPage') }} {{ page }}</span
     ><NcButton :disabled="busy || page * data.per_page >= data.total" @click="paginate(1)">{{
       t('libraryNextPage')
     }}</NcButton>

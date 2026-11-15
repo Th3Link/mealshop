@@ -55,8 +55,7 @@ async function decline() {
       <div class="actions">
         <NcButton type="submit" variant="primary" :disabled="busy || !destination">{{
           t('sharingAccept')
-        }}</NcButton
-        ><NcButton type="button" :disabled="busy" @click="decline">{{
+        }}</NcButton><NcButton type="button" :disabled="busy" @click="decline">{{
           t('sharingDecline')
         }}</NcButton>
       </div>
@@ -64,8 +63,11 @@ async function decline() {
     <template v-else
       ><NcNoteCard type="info">{{ t('sharingNoOwnedHousehold') }}</NcNoteCard>
       <div class="actions">
-        <NcButton to="/households">{{ t('households') }}</NcButton
-        ><NcButton :disabled="busy" @click="decline">{{ t('sharingDecline') }}</NcButton>
+        <NcButton to="/households">{{ t('households') }}</NcButton><NcButton
+          :disabled="busy"
+          @click="decline"
+          >{{ t('sharingDecline') }}</NcButton
+        >
       </div></template
     >
   </section>

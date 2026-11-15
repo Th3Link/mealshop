@@ -551,8 +551,7 @@ onBeforeUnmount(() => {
         ><div class="actions">
           <NcButton v-if="writable" :to="`${base}/recipes/${id}?edit=1`" :disabled="disabled">{{
             t('edit')
-          }}</NcButton
-          ><NcButton
+          }}</NcButton><NcButton
             v-if="writable"
             :to="`${base}/batches/new?recipe=${id}`"
             :disabled="disabled"
@@ -583,8 +582,7 @@ onBeforeUnmount(() => {
             :label="t(replan.kind === 'delay' ? 'cookPlannedStart' : 'cookChangeTimer')"
           />
           <div class="actions">
-            <NcButton type="submit" :disabled="disabled">{{ t('brewReview') }}</NcButton
-            ><NcButton
+            <NcButton type="submit" :disabled="disabled">{{ t('brewReview') }}</NcButton><NcButton
               :disabled="disabled"
               @click="
                 () => {
@@ -637,8 +635,7 @@ onBeforeUnmount(() => {
             v-if="writable && detail.run.status === 'active'"
             :disabled="disabled || reading || !!replan"
             @click="cancelBatch()"
-            >{{ t('cookCancelRun') }}</NcButton
-          ><NcButton
+            >{{ t('cookCancelRun') }}</NcButton><NcButton
             v-if="writable && detail.run.status !== 'active'"
             :disabled="disabled"
             @click="

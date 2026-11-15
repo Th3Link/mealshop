@@ -344,8 +344,7 @@ onMounted(load)
               @click="
                 command({ operation: 'finish_session', id: activeSession.id, discard: false })
               "
-              >{{ t('shopFinish') }}</NcButton
-            ><NcButton
+              >{{ t('shopFinish') }}</NcButton><NcButton
               :disabled="busy"
               @click="command({ operation: 'finish_session', id: activeSession.id, discard: true })"
               >{{ t('shopDiscard') }}</NcButton
@@ -420,8 +419,7 @@ onMounted(load)
         <ul class="record-list">
           <li v-for="item in covered" :key="item.key">
             <div>
-              <strong>{{ item.translations[locale] ?? item.name }}</strong
-              ><span
+              <strong>{{ item.translations[locale] ?? item.name }}</strong><span
                 >{{ t('stockReserved') }}: {{ compactExact(item.reserved) }} · {{ t('stockUsed') }}:
                 {{ compactExact(item.used) }} {{ shoppingUnit(item.unit, item.used) }}</span
               >

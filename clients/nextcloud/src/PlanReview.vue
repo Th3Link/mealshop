@@ -133,10 +133,13 @@ function names(id: string) {
       >
         {{ profiles.find((m) => m.id === match.member_id)?.name }} ·
         {{ names(match.ingredient_id) }} · {{ allergenName(match.allergen_id) }} ·
-        <span v-if="!match.source_url">{{ t('householdEvidence') }}</span
-        ><a v-else :href="match.source_url" target="_blank" rel="noopener noreferrer">{{
-          t('source')
-        }}</a>
+        <span v-if="!match.source_url">{{ t('householdEvidence') }}</span><a
+          v-else
+          :href="match.source_url"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ t('source') }}</a
+        >
       </p></template
     >
     <h3>{{ t('shopping') }}</h3>
@@ -145,8 +148,9 @@ function names(id: string) {
         {{ names(line.ingredient_id) }}: {{ compactExact(line.grams_delta) }} g
       </li>
     </ul>
-    <NcCheckboxRadioSwitch v-model="reviewed">{{ t('acknowledge') }}</NcCheckboxRadioSwitch
-    ><NcButton
+    <NcCheckboxRadioSwitch v-model="reviewed">{{
+      t('acknowledge')
+    }}</NcCheckboxRadioSwitch><NcButton
       v-if="writable"
       variant="primary"
       :disabled="busy || !reviewed || !value.preview.feasible"

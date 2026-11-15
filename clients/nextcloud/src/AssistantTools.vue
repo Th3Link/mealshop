@@ -177,8 +177,9 @@ onMounted(load)
           <NcNoteCard v-if="missing.length" type="warning"
             >{{ t('mcpGrantMissing') }}
             <div v-for="user in missing" :key="user" class="actions">
-              <span>{{ user }}</span
-              ><NcButton type="button" @click="delete draft[user]">{{ t('remove') }}</NcButton>
+              <span>{{ user }}</span><NcButton type="button" @click="delete draft[user]">{{
+                t('remove')
+              }}</NcButton>
             </div></NcNoteCard
           >
           <NcButton
@@ -218,8 +219,7 @@ onMounted(load)
               query: { revision: entry.revision, assistant: '1' },
             }"
             ><div>
-              <strong :lang="entry.language">{{ entry.title }}</strong
-              ><span
+              <strong :lang="entry.language">{{ entry.title }}</strong><span
                 >{{ t('revision') }} {{ entry.revision }} · {{ t('mcpRecordedBy') }}
                 {{ entry.actor }}</span
               >
@@ -237,8 +237,7 @@ onMounted(load)
       >
         <NcButton :disabled="busy || page <= 1" @click="paginate(-1)">{{
           t('libraryPreviousPage')
-        }}</NcButton
-        ><span>{{ t('libraryPage') }} {{ page }}</span
+        }}</NcButton><span>{{ t('libraryPage') }} {{ page }}</span
         ><NcButton
           :disabled="busy || page * activity.per_page >= activity.total"
           @click="paginate(1)"

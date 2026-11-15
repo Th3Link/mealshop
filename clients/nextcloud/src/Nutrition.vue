@@ -39,8 +39,9 @@ defineProps<{ value: z.infer<typeof nutritionSchema> }>()
             :class="{ 'estimated-row': n.range }"
           >
             <th scope="row">
-              {{ nutrientLabel(n.id, n.label) }} <small>{{ n.unit }}</small
-              ><EstimateBadge v-if="n.range" />
+              {{ nutrientLabel(n.id, n.label) }} <small>{{ n.unit }}</small><EstimateBadge
+                v-if="n.range"
+              />
             </th>
             <td class="numeric">
               <template v-if="n.range"

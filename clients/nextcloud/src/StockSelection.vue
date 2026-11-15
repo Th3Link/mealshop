@@ -35,8 +35,7 @@ const all = computed(() => [...new Set([...model.value, ...matching.value.map((o
     <div class="actions">
       <NcButton :disabled="disabled || all.length > 100 || !matching.length" @click="model = all">{{
         t('stockSelectAll')
-      }}</NcButton
-      ><NcButton v-if="model.length" :disabled="disabled" @click="model = []">{{
+      }}</NcButton><NcButton v-if="model.length" :disabled="disabled" @click="model = []">{{
         t('stockClearSelection')
       }}</NcButton
       ><span role="status">{{ model.length }} / 100</span>
@@ -51,8 +50,9 @@ const all = computed(() => [...new Set([...model.value, ...matching.value.map((o
       >{{ option.label }}</NcCheckboxRadioSwitch
     >
     <div v-if="matching.length > 25" class="actions">
-      <NcButton :disabled="page === 0" @click="page--">{{ t('stockPagesPrevious') }}</NcButton
-      ><NcButton :disabled="(page + 1) * 25 >= matching.length" @click="page++">{{
+      <NcButton :disabled="page === 0" @click="page--">{{
+        t('stockPagesPrevious')
+      }}</NcButton><NcButton :disabled="(page + 1) * 25 >= matching.length" @click="page++">{{
         t('stockPagesNext')
       }}</NcButton>
     </div>

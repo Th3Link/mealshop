@@ -86,8 +86,9 @@ async function apply() {
       <div class="actions">
         <NcButton type="submit" variant="primary" :disabled="disabled">{{
           t('cookPreview')
-        }}</NcButton
-        ><NcButton :disabled="disabled" @click="emit('close')">{{ t('cancel') }}</NcButton>
+        }}</NcButton><NcButton :disabled="disabled" @click="emit('close')">{{
+          t('cancel')
+        }}</NcButton>
       </div>
     </form>
   </section>

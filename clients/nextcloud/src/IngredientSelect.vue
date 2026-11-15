@@ -107,8 +107,9 @@ function filter(option: { kind: string; search: string }, _label: string, query:
           class="mealshop-selection-option"
           :class="{ 'mealshop-create-option': option.kind === 'create' }"
         >
-          <strong>{{ option.label }}</strong
-          ><small aria-hidden="true" v-if="option.context">{{ option.context }}</small
+          <strong>{{ option.label }}</strong><small aria-hidden="true" v-if="option.context">{{
+            option.context
+          }}</small
           ><small aria-hidden="true" v-else-if="option.kind === 'ingredient'">{{
             option.form
           }}</small>

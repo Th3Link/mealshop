@@ -518,8 +518,9 @@ async function scale() {
             height="64"
           />
           <div>
-            <strong :lang="record.language">{{ record.title }}</strong
-            ><span>{{ servingCount(record.servings) }}</span
+            <strong :lang="record.language">{{ record.title }}</strong><span>{{
+              servingCount(record.servings)
+            }}</span
             ><span v-if="record.language !== locale" class="muted"
               >{{ t('originalLanguage') }}:
               {{ record.language === 'de' ? 'Deutsch' : 'English' }}</span

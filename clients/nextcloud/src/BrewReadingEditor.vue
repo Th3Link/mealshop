@@ -212,8 +212,10 @@ watch(draft, () => emit('dirty', true), { deep: true })
         maxlength="1000"
       />
       <div class="actions">
-        <NcButton type="submit" variant="primary">{{ t('brewReview') }}</NcButton
-        ><NcButton @click="emit('close')">{{ t('cancel') }}</NcButton>
+        <NcButton type="submit" variant="primary">{{ t('brewReview') }}</NcButton><NcButton
+          @click="emit('close')"
+          >{{ t('cancel') }}</NcButton
+        >
       </div>
     </fieldset>
   </form>

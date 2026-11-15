@@ -290,8 +290,8 @@ function paginate(delta: number) {
       <li v-for="entry in list?.entries" :key="entry.id">
         <RouterLink :to="`${base}/${entry.id}`"
           ><div>
-            <strong :lang="entry.recipe.language">{{ entry.recipe.title }}</strong
-            ><span>{{ date(entry.input.date) }} · {{ servingCount(entry.servings) }}</span
+            <strong :lang="entry.recipe.language">{{ entry.recipe.title }}</strong><span
+              >{{ date(entry.input.date) }} · {{ servingCount(entry.servings) }}</span
             ><span>{{ entry.input.attendees.map(name).join(', ') }}</span>
           </div>
           <div class="history-summary">
@@ -299,8 +299,7 @@ function paginate(delta: number) {
               entry.input.household_rating === null
                 ? t('historyNoRating')
                 : `${entry.input.household_rating} / 5`
-            }}</span
-            ><span>{{
+            }}</span><span>{{
               entry.input.active_seconds === null
                 ? t('historyEffortUnknown')
                 : duration(entry.input.active_seconds)
@@ -312,8 +311,7 @@ function paginate(delta: number) {
     <nav v-if="list && list.total > list.per_page" class="actions" :aria-label="t('libraryPage')">
       <NcButton :disabled="busy || page <= 1" @click="paginate(-1)">{{
         t('libraryPreviousPage')
-      }}</NcButton
-      ><span>{{ t('libraryPage') }} {{ page }}</span
+      }}</NcButton><span>{{ t('libraryPage') }} {{ page }}</span
       ><NcButton :disabled="busy || page * list.per_page >= list.total" @click="paginate(1)">{{
         t('libraryNextPage')
       }}</NcButton>
@@ -340,10 +338,11 @@ function paginate(delta: number) {
         >{{ t('save') }}</NcButton
       >
     </header>
-    <NcNoteCard v-if="validation" type="error" role="alert">{{ validation }}</NcNoteCard
-    ><NcButton v-if="profiles && !profiles.members.length" :to="`/h/${home}/household`">{{
-      t('household')
-    }}</NcButton>
+    <NcNoteCard v-if="validation" type="error" role="alert">{{ validation }}</NcNoteCard><NcButton
+      v-if="profiles && !profiles.members.length"
+      :to="`/h/${home}/household`"
+      >{{ t('household') }}</NcButton
+    >
     <form id="history-form" @submit.prevent="save">
       <HistoryEditor
         v-model="draft"
@@ -365,8 +364,10 @@ function paginate(delta: number) {
         </p>
       </div>
       <div v-if="writable" class="actions library-header-actions">
-        <NcButton :to="{ query: { edit: '1' } }">{{ t('historyEdit') }}</NcButton
-        ><NcButton :disabled="busy" :aria-label="t('historyDelete')" @click="remove"
+        <NcButton :to="{ query: { edit: '1' } }">{{ t('historyEdit') }}</NcButton><NcButton
+          :disabled="busy"
+          :aria-label="t('historyDelete')"
+          @click="remove"
           ><template #icon><Icon :path="mdiTrashCanOutline" /></template
           >{{ t('historyDelete') }}</NcButton
         >

@@ -86,8 +86,7 @@ watch(locale, (_next, previous) => {
 <template>
   <div class="nutrient-input">
     <div class="nutrient-input-heading">
-      <span>{{ label }}</span
-      ><NcButton
+      <span>{{ label }}</span><NcButton
         variant="tertiary"
         :aria-label="`${t(ranged ? 'pointMode' : 'rangeMode')} · ${label}`"
         :aria-pressed="ranged"

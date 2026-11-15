@@ -84,8 +84,9 @@ defineEmits<{ apply: []; back: [] }>()
         variant="primary"
         :disabled="busy || !reviewed || !writable"
         @click="$emit('apply')"
-        >{{ t('cookApply') }}</NcButton
-      ><NcButton :disabled="busy" @click="$emit('back')">{{ t('cookEditDraft') }}</NcButton>
+        >{{ t('cookApply') }}</NcButton><NcButton :disabled="busy" @click="$emit('back')">{{
+        t('cookEditDraft')
+      }}</NcButton>
     </div>
   </section>
 </template>

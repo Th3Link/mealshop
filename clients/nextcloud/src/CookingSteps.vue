@@ -116,10 +116,11 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
           {{ step.stage.instruction }}
         </p>
         <p v-if="step.timer.state === 'running' && !untimed(step)" class="cooking-countdown">
-          <span v-if="step.timer.deadline < now">{{ t('cookOverdueBy') }} </span
-          ><span role="timer" aria-live="off">{{
-            duration(Math.abs(step.timer.deadline - now))
-          }}</span>
+          <span v-if="step.timer.deadline < now">{{ t('cookOverdueBy') }} </span><span
+            role="timer"
+            aria-live="off"
+            >{{ duration(Math.abs(step.timer.deadline - now)) }}</span
+          >
         </p>
         <p v-if="untimed(step)" class="muted">
           {{ t('brewUnknownTiming') }}
@@ -172,8 +173,7 @@ function action(stepId: string, action: 'start' | 'pause' | 'resume' | 'complete
                     ? 'finishAndWait'
                     : 'cookStartStep',
               )
-            }}</NcButton
-          ><NcButton
+            }}</NcButton><NcButton
             v-if="step.timer.state === 'running' && !untimed(step)"
             :disabled="disabled"
             @click="action(step.stage.id, 'pause')"

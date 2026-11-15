@@ -214,10 +214,12 @@ onMounted(load)
       <div class="actions editor-actions">
         <NcButton v-if="writable" :disabled="busy || draft.length >= 100" @click="add">{{
           t('newMember')
-        }}</NcButton
-        ><NcButton v-if="writable" type="submit" variant="primary" :disabled="busy || !dirty">{{
-          t(busy ? 'saving' : 'save')
-        }}</NcButton
+        }}</NcButton><NcButton
+          v-if="writable"
+          type="submit"
+          variant="primary"
+          :disabled="busy || !dirty"
+          >{{ t(busy ? 'saving' : 'save') }}</NcButton
         ><NcButton v-if="writable && dirty" :disabled="busy" @click="reset">{{
           t('discardChanges')
         }}</NcButton
@@ -233,8 +235,7 @@ onMounted(load)
     <p>{{ t('accessHelp') }}</p>
     <ul class="access-list">
       <li v-for="(role, user) in access.members" :key="user" class="inline-row">
-        <strong>{{ user }}</strong
-        ><span>{{ t(role) }}</span
+        <strong>{{ user }}</strong><span>{{ t(role) }}</span
         ><template v-if="current?.role === 'owner' && role !== 'owner'"
           ><NcButton
             :disabled="busy"
@@ -249,8 +250,7 @@ onMounted(load)
       ><h3>{{ t('pending') }}</h3>
       <p v-if="!Object.keys(access.invitations ?? {}).length">{{ t('noInvitations') }}</p>
       <div v-for="(role, user) in access.invitations" :key="user" class="inline-row">
-        <strong>{{ user }}</strong
-        ><span>{{ t(role) }}</span
+        <strong>{{ user }}</strong><span>{{ t(role) }}</span
         ><NcButton :disabled="busy" @click="change(user)">{{ t('revoke') }}</NcButton>
       </div>
       <form class="narrow" @submit.prevent="invite">

@@ -106,8 +106,7 @@ async function saved(id: string) {
     @create="create"
   />
   <div v-else-if="model.kind === 'product'" class="labeled-field">
-    <label :for="id">{{ t('stockProduct') }}</label
-    ><NcSelect
+    <label :for="id">{{ t('stockProduct') }}</label><NcSelect
       :input-id="id"
       :input-label="t('stockProduct')"
       label-outside

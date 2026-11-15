@@ -167,8 +167,9 @@ watch(
     <NcNoteCard v-if="removed.length" type="warning"
       >{{ t('historyRemovedHelp') }}
       <div v-for="id in removed" :key="id" class="actions">
-        <span>{{ t('historyRemovedPerson') }}</span
-        ><NcButton type="button" @click="unselect(id)">{{ t('remove') }}</NcButton>
+        <span>{{ t('historyRemovedPerson') }}</span><NcButton type="button" @click="unselect(id)">{{
+          t('remove')
+        }}</NcButton>
       </div></NcNoteCard
     >
     <div class="editor-fields">

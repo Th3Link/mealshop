@@ -188,8 +188,9 @@ watch(
       <li v-for="record in records?.collections" :key="record.id">
         <RouterLink :to="`${listPath}/${record.id}`"
           ><div>
-            <strong>{{ record.name }}</strong
-            ><span v-if="record.description">{{ record.description }}</span>
+            <strong>{{ record.name }}</strong><span v-if="record.description">{{
+              record.description
+            }}</span>
           </div>
           <span>{{ t('recipes') }}: {{ record.count }}</span></RouterLink
         >
@@ -265,8 +266,9 @@ watch(
             loading="lazy"
           />
           <div>
-            <strong :lang="entry.language">{{ entry.title }}</strong
-            ><span>{{ servingCount(entry.servings) }}</span>
+            <strong :lang="entry.language">{{ entry.title }}</strong><span>{{
+              servingCount(entry.servings)
+            }}</span>
           </div>
           <span>{{ t('revision') }} {{ entry.revision }}</span></RouterLink
         >
@@ -280,8 +282,7 @@ watch(
   >
     <NcButton :disabled="busy || page <= 1" @click="paginate(-1)">{{
       t('libraryPreviousPage')
-    }}</NcButton
-    ><span>{{ t('libraryPage') }} {{ page }}</span
+    }}</NcButton><span>{{ t('libraryPage') }} {{ page }}</span
     ><NcButton
       :disabled="busy || page * 20 >= (records?.total ?? selected?.collection.entries.length ?? 0)"
       @click="paginate(1)"

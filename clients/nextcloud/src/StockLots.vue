@@ -50,8 +50,7 @@ watch([query, archived], () => {
   <ul class="stock-lots">
     <li v-for="lot in visible" :key="lot.id">
       <div class="stock-lot-name">
-        <strong>{{ stockName(lot.binding) }}</strong
-        ><span
+        <strong>{{ stockName(lot.binding) }}</strong><span
           >{{ lot.metadata.location
           }}<template v-if="lot.metadata.batch"> · {{ lot.metadata.batch }}</template></span
         ><span
@@ -118,8 +117,9 @@ watch([query, archived], () => {
     </li>
   </ul>
   <div v-if="matching.length > 50" class="actions">
-    <NcButton :disabled="page === 0" @click="page--">{{ t('stockPagesPrevious') }}</NcButton
-    ><NcButton :disabled="(page + 1) * 50 >= matching.length" @click="page++">{{
+    <NcButton :disabled="page === 0" @click="page--">{{
+      t('stockPagesPrevious')
+    }}</NcButton><NcButton :disabled="(page + 1) * 50 >= matching.length" @click="page++">{{
       t('stockPagesNext')
     }}</NcButton>
   </div>
