@@ -441,5 +441,5 @@ Local evidence on 2026-11-15:
 
 Native CI, real test-proxy/browser journeys, exact-head artifact/deployment identity and synthetic-only
 cleanup evidence are recorded below when completed. Physical smartphone camera, USB/browser login,
-TalkBack, device upgrade and manufacturer behavior remain explicitly unverified until the customer
+`TalkBack`, device upgrade and manufacturer behavior remain explicitly unverified until the customer
 tries the handset. F35 remains In progress; no iOS distribution/provider/commercial decision is implied.
