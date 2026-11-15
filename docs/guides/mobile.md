@@ -3,7 +3,7 @@
 F35 P1 provides native shared shopping against the existing Nextcloud installation. Rust remains the
 authority for quantities, membership and shopping transactions. P1 delivered Shopping/More and P2 delivered Recipes and people. P3 activates all five
 destinations: Today, Plan, Shopping, Recipes and More. [Planning and stock](mobile-planning.md)
-documents the P3 server/client contract; cooking and capture remain P4/P5.
+documents the P3 server/client contract. P4 adds [cooking, fermentation and recovery](mobile-cooking.md); capture remains P5.
 
 ## Toolchain and emulator
 
@@ -220,3 +220,9 @@ The day plan links cooking starts and shows canonical preparation/timer agenda e
 [recovery and reminder limits](mobile-cooking.md) before relying on local alarms for a long process.
 Native emulator/live verification and exact final-source APK/deployment identities are recorded in
 F35 verification and its PR; physical handset/`TalkBack`/release-profile acceptance remains open.
+
+
+A local loopback test server needs its ADB reverse tunnel after each AVD reboot. Re-running the
+retained-key `install` command restores it without clearing data. To restore only the development
+tunnel, run `var/mobile/android-sdk/platform-tools/adb -P 5038 -s emulator-5556 reverse tcp:8080 tcp:8080`.
+Without this tunnel the app is correctly offline; device alarms still use their saved absolute deadlines.

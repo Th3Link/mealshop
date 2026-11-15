@@ -1,6 +1,6 @@
 # Native cooking, recovery and device reminders
 
-Status: F35 P4 implementation in progress; final acceptance is recorded in F35 verification and its PR.
+Status: F35 P4 implemented for review in PR #49; exact-head CI and delivery identities are recorded on that PR.
 
 ## Existing domain, native actions
 
@@ -119,3 +119,12 @@ envelopes survive expiry and wall-clock edits until exact reconciliation, safe e
 access removal or sign-out. Expired private snapshots are cleared; this bounded recovery envelope is
 not extended offline authorization. Damaged recovery data blocks actions without overwriting the
 stored unconfirmed requests. Native device reminders pause until recovery is resolved.
+
+
+Every food session retains an always-open full ingredient reference, including a process composed only
+of custom steps. Explicit step ingredient assignments are shown again at the relevant step; unassigned
+references are not presented as invented step associations. A pre-P4 server remains readable, while
+mobile cooking writes request an upgrade instead of falling back to an unreceipted request.
+New manual history records can explicitly load current household state after a conflict, retaining
+entered people/ratings/effort and requiring completion confirmation again. An ambiguous outcome remains
+blocked from this route and must first be inspected in saved history.

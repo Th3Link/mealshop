@@ -1,6 +1,6 @@
 # Flutter delivery plan — five complete phone releases
 
-Status: P1 merged in PR #44; P2 merged in PR #45; P3 authorized on 2026-11-14 and implemented for review in PR #48 (`story/flutter-week-preparation`).
+Status: P1 merged in PR #44, P2 in PR #45 and P3 in PR #48. P4 is implemented for review in PR #49 (`story/flutter-cooking-fermentation`); P5 is not started.
 Task/checkpoint authority: this file, following the repository's spec-folder convention. Do not
 create a second `tasks/` backlog or mark the imported pack's checklist as delivered.
 
@@ -180,41 +180,41 @@ Implementation checkpoints (AC5/AC7; [ADR 0030](../../docs/adr/0030-mobile-cooki
    in the existing atomic store; preserve legacy callers. Return exact step ingredient scope.
    Verify lost response/restart/replay, changed payload/revision, reader/revocation, observed-time
    bounds and legacy snapshots with focused Rust tests before wiring native actions.
-2. [ ] **Cook and replan natively.** Session creation/review, large always-open steps, independent
+2. [x] **Cook and replan natively.** Session creation/review, large always-open steps, independent
    timers and explicit completion, dependencies, actual-action waits, calendar/target/delay review.
    Retain bounded encrypted scoped cooking snapshots and frozen pending timer intents; reconcile
    explicitly on conflicts, never silently rebase or mark disconnected work server-confirmed.
    Verify widget/controller restart, clock changes, concurrent client and exact ingredient links.
-3. [ ] **Remember due actions on Android.** Use the existing native channel and Android framework
+3. [x] **Remember due actions on Android.** Use the existing native channel and Android framework
    APIs rather than another notification package. Explicit opt-in/runtime permission, stable absolute
    deadlines, private generic notifications, cancellation/replacement, reboot/resume reconciliation.
    Verify actual foreground/background/reboot and denied/revoked permission on the dedicated AVD;
    document inexact delivery, force-stop/offline revocation and unsupported-platform limits.
-4. [ ] **Finish fermentation and feedback.** Native source-linked brew recipe/template authoring,
+4. [x] **Finish fermentation and feedback.** Native source-linked brew recipe/template authoring,
    equipment, batch review/control/replan, exact original readings/calibration/corrections/paging;
    completed-session/manual history, ratings, owner learning scope/reset and explicit stock links.
    Verify separate batches/equipment conflicts, archived/pinned sources and reader/owner boundaries.
-5. [ ] **Deliver the whole phone release.** Retained-key P3-to-P4 upgrade, synthetic real Nextcloud
+5. [x] **Deliver the whole phone release.** Retained-key P3-to-P4 upgrade, synthetic real Nextcloud
    and native journeys/screenshots, dark/large-text layouts, own-fixture cleanup, all mandatory gates,
-   exact-source healthy deployment and current-head CI/APKs. Keep F35 open for P5/handset acceptance.
+   exact-source healthy deployment and current-head CI/APKs (final identities/readiness on PR #49). Keep F35 open for P5/handset acceptance.
 
 Phone demo: start two timers, close/kill the app and disconnect; reopen to the original deadlines and
 step recipe. Delay a multi-day baking task, reconcile reminders, complete actual work, book stock only
 through review, and inspect a separate brewing batch with its equipment/calibrated reading history.
 
-- [ ] P4.1 **Native cooking and offline recovery.** Large step UI, current-step ingredients,
+- [x] P4.1 **Native cooking and offline recovery.** Large step UI, current-step ingredients,
   dependencies/part relationships, actual-action waits, multiple timers and server-backed rescheduling.
   Audit current cooking mutations; add durable operation replay where absent before queueing them.
   Store offline intent separately and reconcile current state; never reset a timer from “now” on restart.
   Verify: process death, clock change, overlapping timers, lost responses, explicit manual completion
   and stale role/recipe/equipment state. Reuse the shared Rust scheduler, not a Dart scheduler copy.
-- [ ] P4.2 **Permission-aware device reminders.** Select maintained platform integration after SDK,
+- [x] P4.2 **Permission-aware device reminders.** Select maintained platform integration after SDK,
   licence and OS-capability review. Schedule stable notification IDs from authoritative deadlines,
   cancel/update on replan and reconcile on foreground/reconnect. Distinguish local reminders, server
   delivery and acknowledged user actions. Existing Nextcloud notifications are not Flutter push.
   Verify foreground/background/reboot and denied/revoked permissions on the supported OS versions;
   record actual delivery limits. APNs/FCM infrastructure is a separate explicit gate, not assumed.
-- [ ] P4.3 **Complete fermentation/history integration.** Mobile brew recipes/templates, batches,
+- [x] P4.3 **Complete fermentation/history integration.** Mobile brew recipes/templates, batches,
   equipment reservations, original measurements/calibration/corrections, history/ratings, optional learning
   consent/reset and planned-prep links. Verify concurrent physical holds, independent batches, exact
   readings and food/brewing separation. Completion does not silently imply stock movement or safety.

@@ -163,6 +163,39 @@ class _HistoryEditorState extends State<HistoryEditor> {
     }
   }
 
+  Future<void> reviewRetained() async {
+    if (uncertain ||
+        busy ||
+        !await confirm(
+          context,
+          'history_review_retained',
+          body: 'history_review_retained_help',
+        )) {
+      return;
+    }
+    if (!mounted) return;
+    setState(() => busy = true);
+    try {
+      final latest = await Future.wait([
+        widget.api.household('/history'),
+        widget.api.household('/profiles'),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        revision = latest[0]['revision'] as int;
+        profiles = latest[1];
+        confirmed = false;
+        error = null;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => error = e is ApiFailure ? e.code : 'request_failed');
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => DraftGuard(
     dirty: () => dirty && !saved,
@@ -192,6 +225,16 @@ class _HistoryEditorState extends State<HistoryEditor> {
                 children: [
                   Note(context.t('historyVisibility')),
                   if (error != null) Note(context.t(error!), warning: true),
+                  if (!uncertain &&
+                      widget.entry == null &&
+                      [
+                        'history_revision_conflict',
+                        'history_profiles_changed',
+                      ].contains(error))
+                    TextButton(
+                      onPressed: busy ? null : reviewRetained,
+                      child: Text(context.t('history_review_retained')),
+                    ),
                   if (uncertain)
                     OutlinedButton(
                       onPressed: () =>

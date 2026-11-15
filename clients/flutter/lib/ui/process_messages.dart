@@ -1,5 +1,16 @@
 // Native process controls retain shared domain wording; device/recovery guidance is mobile-specific.
 const processMessages = <String, (String, String)>{
+  "history_review_retained": ("Review retained entry", "Eintrag erneut prüfen"),
+  "history_review_retained_help": (
+    "Keep your entries, load the current household, and confirm who ate before saving.",
+    "Behalte deine Eingaben, lade den aktuellen Haushaltsstand und bestätige vor dem Speichern, wer mitgegessen hat.",
+  ),
+
+  "cook_all_ingredients": (
+    "Recipe ingredients · pinned quantities",
+    "Rezeptzutaten · fixierte Mengen",
+  ),
+
   "brewTranscribed": (
     "Transcribed from instrument",
     "Vom Messgerät übertragen",

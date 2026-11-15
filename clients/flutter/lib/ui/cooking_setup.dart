@@ -112,6 +112,7 @@ class _CookingSetupScreenState extends State<CookingSetupScreen> {
     try {
       await widget.c.initialize();
       if (widget.c.list == null) await widget.c.refresh();
+      if (!widget.c.protocol) throw const ApiFailure('mobile_upgrade_required');
       final record = await widget.c.api.recipes(
         '/${widget.recipe['id']}?revision=${widget.recipe['revision']}',
       );

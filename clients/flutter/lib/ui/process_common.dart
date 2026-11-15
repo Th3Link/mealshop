@@ -185,7 +185,7 @@ class _DurationFieldState extends State<DurationField> {
   );
 }
 
-class ProcessSteps extends StatefulWidget {
+class ProcessSteps extends StatelessWidget {
   const ProcessSteps({
     super.key,
     required this.run,
@@ -207,38 +207,22 @@ class ProcessSteps extends StatefulWidget {
   final Future<void> Function(String, String) timer;
   final Future<void> Function(String, String) replan;
   @override
-  State<ProcessSteps> createState() => _ProcessStepsState();
-}
-
-class _ProcessStepsState extends State<ProcessSteps> {
-  Timer? tick;
-  @override
-  void initState() {
-    super.initState();
-    tick = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    tick?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final steps = objects(widget.run['steps']);
-    final active = widget.run['status'] == 'active';
-    final brewing = [
-      'beer',
-      'cider',
-      'wine',
-      'mead',
-    ].contains(widget.run['kind']);
+    final steps = objects(run['steps']);
+    final active = run['status'] == 'active';
+    final brewing = ['beer', 'cider', 'wine', 'mead'].contains(run['kind']);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (!brewing &&
+            detail != null &&
+            objects(detail!['ingredients'] ?? []).isNotEmpty) ...[
+          SectionTitle(context.t('cook_all_ingredients')),
+          for (final line in objects(detail!['ingredients']))
+            Text(
+              '${(line['translations'] as Json?)?[Localizations.localeOf(context).languageCode]?['name'] ?? line['name']} · ${exactNumber(context, line['grams'] as String)} g${line['prepared_part_name'] == null ? '' : ' · ${line['prepared_part_name']}'}',
+            ),
+        ],
         for (final step in steps) ...[
           Builder(
             builder: (context) {
@@ -246,49 +230,27 @@ class _ProcessStepsState extends State<ProcessSteps> {
                   timer = object(step['timer']);
               final state = timer['state'] as String,
                   id = stage['id'] as String;
-              final recorded = widget.pending
+              final recorded = pending
                   .where(
                     (p) =>
                         object(object(p['request'])['command'])['step_id'] ==
                         id,
                   )
                   .toList();
-              final available =
-                  widget.writable && !widget.busy && active && recorded.isEmpty;
-              final now = widget.clock.now;
+              final available = writable && !busy && active && recorded.isEmpty;
               final manual =
                   brewing &&
                   state == 'running' &&
                   timer['deadline'] == timer['started_at'];
-              final remaining = state == 'running' && now != null
-                  ? (timer['deadline'] as int) - now
-                  : state == 'paused'
-                  ? timer['remaining'] as int
-                  : null;
-              final text = state == 'pending'
-                  ? step['ready'] == true
-                        ? 'cookReady'
-                        : 'cookBlocked'
-                  : state == 'completed'
-                  ? 'cookCompleted'
-                  : state == 'cancelled'
-                  ? 'cookCancelled'
-                  : state == 'paused'
-                  ? 'cookPaused'
-                  : manual
-                  ? 'brewWorking'
-                  : remaining != null && remaining <= 0
-                  ? 'cookElapsed'
-                  : 'cookRemaining';
               final origin = object(stage['origin']),
-                  scope = widget.detail == null
+                  scope = detail == null
                       ? null
-                      : objects(widget.detail!['step_ingredients'] ?? [])
+                      : objects(detail!['step_ingredients'] ?? [])
                             .where((s) => s['index'] == origin['index'])
                             .firstOrNull;
-              final lines = widget.detail == null
+              final lines = detail == null
                   ? <Json>[]
-                  : objects(widget.detail!['ingredients'] ?? []);
+                  : objects(detail!['ingredients'] ?? []);
               final localTimer = object(
                 step['local_timer'] ?? <String, dynamic>{},
               );
@@ -310,27 +272,19 @@ class _ProcessStepsState extends State<ProcessSteps> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      context.t(text),
-                      style: Theme.of(context).textTheme.labelLarge,
+                    _ProcessTimerStatus(
+                      timer,
+                      clock,
+                      manual: manual,
+                      ready: step['ready'] == true,
                     ),
-                    if (!manual && remaining != null)
-                      Text(
-                        durationText(remaining),
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            ),
-                      ),
                     if (localTimer['deadline'] != null)
                       Text(
                         '${context.t('cookDeadline')}: ${localTimer['deadline']}',
                       ),
                     if (state == 'pending')
                       Text(
-                        '${context.t('cookPlannedStart')}: ${processTime(widget.run, id, 'start')}',
+                        '${context.t('cookPlannedStart')}: ${processTime(run, id, 'start')}',
                       ),
                     if ((stage['dependencies'] as List).isNotEmpty)
                       Text(
@@ -338,11 +292,13 @@ class _ProcessStepsState extends State<ProcessSteps> {
                       ),
                     if ((stage['equipment'] as List).isNotEmpty)
                       Text(
-                        '${context.t('cookEquipment')}: ${(stage['equipment'] as List).map((id) => widget.equipmentNames[id] ?? id).join(', ')}',
+                        '${context.t('cookEquipment')}: ${(stage['equipment'] as List).map((id) => equipmentNames[id] ?? id).join(', ')}',
                       ),
                     if ((stage['uncertainty'] as String? ?? '').isNotEmpty)
                       Note(stage['uncertainty'] as String),
-                    if (scope != null && lines.isNotEmpty) ...[
+                    if (scope != null &&
+                        scope['scope'] != 'unassigned' &&
+                        lines.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Text(
                         context.t(
@@ -362,11 +318,33 @@ class _ProcessStepsState extends State<ProcessSteps> {
                             ),
                           ),
                     ],
-                    if (widget.detail?['recipe'] is Json && brewing) ...[
+                    if (detail?['recipe'] is Json && brewing) ...[
+                      for (final phase
+                          in objects(
+                            object(
+                              object(detail!['recipe'])['recipe'],
+                            )['phases'],
+                          ).where(
+                            (p) =>
+                                object(p['stage'])['id'] ==
+                                id.replaceFirst(RegExp(r'-[0-9]+$'), ''),
+                          )) ...[
+                        if (phase['timing_known'] != true)
+                          Note(context.t('brewUnknownTiming')),
+                        if (phase['temperature'] != null)
+                          Text(
+                            '${exactNumber(context, object(phase['temperature'])['value'] as String)} ${context.t(object(phase['temperature'])['unit'] == 'celsius' ? 'brewCelsius' : 'brewFahrenheit')}',
+                          ),
+                        if (phase['volume'] != null)
+                          Text(
+                            '${context.t('brewPhaseVolume')}: ${exactNumber(context, object(phase['volume'])['amount'] as String)} ${object(phase['volume'])['unit']}',
+                          ),
+                      ],
+
                       for (final line
                           in objects(
                             object(
-                              object(widget.detail!['recipe'])['recipe'],
+                              object(detail!['recipe'])['recipe'],
                             )['ingredients'],
                           ).where(
                             (line) =>
@@ -404,7 +382,7 @@ class _ProcessStepsState extends State<ProcessSteps> {
                           if (state == 'pending')
                             FilledButton.icon(
                               onPressed: available && step['ready'] == true
-                                  ? () => widget.timer(id, 'start')
+                                  ? () => this.timer(id, 'start')
                                   : null,
                               icon: const Icon(Icons.play_arrow),
                               label: Text(
@@ -424,35 +402,35 @@ class _ProcessStepsState extends State<ProcessSteps> {
                           if (state == 'running' && !manual)
                             OutlinedButton(
                               onPressed: available
-                                  ? () => widget.timer(id, 'pause')
+                                  ? () => this.timer(id, 'pause')
                                   : null,
                               child: Text(context.t('cookPause')),
                             ),
                           if (state == 'paused')
                             FilledButton(
                               onPressed: available
-                                  ? () => widget.timer(id, 'resume')
+                                  ? () => this.timer(id, 'resume')
                                   : null,
                               child: Text(context.t('cookResume')),
                             ),
                           if (['pending', 'running', 'paused'].contains(state))
                             OutlinedButton(
                               onPressed: available
-                                  ? () => widget.timer(id, 'complete')
+                                  ? () => this.timer(id, 'complete')
                                   : null,
                               child: Text(context.t('cookCompleteStep')),
                             ),
                           if (state == 'pending')
                             TextButton(
                               onPressed: available
-                                  ? () => widget.replan(id, 'delay')
+                                  ? () => replan(id, 'delay')
                                   : null,
                               child: Text(context.t('cookDelayStep')),
                             ),
                           if (state == 'running' || state == 'paused')
                             TextButton(
                               onPressed: available && !manual
-                                  ? () => widget.replan(id, 'timer')
+                                  ? () => replan(id, 'timer')
                                   : null,
                               child: Text(context.t('cookChangeTimer')),
                             ),
@@ -465,6 +443,85 @@ class _ProcessStepsState extends State<ProcessSteps> {
           ),
           const Divider(),
         ],
+      ],
+    );
+  }
+}
+
+class _ProcessTimerStatus extends StatefulWidget {
+  const _ProcessTimerStatus(
+    this.timer,
+    this.clock, {
+    required this.manual,
+    required this.ready,
+  });
+  final Json timer;
+  final CookingClock clock;
+  final bool manual, ready;
+  @override
+  State<_ProcessTimerStatus> createState() => _ProcessTimerStatusState();
+}
+
+class _ProcessTimerStatusState extends State<_ProcessTimerStatus> {
+  Timer? tick;
+  void updateTicker() {
+    tick?.cancel();
+    if (widget.timer['state'] == 'running' && !widget.manual) {
+      tick = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    updateTicker();
+  }
+
+  @override
+  void didUpdateWidget(_ProcessTimerStatus old) {
+    super.didUpdateWidget(old);
+    updateTicker();
+  }
+
+  @override
+  void dispose() {
+    tick?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final timer = widget.timer, state = timer['state'], now = widget.clock.now;
+    final remaining = state == 'running' && now != null
+        ? (timer['deadline'] as int) - now
+        : state == 'paused'
+        ? timer['remaining'] as int
+        : null;
+    final label = state == 'pending'
+        ? (widget.ready ? 'cookReady' : 'cookBlocked')
+        : state == 'completed'
+        ? 'cookCompleted'
+        : state == 'cancelled'
+        ? 'cookCancelled'
+        : state == 'paused'
+        ? 'cookPaused'
+        : widget.manual
+        ? 'brewWorking'
+        : remaining != null && remaining <= 0
+        ? 'cookElapsed'
+        : 'cookRemaining';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.t(label), style: Theme.of(context).textTheme.labelLarge),
+        if (!widget.manual && remaining != null)
+          Text(
+            durationText(remaining),
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+          ),
       ],
     );
   }

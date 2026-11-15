@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mealshop/ui/cooking.dart';
+import 'package:mealshop/ui/process_common.dart';
 import 'package:mealshop/ui/cooking_review.dart';
 import 'package:http/http.dart' as http;
 import 'package:mealshop/connection/nextcloud.dart';
@@ -138,6 +139,77 @@ http.Response cookedResponse(Json value, [int status = 200]) => http.Response(
 );
 
 void main() {
+  testWidgets(
+    'custom-only cooking stages keep the full pinned ingredient reference offline',
+    (tester) async {
+      final detail = cookingDetail(0), run = object(detail['run']);
+      for (final step in objects(run['steps'])) {
+        object(step['stage'])['origin'] = {
+          'kind': 'custom',
+          'note': 'Synthetic custom kitchen work',
+        };
+      }
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ProcessSteps(
+                run: run,
+                detail: detail,
+                clock: CookingClock(FakeReminders()),
+                writable: false,
+                busy: false,
+                timer: (_, _) async {},
+                replan: (_, _) async {},
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(
+        find.text('Recipe ingredients · pinned quantities'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('200.000001 g'), findsOneWidget);
+      expect(find.text('Synthetic original instruction'), findsNWidgets(2));
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  test('a pre-P4 server remains readable but cannot accept an unreceipted mobile cooking intent', () async {
+    final f = ContentFixture();
+    f.respond = (r) async => r.url.path.endsWith('/cooking')
+        ? cookedResponse(cookingList(0)..remove('action_protocol'))
+        : null;
+    await f.start();
+    final c = CookingController(
+      HouseholdApi(f.controller),
+      device: FakeReminders(),
+    );
+    await c.initialize();
+    await c.refresh();
+    expect(c.list, isNotNull);
+    await expectLater(
+      c.enqueue({
+        'operation': 'timer',
+        'run_id': 'cook-1',
+        'step_id': 's1-1',
+        'action': 'start',
+      }),
+      throwsA(
+        isA<ApiFailure>().having(
+          (e) => e.code,
+          'code',
+          'mobile_upgrade_required',
+        ),
+      ),
+    );
+    expect(c.pending, isEmpty);
+    expect(f.requests.where((r) => r.method == 'POST'), isEmpty);
+    c.dispose();
+    f.controller.dispose();
+  });
+
   test(
     'damaged recovery data never drops pending actions or re-enables writes',
     () async {

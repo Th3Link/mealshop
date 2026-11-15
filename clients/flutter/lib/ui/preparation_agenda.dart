@@ -65,7 +65,7 @@ class _PreparationAgendaState extends State<PreparationAgenda> {
                     : Icons.schedule,
               ),
               title: Text(
-                '${(e['local'] as String).substring(11)} · ${e['step_name']}',
+                '${agendaTime(e['local'] as String)} · ${e['step_name']}',
               ),
               subtitle: Text(
                 '${e['run_name']} · ${e['timezone']} · ${context.t(e['event'] == 'deadline' ? 'cookDeadline' : 'cookPlannedStart')}',
@@ -102,4 +102,10 @@ class _PreparationAgendaState extends State<PreparationAgenda> {
       );
     },
   );
+}
+
+String agendaTime(String resolved) {
+  final match = RegExp(r'T(\d{2}:\d{2}:\d{2})([+-]\d{2}:\d{2}|Z)')
+      .firstMatch(resolved);
+  return match == null ? resolved : '${match[1]} (${match[2]})';
 }

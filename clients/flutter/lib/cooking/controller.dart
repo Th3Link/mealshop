@@ -223,7 +223,8 @@ class CookingController extends ChangeNotifier {
   }
 
   Future<void> enqueue(Json command, {int? expectedRevision}) async {
-    if (!writable || !protocol || busy || blocked) {
+    if (!protocol) throw const ApiFailure('mobile_upgrade_required');
+    if (!writable || busy || blocked) {
       throw const ApiFailure('cooking_pending_review');
     }
     if (!api.controller.online && command['operation'] != 'timer') {

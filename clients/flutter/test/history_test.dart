@@ -31,10 +31,11 @@ Json learning() => {
 };
 void main() {
   testWidgets(
-    'confirmed manual history preserves unknown effort and ratings with exact profile scope',
+    'manual history explicitly reviews a concurrent change without losing attendees or inventing ratings',
     (tester) async {
       final f = ContentFixture();
       Json? saved;
+      var attempts = 0;
       f.people['members'] = [
         {'id': 'one', 'name': 'Synthetic attendee'},
       ];
@@ -54,10 +55,14 @@ void main() {
         if (r.url.path.endsWith('/history')) {
           if (r.method == 'POST') {
             saved = object(jsonDecode(r.body));
+            attempts++;
+            if (attempts == 1) {
+              return cookedResponse({'code': 'history_revision_conflict'}, 409);
+            }
             return cookedResponse({'revision': 1, 'id': 'history-1'});
           }
           return cookedResponse({
-            'revision': 0,
+            'revision': attempts == 0 ? 0 : 1,
             'entries': <Json>[],
             'page': 1,
             'per_page': 20,
@@ -72,7 +77,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('Synthetic attendee'),
         200,
-        scrollable: find.byType(Scrollable).last,
+        scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Synthetic attendee'));
@@ -80,7 +85,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('This was actually cooked.'),
         200,
-        scrollable: find.byType(Scrollable).last,
+        scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('This was actually cooked.'));
@@ -89,6 +94,33 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
+      expect(attempts, 1);
+      await tester.scrollUntilVisible(
+        find.text('Review retained entry'),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Review retained entry'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'Review retained entry').last,
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('This was actually cooked.'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('This was actually cooked.'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Save'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+      expect(attempts, 2);
+      expect(saved!['expected_revision'], 1);
       expect(saved, isNotNull);
       expect(object(saved!['input'])['active_seconds'], isNull);
       expect(object(saved!['input'])['household_rating'], isNull);

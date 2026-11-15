@@ -75,7 +75,8 @@ class _CookingScreenState extends State<CookingScreen> {
       floatingActionButton: c!.writable
           ? FloatingActionButton.extended(
               onPressed:
-                  c!.busy ||
+                  !c!.protocol ||
+                      c!.busy ||
                       c!.pending.isNotEmpty ||
                       !widget.api.controller.online
                   ? null
