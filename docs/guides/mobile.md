@@ -219,4 +219,4 @@ never uninstall or clear storage. More now includes Cooking & baking, Brewing an
 The day plan links cooking starts and shows canonical preparation/timer agenda entries. Read
 [recovery and reminder limits](mobile-cooking.md) before relying on local alarms for a long process.
 Native emulator/live verification and exact final-source APK/deployment identities are recorded in
-F35 verification and its PR; physical handset/TalkBack/release-profile acceptance remains open.
+F35 verification and its PR; physical handset/`TalkBack`/release-profile acceptance remains open.

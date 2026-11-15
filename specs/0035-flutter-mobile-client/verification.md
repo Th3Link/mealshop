@@ -331,7 +331,7 @@ all repository/browser/security gates and current-head CI. P4 is not marked deli
 
 Status: implementation/local verification in progress on `story/flutter-cooking-fermentation`.
 This section will be completed with real test-instance/Android proof and exact-head CI before the PR
-is ready. No physical handset, TalkBack, release-mode performance or guaranteed notification delivery
+is ready. No physical handset, `TalkBack`, release-mode performance or guaranteed notification delivery
 is inferred from these development checks.
 
 - `python3 scripts/mobile.py flutter analyze`: no issues; `python3 scripts/mobile.py test`: 63 tests.

@@ -58,3 +58,22 @@ flows need executable tests and synthetic Nextcloud/emulator evidence before the
 - [Android alarm scheduling and reboot](https://developer.android.com/develop/background-work/services/alarms)
 - [Android notification permission](https://developer.android.com/develop/ui/compose/notifications/notification-permission)
 - [Android elapsed realtime](https://developer.android.com/reference/android/os/SystemClock#elapsedRealtime())
+
+
+## Review refinements
+
+Reviewed brewing writes retain the existing F14 immutable operation envelope in the same encrypted
+mobile cooking recovery queue before dispatch. They remain online-only; food timer intent alone uses
+a reported server-anchored action instant. History has no such receipt contract and is deliberately
+not queued; an ambiguous save asks the user to inspect saved history before recording again.
+
+Cooking owns expiry of its protected feature draft: snapshots/local alarms have a seven-day
+server-authorization horizon, while bounded frozen uncertain requests remain until exact replay,
+safe explicit discard or identity closure. The generic wall-clock draft purge must not erase a
+pending cooking operation when the user changes the device clock. A malformed recovery envelope
+blocks writes and device reminders instead of replacing it with empty state.
+
+The additive preparation agenda reads the shared scheduler without materializing the entire brew
+catalogue on a day view. It is paged, accepts a maximum seven-day UTC interval, resolves each entry
+in its process IANA zone and distinguishes planned starts from actual timer deadlines. Untimed manual
+fermentation never gets a fabricated countdown.

@@ -140,7 +140,7 @@ def emulator(headless=False, host_gpu=False):
         with (BASE / 'emulator.log').open('ab') as log:
             subprocess.Popen([str(SDK / 'emulator/emulator'), '-avd', CONFIG['emulator_avd'],
                 '-port', str(CONFIG['emulator_console_port']), '-accel', 'on', '-gpu', 'host' if host_gpu else 'swiftshader', '-feature', '-Vulkan,-GuestAngle',
-                '-memory', '3072', '-cores', '4', '-no-audio', '-no-boot-anim', '-no-metrics', '-no-snapshot-load', '-no-snapshot-save', *(['-no-window'] if headless else [])],
+                '-memory', '3072', '-cores', '4', '-no-audio', '-no-boot-anim', '-no-metrics', '-crash-report-mode', 'disabled', '-no-snapshot-load', '-no-snapshot-save', *(['-no-window'] if headless else [])],
                 env=environment(), stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
                 preexec_fn=lambda: resource.setrlimit(resource.RLIMIT_CORE, (0, 0)))
     print('Dedicated emulator:', SERIAL, '— wait for sys.boot_completed=1 using status')
