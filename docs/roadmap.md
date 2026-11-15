@@ -12,7 +12,7 @@ This is a proposed delivery order, not a promise of dates. Dependencies can chan
 | M5 | Opt-in federation | F20 |
 
 M1 starts with local recipe revision files and pinned BLS/USDA nutrition sources.
-The authenticated identity model, Git/SQL adapters and Flutter interaction remain to be specified. F18 spans several milestones: a first backend
+Standalone authenticated identity and Git/SQL adapters remain to be specified; Nextcloud account/household roles exist and Android delivery follows F35. F18 spans several milestones: a first backend
 is not completion of the four-backend/Nextcloud/client acceptance contract. Online learning
 starts with inspectable rules and feedback; production ML follows measured benefit.
 

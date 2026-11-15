@@ -23,3 +23,5 @@ __pycache__/
 /clients/flutter/android/key.properties
 *.keystore
 *.jks
+# Pinned offline OCR models are verified/downloaded by scripts/mobile.py.
+/clients/flutter/android/app/src/main/assets/tessdata/*.traineddata

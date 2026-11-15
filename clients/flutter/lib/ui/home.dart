@@ -5,6 +5,11 @@ import 'common.dart';
 import 'messages.dart';
 import 'shopping_list.dart';
 import 'more.dart';
+import '../content/api.dart';
+import 'recipes.dart';
+import 'plan.dart';
+import 'content_common.dart';
+import 'capture_incoming.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(this.controller, {super.key});
@@ -14,29 +19,61 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int tab = 0;
+  static const destinations = ['today', 'plan', 'shopping', 'recipes', 'more'];
+  late int tab = destinations.indexOf(widget.controller.destination);
+  int refresh = 0;
+  Future<void> select(int value) async {
+    setState(() => tab = value);
+    await runAction(
+      context,
+      () => widget.controller.setDestination(destinations[value]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = widget.controller;
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.t(tab == 0 ? 'shopping' : 'more')),
+        title: Text(context.t(destinations[tab])),
         actions: [
           IconButton(
             tooltip: context.t('sync'),
-            onPressed: c.busy ? null : c.refresh,
+            onPressed: c.busy
+                ? null
+                : () {
+                    setState(() => refresh++);
+                    c.refresh();
+                  },
             icon: const Icon(Icons.refresh),
           ),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: tab,
-        onDestinationSelected: (v) => setState(() => tab = v),
+        onDestinationSelected: select,
+        labelBehavior:
+            MediaQuery.textScalerOf(context).scale(14) > 20 ||
+                MediaQuery.sizeOf(context).width < 360
+            ? NavigationDestinationLabelBehavior.onlyShowSelected
+            : NavigationDestinationLabelBehavior.alwaysShow,
         destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.today_outlined),
+            label: context.t('today'),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.calendar_month_outlined),
+            label: context.t('plan'),
+          ),
           NavigationDestination(
             icon: const Icon(Icons.shopping_basket_outlined),
             selectedIcon: const Icon(Icons.shopping_basket),
             label: context.t('shopping'),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.menu_book_outlined),
+            label: context.t('recipes'),
           ),
           NavigationDestination(
             icon: const Icon(Icons.more_horiz),
@@ -105,12 +142,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+            if (c.home != null)
+              IncomingCapture(HouseholdApi(c), key: ValueKey(c.selected)),
+            if (c.imageInterrupted)
+              ListTile(
+                leading: const Icon(Icons.photo_outlined),
+                title: Text(context.t('image_interrupted')),
+                trailing: IconButton(
+                  tooltip: context.t('close'),
+                  icon: const Icon(Icons.close),
+                  onPressed: c.dismissPhotoNotice,
+                ),
+              ),
             if (c.busy) const LinearProgressIndicator(minHeight: 2),
             Expanded(
-              child: tab == 1
+              child: tab == 4
                   ? MoreScreen(c)
                   : c.home == null
                   ? NoHousehold(c)
+                  : tab == 3
+                  ? RecipesScreen(HouseholdApi(c), key: ValueKey(c.selected))
+                  : tab < 2
+                  ? PlanScreen(
+                      HouseholdApi(c),
+                      key: ValueKey((c.selected, tab)),
+                      today: tab == 0,
+                      refresh: refresh,
+                      shopping: () => select(2),
+                    )
                   : ShoppingListScreen(c),
             ),
           ],

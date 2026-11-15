@@ -89,6 +89,7 @@ pub(super) struct Mutation {
 }
 pub(crate) fn routes() -> Router<Shared> {
     Router::new()
+        .merge(super::plan_review::routes())
         .merge(super::mobile::routes())
         .route("/api/household/shopping", get(list).post(change))
         .route(
@@ -136,6 +137,7 @@ async fn change(
         return failure("shopping_request_invalid");
     };
     match tokio::task::spawn_blocking(move || {
+        validate_capture(&input.command, &state.images)?;
         let recipes = state
             .recipes
             .as_ref()
@@ -167,6 +169,21 @@ async fn change(
         Ok(Err(code)) => failure(code),
         Err(_) => failure("shopping_storage_failed"),
     }
+}
+pub(super) fn validate_capture(
+    command: &Command,
+    images: &std::path::Path,
+) -> Result<(), &'static str> {
+    if let Command::SaveProduct { product } = command {
+        if let Some(label) = &product.label_capture {
+            if !label.valid() {
+                return Err("shopping_product_invalid");
+            }
+            crate::recipe_images::validate_reference(Some(images), Some(&label.photo.image_id))
+                .map_err(|_| "capture_image_missing")?;
+        }
+    }
+    Ok(())
 }
 pub(super) fn execute(
     store: &mut Store,

@@ -11,9 +11,65 @@ import 'package:mealshop/connection/vault.dart';
 import 'package:mealshop/shopping/controller.dart';
 
 import '../test/fixtures.dart';
+import '../test/people_library_test.dart' as content_tests;
+import '../test/planning_test.dart' as planning_tests;
+import '../test/cooking_test.dart' as cooking_tests;
+import '../test/brewing_test.dart' as brewing_tests;
+import '../test/history_test.dart' as history_tests;
+import '../test/capture_test.dart' as capture_tests;
+import 'capture_native.dart' as capture_native;
+
+import 'package:mealshop/cooking/device.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  content_tests.main();
+  planning_tests.main();
+  cooking_tests.main();
+  brewing_tests.main();
+  history_tests.main();
+  capture_tests.main();
+  capture_native.main();
+  testWidgets(
+    'Android reminder projection keeps absolute identities and clears only app notifications',
+    (tester) async {
+      final device = AndroidReminders();
+      await device.clear();
+      final first = await device.clock(), second = await device.clock();
+      expect(first.boot, second.boot);
+      expect(second.elapsed, greaterThanOrEqualTo(first.elapsed));
+      final now = first.wall ~/ 1000;
+      final entry = <String, dynamic>{
+        'key': 'verification:run:step:g1:deadline',
+        'due': now - 1,
+        'expires_at': now + 3600,
+        'language': 'en',
+      };
+      final original = await device.replace([entry]);
+      final repeated = await device.replace([entry]);
+      expect(repeated['scope'], 'verification');
+      expect(
+        repeated['active_notifications'],
+        original['active_notifications'],
+      );
+      expect(
+        original['active_notifications'],
+        original['permission'] == 'granted' ? 1 : 0,
+      );
+      await device.replace([
+        {
+          ...entry,
+          'key': 'verification:run:step:g2:deadline',
+          'due': now + 3600,
+          'expires_at': now + 7200,
+        },
+      ]);
+      expect((await device.status())['active_notifications'], 0);
+      await device.clear();
+      expect((await device.status())['enabled'], false);
+      expect((await device.status())['active_notifications'], 0);
+    },
+  );
   testWidgets(
     'Android protected storage survives a new instance and clears only its namespace',
     (tester) async {
@@ -87,6 +143,11 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('Mehr'));
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Geschäfte & Reihenfolge'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Geschäfte & Reihenfolge'), findsOneWidget);
       await tester.tap(
         find.descendant(

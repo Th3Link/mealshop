@@ -13,7 +13,8 @@ export default defineConfig({
       executablePath: process.env.MEALSHOP_CHROMIUM ?? '/usr/bin/chromium',
       args: ['--no-sandbox'],
     },
-    screenshot: 'only-on-failure',
+    // Authentication pages may contain credentials; fixture tests take explicit safe screenshots.
+    screenshot: 'off',
     trace: 'off',
   },
 })

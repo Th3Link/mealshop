@@ -35,6 +35,13 @@
     "sdk": false
   },
   {
+    "name": "cross_file",
+    "version": "0.3.5+5",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
     "name": "cupertino_ui",
     "version": "1.1.6",
     "licence": "BSD-3-Clause",
@@ -53,6 +60,34 @@
     "version": "7.0.1",
     "licence": "BSD-3-Clause",
     "licence_sha256": "f6df86b1412172537273e8e80ee2fb8a66aa7307ce0b39ea5ddab47ca41b8c49",
+    "sdk": false
+  },
+  {
+    "name": "file_selector_linux",
+    "version": "0.9.4+1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "file_selector_macos",
+    "version": "0.9.5+2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "file_selector_platform_interface",
+    "version": "2.7.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "file_selector_windows",
+    "version": "0.9.3+6",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
     "sdk": false
   },
   {
@@ -82,6 +117,13 @@
     "licence": "BSD-3-Clause",
     "licence_sha256": "a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20",
     "sdk": true
+  },
+  {
+    "name": "flutter_plugin_android_lifecycle",
+    "version": "2.0.35",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
   },
   {
     "name": "flutter_test",
@@ -116,6 +158,62 @@
     "version": "4.1.2",
     "licence": "BSD-3-Clause",
     "licence_sha256": "3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16",
+    "sdk": false
+  },
+  {
+    "name": "image_picker",
+    "version": "1.2.4",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "8e22fae63e4e8ac897f0cb3018ed94ed730b3e5da5d42c6856a26ba524f0fd88",
+    "sdk": false
+  },
+  {
+    "name": "image_picker_android",
+    "version": "0.8.13+25",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "8e22fae63e4e8ac897f0cb3018ed94ed730b3e5da5d42c6856a26ba524f0fd88",
+    "sdk": false
+  },
+  {
+    "name": "image_picker_for_web",
+    "version": "3.1.1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "image_picker_ios",
+    "version": "0.8.13+15",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "8e22fae63e4e8ac897f0cb3018ed94ed730b3e5da5d42c6856a26ba524f0fd88",
+    "sdk": false
+  },
+  {
+    "name": "image_picker_linux",
+    "version": "0.2.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9",
+    "sdk": false
+  },
+  {
+    "name": "image_picker_macos",
+    "version": "0.2.2+1",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "image_picker_platform_interface",
+    "version": "2.11.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
+    "sdk": false
+  },
+  {
+    "name": "image_picker_windows",
+    "version": "0.2.2",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9",
     "sdk": false
   },
   {
@@ -193,6 +291,13 @@
     "version": "1.19.0",
     "licence": "BSD-3-Clause",
     "licence_sha256": "b71519245009a3b8f126196a5408ec031e216e8e0d985085958c6543f82a8a2a",
+    "sdk": false
+  },
+  {
+    "name": "mime",
+    "version": "2.1.0",
+    "licence": "BSD-3-Clause",
+    "licence_sha256": "ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73",
     "sdk": false
   },
   {

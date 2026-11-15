@@ -1,6 +1,6 @@
 # Smartphone interaction plan
 
-Status: Accepted P1 direction; implementation and emulator verification in progress. The ZIP's UX is a target;
+Status: P1–P4 merged; P5 implemented for review in PR #50. The ZIP's UX is a target;
 this document reconciles it with existing data and the five complete deliveries.
 
 ## Navigation and the first useful launch
@@ -77,3 +77,110 @@ Quality targets: at least 48×48 logical-pixel touch areas, 4.5:1 normal text/co
 chosen platforms. Validate these alongside conflict/permission states, not just happy-path screenshots.
 [Flutter accessibility guidance](https://docs.flutter.dev/ui/accessibility) supports this proposed bar;
 no mobile conformance is claimed by this plan.
+
+## P3 interaction contract
+
+Keep the P2 Material theme/system typography. Today presents real preparation timestamps and ordered
+meals; Plan uses a week strip, selected-day list and one complete meal editor. A meal action menu also
+records actual output. All recipe parts remain in the existing always-open recipe views. Explicit
+checkboxes mean per-person attendance or per-slot week confirmation; they do not claim allergy safety.
+Unknown/ranged nutrition remains inspectable before apply. Existing/physical slots and infeasibility
+are visible, never silently omitted or replaced. A stale review keeps the underlying editor draft.
+
+Stock distinguishes physical ingredient lots, observed prepared portions and manual offers. Show actual,
+held, used and available counts together; six/four/two is a count balance, never a mass conversion.
+Every write has a concrete before/after review and explicit confirmation. Unknown network outcomes keep
+the same stock request body/key; leaving warns about losing retry context. An unconfirmed draft can
+explicitly compare a changed current stock revision before creating a new preview; cancel retains
+its inputs. Ingredient/product/shop/source choices load the current directory, with an explicit clear
+action for source selections that disappeared. No raw JSON editing.
+
+Small screens/large text use wrapping controls, scrollable forms and selected-only bottom labels when
+space is constrained; all destinations keep semantic names. Planning/stock refresh on foreground or
+explicit pull without repeatedly downloading the whole catalogue in the background. Private activity
+polling remains unchanged. Source guidance: [Flutter large-font design](https://docs.flutter.dev/ui/accessibility/ui-design-and-styling)
+and [date-only Material picker semantics](https://api.flutter.dev/flutter/material/showDatePicker.html).
+
+## P4 interaction contract
+
+Keep the same five destinations and existing Material controls/system typography. Today and a recipe
+lead into real cooking; More exposes Cooking & baking, Brewing and Cooking history. Sessions are
+compact lists with visible active/paused/overdue counts and next action. A session shows readable,
+always-open steps and their explicitly assigned ingredients/parts. Missing step assignment is labelled
+as recipe reference, never invented. Timers have stable tabular text, named deadlines, independent
+controls and explicit completion; elapsed passive time is not physical readiness.
+
+Create/replan review shows canonical old/new local times, timezone/fold, dependencies, windows and
+warnings. Forms keep drafts on conflicts. Optional details use plus actions; entered phases stay open.
+Disconnected cooking remains readable with cache age. Saved timer intents remain visibly pending or
+unknown until confirmed; conflicts require fresh explicit review. Uncertain requests keep their body
+and key. Do not block the whole recipe behind network retry or turn a disconnected action green.
+
+Local reminders and personal Nextcloud subscriptions are separate, default-off controls. Request OS
+permission only from explicit enable. Show denied/unsupported/inexact/limited status and the last
+authorization horizon. Notifications use generic private text and open the app; they never complete
+work. Recipe/batch removal, replanning, opt-out and scope closure cancel obsolete local events.
+
+Brewing uses a source-linked method picker, always-open phases, exact entered quantities/readings,
+explicit unknown calibration and before/after batch review. Food history asks for actual attendees,
+optional reported effort/ratings and a completion confirmation. Learning scope/reset and bulk deletion
+remain separate owner-only actions. No new nutrition, readiness or device-control claims.
+
+Every new screen has labelled 48dp controls, wrapping layouts at 320dp/200% and landscape, native back,
+reader/offline/conflict/empty/error states, dark mode and semantic action names. Use a focused
+`ChangeNotifier` for shared recovery state; UI `setState` only owns transient screen state. This applies
+the verified UI-UX-Pro-Max Flutter state guidance without adding another state-management package.
+
+## P2 screen contract
+
+Keep the established Material theme, system typography and 4/8dp spacing. UI-UX-Pro-Max contributes
+small-step forms, escape/back paths, native controls and 48dp targets; Taste contributes consistent
+edges, hierarchy and actual screenshot review. Website heroes, palettes/fonts, effects and CSS gates
+are inapplicable to this native app and do not override the existing product system.
+
+Recipes opens a searchable compact library with explicit collection/shared destinations and one
+create action. Detail keeps ingredients, named parts and steps open; scaling is a preview of the
+selected revision. Authoring edits the existing domain fields with inline ingredient creation,
+button alternatives to reorder, optional plus actions and visible source/nutrition uncertainty.
+Ingredient forms group identity, classification and explicit nutrient/constituent declarations;
+blank values remain unknown. Complex evidence stays editable through labelled fields, not raw JSON.
+
+More exposes People and Activities. The person tour asks name/identity, diet/exceptions, hard
+constraints, preferences/availability and review in small steps, with protected resume/discard.
+People are never silently treated as login accounts. Activity screens state the selected person and
+current access. Owners without a grant see Manage access; Grant myself access is an explicit action.
+Permission forms distinguish read and edit, with visible current recipients and a revocation action.
+Activity records are online-only; errors retain a draft, no kcal is calculated, and exports require
+current per-person access. A household/account switch disposes every open sensitive route.
+
+
+## P4 cooking, brewing and feedback
+
+Native Material surfaces retain the existing five destinations; Cooking & baking, Brewing and Cooking
+history live in More and have contextual meal/recipe links. Steps stay open with 22sp readable
+instructions, explicit ingredients/dependencies and independent absolute timers. Optional values use
+plus actions; unknown durations/calibration/ratings remain visible unknowns. Day agenda labels each
+process timezone and distinguishes planned start from actual deadline. Brewing uses three tabs with
+stable-focus search and separate recipe/equipment/batch review, not fake food servings.
+
+Local device reminders and personal server subscriptions are separate switches. Opt-in names Android
+permission/inexact delivery and the seven-day horizon. Pending, uncertain, rejected and confirmed work
+are distinct; review never silently changes a frozen request. Generic private notification text avoids
+recipe/profile names. History explains household visibility before collecting attendees/ratings and
+keeps learning/reset/bulk deletion owner-controlled. Large text uses wrapping controls and open steps.
+
+## P5 capture review
+
+Recipes offer Create, Import link and Photo as explicit choices. A received Android URL/text has a
+visible incoming banner with the current household; it never opens/fetches/saves automatically. URL
+retrieval needs F16 disclosure/consent; unsupported sources offer private manual entry. Choose among
+multiple structured candidates before the compact always-open editor. Original lines remain visible
+beside mapped ingredients. Unresolved cups/ranges never get guessed or silently omitted. Every edit
+clears the final review check. Frozen submissions block editing and retain Retry/Inspect/Discard.
+
+Photo capture offers camera or system photo picker, local OCR plus rotation/retry, and an editable
+classification of title/ingredient lines/instructions while showing the unchanged photo/OCR. Only
+Continue to household requests upload consent. The original is retained apart from the recipe image.
+Label capture uses the same local route, then explicit printed basis/value/unit/definition review; no
+nearby generic food is copied. Barcode candidates need a selection and valid GTIN; lookup remains an
+independent consented action. Cancellation/failure preserves surrounding fields and offers manual entry.

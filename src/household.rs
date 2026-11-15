@@ -1,4 +1,6 @@
 //! Protected local household profiles and conservative dietary review.
+pub(crate) mod people;
+
 use axum::{
     Json, Router,
     extract::{DefaultBodyLimit, State},
@@ -11,7 +13,7 @@ use serde_json::json;
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs::{self, File, OpenOptions},
-    io::{Read, Write},
+    io::Read,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
@@ -30,6 +32,10 @@ pub(crate) struct Member {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     excluded_tags: Vec<String>,
     disliked_ingredients: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    rules: Option<people::Rules>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    avatar: Option<people::Avatar>,
 }
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -57,6 +63,7 @@ pub(crate) struct Store {
     path: PathBuf,
     lock: PathBuf,
     pub(crate) data: Profiles,
+    pub(in crate::household) private: people::Private,
     writable: bool,
 }
 impl Drop for Store {
@@ -84,6 +91,7 @@ pub(crate) struct Authority {
     pub(crate) user: String,
     pub(crate) role: crate::membership::Role,
     pub(crate) members: std::collections::BTreeMap<String, crate::membership::Role>,
+    pub(crate) activity_epochs: BTreeMap<String, u64>,
 }
 pub(crate) fn authority(
     state: &crate::household::Household,
@@ -103,6 +111,7 @@ pub(crate) fn authority(
             } else {
                 crate::membership::Role::Reader
             },
+            activity_epochs: BTreeMap::new(),
             members: std::collections::BTreeMap::from([
                 ("local".to_owned(), crate::membership::Role::Owner),
                 ("local-reader".to_owned(), crate::membership::Role::Reader),
@@ -195,6 +204,7 @@ pub(crate) fn router(
         path,
         lock,
         data: Profiles::default(),
+        private: people::Private::default(),
         writable: true,
     };
     lock_file
@@ -207,13 +217,13 @@ pub(crate) fn router(
         let mut bytes = Vec::new();
         File::open(&store.path)
             .map_err(|_| "Cannot read profiles")?
-            .take(1_048_577)
+            .take(4_194_305)
             .read_to_end(&mut bytes)
             .map_err(|_| "Cannot read profiles")?;
-        if bytes.len() > 1_048_576 {
-            return Err("Household data exceeds 1 MiB".to_owned());
+        if bytes.len() > 4_194_304 {
+            return Err("Household data exceeds 4 MiB".to_owned());
         }
-        store.data = serde_json::from_slice(&bytes).map_err(|_| "Invalid household data")?;
+        (store.data, store.private) = people::Document::decode(&bytes)?;
         if store.data.schema_version != 1 {
             return Err("Unsupported household schema".to_owned());
         }
@@ -251,6 +261,7 @@ pub(crate) fn router(
     }
     Ok(Router::new()
         .route("/api/household/allergens", get(allergens))
+        .merge(people::routes())
         .merge(crate::planning::routes())
         .merge(crate::shopping::routes())
         .merge(crate::inventory::routes())
@@ -282,6 +293,8 @@ fn validate(members: &[Member], ingredients: &BTreeSet<String>) -> Result<(), St
             || m.name.trim().is_empty()
             || m.name.len() > 200
             || m.name.chars().any(char::is_control)
+            || m.rules.as_ref().is_some_and(|r| !r.validate(ingredients))
+            || m.avatar.as_ref().is_some_and(|a| !a.valid())
             || m.allergen_ids.len() > 14
             || m.allergen_ids
                 .iter()
@@ -334,6 +347,7 @@ async fn read(State(state): State<Shared>, headers: HeaderMap) -> Response {
 }
 async fn write(
     State(state): State<Shared>,
+    who: Option<axum::Extension<Authority>>,
     headers: HeaderMap,
     body: Result<Json<Update>, axum::extract::rejection::JsonRejection>,
 ) -> Response {
@@ -356,7 +370,22 @@ async fn write(
             json!({"code":"invalid_household"}),
         );
     }
+    let actor = authority(&state, &headers, who);
     tokio::task::spawn_blocking(move || {
+        if update
+            .members
+            .iter()
+            .filter_map(|m| m.avatar.as_ref())
+            .filter_map(|a| a.image_id.as_deref())
+            .any(|id| {
+                crate::recipe_images::validate_reference(Some(&state.images), Some(id)).is_err()
+            })
+        {
+            return reply(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                json!({"code":"invalid_household"}),
+            );
+        }
         let Ok(mut store) = state.store.lock() else {
             return reply(
                 StatusCode::SERVICE_UNAVAILABLE,
@@ -372,50 +401,14 @@ async fn write(
         if update.expected_revision != store.data.revision {
             return reply(StatusCode::CONFLICT, json!({"code":"revision_conflict"}));
         }
-        let Some(revision) = store.data.revision.checked_add(1) else {
-            return reply(
-                StatusCode::INSUFFICIENT_STORAGE,
-                json!({"code":"household_revision_limit"}),
-            );
-        };
-        let data = Profiles {
-            schema_version: 1,
-            revision,
-            members: update.members,
-        };
-        let pending = store.path.with_file_name(".pending");
-        let persist = || -> Result<(), std::io::Error> {
-            let bytes = serde_json::to_vec(&data)?;
-            let mut options = OpenOptions::new();
-            options.write(true).create_new(true);
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::OpenOptionsExt;
-                options.mode(0o600);
-            }
-            let mut file = options.open(&pending)?;
-            file.write_all(&bytes)?;
-            file.sync_all()?;
-            fs::rename(&pending, &store.path)?;
-            #[cfg(unix)]
-            File::open(
-                store
-                    .path
-                    .parent()
-                    .ok_or_else(|| std::io::Error::other("Missing parent"))?,
-            )?
-            .sync_all()?;
-            Ok(())
-        };
-        if persist().is_err() {
-            store.writable = false;
-            return reply(
-                StatusCode::SERVICE_UNAVAILABLE,
-                json!({"code":"household_storage_failed"}),
-            );
+        match store.replace_profiles(update.members, update.expected_revision, actor.role) {
+            Ok(()) => reply(StatusCode::OK, json!(store.data)),
+            Err("person_owner_required") => reply(
+                StatusCode::FORBIDDEN,
+                json!({"code":"person_owner_required"}),
+            ),
+            Err(code) => reply(StatusCode::SERVICE_UNAVAILABLE, json!({"code":code})),
         }
-        store.data = data;
-        reply(StatusCode::OK, json!(store.data))
     })
     .await
     .unwrap_or_else(|_| {
@@ -526,6 +519,7 @@ pub(crate) fn review_snapshot(
             resolved.extend(ids.iter().cloned());
         }
     }
+    let direct = resolved.clone();
     resolved = catalogue.closure(&resolved);
     if let Some(snapshot) = snapshot {
         resolved.extend(snapshot.closure(&resolved));
@@ -533,8 +527,22 @@ pub(crate) fn review_snapshot(
     let mut excluded = BTreeSet::new();
     let mut disliked = BTreeSet::new();
     let mut allergen_matches = Vec::new();
+    let mut dietary_rules = Vec::new();
     for id in &input.member_ids {
         if let Some(m) = members.get(id) {
+            if let Some(rules) = &m.rules {
+                let mut result =
+                    people::diet_review(rules, &resolved, &direct, &catalogue, snapshot);
+                if let Some(ids) = result["excluded_ingredients"].as_array() {
+                    for id in ids.iter().filter_map(serde_json::Value::as_str) {
+                        if let Some(id) = resolved.get(id) {
+                            excluded.insert(id);
+                        }
+                    }
+                }
+                result["member_id"] = json!(m.id);
+                dietary_rules.push(result);
+            }
             for ingredient in &resolved {
                 for entry in state.allergen_data["entries"]
                     .as_array()
@@ -594,7 +602,7 @@ pub(crate) fn review_snapshot(
         }
     }
     Ok(
-        json!({"status":if excluded.is_empty(){"review_required"}else{"blocked"},"excluded_ingredients":excluded,"allergen_matches":allergen_matches,"review_notes":input.member_ids.iter().filter_map(|id|members.get(id)).map(|m|json!({"member_id":m.id,"name":m.name,"allergies":m.allergies,"intolerances":m.intolerances,"excluded_tags":m.excluded_tags,"allergen_ids":m.allergen_ids})).collect::<Vec<_>>(),"allergen_data_version":allergen_version(state, current),"disliked_ingredients":disliked,"unknown_ingredients":input.ingredient_ids.iter().filter(|id|!ingredients.contains(*id) && aliases.get(&id.to_lowercase()).is_none_or(|ids|ids.len()!=1)).collect::<Vec<_>>(),"warning_codes":["allergen_coverage_incomplete","cross_contamination_unmodelled"],"profile_revision":profiles.revision}),
+        json!({"status":if excluded.is_empty(){"review_required"}else{"blocked"},"excluded_ingredients":excluded,"allergen_matches":allergen_matches,"review_notes":input.member_ids.iter().filter_map(|id|members.get(id)).map(|m|json!({"member_id":m.id,"name":m.name,"allergies":m.allergies,"intolerances":m.intolerances,"excluded_tags":m.excluded_tags,"allergen_ids":m.allergen_ids})).collect::<Vec<_>>(),"allergen_data_version":allergen_version(state, current),"disliked_ingredients":disliked,"unknown_ingredients":input.ingredient_ids.iter().filter(|id|!ingredients.contains(*id) && aliases.get(&id.to_lowercase()).is_none_or(|ids|ids.len()!=1)).collect::<Vec<_>>(),"warning_codes":["allergen_coverage_incomplete","cross_contamination_unmodelled"],"profile_revision":profiles.revision,"dietary_rules":dietary_rules}),
     )
 }
 

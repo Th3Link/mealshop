@@ -163,6 +163,7 @@ async fn change(
         return failure("shopping_request_invalid");
     };
     match tokio::task::spawn_blocking(move || {
+        api::validate_capture(&mutation.command, &state.images)?;
         let now = super::lookup::now()?;
         if input.issued_at == 0 || input.issued_at > now.saturating_add(300) || input.issued_at.saturating_add(MAX_AGE) < now {
             return Err("shopping_operation_expired");

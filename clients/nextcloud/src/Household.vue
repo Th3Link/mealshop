@@ -17,6 +17,7 @@ import IngredientPicker from './IngredientPicker.vue'
 import intoleranceTriggers from '../../../data/intolerance-triggers.json'
 import NextcloudPersonPicker from './NextcloudPersonPicker.vue'
 import ProfileNotes from './ProfileNotes.vue'
+import PersonRulesEditor from './PersonRulesEditor.vue'
 import { useUnsavedChanges } from './useUnsavedChanges'
 const route = useRoute()
 const home = computed(() => String(route.params.home)),
@@ -178,6 +179,12 @@ onMounted(load)
             >
           </div>
         </fieldset>
+        <PersonRulesEditor
+          v-if="catalogue"
+          :member="member"
+          :ingredients="catalogue.ingredients"
+          @changed="markChanged"
+        />
         <ProfileNotes :member="member" @changed="markChanged" />
         <fieldset>
           <legend>{{ t('intoleranceTriggers') }}</legend>

@@ -1,6 +1,6 @@
 # Flutter delivery plan — five complete phone releases
 
-Status: P1 In progress. Customer approved Android, requested an emulator and explicitly gave the Go on 2026-11-13.
+Status: P1 merged in PR #44, P2 in PR #45, P3 in PR #48 and P4 in PR #49. P5 is implemented for review in PR #50 (`story/flutter-capture-import`). Physical Android acceptance remains open.
 Task/checkpoint authority: this file, following the repository's spec-folder convention. Do not
 create a second `tasks/` backlog or mark the imported pack's checklist as delivered.
 
@@ -72,7 +72,7 @@ omnivore; inspect the resolved rule summary; interrupt/resume the tour; author a
 inspect unknown/ranged nutrients, share the allowed projection, and record a 45-minute jog without weight.
 The diet label must reflect exceptions rather than silently claiming an unmodified vegan diet.
 
-- [ ] P2.1 **Extend effective rules and privacy together.** Resolve person-vs-account ownership,
+- [x] P2.1 **Extend effective rules and privacy together.** Resolve person-vs-account ownership,
   child-profile access and health-field permissions/retention before collection. Keep allergies and
   explicit exclusions hard, dislikes soft, goals optional and medical context non-prescriptive. Add
   reviewed presets/exceptions, ingredient-origin conditions, windows/attendance/prep settings only with
@@ -80,18 +80,18 @@ The diet label must reflect exceptions rather than silently claiming an unmodifi
   Nextcloud evaluation/suggestions/plan apply; do not store a rule the server then ignores.
   Verify: conflicting presets/exceptions, unknown origin, unrelated allergy, revoked access, export/
   deletion and legacy profile round trips; adapt existing typed Vue contracts in this same PR.
-- [ ] P2.2 **Build the resumable profile flow.** One or two questions per step, optional name/avatar capture, optional skip,
+- [x] P2.2 **Build the resumable profile flow.** One or two questions per step, optional name/avatar capture, optional skip,
   protected local drafts, explicit save/review and editable summary. No required diagnosis, weight or
   calorie target. A login account and a household person remain distinct identities.
   Verify: interruption/relaunch, no cross-person draft leakage, screen reader/large text and DE/EN.
-- [ ] P2.3 **Complete the mobile content library.** Search localized names/aliases; read/create/edit
+- [x] P2.3 **Complete the mobile content library.** Search localized names/aliases; read/create/edit
   recipes and ingredient groups/subtypes/nutrients/components/tags/images, with inline ingredient creation,
   source/range/unknown presentation, portions, always-visible parts/steps, homemade inputs and cycle
   rejection. Add collections, pinned shared revisions and invitations. Source-only imported projections
   must also govern local cache/export/share. Share sheets for URL capture follow P5.
   Verify: exact values and original language survive edits; restricted imports are not copied into shares;
   reader/revocation, conflicts and unknown ingredient identities preserve the server boundary.
-- [ ] P2.4 **Add the small personal activity log.** Type, date, duration and optional intensity with
+- [x] P2.4 **Add the small personal activity log.** Type, date, duration and optional intensity with
   save/history/edit/delete, independent of food restrictions. Review permission/retention and add a
   bounded versioned server record. Leave energy unknown without an accepted evidence/inputs model.
   Verify: a 45-minute jog and 60-minute ride save without weight; no kcal is fabricated or used to
@@ -102,13 +102,50 @@ Shopping/More; no inactive Plan/Today tab. All introduced hard rules have server
 Sensitive fields stay unavailable if their separate privacy decision is not approved; report that scope
 explicitly rather than claiming the full P2 acceptance complete.
 
+### P2 implementation checkpoints
+
+The customer selected person-specific activity rights and owner-managed grants without automatic
+owner read/edit access; see [ADR 0028](../../docs/adr/0028-person-rules-and-activity.md).
+
+1. [x] Add backward-compatible effective dietary rules and explicit ingredient production origin;
+   prove allergy precedence, unknown provenance, legacy preservation and canonical plan enforcement.
+2. [x] Add private person activity/access state with atomic profile deletion, export/delete-all,
+   membership-revocation handling and explicit owner self-grants. Prove reader isolation/restart.
+3. [x] Build the protected resumable person tour, rule summary and permission/activity forms;
+   include the required compatible Nextcloud contract/editor changes.
+4. [x] Build native recipe discovery/read/scale/revisions and always-open multipart authoring;
+   preserve exact conversion/temperature/homemade and imported provenance, with image selection.
+5. [x] Build ingredient discovery/groups/own declarations/nutrients/constituents/components/tags,
+   including inline ingredient creation inside recipe authoring and reverse recipe lookup.
+6. [x] Build pinned collections, recipient selection, outbound grants, incoming invitations and
+   protected shared reading using the existing server projections.
+7. [x] Prove P1-to-P2 Android upgrade, 320dp/200% text, role/revocation/unknown states and live
+   Nextcloud workflows with synthetic fixtures; clean only this run's fixtures and run all local gates. PR-head CI is the separate release gate recorded on the PR.
+
 ## P3 — Explainable household week, mealprep and stock
+
+Implementation checkpoints (one frontend/backend PR; ADR 0029). Local/emulator/live-proxy evidence
+is in [verification](verification.md#p3-implementation-evidence); final-head CI and exact APK identities
+are recorded in PR #48 before it becomes ready. Physical-handset acceptance stays open under P1.1.
+
+1. [x] Persist bounded recurring attendance/date overrides; enforce them on every canonical preview/apply.
+   Verify precedence, empty attendance, leap/DST civil dates, restart and legacy snapshots.
+2. [x] Add bounded, expiring server-owned week proposals and atomic reviewed apply, reusing current
+   dietary/time checks and explained deterministic ranking. Verify stale inputs, partial infeasibility,
+   per-slot confirmations, current permissions and Thursday-only changes.
+3. [x] Deliver native Today/Plan, week review, individual meal/attendance/allocation editing and
+   explicit shopping source updates. Verify 320dp/200% text, reader/offline/conflict states and two clients.
+4. [x] Record actual prepared batches and exact whole-portion allocation/release/use/reversal inside
+   the existing stock transaction; add native prepared stock, lots/offers/history/review. Verify
+   six = four held + two available, storage changes, over-allocation, replay/restart and no inferred stock.
+5. [x] Upgrade the retained Android app, exercise synthetic live Nextcloud journeys, inspect native
+   screenshots, clean only this run's fixtures, run all gates and deliver current-head CI/APKs.
 
 Phone demo: generate/review a week for the two people, change Thursday dinner/attendance, inspect the
 shopping delta, then prepare six portions on Sunday, allocate four to later meals and retain two frozen
 portions. A plan edit must neither erase manual purchases nor count cooked production twice.
 
-- [ ] P3.1 **Implement a server-owned full-week proposal.** Reuse current evaluation, slot suggestions,
+- [x] P3.1 **Implement a server-owned full-week proposal.** Reuse current evaluation, slot suggestions,
   pinned recipes and profile/allergen revisions. Add proposal identity/expiry, per-slot confirmation,
   effective recurring attendance/date overrides/windows and optional prep/time preferences. Explain
   infeasibility; rank declared preferences, variety, ingredient reuse and preparation/time trade-offs.
@@ -116,11 +153,11 @@ portions. A plan edit must neither erase manual purchases nor count cooked produ
   record the chosen criteria/limits and do not claim global optimality. Missing price/nutrition data is not zero cost/energy.
   Verify: two-person hard-rule fixtures, impossible week, stale profile/recipe, DST/date boundaries and
   deterministic recommendation evidence. Any new persisted constraint also protects existing web paths.
-- [ ] P3.2 **Deliver mobile Today/Plan and reviewed shopping changes.** Day/week navigation, participant/
+- [x] P3.2 **Deliver mobile Today/Plan and reviewed shopping changes.** Day/week navigation, participant/
   portion edits and swaps preserve selected slots and protected source amounts. Show changes before
   apply and retain drafts after concurrency failures. Today links real meals/preparation/shopping actions.
   Verify: Thursday-only change, skipped attendee, manual/checked shopping preservation and two clients.
-- [ ] P3.3 **Unify physical batches and inventory carefully.** Extend current planned allocations and
+- [x] P3.3 **Unify physical batches and inventory carefully.** Extend current planned allocations and
   exact inventory transactions for actual prepared yield, storage location, portion allocation/release,
   leftovers, lots, offers and reversal. Track user-declared dates/conditions without invented safe shelf
   life. No allocation exceeds recorded available quantity; planning alone cannot create physical stock.
@@ -134,23 +171,50 @@ source/uncertainty explanations. Fully independent personal plans remain the exp
 
 ## P4 — Cooking, long preparations, fermentation and feedback
 
+Status: authorized after the customer merged P3 in PR #48; implementation uses
+`story/flutter-cooking-fermentation`, based on `d3b6dc7`. One frontend/backend PR.
+
+Implementation checkpoints (AC5/AC7; [ADR 0030](../../docs/adr/0030-mobile-cooking-recovery.md)):
+
+1. [x] **Recover an actual cooking action.** Add optional actor-bound immutable cooking receipts
+   in the existing atomic store; preserve legacy callers. Return exact step ingredient scope.
+   Verify lost response/restart/replay, changed payload/revision, reader/revocation, observed-time
+   bounds and legacy snapshots with focused Rust tests before wiring native actions.
+2. [x] **Cook and replan natively.** Session creation/review, large always-open steps, independent
+   timers and explicit completion, dependencies, actual-action waits, calendar/target/delay review.
+   Retain bounded encrypted scoped cooking snapshots and frozen pending timer intents; reconcile
+   explicitly on conflicts, never silently rebase or mark disconnected work server-confirmed.
+   Verify widget/controller restart, clock changes, concurrent client and exact ingredient links.
+3. [x] **Remember due actions on Android.** Use the existing native channel and Android framework
+   APIs rather than another notification package. Explicit opt-in/runtime permission, stable absolute
+   deadlines, private generic notifications, cancellation/replacement, reboot/resume reconciliation.
+   Verify actual foreground/background/reboot and denied/revoked permission on the dedicated AVD;
+   document inexact delivery, force-stop/offline revocation and unsupported-platform limits.
+4. [x] **Finish fermentation and feedback.** Native source-linked brew recipe/template authoring,
+   equipment, batch review/control/replan, exact original readings/calibration/corrections/paging;
+   completed-session/manual history, ratings, owner learning scope/reset and explicit stock links.
+   Verify separate batches/equipment conflicts, archived/pinned sources and reader/owner boundaries.
+5. [x] **Deliver the whole phone release.** Retained-key P3-to-P4 upgrade, synthetic real Nextcloud
+   and native journeys/screenshots, dark/large-text layouts, own-fixture cleanup, all mandatory gates,
+   exact-source healthy deployment and current-head CI/APKs (final identities/readiness on PR #49). Keep F35 open for P5/handset acceptance.
+
 Phone demo: start two timers, close/kill the app and disconnect; reopen to the original deadlines and
 step recipe. Delay a multi-day baking task, reconcile reminders, complete actual work, book stock only
 through review, and inspect a separate brewing batch with its equipment/calibrated reading history.
 
-- [ ] P4.1 **Native cooking and offline recovery.** Large step UI, current-step ingredients,
+- [x] P4.1 **Native cooking and offline recovery.** Large step UI, current-step ingredients,
   dependencies/part relationships, actual-action waits, multiple timers and server-backed rescheduling.
   Audit current cooking mutations; add durable operation replay where absent before queueing them.
   Store offline intent separately and reconcile current state; never reset a timer from “now” on restart.
   Verify: process death, clock change, overlapping timers, lost responses, explicit manual completion
   and stale role/recipe/equipment state. Reuse the shared Rust scheduler, not a Dart scheduler copy.
-- [ ] P4.2 **Permission-aware device reminders.** Select maintained platform integration after SDK,
+- [x] P4.2 **Permission-aware device reminders.** Select maintained platform integration after SDK,
   licence and OS-capability review. Schedule stable notification IDs from authoritative deadlines,
   cancel/update on replan and reconcile on foreground/reconnect. Distinguish local reminders, server
   delivery and acknowledged user actions. Existing Nextcloud notifications are not Flutter push.
   Verify foreground/background/reboot and denied/revoked permissions on the supported OS versions;
   record actual delivery limits. APNs/FCM infrastructure is a separate explicit gate, not assumed.
-- [ ] P4.3 **Complete fermentation/history integration.** Mobile brew recipes/templates, batches,
+- [x] P4.3 **Complete fermentation/history integration.** Mobile brew recipes/templates, batches,
   equipment reservations, original measurements/calibration/corrections, history/ratings, optional learning
   consent/reset and planned-prep links. Verify concurrent physical holds, independent batches, exact
   readings and food/brewing separation. Completion does not silently imply stock movement or safety.
@@ -160,11 +224,14 @@ limits. No medical claim or physical fermentation-complete claim follows from el
 
 ## P5 — Camera and reviewed capture
 
+Implementation: `story/flutter-capture-import`; ADR 0031 and the mobile capture guide define exact
+privacy/recovery/platform limits. Implementation and verification checkpoints stay separate.
+
 Phone demo: share a supported public recipe URL, import a photo with an unresolved cup measurement,
 review ingredient mappings/quantities, scan a product/nutrition label and recover after camera/lookup denial. Save and
 reopen the original source and reviewed values; share an imported recipe as its source link only.
 
-- [ ] P5.1 **Share-sheet and URL review.** Reuse F16 network bounds and explicit retrieval consent.
+- [x] P5.1 **Share-sheet and URL review.** Reuse F16 network bounds and explicit retrieval consent.
   Mobile original/reviewed views, manual fallback, preview expiry/idempotent save and source-only
   exports must preserve the same rules as Nextcloud. Verify blocked/private/redirect URLs and retries.
 - [ ] P5.2 **Camera/barcode and on-device OCR candidates.** Review platform/plugin/licence support and
@@ -178,6 +245,11 @@ reopen the original source and reviewed values; share an imported recipe as its 
   phone platform, upgrades, cache/outbox schema migrations, account removal/export and accessibility.
   Document provider/platform limits and safe unsupported-video/manual paths. Do not add social-media
   bypasses, scale drivers, wearables, autonomous purchases or commercial admission to finish the checklist.
+
+Implementation evidence: 72 local Flutter tests, 207 Rust tests, 39 Vue tests and successful Android
+CI (including bundled OCR, rotated-image/barcode and protected import replay) are recorded in verification.
+P5.2 software ships in this PR; its real-phone permission/quality checks and the physical-device portion
+of P5.3 stay open for handset acceptance. This is an installable Android delivery, not an iOS release.
 
 **P5 release gate:** all F35 acceptance criteria have real evidence. Source-pack proposals blocked by
 external product/provider decisions remain explicit follow-up requirements, with original criteria;

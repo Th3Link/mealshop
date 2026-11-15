@@ -31,6 +31,12 @@ pub(crate) fn run(value: &Run, actor: &super::Actor, now: i64) -> Result<Value, 
                         && matches!(step.timer, Timer::Pending)
                         && available.is_some_and(|at| at <= now)
                 );
+                body["local_timer"] = match step.timer {
+                    Timer::Running { started_at, active_until, deadline } => json!({"started_at":time::display(started_at,&value.timezone)?,"active_until":time::display(active_until,&value.timezone)?,"deadline":time::display(deadline,&value.timezone)?}),
+                    Timer::Paused {paused_at,..} => json!({"paused_at":time::display(paused_at,&value.timezone)?}),
+                    Timer::Completed {completed_at,..} => json!({"completed_at":time::display(completed_at,&value.timezone)?}),
+                    _ => json!(null),
+                };
                 Ok(body)
             })
             .collect::<Result<Vec<_>, &'static str>>()?
@@ -56,7 +62,7 @@ pub(crate) fn list(data: &Data, actor: &super::Actor, now: i64) -> Value {
             std::cmp::Reverse(run["created_at"].as_i64().unwrap_or_default()),
         )
     });
-    json!({"revision":data.revision,"server_now":now,"notification_transport":actor.notifications_available,"runs":runs})
+    json!({"revision":data.revision,"server_now":now,"notification_transport":actor.notifications_available,"runs":runs,"action_protocol":1,"max_operation_age_seconds":604_800})
 }
 pub(crate) fn detail(
     data: &Data,

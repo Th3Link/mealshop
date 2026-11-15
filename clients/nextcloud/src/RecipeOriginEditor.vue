@@ -22,6 +22,9 @@ const url = computed({
 </script>
 <template>
   <section class="editor-fields">
+    <NcNoteCard v-if="model?.kind === 'captured'" type="info">{{
+      t('privatePhotoSource')
+    }}</NcNoteCard>
     <NcCheckboxRadioSwitch v-model="imported" :disabled="props.locked">{{
       t('recipeFromSource')
     }}</NcCheckboxRadioSwitch>

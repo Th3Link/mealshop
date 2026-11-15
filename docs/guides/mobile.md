@@ -1,8 +1,9 @@
 # Android app development and installation
 
 F35 P1 provides native shared shopping against the existing Nextcloud installation. Rust remains the
-authority for quantities, membership and shopping transactions. Shopping and More are the active
-navigation destinations; profiles, recipe authoring, plans, cooking and camera capture follow P2–P5.
+authority for quantities, membership and shopping transactions. P1 delivered Shopping/More and P2 delivered Recipes and people. P3 activates all five
+destinations: Today, Plan, Shopping, Recipes and More. [Planning and stock](mobile-planning.md)
+documents the P3 server/client contract. P4 adds [cooking, fermentation and recovery](mobile-cooking.md); capture remains P5.
 
 ## Toolchain and emulator
 
@@ -38,7 +39,8 @@ and wake/unlock only this emulator. A cold restart otherwise loses its reverse f
 
 The emulator uses its own ADB server on
 5038 and console port 5556, leaving the default ADB server alone. Use `emulator --headless` in CI;
-the default opens a real emulator window. The helper retains an existing AVD. The pinned old
+the default opens a real emulator window. Physical keyboard input is enabled in the AVD: click a
+text field and use the desktop keyboard. The helper retains an existing AVD. The pinned old
 `avdmanager` compatibility command creates only this API 36 AVD; package installation uses the new
 Android CLI with metrics disabled. Tools/downloads/keys and emulator state are ignored, never committed.
 
@@ -162,3 +164,68 @@ The full repository Rust/catalogue/i18n/native-client gates still apply before p
 
 Do not downgrade a receipt-bearing shopping file into an older server writer. See ADR 0027 for
 fail-closed downgrade/recovery behaviour and F35 for actual acceptance evidence and remaining work.
+
+## P2: People, activities and the library
+
+Recipes joins Shopping and More. More opens People, Activities, Ingredients, Collections and incoming
+shares; household owners also manage outbound shares. Incoming shares remain reachable without a selected household, and pending invitations do not expose content before acceptance. The existing theme and DE/EN strings follow
+the phone, with explicit source language retained in authored records. Library/profile/activity changes
+require a live connection and server confirmation; shopping remains the P1 offline boundary.
+
+Create a person through the resumable tour, review presets/exceptions, allergies/exclusions and
+optional availability/active-time limits. A visible generic person label permits skipping a personal
+name. Children need no login account. See [person rules and activity access](people-activity.md) for
+the precise permissions, deletion/export, retention and legacy-client contract. Owners must explicitly
+grant themselves activity access; a household reader may have person-specific edit access.
+
+Recipe details keep ingredients, parts, dependencies and steps open. Serving changes scale only the
+selected revision; normalized grams/kilograms keep exact decimal digits. Editing preserves original
+language, quantity/conversion evidence, temperature extensions, handmade output links and imported
+provenance. The ingredient search offers direct creation when a match is missing. Galleries use the
+system photo picker; only JPEG/PNG/WebP up to 5 MiB are uploaded to the selected household. Cancelled
+selection leaves the form intact. Interrupted picker results are consumed at startup and prompt a new
+selection, never silently attached to a different account or draft. Camera/OCR and URL capture remain P5.
+
+Ingredients support explicit groups/subtypes, declarations/inheritance, ranged or unknown nutrients,
+optional constituents, composition, allergens/sorbitol, tags, favorites, archive and reverse recipe lookup.
+Reference records and comparison sources stay visible. No unknown value is replaced by zero and no
+constituent declaration implies a health benefit. Pinned collection revisions and shared invitations
+use existing server contracts. Incoming imported recipes expose only the source link, including in
+collections. Incoming shared content is never put into the offline cache.
+
+`python3 scripts/mobile.py integration` runs shopping and P2 native journeys using the separate
+`org.mealshop.pocket.verification` package. The helper verifies its manifest ID and uses a private stable APK copy, rejecting target/device/binary overrides. Flutter drive uninstalls that target; it cannot erase the
+installed `org.mealshop.pocket.dev` record. Normal `build`/`install` still upgrade the development app
+with its retained key. Do not run raw driver commands against the development package when preserving
+an account/cache. Automated/mock native evidence and real Nextcloud proxy evidence are distinct.
+
+## P3 development upgrade
+
+Version `0.3.0+4` upgrades the same development package/key (`x86_64` version code 4004). It retains
+the existing protected credential, household, shopping outbox and person drafts. The selected tab
+is an optional protected field; older records default to Shopping. No plan/stock record is copied
+to disk on the phone. P3 writes need a connection; shopping keeps P1 offline behaviour.
+
+Normal installation inspects the actual APK application ID and uses `install -r`. The dedicated
+emulator cold-boots retained data without loading/saving Quick Boot snapshots; physical keyboard
+input stays enabled. Do not uninstall, reset the AVD or clear app data for this upgrade.
+
+
+## P4 cooking and fermentation upgrade
+
+Version `0.4.0+5` keeps the retained development package/key (split APK codes 1005/2005/4005).
+Use `python3 scripts/mobile.py build` then `python3 scripts/mobile.py install` for an in-place upgrade;
+never uninstall or clear storage. More now includes Cooking & baking, Brewing and Cooking history.
+The day plan links cooking starts and shows canonical preparation/timer agenda entries. Read
+[recovery and reminder limits](mobile-cooking.md) before relying on local alarms for a long process.
+Native emulator/live verification and exact final-source APK/deployment identities are recorded in
+F35 verification and its PR; physical handset/`TalkBack`/release-profile acceptance remains open.
+
+
+A local loopback test server needs its ADB reverse tunnel after each AVD reboot. Re-running the
+retained-key `install` command restores it without clearing data. To restore only the development
+tunnel, run `var/mobile/android-sdk/platform-tools/adb -P 5038 -s emulator-5556 reverse tcp:8080 tcp:8080`.
+Without this tunnel the app is correctly offline; device alarms still use their saved absolute deadlines.
+
+P5 camera, source review, barcode/label declarations and USB handset installation are documented in
+[mobile capture](mobile-capture.md).

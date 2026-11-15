@@ -124,6 +124,7 @@ mod feedback;
 #[cfg(test)]
 mod recipe_creation_tests;
 
+mod capture;
 mod imports;
 mod mcp;
 

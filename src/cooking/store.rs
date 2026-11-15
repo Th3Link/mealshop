@@ -178,6 +178,7 @@ impl Store {
         proposal: Proposal,
         now: i64,
     ) -> Result<Prepared, &'static str> {
+        self.ready()?;
         self.previews
             .retain(|_, p| p.expires_at >= now && p.actor != actor);
         if self.previews.len() >= 20 {
@@ -198,43 +199,32 @@ impl Store {
         self.previews.insert(preview_id, value.clone());
         Ok(value)
     }
-    pub(crate) fn apply(
-        &mut self,
+    pub(crate) fn reviewed(
+        &self,
         actor: &str,
         id: &str,
         expected: u64,
         now: i64,
-    ) -> Result<String, &'static str> {
+    ) -> Result<Prepared, &'static str> {
+        self.ready()?;
         let prepared = self
             .previews
             .get(id)
             .filter(|p| p.actor == actor && p.expires_at >= now)
-            .ok_or("cooking_preview_expired")?
-            .clone();
+            .ok_or("cooking_preview_expired")?;
         if prepared.revision != expected {
             return Err("cooking_revision_conflict");
         }
         prepared.run.food()?;
-        let mut run = prepared.run;
-        let mut result = run.id.clone();
-        self.change(Some(expected), |data| {
-            if prepared.previous.is_some() {
-                let id = run.id.clone();
-                *data.run_mut(&id)? = run;
-            } else {
-                run.id = data.allocate("cook")?;
-                result.clone_from(&run.id);
-                data.runs.push(run);
-            }
-            super::delivery::cancel_obsolete(data);
-            Ok(())
-        })?;
+        Ok(prepared.clone())
+    }
+    pub(crate) fn consume_review(&mut self, id: &str) {
         self.previews.remove(id);
-        Ok(result)
     }
 }
 fn validate(data: &Data) -> Result<(), &'static str> {
     crate::brewing::validation::validate(data)?;
+    super::receipts::validate(data)?;
     if data.schema_version != 1
         || data.next_id == 0
         || data.runs.len() > 100

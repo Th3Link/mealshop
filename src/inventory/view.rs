@@ -22,6 +22,8 @@ pub(super) fn view(
     history_limit: usize,
 ) -> Result<Value, &'static str> {
     let rows = lot_rows(data)?;
+    let (prepared_history, prepared_event_total) =
+        super::prepared::history(data, history_offset, history_limit);
     let members = ctx
         .profiles
         .members
@@ -53,7 +55,7 @@ pub(super) fn view(
     let runs = ctx.cooking.data.runs.iter().filter(|r| r.status == RunState::Completed)
         .filter_map(|r| r.food().ok().map(|(recipe, servings)| json!({"id":r.id,"name":r.name,"recipe":recipe,"servings":servings,"plan_slot":r.plan_slot,"booked":data.inventory.cooking_booked(&r.id)}))).collect::<Vec<_>>();
     Ok(
-        json!({"revision":data.revision,"lots":rows.iter().skip(offset).take(limit).collect::<Vec<_>>(),"offset":offset,"limit":limit,"total":rows.len(),"allocations":data.inventory.allocations,"movements":movements,"movement_total":data.inventory.movements.len(),"movement_offset":history_offset,"movement_limit":history_limit,"offers":offers,"purchases":purchases,"completed_runs":runs,"cooking_selection":null}),
+        json!({"revision":data.revision,"prepared":super::prepared::rows(data),"prepared_event_total":prepared_event_total,"prepared_history":prepared_history,"lots":rows.iter().skip(offset).take(limit).collect::<Vec<_>>(),"offset":offset,"limit":limit,"total":rows.len(),"allocations":data.inventory.allocations,"movements":movements,"movement_total":data.inventory.movements.len(),"movement_offset":history_offset,"movement_limit":history_limit,"offers":offers,"purchases":purchases,"completed_runs":runs,"cooking_selection":null}),
     )
 }
 pub(super) fn preview(before: &Shopping, after: &Shopping) -> Result<Value, &'static str> {
@@ -91,6 +93,6 @@ pub(super) fn preview(before: &Shopping, after: &Shopping) -> Result<Value, &'st
         })
         .collect::<Vec<_>>();
     Ok(
-        json!({"expected_revision":before.revision,"changes":changes,"shopping":shopping,"allocations":allocations,"movements":after.inventory.movements.iter().skip(before.inventory.movements.len()).collect::<Vec<_>>(),"offers":after.inventory.offers.iter().filter(|o|before.inventory.offers.iter().find(|old|old.id==o.id).is_none_or(|old|serde_json::to_value(old).ok()!=serde_json::to_value(o).ok())).collect::<Vec<_>>()}),
+        json!({"expected_revision":before.revision,"prepared_before":super::prepared::rows(before),"prepared_after":super::prepared::rows(after),"changes":changes,"shopping":shopping,"allocations":allocations,"movements":after.inventory.movements.iter().skip(before.inventory.movements.len()).collect::<Vec<_>>(),"offers":after.inventory.offers.iter().filter(|o|before.inventory.offers.iter().find(|old|old.id==o.id).is_none_or(|old|serde_json::to_value(old).ok()!=serde_json::to_value(o).ok())).collect::<Vec<_>>()}),
     )
 }

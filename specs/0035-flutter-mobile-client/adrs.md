@@ -27,3 +27,13 @@ OCR, native reminders and broader database choices remain decisions of their lat
 | OCR/AI | No provider selected; propose on-device candidates in P5. External upload needs explicit separate authorization. |
 | Offline/notifications | New mobile offline protocol required. P1 shopping receipts; P4 cooking reconciliation/local notification integration. No assumed mobile push provider. |
 | Incomplete nutrition | F34 already supports explicit bounded comparisons/unknowns; port its exact evidence semantics, never replace missing data with zero. |
+
+- [ADR 0028: Effective person rules and activity access](../../docs/adr/0028-person-rules-and-activity.md): customer-approved person grants with no implicit owner activity access.
+
+- [ADR 0029: Household week and physical prepared portions](../../docs/adr/0029-mobile-week-and-prepared-stock.md): bounded reviewed proposals, recurring attendance and separately observed physical output.
+
+- [ADR 0030: Cooking recovery and Android reminders](../../docs/adr/0030-mobile-cooking-recovery.md): atomic food-action receipts, protected scoped recovery and permission-aware local deadlines.
+
+- [ADR 0031: local reviewed capture](../../docs/adr/0031-mobile-reviewed-capture.md) specifies the
+  Android OCR/barcode dependencies, source-photo privacy, optional label declarations and immutable
+  mobile import recovery. Physical handset acceptance remains separate from CI/emulator evidence.

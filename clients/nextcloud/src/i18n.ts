@@ -1,3 +1,4 @@
+import { peopleEnglish, peopleGerman, peopleExplanations } from './people-messages'
 import { brewingEnglish, brewingGerman, brewingExplanations } from './brewing-messages'
 import { inventoryEnglish, inventoryGerman, inventoryExplanations } from './inventory-messages'
 import { importEnglish, importGerman, importExplanations } from './import-messages'
@@ -9,6 +10,7 @@ import { sharingEnglish, sharingGerman, sharingExplanations } from './sharing-me
 import { computed, ref, watch } from 'vue'
 import { groups } from '../../../data/allergens.json'
 const en = {
+  privatePhotoSource: 'Private photo source. Its content and image cannot be shared.',
   nutritionMissing: 'Nutrition incomplete',
   nutritionMissingHelp:
     'Some ingredients still lack supported values. Their unknown contribution is not counted as zero; totals remain incomplete. Enter declared values or ranges, or explicitly inherit a suitable group.',
@@ -66,6 +68,7 @@ const en = {
   ...cookingEnglish,
   ...brewingEnglish,
   ...sharingEnglish,
+  ...peopleEnglish,
   ...feedbackEnglish,
   ...mcpEnglish,
   ...importEnglish,
@@ -357,6 +360,7 @@ const en = {
     'Owners manage access. Editors change recipes, profiles and plans. Readers can view, export and review them.',
 } satisfies Record<string, string>
 const de: Record<keyof typeof en, string> = {
+  privatePhotoSource: 'Private Fotoquelle. Inhalt und Bild können nicht freigegeben werden.',
   nutritionMissing: 'Nährwerte unvollständig',
   nutritionMissingHelp:
     'Für einige Zutaten fehlen noch belegbare Werte. Ihr unbekannter Anteil wird nicht als null gerechnet; Summen bleiben unvollständig. Gib eigene Werte oder Spannen an oder übernimm ausdrücklich eine passende Gruppe.',
@@ -409,6 +413,7 @@ const de: Record<keyof typeof en, string> = {
   ...cookingGerman,
   ...brewingGerman,
   ...sharingGerman,
+  ...peopleGerman,
   ...feedbackGerman,
   ...mcpGerman,
   ...importGerman,
@@ -781,6 +786,7 @@ const explanations: Record<string, { en: string; de: string }> = {
   ...cookingExplanations,
   ...brewingExplanations,
   ...sharingExplanations,
+  ...peopleExplanations,
   ...feedbackExplanations,
   ...mcpExplanations,
   ...importExplanations,

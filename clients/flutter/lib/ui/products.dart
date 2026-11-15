@@ -3,6 +3,10 @@ import 'package:material_ui/material_ui.dart';
 import '../connection/nextcloud.dart';
 import '../shopping/controller.dart';
 import '../shopping/quantity.dart';
+import '../content/api.dart';
+import 'content_common.dart';
+import 'capture_photo.dart';
+import 'label_capture.dart';
 import 'add_item.dart';
 import 'common.dart';
 import 'messages.dart';
@@ -106,7 +110,7 @@ class _ProductEditorState extends State<ProductEditor> {
       quantity = TextEditingController();
   String unit = 'g';
   String? ingredientId, ingredientName, notice;
-  Json? candidate;
+  Json? candidate, labelCapture;
   bool confirmed = false, busy = false, dirty = false;
   int? openedRevision;
   @override
@@ -115,6 +119,9 @@ class _ProductEditorState extends State<ProductEditor> {
     openedRevision = widget.c.shopping?.revision;
     final p = widget.product;
     if (p != null) {
+      labelCapture = p['label_capture'] == null
+          ? null
+          : clone(object(p['label_capture']));
       barcode.text = p['barcode'] as String;
       name.text = p['name'] as String;
       brand.text = p['brand'] as String;
@@ -182,6 +189,7 @@ class _ProductEditorState extends State<ProductEditor> {
           ).toJson(),
           'ingredient_id': ingredientId,
           'match_confirmed': confirmed,
+          if (labelCapture != null) 'label_capture': labelCapture,
           if (candidate != null) 'candidate_id': candidate!['id'],
         },
       }, expectedRevision: openedRevision);
@@ -223,7 +231,7 @@ class _ProductEditorState extends State<ProductEditor> {
         ],
       ),
       body: DraftGuard(
-        dirty: dirty,
+        dirty: () => dirty,
         child: Form(
           onChanged: () => setState(() => dirty = true),
           key: form,
@@ -241,6 +249,26 @@ class _ProductEditorState extends State<ProductEditor> {
                     ? null
                     : context.t('shopping_barcode_invalid'),
               ),
+              if (widget.product == null)
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: Text(context.t('capture_barcode')),
+                  onPressed: can
+                      ? () async {
+                          final code = await openPage<String>(
+                            context,
+                            CapturePhoto(HouseholdApi(widget.c), barcode: true),
+                          );
+                          if (code != null && mounted) {
+                            setState(() {
+                              barcode.text = code;
+                              candidate = null;
+                              dirty = true;
+                            });
+                          }
+                        }
+                      : null,
+                ),
               if (widget.product == null)
                 TextButton.icon(
                   onPressed: can ? lookup : null,
@@ -365,6 +393,36 @@ class _ProductEditorState extends State<ProductEditor> {
                     );
                   },
                 ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.fact_check_outlined),
+                title: Text(context.t('capture_label')),
+                subtitle: Text(
+                  context.t(
+                    labelCapture == null
+                        ? 'capture_label_help'
+                        : 'capture_label_saved',
+                  ),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: can || labelCapture != null
+                    ? () async {
+                        final value = await openPage<Json>(
+                          context,
+                          LabelCapture(
+                            HouseholdApi(widget.c),
+                            value: labelCapture,
+                          ),
+                        );
+                        if (value != null && mounted) {
+                          setState(() {
+                            labelCapture = value;
+                            dirty = true;
+                          });
+                        }
+                      }
+                    : null,
+              ),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: can ? save : null,

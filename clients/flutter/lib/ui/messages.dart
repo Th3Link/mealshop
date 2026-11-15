@@ -1,6 +1,15 @@
 import 'package:flutter/widgets.dart';
 
+import 'content_messages.dart';
+import 'capture_messages.dart';
+import 'planning_messages.dart';
+import 'process_messages.dart';
+
 const messages = <String, (String, String)>{
+  ...contentMessages,
+  ...captureMessages,
+  ...planningMessages,
+  ...processMessages,
   'licences': ('Open-source licences', 'Open-Source-Lizenzen'),
   'preferred_shop': ('Preferred shop', 'Bevorzugtes Geschäft'),
   'fallback_shop': ('Alternative shop', 'Alternatives Geschäft'),
@@ -163,8 +172,8 @@ const messages = <String, (String, String)>{
   'language': ('Language', 'Sprache'),
   'privacy': ('On this device', 'Auf diesem Gerät'),
   'privacy_body': (
-    'Your app credential and shopping cache are encrypted. Shopping data expires after 7 days without an update. Offline changes need current permission when reconnecting. Signing out clears local account data; revoke this device in Nextcloud to end its server access.',
-    'App-Passwort und Einkaufsdaten werden verschlüsselt gespeichert. Einkaufsdaten verfallen nach 7 Tagen ohne Aktualisierung. Offline-Änderungen benötigen beim Verbinden aktuelle Rechte. Abmelden entfernt die lokalen Kontodaten; widerrufe das Gerät in Nextcloud, um seinen Serverzugriff zu beenden.',
+    'Your app credential and device drafts are encrypted. Ordinary caches and person drafts expire after 7 days. Submitted cooking changes and import reviews stay until resolved or explicitly discarded. Incoming Android text stays until dismissed. Activity and incoming household shares are online only. Offline changes need current permission when reconnecting. Signing out clears local account data; revoke this device in Nextcloud to end its server access.',
+    'App-Passwort und Geräteentwürfe werden verschlüsselt gespeichert. Gewöhnliche Caches und Personenentwürfe verfallen nach 7 Tagen. Gesendete Kochänderungen und Importprüfungen bleiben bis zur Klärung oder ausdrücklichem Verwerfen erhalten. Eingehender Android-Text bleibt bis zum Schließen. Aktivitäten und eingehende Haushaltsfreigaben sind nur online verfügbar. Offline-Änderungen benötigen beim Verbinden aktuelle Rechte. Abmelden entfernt lokale Kontodaten; widerrufe das Gerät in Nextcloud, um seinen Serverzugriff zu beenden.',
   ),
   'sign_out': ('Sign out', 'Abmelden'),
   'sign_out_body': (

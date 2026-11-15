@@ -1,0 +1,12 @@
+{
+  "tesseract4android-4.9.0.aar": {
+    "url": "https://jitpack.io/cz/adaptech/tesseract4android/tesseract4android/4.9.0/tesseract4android-4.9.0.aar",
+    "sha256": "bce5d6413a1a5ae3d7240033fbbc851ba3217d0a08d9769400e17a077f42cb2a",
+    "bytes": 12848454
+  },
+  "zxing-core-3.5.4.jar": {
+    "url": "https://repo.maven.apache.org/maven2/com/google/zxing/core/3.5.4/core-3.5.4.jar",
+    "sha256": "71de5d89341b5fcf5dd89da7f44e84d825d0e084cdf3ec77c9abe26b0f0ceb13",
+    "bytes": 610364
+  }
+}

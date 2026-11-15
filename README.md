@@ -120,5 +120,18 @@ The native Android client starts in [F35](specs/0035-flutter-mobile-client/speci
 [Five device-testable implementation PRs](specs/0035-flutter-mobile-client/plan.md) reconcile the
 [customer mobile pack](references/mobile-product-spec-2026-11-12/README.md) with existing APIs.
 P1 implements Nextcloud Login Flow v2, shared shopping and a protected durable offline outbox.
+P2 adds the resumable person tour, explicit dietary rules, online recipe/ingredient/collection/sharing
+views and private person activities with explicit grants; [permissions and API](docs/guides/people-activity.md).
 See the [mobile guide](docs/guides/mobile.md) for the pinned emulator, APKs and upgrade instructions,
 and F35 verification for actual evidence and physical-handset testing limits.
+
+F35 P3 adds native Today/Plan, reviewed server-owned household weeks, recurring attendance and
+explicit physical prepared portions alongside existing inventory. P3 emulator/live-proxy verification is recorded in
+[F35 evidence](specs/0035-flutter-mobile-client/verification.md#p3-implementation-evidence);
+[week/stock contract](docs/guides/mobile-planning.md). Cooking and device reminders remain P4.
+
+
+F35 P4 adds recoverable native cooking, reviewed multi-day/brew workflows, Android device reminders,
+preparation agenda and completed cooking history/owner learning controls. Absolute deadlines, offline
+intent, uncertain delivery and explicit physical-stock booking remain distinct. See
+[mobile cooking and recovery](docs/guides/mobile-cooking.md); final delivery evidence is in the P4 PR.

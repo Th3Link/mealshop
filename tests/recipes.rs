@@ -908,3 +908,24 @@ async fn legacy_recipe_ranges_do_not_rewrite_history_and_new_revisions_pin_evide
         read
     );
 }
+
+#[tokio::test]
+async fn guarded_mobile_creation_cannot_duplicate_after_a_lost_response_and_restart() {
+    let directory = Directory::new();
+    let app = directory.app();
+    let created = request(&app, "POST", "/api/recipes?expected_count=0", recipe()).await;
+    assert_eq!(created.0, StatusCode::CREATED);
+    drop(app);
+    let restarted = directory.app();
+    let retry = request(
+        &restarted,
+        "POST",
+        "/api/recipes?expected_count=0",
+        recipe(),
+    )
+    .await;
+    assert_eq!(retry.0, StatusCode::CONFLICT);
+    let listing = request(&restarted, "GET", "/api/recipes", json!({})).await;
+    assert_eq!(listing.1["recipes"].as_array().unwrap().len(), 1);
+    assert_eq!(listing.1["recipes"][0]["id"], created.1["id"]);
+}

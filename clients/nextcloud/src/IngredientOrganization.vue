@@ -33,6 +33,12 @@ watch(
   },
   { deep: true },
 )
+function production(event: Event) {
+  if (!(event.target instanceof HTMLSelectElement)) return
+  const value = event.target.value
+  if (value === 'unknown' || value === 'purchased' || value === 'household_produced')
+    model.value.production = value
+}
 function mode(event: Event) {
   if (!(event.target instanceof HTMLSelectElement)) return
   const value = event.target.value
@@ -104,6 +110,14 @@ function mode(event: Event) {
             {{ group.translations[locale]?.name ?? group.name
             }}{{ group.archived ? ` · ${t('archived')}` : '' }}
           </option>
+        </select></label
+      >
+      <label class="field"
+        >{{ t('productionClass')
+        }}<select :value="model.production ?? 'unknown'" @change="production">
+          <option value="unknown">{{ t('unknown') }}</option>
+          <option value="purchased">{{ t('purchasedDeclaration') }}</option>
+          <option value="household_produced">{{ t('householdProduced') }}</option>
         </select></label
       >
       <div class="form-row">

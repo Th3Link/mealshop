@@ -139,3 +139,314 @@ name/code, source commit, dirty-source flag and verified SHA-256 alongside each 
 complete PR CI run passed Rust, Vue, MCP, image/rootless TCP+Unix, security, Android native tests and APK
 upload; the final-head CI is required again after this evidence/version-metadata update. No signing
 key, device credential, raw UI dump or private household data is committed.
+
+
+## P2 implementation evidence
+
+P1 was merged as PR #44. P2 supplies Flutter, Rust and compatible Nextcloud editing in one PR;
+F35 remains **In progress** for P3–P5 and the separately recorded physical-handset acceptance.
+Customer decisions: activity permissions belong to people, and owners administer grants without
+implicit read/edit access. [ADR 0028](../../docs/adr/0028-person-rules-and-activity.md) and the
+[API/privacy guide](../../docs/guides/people-activity.md) record the exact boundary.
+
+### Local checks
+
+- All AGENTS gates: catalogue import check/verifier, Node i18n tests, Rust format, strict Clippy,
+  **189 Rust tests**, deny licences, audit; generated docs and strict rustdoc also pass.
+  A project-local Rust 1.85.0 `check --workspace --all-targets --locked` additionally passes;
+  explicit crate paths avoid the older compiler's nested parent-import resolution difference.
+- Flutter format/strict analyze and **35 unit/widget tests** pass. New coverage includes minimized,
+  scoped, expiring drafts, durable restart, revoked membership, pending invitations without content/a selected household, capacity rejection without losing the
+  previous draft; localized search/focus/inline-create entry, original language/exact multipart recipe
+  round trip, 320dp/200% DE/EN recipe ranges, activity duration without weight and clearing a revoked form.
+  Further regressions cover localized decimal fields/ranges/constituents, rejecting the other locale’s
+  separator, saved-editor completion/result propagation and immediate scope closure during durable logout.
+- **68 locked package licences**, **60 external Pub versions** checked with OSV, no matched advisory.
+  `image_picker` 1.2.4 is the only new direct package, from the official Flutter publisher. No new Rust crate.
+- **39 Vue tests**, strict typecheck/production build, Prettier and production npm audit pass.
+  Five live shopping regressions plus the new rule-editor browser journey pass against Nextcloud;
+  mouse selection, save/reload and Axe WCAG tags cover the new editor.
+  Profile rules/avatar and omitted-vs-explicit production declarations survive typed legacy round trips.
+- Native API 36/Pixel 6: **11 tests pass**, including the P2 journeys and protected-storage/shopping
+  regressions. The helper prebuilds the verification APK and passes a private stable copy to Flutter drive only after checking its manifest package ID; target/binary/device overrides are rejected.
+  This is necessary: deriving a package from stale project metadata selected the development app for
+  driver cleanup. Retesting with an exact merged P1 build proved the corrected driver preserves its
+  package, encrypted record, login and selected synthetic household.
+
+### Real Nextcloud 35 and Android proxy journey
+
+Only freshly generated ledger-owned fixtures were used. Retained customer household directories were
+not inspected, copied or backed up. The existing Nextcloud 35.0.2/AppAPI installation served the locally
+built P2 backend and Vue assets; Android connected through Login Flow v2 and the real `index.php` proxy.
+
+The live contract run created two synthetic people, a declared household-produced ingredient with a
+nutrient range and optional constituent, an image/avatar, and an explicit own-ingredient exception.
+It proved owner denial before a self-grant, mandatory self-confirmation, reader read/edit separation,
+45-minute running and 60-minute cycling without weight, null energy, export/profile isolation,
+pagination and denied old grants after leaving and rejoining. It also proved exact recipe scaling,
+prepared-part links, reverse ingredient lookup, pinned collection/shared revisions and source-link-only
+imported projections. A retry of guarded recipe creation cannot duplicate after a lost response/restart.
+
+The exact merged **P1 0.1.0+2 / `x86_64` version 4002** was built separately with the retained development
+key, connected to the synthetic household and cached **200.000001 g**. With emulator forwarding removed,
+**P2 0.2.0+3 / 4003** was installed using `install -r`; account, selected household, encrypted record and
+exact cached amount remained. Forwarding was restored for online library checks. No application data
+reset or uninstall was used for this upgrade. Instrumentation uses its own application package.
+
+Synthetic native views were visually inspected: [shopping](screenshots/p2-shopping.png),
+[recipe library](screenshots/p2-recipes.png), [recipe detail](screenshots/p2-recipe-detail.png),
+[activity people](screenshots/p2-people-activities.png) and [history](screenshots/p2-activity-history.png).
+No authentication page, arbitrary UI tree, private household content or real health entry was captured.
+
+Physical handset, `TalkBack`, release-mode frame/memory profiling, iOS, camera/OCR, device reminders,
+full native plan/stock/cooking and P3–P5 are not claimed. Gallery entry and document export use Android
+system UI; OS cancellation leaves the owning form intact. Library/activity writes remain online-only.
+Android gallery cancellation was exercised on the synthetic recipe; its image and exact input survived
+native save. The system document export produced the two synthetic activities with null energy; the
+uniquely named test file was verified in memory and removed.
+The emulator's physical keyboard is enabled persistently; Android reports its alphanumeric keyboard.
+
+All twelve recorded synthetic households from this run were archived with the sole writer stopped.
+Retained household directories were not inspected or copied; retained membership/library/epoch
+metadata was checked unchanged and allocation counters were preserved. The emulator returned to
+explicit household selection after the removed fixture lost access.
+Final PR-head CI and clean-source APK metadata are recorded in the PR description.
+
+## P3 implementation evidence
+
+P2 was merged in PR #45; P3 is implemented for review in PR #48 on
+`story/flutter-week-preparation`. F35 stays **In progress** for P4/P5 and physical-handset acceptance.
+AC4/AC7, [ADR 0029](../../docs/adr/0029-mobile-week-and-prepared-stock.md) and the
+[mobile planning guide](../../docs/guides/mobile-planning.md) define the delivered boundary.
+
+### Local and CI checks
+
+- All mandatory AGENTS gates pass: catalogue import/verifier, keyed i18n, Rust format, strict Clippy,
+  **198 nextest tests**, licences and audit. Generated documentation and strict rustdoc also pass.
+  Backend cases include ordinary/date-override attendance, hard exclusion/infeasibility, per-slot
+  confirmations, stale recipe heads/expiry/restart, harmless applied replay, current shopping previews,
+  physical over-allocation/duplicate output and protected production.
+- Flutter format/strict analyze and **48 unit/widget tests** pass: retained destination, civil leap/DST
+  navigation, day/week 320dp/200% reader layouts, exact localized stock input/output, observed-yield
+  preview, retained conflict drafts, explicit current-stock comparison, fresh shop directory/exact
+  German offer price and identical frozen-key/body retry after an ambiguous result.
+- **39 Vue tests**, strict typecheck/production build, formatting and production npm audit pass.
+  Seven unique live browser regressions pass against Nextcloud: five inventory cases, the profile
+  rules editor and unified planned/physical preparation. The reader case was rerun with its required
+  reader credential after an initial environment omission; it passes without changing the test.
+- Pub audit: **68 locked licence records / 60 external package versions**, no matched OSV advisory.
+  No new direct package or Rust crate. The rootless TCP/Unix image smoke check passes.
+- All twelve CI checks passed for `9f6a673`, including **23 native API 36 tests**. The subsequent three
+  stock form/conflict regressions also run in the native suite; the final-head CI result and downloadable
+  artifacts are recorded in the PR description. No local integration-driver uninstall/reset was used.
+
+### Actual Nextcloud 35 / Android workflows
+
+The existing Nextcloud 35.0.2/AppAPI test instance runs the P3 backend and Vue assets. The retained
+Android 16/API 36 Pixel 6 AVD connects through the real authenticated `index.php` `AppAPI` proxy.
+Only this run's ledger-owned synthetic fixtures were used; retained household directories and the
+phone's protected record were never inspected, copied or hashed.
+
+1. The live proxy exercise uses two synthetic people and three recipes, proposes a seven-slot week,
+   skips one person's Thursday attendance, denies reader writes, confirms all six feasible meals and
+   verifies harmless replay. A second-client Thursday swap preserves other plan sources, manual
+   entries and exact purchased quantities. Impossible/unreviewed slots remain explicit.
+2. Exact mass/volume lots, a sourced manual offer, reservation, actual **six = four held + two available**
+   prepared portions, duplicate/over-allocation guards, storage change, eating/correction and request
+   replay match server state. Prepared output creates no raw-lot movement.
+3. An exact retained-key P2 build **0.2.0+3 / `x86_64` 4003** was installed and connected to the owned
+   fixture with **200.000001 g**. With emulator forwarding removed, ordinary `install -r` upgraded it
+   to P3 **0.3.0+4 / 4004**. Account, selected household and exact cached amount survived offline;
+   forwarding was restored. No app data reset, uninstall or vault inspection was used.
+4. The installed native UI records eating and its explicit correction; server counts change from
+   four held/zero used/two available to two held/two used/two available and back. The native next-week
+   review preserves two physically allocated slots and individually confirms/applies the other five.
+   An initial UI-driver visibility failure was corrected before the successful workflow; no product
+   bypass or direct API substitution was used for these native actions.
+5. Actual system dark mode and a **320dp / 200% system font** emulator configuration were visually
+   reviewed. Original density/font/theme settings were restored. Unit/widget semantics and layout
+   checks complement these screenshots; this is not a manual `TalkBack` or WCAG certification claim.
+
+Reviewed synthetic screenshots: [shopping](screenshots/p3-shopping.png),
+[Today](screenshots/p3-today.png), [week/day](screenshots/p3-plan.png),
+[physical allocation](screenshots/p3-plan-allocations.png), [week review](screenshots/p3-week-review.png),
+[six/four/two stock](screenshots/p3-prepared-stock.png), [dark mode](screenshots/p3-plan-dark.png),
+[320dp/200% text](screenshots/p3-plan-large-text.png). No authentication or retained customer content
+was captured. The ordinary app and physical keyboard remain available in the working emulator.
+
+### Cleanup and artifact identity
+
+All **nine** households created in this run (one P3 workflow and eight browser fixtures, including the
+reader rerun) were archived with the sole writer stopped. Exact ledger ownership and synthetic content
+were checked before cleanup. Retained membership/library/epoch metadata and allocation counters were
+preserved in memory; retained household directories were never opened, copied or hashed. Normal
+refresh removed the archived selected fixture from the app. The temporary verification helper was
+removed; the ordinary app and retained development signing key remain.
+
+The three local ABI APKs retain the same application ID/development key, version **0.3.0+4** and
+per-ABI manifest version code, source commit, clean-source flag and SHA-256 metadata. Their final
+identities, exact deployed source and final CI are recorded in PR #48. Untrusted CI uses its own
+independent ephemeral key; its artifacts are fresh-install tests, not upgrades over the retained key.
+No signing key, device credential, raw UI tree, fixture archive or private household record is committed.
+
+Planning/stock writes are online; the protected shopping outbox remains unchanged. Physical handset,
+manual `TalkBack`, release frame/memory profiling, independent personal plans, cooking screens,
+notifications/camera and P4/P5 are not claimed by this PR.
+
+### P3 diagnostic performance case
+
+The same isolated in-process debug test creates 100 candidate recipe revisions for two synthetic
+people and proposes all 28 empty meal slots. On this host, the proposal call alone measured
+22.683 s before request-local assessment reuse and 1.316 s after it; fixture creation is excluded.
+These are one diagnostic sample per implementation, not a release/device/network benchmark. All
+28 results remain canonically feasible; ordinary/date-override/physical-stock/stale/replay tests pass.
+The bounded cache contains only immutable per-request assessment facts; fresh slot constraints and
+apply-time checks remain mandatory.
+
+
+## P4 implementation checkpoints (in progress)
+
+The customer merged P3 in PR #48 and authorized P4 in one frontend/backend PR. Branch:
+`story/flutter-cooking-fermentation`, base `d3b6dc7`. No retained household data is used as fixtures.
+
+First cooking checkpoint: seven Rust cooking contracts pass, including immutable request replay after
+lost response/restart, explicit reported-action review without publication and exact per-step ingredient
+scope. Strict workspace Clippy passes. Food actions use the existing atomic 4 MiB process store;
+normal reads exclude private receipt keys. Preview and apply take plans before cooking, matching
+inventory lock order and rechecking a linked production before publication.
+
+Flutter format/analyze and **56 unit/widget tests** pass at this checkpoint. New cases cover exact
+request restoration, ordered independent offline intents, wall-clock change/new boot, generation-based
+private reminder projections, revocation cleanup, explicit schedule confirmation and always-open
+step ingredients at 320dp/200% German text. The Android platform adapter compiles into all three ABI
+APKs; actual OS permission/background/reboot delivery checks remain pending. No local integration
+uninstall/reset is used. Final source/APK identities and full gates are still required.
+
+Remaining P4 checkpoints: combined preparation-calendar entry points, complete native brewing/history/
+learning flows, actual Nextcloud/emulator journeys, retained-key upgrade, synthetic fixture cleanup,
+all repository/browser/security gates and current-head CI. P4 is not marked delivered by this checkpoint.
+
+
+## P4 implementation evidence
+
+Status: implemented for review in PR #49 on `story/flutter-cooking-fermentation`.
+Final exact-head CI and APK/container identities are recorded on the PR before it is ready. No physical handset, `TalkBack`, release-mode performance or guaranteed notification delivery
+is inferred from these development checks.
+
+- Initial feature checkpoint: `python3 scripts/mobile.py flutter analyze` had no issues and
+  `python3 scripts/mobile.py test` passed 63 tests.
+  Recovery covers immutable lost-response replay after restart, independent offline timer intents,
+  wall-clock/new-boot distinction, damaged envelopes, local-copy deletion, reader controls, original
+  readings/corrections, explicit manual history unknowns and 320dp/200% learning/planning views.
+- Mutation review: inverting the cache-version guard fails the actual lost-cooking-response/restart
+  test; the source was restored, and analysis plus the full 63-test suite passed again. The malformed
+  request test alone is intentionally insufficient for a valid-cache version inversion.
+- Mandatory catalogue, i18n, format, strict workspace Clippy, 204 nextest tests, licence, vulnerability
+  and strict generated-rustdoc checks passed. Cooking has nine integration cases, brewing eleven.
+  Calendar cases prove reader authorization, pagination/range bounds, actual timer deadlines and
+  separate manual fermentation. Legacy Vue callers retain their contract.
+- Nextcloud Vitest: 39 tests/12 files; Vite production build and production npm audit passed.
+  Flutter package verification: all 68 locked licences and OSV's 60 external Pub packages passed.
+  No Rust crate, Flutter package, new font or design system was added.
+- All three development APKs compile with the retained key. Their interim dirty-source metadata is
+  not final delivery identity; final clean-source versions/checksums belong to the P4 PR.
+
+
+### P4 real platform and test-instance proof
+
+- Real Nextcloud 35/AppAPI: a new ledger-owned synthetic household was used for keyed cooking
+  create/timer replay, parallel actual timers, exact `100.000001 g`, reader denial, the combined agenda,
+  source-linked mead/equipment/batch review and append-only `1.053000 → 1.054001 SG` correction.
+  The phone opened that actual pinned batch/equipment DTO and saved a manual completed cook with
+  effort/household/profile ratings still unknown. Completed food steps were confirmed individually;
+  neither timers nor history silently moved physical stock.
+- The retained development app upgraded in place from P3 to `0.4.0+5` with the existing package/key and
+  sign-in. Actual process identity changed after force-stop/relaunch while the test-server forwarding
+  was deliberately absent; the encrypted own step copy reopened offline. After an AVD reboot, both
+  original absolute timer deadlines produced Android notices without foreground opening. Reconnecting
+  retained exactly those two event identities; opt-out removed all own notices. Android may add a
+  group summary, which is not a third deadline event. Exact permission was enabled only for this
+  dedicated test package for the timed reboot proof; ordinary denial/inexact fallback remains supported.
+- Fresh-run CI native integration passed **42 tests**, including protected storage, actual method-channel
+  clock/projection cancellation and the controller/widget cooking/brewing/history journeys. The native
+  projection test validates whichever notification permission is actually granted; it does not fake a
+  granted permission or assume exact delivery. All 12 PR checks passed at the first reviewed head;
+  the final exact head is checked separately on the PR.
+- Existing embedded Nextcloud cooking, brewing and feedback browser journeys passed **all nine cases**.
+  The first broad run had two browser-start/locator timeouts; seven completed successfully and the two
+  affected brewing cases passed their isolated 1.5-minute retake. No assertion, timeout or permission
+  gate was weakened. These tests include source-linked non-beer flows, reader controls, concurrency,
+  offline recovery, pinned readings, history/learning and native web accessibility checks.
+- Actual Android light and dark/200% text captures use only this run's synthetic data. Display settings
+  were restored. The desktop emulator graphics path was unstable; retained-data headless software
+  rendering provided the reliable final native proof. Crash-report prompting is disabled through the
+  installed SDK's documented option; no report is uploaded. Hardware keyboard configuration remains on.
+- Final polish keeps countdown ticks inside their own small widget, leaving step instructions and
+  exact ingredient lists stable, and removes duplicated IANA suffixes from day-agenda time labels while
+  retaining the explicit UTC offset/timezone. Final analysis/tests additionally cover a readable pre-P4 server without unreceipted writes,
+  custom-only cooking steps retaining the full offline ingredient reference, and an explicit retained
+  manual-history review after concurrent household/profile changes. Final counts are recorded on the PR.
+
+Physical-device delivery, `TalkBack`, additional Android versions, manufacturer battery policies,
+release-mode profiling, iOS/APNs/FCM, P5 capture and independent personal plans remain open. Debug
+emulator proof is not a guarantee of alarms, fermentation readiness or real-world recommendation quality.
+
+- Actual Android notification revocation was exercised on the dedicated package; own notices remained
+  absent. The prior notification grant and default alarm policy were restored, with local opt-in off.
+
+
+### P4 final local gate and cleanup
+
+Final strict Flutter analysis and **65 unit/widget tests** pass after the retained-history conflict,
+custom-only ingredient-reference and pre-P4 protocol checks. The three development ABIs compile.
+All 204 Rust tests and mandatory security/documentation gates pass; exact final-head CI and artifact
+checksums are the separate PR-readiness evidence recorded on PR #49.
+
+All **11** households created by this run's native/browser fixtures were verified against the new
+ledger interval and exact synthetic data names, then archived with the `ExApp` writer stopped.
+Retained household directories were never inspected or copied. Retained membership entries, activity
+epochs, collection metadata and the monotonic next household ID were compared unchanged in memory.
+The test container restarted healthy. No customer household, account, protected sign-in or AVD data
+was reset. The phone closes the removed scope and cancels its own projections on refreshed membership.
+All screenshots below contain synthetic records only.
+
+- [Native cooking with pinned ingredient reference](screenshots/p4-cooking-steps.png)
+- [Offline recovery after a new process/boot](screenshots/p4-offline-recovery.png)
+- [Real source-linked batch](screenshots/p4-brewing-batch.png)
+- [Dark mode with 200% text](screenshots/p4-brewing-dark-large.png)
+- [Explicit actual cooking history](screenshots/p4-history-form.png)
+- [Preparation agenda](screenshots/p4-plan-agenda.png)
+
+## P5 implementation and verification
+
+Branch: `story/flutter-capture-import`. Frontend and backend ship together. See
+[ADR 0031](../../docs/adr/0031-mobile-reviewed-capture.md) and the
+[capture/handset guide](../../docs/guides/mobile-capture.md).
+
+Local evidence on 2026-11-15:
+
+- Required repository gates pass: catalogue import/check, verifier, keyed messages, format, strict
+  Clippy, **207 Nextest tests**, licence deny, advisory audit and rustdoc with warnings denied.
+- Flutter analysis passes; widget/API tests cover exact decimals/unresolved cups, frozen body replay,
+  scoped recovery, classification, 320 dp/200% text and read-only label inspection.
+- Vue strict types and **39 tests** pass. Source/captured provenance and `private_source` projections
+  are recognized by the existing Nextcloud client in the same delivery.
+- Two direct native capture archives and two model files have pinned SHA-256; 68 Pub licence entries,
+  60 external Pub packages and the two direct Maven coordinates have no matched OSV advisory. OSV
+  matching does not establish full vulnerability coverage of native engine/model code.
+- Three ABI APKs build with retained key, package/version `org.mealshop.pocket.dev` / `0.5.0+6`.
+  The arm64 APK passes 16 KiB ZIP alignment and bundled OCR ELF load-segment alignment checks.
+- Mutation review: removing photo-detail share redaction makes the actual Axum privacy test fail;
+  restoring the source passes that unchanged test. No mutation remains in source.
+
+Android CI [43692753177](https://github.com/Th3Link/mealshop/actions/runs/43692753177) passed on
+`5d96d66`, including native OCR with unresolved cups/exact decimals, a rotated image, real EAN decoding,
+and a protected import envelope restored before identical replay. Local Flutter now passes **72 tests**.
+The real test proxy preserves the original photo, exact reviewed quantities and printed label basis/units,
+permits reader inspection and rejects reader import/private-target retrieval. Three existing embedded
+Nextcloud URL-import browser tests pass, including lost-response replay, source-only sharing and roles.
+The new photo browser test caught an omitted original-image element; the fix and its regression ship
+here. Current-head CI, final APK checksums, deployment identity and owned-fixture cleanup are included in
+PR #50's verification/artifact links; the APK's adjacent build metadata is authoritative for its bytes. Physical smartphone camera, USB/browser login,
+`TalkBack`, device upgrade and manufacturer behavior remain explicitly unverified until the customer
+tries the handset. F35 remains In progress; no iOS distribution/provider/commercial decision is implied.
