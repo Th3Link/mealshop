@@ -1,0 +1,16 @@
+[
+  {
+    "url": "^/api/.*$",
+    "verb": "GET,POST,PUT,DELETE",
+    "access_level": 1,
+    "headers_to_exclude": [
+      "Cookie",
+      "Authorization"
+    ]
+  },
+  {
+    "url": "^/(js/mealshop\\.js|css/mealshop\\.css|img/app\\.svg)$",
+    "verb": "GET",
+    "access_level": 1
+  }
+]

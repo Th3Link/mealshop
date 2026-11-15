@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["image", "nextcloud", "appApi", "service", "persistence"],
+  "properties": {
+    "image": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "tag", "digest", "pullPolicy"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9./:_-]*$"},
+        "tag": {"type": "string"},
+        "digest": {"type": "string", "pattern": "^$|^sha256:[a-f0-9]{64}$"},
+        "pullPolicy": {"enum": ["Always", "IfNotPresent", "Never"]}
+      }
+    },
+    "imagePullSecrets": {"type": "array", "items": {"type": "object", "required": ["name"], "additionalProperties": false, "properties": {"name": {"type": "string", "minLength": 1}}}},
+    "nameOverride": {"type": "string", "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", "maxLength": 63},
+    "fullnameOverride": {"type": "string", "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", "maxLength": 63},
+    "nextcloud": {
+      "type": "object", "additionalProperties": false, "required": ["url", "publicUrl"],
+      "properties": {
+        "url": {"type": "string", "pattern": "^https?://[^/@?#\\s]+(/[^?#\\s]*)?$"},
+        "publicUrl": {"type": "string", "pattern": "^$|^https?://[^/@?#\\s]+(/[^?#\\s]*)?$"}
+      }
+    },
+    "appApi": {
+      "type": "object", "additionalProperties": false, "required": ["existingSecret", "secretKey"],
+      "properties": {
+        "existingSecret": {"type": "string", "minLength": 1, "maxLength": 253, "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"},
+        "secretKey": {"type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9._-]+$"}
+      }
+    },
+    "service": {
+      "type": "object", "additionalProperties": false, "required": ["port"],
+      "properties": {"port": {"type": "integer", "minimum": 1024, "maximum": 65535}}
+    },
+    "persistence": {
+      "type": "object", "additionalProperties": false, "required": ["existingClaim", "storageClass", "size", "annotations", "labels"],
+      "properties": {
+        "existingClaim": {"type": "string", "pattern": "^$|^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$", "maxLength": 253},
+        "storageClass": {"type": "string"},
+        "size": {"type": "string", "pattern": "^[1-9][0-9]*(Mi|Gi|Ti)$"},
+        "annotations": {"type": "object", "additionalProperties": {"type": "string"}},
+        "labels": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "resources": {"type": "object"},
+    "nodeSelector": {"type": "object", "additionalProperties": {"type": "string"}},
+    "tolerations": {"type": "array", "items": {"type": "object"}},
+    "affinity": {"type": "object"},
+    "global": {"type": "object"}
+  }
+}

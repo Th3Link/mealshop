@@ -13,7 +13,7 @@
   <bugs>https://github.com/Th3Link/mealshop/issues</bugs>
   <dependencies><nextcloud min-version="35" max-version="35"/></dependencies>
   <external-app>
-    <docker-install><registry>mealshop.local</registry><image>mealshop</image><image-tag>0.1.0</image-tag></docker-install>
+    <docker-install><registry>ghcr.io</registry><image>th3link/mealshop</image><image-tag>0.1.0</image-tag></docker-install>
     <routes>
       <route><url>^/api/.*$</url><verb>GET,POST,PUT,DELETE</verb><access_level>USER</access_level><headers_to_exclude>["Cookie","Authorization"]</headers_to_exclude></route>
       <route><url>^/(js/mealshop\.js|css/mealshop\.css|img/app\.svg)$</url><verb>GET</verb><access_level>USER</access_level></route>

@@ -52,3 +52,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0029: Mobile household weeks and prepared stock](0029-mobile-week-and-prepared-stock.md) — Accepted for F35 P3.
 
 - [0030: Mobile cooking recovery and Android reminders](0030-mobile-cooking-recovery.md) — Accepted for F35 P4.
+
+- [0031: Tagged OCI images and a Flux-owned `ExApp`](0031-tagged-oci-releases.md) — Customer-requested release and Helm delivery.

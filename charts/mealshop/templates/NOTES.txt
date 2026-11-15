@@ -1,0 +1,12 @@
+Mealshop is deployed as a single Flux/Helm-managed ExApp.
+
+AppAPI manual-install host: {{ include "mealshop.fullname" . }}.{{ .Release.Namespace }}.svc
+AppAPI port: {{ .Values.service.port }}
+Nextcloud URL: {{ .Values.nextcloud.url }}
+Public registration template: ConfigMap {{ include "mealshop.fullname" . }}-appapi
+Existing app secret: {{ .Values.appApi.existingSecret }} / {{ .Values.appApi.secretKey }}
+
+Complete the one-time AppAPI registration before opening Mealshop in Nextcloud:
+https://github.com/Th3Link/mealshop/blob/main/docs/guides/releases-and-helm.md
+
+Back up the data PVC, matching app secret and Nextcloud AppAPI registration together.

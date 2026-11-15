@@ -28,8 +28,12 @@ uses cargo-llvm-cov and cargo-sbom. Tests may unwrap assertion setup; production
 - Security audit: `RustSec` advisory checks and dependency licence policy; runs daily as well.
 - Docs: strict rustdoc with requirements/specs/ADRs embedded, uploaded and deployed to Pages.
 - Renovate: daily self-hosted Renovate using `RENOVATE_TOKEN` (existing repository secret).
+- Release: pushed stable `vX.Y.Z` tags reuse CI/security/Android gates, verify both native container
+  architectures, and publish the multi-platform image plus OCI Helm chart to GHCR. See
+  [releasing and installing](releases-and-helm.md). No customer cluster is deployed by CI.
 
-All workflows support `workflow_dispatch`. GitHub Pages must use the GitHub Actions build
+All non-release workflows support `workflow_dispatch`; release publication requires a tag.
+GitHub Pages must use the GitHub Actions build
 source. Workflow permissions are scoped to the jobs that publish or create audit issues.
 No upstream advisory ignores, ESP targets or machine-specific paths are retained.
 To repeat a run: `gh workflow run <file>.yml --ref main --repo Th3Link/mealshop`.

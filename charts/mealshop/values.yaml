@@ -1,0 +1,38 @@
+image:
+  repository: ghcr.io/th3link/mealshop
+  # Empty tag uses Chart.appVersion. A digest takes precedence over the tag.
+  tag: ""
+  digest: ""
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+nextcloud:
+  url: ""
+  # Browser-facing notification links; defaults to url.
+  publicUrl: ""
+appApi:
+  existingSecret: ""
+  secretKey: APP_SECRET
+
+service:
+  port: 23000
+persistence:
+  existingClaim: ""
+  # Empty uses the cluster default StorageClass.
+  storageClass: ""
+  size: 10Gi
+  annotations: {}
+  labels: {}
+
+# Initial sizing, not a load-test result.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+nodeSelector: {}
+tolerations: []
+affinity: {}

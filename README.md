@@ -21,139 +21,31 @@ The broader product features below remain planned.
 
 ## Install in Nextcloud 35
 
-Mealshop is an **External App (`ExApp`)**: its Rust backend runs in a separate container and its Vue
-interface appears inside Nextcloud. Do not copy this repository into Nextcloud's `apps/` directory.
-There is currently no published Mealshop app-store package or public image; build the image locally.
+Mealshop is an **External App (`ExApp`)**: the released container runs the Rust backend and Vue
+interface, integrated through Nextcloud `AppAPI`. Do not copy this repository into Nextcloud's `apps/`.
 
-The following is the manual-install path used for development/test deployments. It assumes an existing
-Docker-based Nextcloud 35 with `AppAPI` 35 installed, administrator/`occ` access, Git, Python 3 and Docker.
-For `HaRP` or Nextcloud AIO, configure the daemon using the
-[official Nextcloud guide](https://docs.nextcloud.com/server/stable/admin_manual/exapps_management/AppAPIAndExternalApps.html)
-first; automated Mealshop deployment through `HaRP` has not been verified by this project.
+Stable tags `vX.Y.Z` publish Linux AMD64/ARM64 images to `ghcr.io/th3link/mealshop` and an OCI Helm
+chart to `oci://ghcr.io/th3link/charts/mealshop` after all release gates pass. The first tagged
+publication is still pending; use a version whose **Release** workflow has succeeded.
 
-1. **Enable `AppAPI` and identify your existing network.** Install `AppAPI` from Nextcloud's Apps page if
-   necessary. Replace the container/network names and URL below. The URL must be reachable **from the
-   Mealshop container** and accepted by Nextcloud's existing `trusted_domains`; a container's
-   `localhost` refers to that container itself. Prefer your normal HTTPS URL with a valid certificate.
+With Nextcloud 35/`AppAPI` 35 and a dedicated existing `APP_SECRET` Secret, install the matching chart:
 
-   ```sh
-   export NEXTCLOUD_CONTAINER=your-nextcloud-container
-   export NEXTCLOUD_NETWORK=your-nextcloud-docker-network
-   export NEXTCLOUD_URL=https://cloud.example.org
-   docker exec -u www-data "$NEXTCLOUD_CONTAINER" php occ app:enable app_api
-   docker exec -u www-data "$NEXTCLOUD_CONTAINER" php occ app_api:app:list
-   docker network ls
-   ```
+```sh
+helm upgrade --install mealshop oci://ghcr.io/th3link/charts/mealshop \
+  --version 0.1.0 --namespace nextcloud \
+  --set nextcloud.url=https://cloud.example.org \
+  --set appApi.existingSecret=mealshop-appapi \
+  --set persistence.storageClass=longhorn --wait
+```
 
-   These are fresh-install steps. If `mealshop` is already registered, reuse its existing secret and
-   data directory; follow the [deployment/update notes](docs/guides/nextcloud.md#container-artifact-and-verified-test-deployment)
-   instead of creating another registration.
+Set your actual URL, Secret and storage class. The chart uses a retained PVC and a single rootless
+writer; browser requests use Nextcloud's authenticated `AppAPI` proxy. Complete the one-time `AppAPI`
+registration before opening Mealshop. See the [Flux example](deploy/helm/flux-example.yaml) and
+[release, installation and recovery guide](docs/guides/releases-and-helm.md) for the full workflow,
+secret handling and package visibility. No local image build is needed for a published release.
 
-2. **Clone and build.** Run the host commands as the non-root user who will own Mealshop's data.
-   The Dockerfile builds both the backend and the Nextcloud frontend; Node/Rust need not be installed
-   separately on the host.
-
-   ```sh
-   git clone https://github.com/Th3Link/mealshop.git
-   cd mealshop
-   docker build -t mealshop.local/mealshop:0.1.0 .
-   ```
-
-3. **Create private configuration and persistent storage.** This generates one random secret shared
-   by the container and `AppAPI` registration, and takes the version/routes from `appinfo/info.xml`.
-   It refuses to overwrite existing configuration. Both generated files contain credentials: keep
-   them private, do not commit them or paste their contents into logs/issues, and disable shell tracing.
-
-   ```sh
-   python3 - <<'PY'
-   import json
-   import os
-   from pathlib import Path
-   import secrets
-   import xml.etree.ElementTree as ET
-
-   directory = Path('var/nextcloud')
-   environment = directory / 'mealshop.env'
-   registration = directory / 'mealshop-registration.json'
-   if environment.exists() or registration.exists():
-       raise SystemExit('Existing configuration found; reuse it instead of regenerating secrets.')
-   data = directory / 'data'
-   if data.exists() and any(data.iterdir()):
-       raise SystemExit('Existing app data found; reuse its matching registration and configuration.')
-   os.umask(0o077)
-   directory.mkdir(parents=True, exist_ok=True)
-   data.mkdir(mode=0o700, exist_ok=True)
-   data.chmod(0o700)
-   manifest = ET.parse('appinfo/info.xml').getroot()
-   secret = secrets.token_hex(32)
-   routes = []
-   for route in manifest.findall('./external-app/routes/route'):
-       entry = {field.tag: field.text for field in route}
-       entry['access_level'] = {'PUBLIC': 0, 'USER': 1, 'ADMIN': 2}[entry['access_level']]
-       if 'headers_to_exclude' in entry:
-           entry['headers_to_exclude'] = json.loads(entry['headers_to_exclude'])
-       routes.append(entry)
-   values = {
-       'APP_ID': 'mealshop', 'APP_VERSION': manifest.findtext('version'),
-       'APP_SECRET': secret, 'APP_HOST': '0.0.0.0', 'APP_PORT': '23000',
-       'NEXTCLOUD_URL': os.environ['NEXTCLOUD_URL'],
-       'APP_PERSISTENT_STORAGE': '/nc_app_mealshop_data',
-       'MEALSHOP_ASSET_DIR': '/opt/mealshop/web',
-   }
-   environment.write_text(''.join(f'{key}={value}\n' for key, value in values.items()))
-   registration.write_text(json.dumps({
-       'id': 'mealshop', 'name': manifest.findtext('name'),
-       'version': manifest.findtext('version'), 'secret': secret, 'port': 23000,
-       'routes': routes,
-   }))
-   environment.chmod(0o600)
-   registration.chmod(0o600)
-   PY
-   ```
-
-   `var/nextcloud/data` is the example bind mount for household data. For a durable installation, choose
-   a dedicated backed-up directory and use its absolute path in the mount below. Keep exactly one
-   Mealshop writer per data directory.
-
-4. **Start Mealshop on the same Docker network.** No backend port is published to the internet.
-   Nextcloud reaches the container as `mealshop:23000`; browsers use the authenticated `AppAPI` proxy.
-
-   ```sh
-   docker run -d --name mealshop --restart unless-stopped \
-     --network "$NEXTCLOUD_NETWORK" --user "$(id -u):$(id -g)" \
-     --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
-     --env-file "$PWD/var/nextcloud/mealshop.env" \
-     --mount "type=bind,src=$PWD/var/nextcloud/data,dst=/nc_app_mealshop_data" \
-     mealshop.local/mealshop:0.1.0
-   ```
-
-5. **Register and enable the `ExApp`.** The manual daemon's host is the container name, without the
-   port; the private JSON supplies port and secret. No default daemon is changed by these commands.
-   Run registration from a trusted administrator shell: `--json-info` passes the private JSON as a
-   process argument, so do not enable tracing or record expanded commands.
-
-   ```sh
-   docker exec -u www-data "$NEXTCLOUD_CONTAINER" php occ app_api:daemon:register \
-     mealshop_manual "Mealshop manual" manual-install http mealshop "$NEXTCLOUD_URL" \
-     --net "$NEXTCLOUD_NETWORK"
-   docker exec -u www-data "$NEXTCLOUD_CONTAINER" php occ app_api:app:register \
-     mealshop mealshop_manual \
-     --json-info "$(cat var/nextcloud/mealshop-registration.json)" --wait-finish
-   docker exec -u www-data "$NEXTCLOUD_CONTAINER" php occ app_api:app:enable mealshop
-   docker exec -u www-data "$NEXTCLOUD_CONTAINER" php occ app_api:app:list
-   ```
-
-6. **Open Mealshop in Nextcloud.** Refresh Nextcloud's app navigation, open Mealshop and create your
-   household or accept an invitation. `app_api:app:list` should show `mealshop` as enabled. For startup
-   failures, check the container's health and confirm the network, callback URL, matching secret and
-   writable data mount; keep credentials and household contents out of shared diagnostic output.
-
-For backups, retain Mealshop's data directory, private configuration and the corresponding Nextcloud
-`AppAPI` registration together. Updates reuse that secret and mount. Do not start the standalone/demo
-server against the same data or remove data volumes to repair an installation. The
-[detailed Nextcloud guide](docs/guides/nextcloud.md) covers trust boundaries, recovery and the existing
-Compose deployment; the [Android guide](docs/guides/mobile-capture.md#install-on-a-smartphone) covers
-connecting a phone after Nextcloud is running.
+The [Nextcloud development guide](docs/guides/nextcloud.md) retains local/test transport details;
+the [Android guide](docs/guides/mobile-capture.md#install-on-a-smartphone) covers phone connection.
 
 ## Run the ingredient and nutrition demo
 Install stable Rust (declared minimum: 1.85), then:

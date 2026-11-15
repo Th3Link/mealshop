@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mealshop.fullname" . }}
+  labels:
+    {{- include "mealshop.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "mealshop.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mealshop.selectorLabels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mealshop
+          image: {{ include "mealshop.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          env:
+            - name: APP_ID
+              value: mealshop
+            - name: APP_VERSION
+              value: {{ .Chart.AppVersion | quote }}
+            - name: APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "Set appApi.existingSecret to your installation secret" .Values.appApi.existingSecret | quote }}
+                  key: {{ .Values.appApi.secretKey | quote }}
+            - name: APP_HOST
+              value: "0.0.0.0"
+            - name: APP_PORT
+              value: {{ .Values.service.port | quote }}
+            - name: NEXTCLOUD_URL
+              value: {{ required "Set nextcloud.url to your reachable Nextcloud URL" .Values.nextcloud.url | trimSuffix "/" | quote }}
+            - name: MEALSHOP_PUBLIC_NEXTCLOUD_URL
+              value: {{ default .Values.nextcloud.url .Values.nextcloud.publicUrl | trimSuffix "/" | quote }}
+            - name: APP_PERSISTENT_STORAGE
+              value: /nc_app_mealshop_data
+            - name: MEALSHOP_ASSET_DIR
+              value: /opt/mealshop/web
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+          startupProbe:
+            httpGet:
+              path: /heartbeat
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet:
+              path: /heartbeat
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /heartbeat
+              port: http
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /nc_app_mealshop_data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "mealshop.claim" . }}
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
