@@ -1,4 +1,5 @@
 const captureMessages = <String, (String, String)>{
+  'capture_zoom': ('Open original image', 'Originalbild öffnen'),
   'capture_assign': ('Assign recognized lines', 'Erkannte Zeilen zuordnen'),
   'capture_assign_help': (
     'Use + to assign original lines to title, ingredients or instructions. Unassigned text stays in the original source. Quantities and ingredient identities are reviewed next.',

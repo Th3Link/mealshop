@@ -55,6 +55,7 @@ class _LabelCaptureState extends State<LabelCapture> {
                 PrivateImage(
                   widget.api,
                   '${widget.api.domain}/household/images/${object(label['photo'])['image_id']}',
+                  original: true,
                 ),
                 SelectableText(object(label['photo'])['text'] as String),
                 SectionTitle(context.t('capture_basis')),
@@ -103,6 +104,7 @@ class _LabelCaptureState extends State<LabelCapture> {
                   PrivateImage(
                     widget.api,
                     '${widget.api.domain}/household/images/${object(label['photo'])['image_id']}',
+                    original: true,
                   ),
                   SelectableText(object(label['photo'])['text'] as String),
                   EditText(

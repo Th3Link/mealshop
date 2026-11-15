@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +12,7 @@ import 'package:mealshop/content/api.dart';
 import 'package:mealshop/ui/recipe_editor.dart';
 import 'package:mealshop/ui/label_capture.dart';
 import 'package:mealshop/ui/capture_classify.dart';
+import 'package:mealshop/ui/content_common.dart';
 
 import 'content_fixtures.dart';
 import 'people_library_test.dart' show app;
@@ -187,6 +191,95 @@ void main() {
       expect(find.text('Ingredients'), findsOneWidget);
       expect(find.text('Original only'), findsNWidgets(2));
       await tester.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'wide original photos keep both source edges visible and open a zoomable view',
+    (tester) async {
+      final f = ContentFixture();
+      await f.start();
+      final png = await tester.runAsync(() async {
+        final r = ui.PictureRecorder(), c = ui.Canvas(r);
+        c.drawColor(const ui.Color(0xffffffff), ui.BlendMode.src);
+        c.drawRect(
+          const ui.Rect.fromLTWH(0, 0, 40, 100),
+          ui.Paint()..color = const ui.Color(0xffff0000),
+        );
+        c.drawRect(
+          const ui.Rect.fromLTWH(360, 0, 40, 100),
+          ui.Paint()..color = const ui.Color(0xff0000ff),
+        );
+        final p = r.endRecording(), image = await p.toImage(400, 100);
+        p.dispose();
+        final b = (await image.toByteData(format: ui.ImageByteFormat.png))!
+            .buffer
+            .asUint8List();
+        image.dispose();
+        return b;
+      });
+      f.respond = (request) async =>
+          request.url.path.endsWith('/images/image-00000001.png')
+          ? http.Response.bytes(
+              png!,
+              200,
+              headers: {'content-type': 'image/png'},
+            )
+          : null;
+      const key = ValueKey('source-boundary');
+      await tester.pumpWidget(
+        app(
+          Scaffold(
+            body: RepaintBoundary(
+              key: key,
+              child: SizedBox(
+                width: 320,
+                child: PrivateImage(
+                  HouseholdApi(f.controller),
+                  '${HouseholdApi(f.controller).domain}/household/images/image-00000001.png',
+                  original: true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+      expect(find.byType(Image), findsOneWidget);
+      await tester.runAsync(
+        () => precacheImage(
+          tester.widget<Image>(find.byType(Image)).image,
+          tester.element(find.byType(Image)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(key),
+      );
+      await tester.runAsync(() async {
+        final raster = await boundary.toImage();
+        expect(raster.width, 320);
+        final pixels = await raster.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        expect(
+          pixels!.getUint8((100 * raster.width + 2) * 4),
+          greaterThan(200),
+        );
+        expect(
+          pixels.getUint8((100 * raster.width + 317) * 4 + 2),
+          greaterThan(200),
+        );
+        raster.dispose();
+      });
+      await tester.tap(find.text('Open original image'));
+      await tester.pumpAndSettle();
+      expect(find.byType(InteractiveViewer), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      f.controller.dispose();
     },
   );
 }

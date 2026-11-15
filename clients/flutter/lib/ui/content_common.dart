@@ -308,31 +308,89 @@ Future<void> runAction(
 }
 
 class PrivateImage extends StatefulWidget {
-  const PrivateImage(this.api, this.path, {super.key});
+  const PrivateImage(this.api, this.path, {super.key, this.original = false});
   final HouseholdApi api;
   final String path;
+  final bool original;
   @override
   State<PrivateImage> createState() => _PrivateImageState();
 }
 
 class _PrivateImageState extends State<PrivateImage> {
   late final Future<Uint8List> bytes = widget.api.image(widget.path);
+  void zoom(Uint8List data) {
+    if (!widget.api.current) return;
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(title: Text(context.t('capture_original'))),
+          body: SafeArea(
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 6,
+              child: Center(
+                child: Image.memory(
+                  data,
+                  cacheWidth: 2048,
+                  fit: BoxFit.contain,
+                  semanticLabel: context.t('capture_original'),
+                  errorBuilder: (_, error, stack) =>
+                      Note(context.t('image_invalid')),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => FutureBuilder<Uint8List>(
     future: bytes,
-    builder: (context, snapshot) => snapshot.hasData
-        ? Image.memory(
-            snapshot.data!,
-            cacheWidth: 1080,
-            height: 200,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            excludeFromSemantics: true,
-          )
-        : const SizedBox(
-            height: 100,
-            child: Center(child: Icon(Icons.restaurant_outlined)),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return SizedBox(
+          height: 100,
+          child: Center(
+            child: Icon(
+              widget.original
+                  ? Icons.photo_outlined
+                  : Icons.restaurant_outlined,
+            ),
           ),
+        );
+      }
+      final image = Image.memory(
+        snapshot.data!,
+        cacheWidth: 1080,
+        height: 200,
+        width: double.infinity,
+        fit: widget.original ? BoxFit.contain : BoxFit.cover,
+        excludeFromSemantics: true,
+        errorBuilder: (_, error, stack) => Note(context.t('image_invalid')),
+      );
+      if (!widget.original) return image;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            button: true,
+            label: context.t('capture_zoom'),
+            child: InkWell(onTap: () => zoom(snapshot.data!), child: image),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => zoom(snapshot.data!),
+              icon: const Icon(Icons.zoom_in),
+              label: Text(context.t('capture_zoom')),
+            ),
+          ),
+        ],
+      );
+    },
   );
 }
 

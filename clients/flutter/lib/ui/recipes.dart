@@ -255,12 +255,6 @@ class _RecipeDetailState extends State<RecipeDetail> {
         return ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            if (!shared && data['import_source'] != null)
-              ImportOriginal(
-                widget.api,
-                object(data['import_source']),
-                object(object(data['import_source'])['original']),
-              ),
             if (object(recipe['origin'] ?? <String, dynamic>{})['kind'] ==
                 'captured')
               Note(context.t('capture_private_source')),
@@ -476,6 +470,13 @@ class _RecipeDetailState extends State<RecipeDetail> {
               const Divider(),
             ],
             NutritionView(object(scaled?['nutrition'] ?? data['nutrition'])),
+            if (!shared && data['import_source'] != null)
+              ImportOriginal(
+                widget.api,
+                object(data['import_source']),
+                object(object(data['import_source'])['original']),
+              ),
+
             if (!shared)
               OutlinedButton.icon(
                 onPressed: () =>

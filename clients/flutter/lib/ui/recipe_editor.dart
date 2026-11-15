@@ -874,6 +874,7 @@ class ImportOriginal extends StatelessWidget {
         PrivateImage(
           api,
           '${api.domain}/household/images/${object(source['capture'])['image_id']}',
+          original: true,
         ),
         SelectableText(object(source['capture'])['text'] as String),
       ],
