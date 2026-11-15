@@ -593,7 +593,7 @@ name = "mealshop-server"
 version = "0.1.0"
 dependencies = [
  "axum",
- "base64 0.22.1",
+ "base64 0.23.1",
  "html5ever",
  "jiff",
  "reqwest",
