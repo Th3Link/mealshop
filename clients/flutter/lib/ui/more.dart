@@ -14,6 +14,9 @@ import 'ingredients.dart';
 import 'collections.dart';
 import 'sharing.dart';
 import 'stock.dart';
+import 'cooking.dart';
+import 'brewing.dart';
+import 'history.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen(this.c, {super.key});
@@ -43,6 +46,13 @@ class MoreScreen extends StatelessWidget {
       if (c.home != null) ...[
         SectionTitle(context.t('library')),
         for (final item in <(String, IconData, Widget)>[
+          (
+            'cookingSessions',
+            Icons.restaurant_outlined,
+            CookingScreen(HouseholdApi(c)),
+          ),
+          ('brewing', Icons.science_outlined, BrewingScreen(HouseholdApi(c))),
+          ('history', Icons.history, HistoryScreen(HouseholdApi(c))),
           ('stock', Icons.kitchen_outlined, StockScreen(HouseholdApi(c))),
           ('people', Icons.people_outline, PeopleScreen(HouseholdApi(c))),
           (
@@ -137,13 +147,13 @@ class MoreScreen extends StatelessWidget {
         onTap: () => showLicensePage(
           context: context,
           applicationName: 'Mealshop',
-          applicationVersion: '0.3.0',
+          applicationVersion: '0.4.0',
           applicationLegalese: 'AGPL-3.0-only',
         ),
       ),
       const Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Text('Mealshop · 0.3.0 · AGPL-3.0-only'),
+        child: Text('Mealshop · 0.4.0 · AGPL-3.0-only'),
       ),
     ],
   );

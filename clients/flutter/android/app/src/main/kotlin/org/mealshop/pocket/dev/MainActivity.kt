@@ -7,12 +7,15 @@ import android.os.Looper
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        DeviceReminders.permissionResult(applicationContext, requestCode)
+    }
     companion object {
         // Activity recreation must not create a second writer to the same atomic file.
-        private val worker = Executors.newSingleThreadExecutor()
+        private val worker = DeviceReminders.worker
     }
     private var exportResult: MethodChannel.Result? = null
     private var exportValue: ByteArray? = null
@@ -42,6 +45,8 @@ class MainActivity : FlutterActivity() {
     }
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.mealshop/reminders")
+            .setMethodCallHandler { call, result -> DeviceReminders.handle(this, call, result) }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.mealshop/documents")
             .setMethodCallHandler { call, result ->
                 if (call.method != "export" || exportResult != null) {

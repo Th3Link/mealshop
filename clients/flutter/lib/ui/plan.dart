@@ -13,6 +13,7 @@ import 'stock.dart';
 import 'plan_shopping.dart';
 import 'recipes.dart';
 import 'prepared_editor.dart';
+import 'preparation_agenda.dart';
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen(
@@ -127,6 +128,7 @@ class _PlanScreenState extends State<PlanScreen> {
           ),
         ),
         if (!widget.api.writable) Note(context.t('household_read_only')),
+        PreparationAgenda(widget.api, day),
         ..._preparations(context, data, reload),
         for (final meal in mealKeys) _meal(context, data, meal, reload),
         const SizedBox(height: 16),
@@ -272,6 +274,10 @@ class _PlanScreenState extends State<PlanScreen> {
                     tooltip: context.t('meal_actions'),
                     itemBuilder: (context) => [
                       PopupMenuItem(
+                        value: 'cook',
+                        child: Text(context.t('cookFromRecipe')),
+                      ),
+                      PopupMenuItem(
                         value: 'edit',
                         child: Text(context.t('edit_meal')),
                       ),
@@ -283,7 +289,19 @@ class _PlanScreenState extends State<PlanScreen> {
                     onSelected: (action) async {
                       await openPage<void>(
                         context,
-                        action == 'record'
+                        action == 'cook'
+                            ? RecipeDetail(
+                                widget.api,
+                                object(p['recipe'])['id'] as String,
+                                revision:
+                                    object(p['recipe'])['revision'] as int,
+                                cookingPlanSlot: {
+                                  'date': p['date'],
+                                  'meal': p['meal'],
+                                },
+                                cookingServings: p['servings'] as int,
+                              )
+                            : action == 'record'
                             ? PreparedEditor(widget.api, data, source: p)
                             : MealEditor(widget.api, data, plan: p),
                       );
@@ -303,6 +321,8 @@ class _PlanScreenState extends State<PlanScreen> {
                     widget.api,
                     object(p['recipe'])['id'] as String,
                     revision: object(p['recipe'])['revision'] as int,
+                    cookingPlanSlot: {'date': p['date'], 'meal': p['meal']},
+                    cookingServings: p['servings'] as int,
                   ),
                 );
               }
@@ -358,6 +378,8 @@ class _PlanScreenState extends State<PlanScreen> {
               widget.api,
               object(p['recipe'])['id'] as String,
               revision: object(p['recipe'])['revision'] as int,
+              cookingPlanSlot: {'date': p['date'], 'meal': p['meal']},
+              cookingServings: p['servings'] as int,
             ),
           );
           await reload();

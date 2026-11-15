@@ -101,6 +101,36 @@ explicit pull without repeatedly downloading the whole catalogue in the backgrou
 polling remains unchanged. Source guidance: [Flutter large-font design](https://docs.flutter.dev/ui/accessibility/ui-design-and-styling)
 and [date-only Material picker semantics](https://api.flutter.dev/flutter/material/showDatePicker.html).
 
+## P4 interaction contract
+
+Keep the same five destinations and existing Material controls/system typography. Today and a recipe
+lead into real cooking; More exposes Cooking & baking, Brewing and Cooking history. Sessions are
+compact lists with visible active/paused/overdue counts and next action. A session shows readable,
+always-open steps and their explicitly assigned ingredients/parts. Missing step assignment is labelled
+as recipe reference, never invented. Timers have stable tabular text, named deadlines, independent
+controls and explicit completion; elapsed passive time is not physical readiness.
+
+Create/replan review shows canonical old/new local times, timezone/fold, dependencies, windows and
+warnings. Forms keep drafts on conflicts. Optional details use plus actions; entered phases stay open.
+Disconnected cooking remains readable with cache age. Saved timer intents remain visibly pending or
+unknown until confirmed; conflicts require fresh explicit review. Uncertain requests keep their body
+and key. Do not block the whole recipe behind network retry or turn a disconnected action green.
+
+Local reminders and personal Nextcloud subscriptions are separate, default-off controls. Request OS
+permission only from explicit enable. Show denied/unsupported/inexact/limited status and the last
+authorization horizon. Notifications use generic private text and open the app; they never complete
+work. Recipe/batch removal, replanning, opt-out and scope closure cancel obsolete local events.
+
+Brewing uses a source-linked method picker, always-open phases, exact entered quantities/readings,
+explicit unknown calibration and before/after batch review. Food history asks for actual attendees,
+optional reported effort/ratings and a completion confirmation. Learning scope/reset and bulk deletion
+remain separate owner-only actions. No new nutrition, readiness or device-control claims.
+
+Every new screen has labelled 48dp controls, wrapping layouts at 320dp/200% and landscape, native back,
+reader/offline/conflict/empty/error states, dark mode and semantic action names. Use a focused
+`ChangeNotifier` for shared recovery state; UI `setState` only owns transient screen state. This applies
+the verified UI-UX-Pro-Max Flutter state guidance without adding another state-management package.
+
 ## P2 screen contract
 
 Keep the established Material theme, system typography and 4/8dp spacing. UI-UX-Pro-Max contributes
@@ -122,3 +152,19 @@ current access. Owners without a grant see Manage access; Grant myself access is
 Permission forms distinguish read and edit, with visible current recipients and a revocation action.
 Activity records are online-only; errors retain a draft, no kcal is calculated, and exports require
 current per-person access. A household/account switch disposes every open sensitive route.
+
+
+## P4 cooking, brewing and feedback
+
+Native Material surfaces retain the existing five destinations; Cooking & baking, Brewing and Cooking
+history live in More and have contextual meal/recipe links. Steps stay open with 22sp readable
+instructions, explicit ingredients/dependencies and independent absolute timers. Optional values use
+plus actions; unknown durations/calibration/ratings remain visible unknowns. Day agenda labels each
+process timezone and distinguishes planned start from actual deadline. Brewing uses three tabs with
+stable-focus search and separate recipe/equipment/batch review, not fake food servings.
+
+Local device reminders and personal server subscriptions are separate switches. Opt-in names Android
+permission/inexact delivery and the seven-day horizon. Pending, uncertain, rejected and confirmed work
+are distinct; review never silently changes a frozen request. Generic private notification text avoids
+recipe/profile names. History explains household visibility before collecting attendees/ratings and
+keeps learning/reset/bulk deletion owner-controlled. Large text uses wrapping controls and open steps.

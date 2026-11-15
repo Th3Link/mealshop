@@ -3,7 +3,7 @@
 F35 P1 provides native shared shopping against the existing Nextcloud installation. Rust remains the
 authority for quantities, membership and shopping transactions. P1 delivered Shopping/More and P2 delivered Recipes and people. P3 activates all five
 destinations: Today, Plan, Shopping, Recipes and More. [Planning and stock](mobile-planning.md)
-documents the P3 server/client contract; cooking and capture remain P4/P5.
+documents the P3 server/client contract. P4 adds [cooking, fermentation and recovery](mobile-cooking.md); capture remains P5.
 
 ## Toolchain and emulator
 
@@ -209,3 +209,20 @@ to disk on the phone. P3 writes need a connection; shopping keeps P1 offline beh
 Normal installation inspects the actual APK application ID and uses `install -r`. The dedicated
 emulator cold-boots retained data without loading/saving Quick Boot snapshots; physical keyboard
 input stays enabled. Do not uninstall, reset the AVD or clear app data for this upgrade.
+
+
+## P4 cooking and fermentation upgrade
+
+Version `0.4.0+5` keeps the retained development package/key (split APK codes 1005/2005/4005).
+Use `python3 scripts/mobile.py build` then `python3 scripts/mobile.py install` for an in-place upgrade;
+never uninstall or clear storage. More now includes Cooking & baking, Brewing and Cooking history.
+The day plan links cooking starts and shows canonical preparation/timer agenda entries. Read
+[recovery and reminder limits](mobile-cooking.md) before relying on local alarms for a long process.
+Native emulator/live verification and exact final-source APK/deployment identities are recorded in
+F35 verification and its PR; physical handset/`TalkBack`/release-profile acceptance remains open.
+
+
+A local loopback test server needs its ADB reverse tunnel after each AVD reboot. Re-running the
+retained-key `install` command restores it without clearing data. To restore only the development
+tunnel, run `var/mobile/android-sdk/platform-tools/adb -P 5038 -s emulator-5556 reverse tcp:8080 tcp:8080`.
+Without this tunnel the app is correctly offline; device alarms still use their saved absolute deadlines.

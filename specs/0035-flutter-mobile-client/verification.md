@@ -302,3 +302,117 @@ These are one diagnostic sample per implementation, not a release/device/network
 28 results remain canonically feasible; ordinary/date-override/physical-stock/stale/replay tests pass.
 The bounded cache contains only immutable per-request assessment facts; fresh slot constraints and
 apply-time checks remain mandatory.
+
+
+## P4 implementation checkpoints (in progress)
+
+The customer merged P3 in PR #48 and authorized P4 in one frontend/backend PR. Branch:
+`story/flutter-cooking-fermentation`, base `d3b6dc7`. No retained household data is used as fixtures.
+
+First cooking checkpoint: seven Rust cooking contracts pass, including immutable request replay after
+lost response/restart, explicit reported-action review without publication and exact per-step ingredient
+scope. Strict workspace Clippy passes. Food actions use the existing atomic 4 MiB process store;
+normal reads exclude private receipt keys. Preview and apply take plans before cooking, matching
+inventory lock order and rechecking a linked production before publication.
+
+Flutter format/analyze and **56 unit/widget tests** pass at this checkpoint. New cases cover exact
+request restoration, ordered independent offline intents, wall-clock change/new boot, generation-based
+private reminder projections, revocation cleanup, explicit schedule confirmation and always-open
+step ingredients at 320dp/200% German text. The Android platform adapter compiles into all three ABI
+APKs; actual OS permission/background/reboot delivery checks remain pending. No local integration
+uninstall/reset is used. Final source/APK identities and full gates are still required.
+
+Remaining P4 checkpoints: combined preparation-calendar entry points, complete native brewing/history/
+learning flows, actual Nextcloud/emulator journeys, retained-key upgrade, synthetic fixture cleanup,
+all repository/browser/security gates and current-head CI. P4 is not marked delivered by this checkpoint.
+
+
+## P4 implementation evidence
+
+Status: implemented for review in PR #49 on `story/flutter-cooking-fermentation`.
+Final exact-head CI and APK/container identities are recorded on the PR before it is ready. No physical handset, `TalkBack`, release-mode performance or guaranteed notification delivery
+is inferred from these development checks.
+
+- Initial feature checkpoint: `python3 scripts/mobile.py flutter analyze` had no issues and
+  `python3 scripts/mobile.py test` passed 63 tests.
+  Recovery covers immutable lost-response replay after restart, independent offline timer intents,
+  wall-clock/new-boot distinction, damaged envelopes, local-copy deletion, reader controls, original
+  readings/corrections, explicit manual history unknowns and 320dp/200% learning/planning views.
+- Mutation review: inverting the cache-version guard fails the actual lost-cooking-response/restart
+  test; the source was restored, and analysis plus the full 63-test suite passed again. The malformed
+  request test alone is intentionally insufficient for a valid-cache version inversion.
+- Mandatory catalogue, i18n, format, strict workspace Clippy, 204 nextest tests, licence, vulnerability
+  and strict generated-rustdoc checks passed. Cooking has nine integration cases, brewing eleven.
+  Calendar cases prove reader authorization, pagination/range bounds, actual timer deadlines and
+  separate manual fermentation. Legacy Vue callers retain their contract.
+- Nextcloud Vitest: 39 tests/12 files; Vite production build and production npm audit passed.
+  Flutter package verification: all 68 locked licences and OSV's 60 external Pub packages passed.
+  No Rust crate, Flutter package, new font or design system was added.
+- All three development APKs compile with the retained key. Their interim dirty-source metadata is
+  not final delivery identity; final clean-source versions/checksums belong to the P4 PR.
+
+
+### P4 real platform and test-instance proof
+
+- Real Nextcloud 35/AppAPI: a new ledger-owned synthetic household was used for keyed cooking
+  create/timer replay, parallel actual timers, exact `100.000001 g`, reader denial, the combined agenda,
+  source-linked mead/equipment/batch review and append-only `1.053000 → 1.054001 SG` correction.
+  The phone opened that actual pinned batch/equipment DTO and saved a manual completed cook with
+  effort/household/profile ratings still unknown. Completed food steps were confirmed individually;
+  neither timers nor history silently moved physical stock.
+- The retained development app upgraded in place from P3 to `0.4.0+5` with the existing package/key and
+  sign-in. Actual process identity changed after force-stop/relaunch while the test-server forwarding
+  was deliberately absent; the encrypted own step copy reopened offline. After an AVD reboot, both
+  original absolute timer deadlines produced Android notices without foreground opening. Reconnecting
+  retained exactly those two event identities; opt-out removed all own notices. Android may add a
+  group summary, which is not a third deadline event. Exact permission was enabled only for this
+  dedicated test package for the timed reboot proof; ordinary denial/inexact fallback remains supported.
+- Fresh-run CI native integration passed **42 tests**, including protected storage, actual method-channel
+  clock/projection cancellation and the controller/widget cooking/brewing/history journeys. The native
+  projection test validates whichever notification permission is actually granted; it does not fake a
+  granted permission or assume exact delivery. All 12 PR checks passed at the first reviewed head;
+  the final exact head is checked separately on the PR.
+- Existing embedded Nextcloud cooking, brewing and feedback browser journeys passed **all nine cases**.
+  The first broad run had two browser-start/locator timeouts; seven completed successfully and the two
+  affected brewing cases passed their isolated 1.5-minute retake. No assertion, timeout or permission
+  gate was weakened. These tests include source-linked non-beer flows, reader controls, concurrency,
+  offline recovery, pinned readings, history/learning and native web accessibility checks.
+- Actual Android light and dark/200% text captures use only this run's synthetic data. Display settings
+  were restored. The desktop emulator graphics path was unstable; retained-data headless software
+  rendering provided the reliable final native proof. Crash-report prompting is disabled through the
+  installed SDK's documented option; no report is uploaded. Hardware keyboard configuration remains on.
+- Final polish keeps countdown ticks inside their own small widget, leaving step instructions and
+  exact ingredient lists stable, and removes duplicated IANA suffixes from day-agenda time labels while
+  retaining the explicit UTC offset/timezone. Final analysis/tests additionally cover a readable pre-P4 server without unreceipted writes,
+  custom-only cooking steps retaining the full offline ingredient reference, and an explicit retained
+  manual-history review after concurrent household/profile changes. Final counts are recorded on the PR.
+
+Physical-device delivery, `TalkBack`, additional Android versions, manufacturer battery policies,
+release-mode profiling, iOS/APNs/FCM, P5 capture and independent personal plans remain open. Debug
+emulator proof is not a guarantee of alarms, fermentation readiness or real-world recommendation quality.
+
+- Actual Android notification revocation was exercised on the dedicated package; own notices remained
+  absent. The prior notification grant and default alarm policy were restored, with local opt-in off.
+
+
+### P4 final local gate and cleanup
+
+Final strict Flutter analysis and **65 unit/widget tests** pass after the retained-history conflict,
+custom-only ingredient-reference and pre-P4 protocol checks. The three development ABIs compile.
+All 204 Rust tests and mandatory security/documentation gates pass; exact final-head CI and artifact
+checksums are the separate PR-readiness evidence recorded on PR #49.
+
+All **11** households created by this run's native/browser fixtures were verified against the new
+ledger interval and exact synthetic data names, then archived with the `ExApp` writer stopped.
+Retained household directories were never inspected or copied. Retained membership entries, activity
+epochs, collection metadata and the monotonic next household ID were compared unchanged in memory.
+The test container restarted healthy. No customer household, account, protected sign-in or AVD data
+was reset. The phone closes the removed scope and cancels its own projections on refreshed membership.
+All screenshots below contain synthetic records only.
+
+- [Native cooking with pinned ingredient reference](screenshots/p4-cooking-steps.png)
+- [Offline recovery after a new process/boot](screenshots/p4-offline-recovery.png)
+- [Real source-linked batch](screenshots/p4-brewing-batch.png)
+- [Dark mode with 200% text](screenshots/p4-brewing-dark-large.png)
+- [Explicit actual cooking history](screenshots/p4-history-form.png)
+- [Preparation agenda](screenshots/p4-plan-agenda.png)

@@ -740,3 +740,41 @@ async fn fermentation_reservations_block_beer_and_manual_completion_releases_the
         2
     );
 }
+
+#[tokio::test]
+async fn preparation_agenda_includes_manual_fermentation_and_excludes_archived_batches() {
+    let directory = Directory::new();
+    let app = directory.app().unwrap();
+    let (request, _) = fermentation_case(&app, "traditional-mead", "mead").await;
+    let all = ok(&app, "GET", ROOT, Value::Null).await;
+    let run = &all["batches"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|b| b["run"]["brew_recipe"]["id"] == request["command"]["draft"]["recipe_id"])
+        .unwrap()["run"];
+    let id = run["id"].as_str().unwrap();
+    let path = "/api/household/cooking/calendar?from=1894694400&until=1895299200&limit=200";
+    let first = ok(&app, "GET", path, Value::Null).await;
+    assert!(
+        first["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|e| e["run_id"] == id && e["kind"] == "mead")
+    );
+    apply(&app, json!({"operation":"cancel","run_id":id})).await;
+    apply(
+        &app,
+        json!({"operation":"archive_batch","run_id":id,"archived":true}),
+    )
+    .await;
+    let archived = ok(&app, "GET", path, Value::Null).await;
+    assert!(
+        archived["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|e| e["run_id"] != id)
+    );
+}
