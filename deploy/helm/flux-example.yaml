@@ -1,0 +1,34 @@
+# After the matching Release workflow succeeds, add this and your SOPS-encrypted
+# app secret to your existing Flux Kustomization. The namespace already exists.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: mealshop
+  namespace: nextcloud
+spec:
+  interval: 1h
+  url: oci://ghcr.io/th3link/charts/mealshop
+  ref:
+    tag: "0.1.0"
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mealshop
+  namespace: nextcloud
+spec:
+  interval: 10m
+  timeout: 5m
+  chartRef:
+    kind: OCIRepository
+    name: mealshop
+  values:
+    nextcloud:
+      url: https://cloud.example.org
+    appApi:
+      existingSecret: mealshop-appapi
+    persistence:
+      storageClass: longhorn
+      labels:
+        recurring-job.longhorn.io/source: enabled
+        recurring-job-group.longhorn.io/backup: enabled
