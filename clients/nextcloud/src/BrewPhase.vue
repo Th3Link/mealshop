@@ -54,8 +54,7 @@ function waiting(v: number) {
 <template>
   <section class="brew-phase">
     <div class="brew-phase-heading">
-      <span class="brew-step-number" aria-hidden="true">{{ index + 1 }}</span
-      ><LabeledField
+      <span class="brew-step-number" aria-hidden="true">{{ index + 1 }}</span><LabeledField
         v-model="phase.stage.name"
         :label="t('cookStageName')"
         required

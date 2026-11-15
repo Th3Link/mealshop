@@ -72,8 +72,7 @@ function edit(offer: Inventory['offers'][number]['offer']) {
   <ul class="stock-offers">
     <li v-for="item in matching" :key="item.offer.id">
       <div class="stock-lot-name">
-        <strong>{{ stockName(item.offer.binding) }}</strong
-        ><span
+        <strong>{{ stockName(item.offer.binding) }}</strong><span
           >{{ item.offer.shop_name }} · {{ compactExact(item.offer.quantity.amount) }}
           {{ shoppingUnit(item.offer.quantity.unit, item.offer.quantity.amount) }}</span
         ><span
@@ -116,10 +115,11 @@ function edit(offer: Inventory['offers'][number]['offer']) {
               member_ids: [...members],
             })
           "
-          >{{ t('stockOfferAdd') }}</NcButton
-        ><NcButton variant="tertiary" :disabled="busy" @click="edit(item.offer)">{{
-          t('stockOfferEdit')
-        }}</NcButton
+          >{{ t('stockOfferAdd') }}</NcButton><NcButton
+          variant="tertiary"
+          :disabled="busy"
+          @click="edit(item.offer)"
+          >{{ t('stockOfferEdit') }}</NcButton
         ><NcButton
           variant="tertiary"
           :disabled="busy"

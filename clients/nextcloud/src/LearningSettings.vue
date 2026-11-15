@@ -119,8 +119,7 @@ onMounted(load)
                 >{{ person.name }}</NcCheckboxRadioSwitch
               >
               <div v-for="id in missing" :key="id" class="actions">
-                <span>{{ t('historyRemovedPerson') }}</span
-                ><NcButton
+                <span>{{ t('historyRemovedPerson') }}</span><NcButton
                   type="button"
                   @click="members = members.filter((member) => member !== id)"
                   >{{ t('remove') }}</NcButton
@@ -132,8 +131,7 @@ onMounted(load)
               <NcButton
                 type="submit"
                 :disabled="busy || !profiles || !dirty || (enabled && missing.length > 0)"
-                >{{ t('historyLearningSave') }}</NcButton
-              ><NcButton
+                >{{ t('historyLearningSave') }}</NcButton><NcButton
                 type="button"
                 :disabled="busy || !state.policy.enabled"
                 @click="save(true)"

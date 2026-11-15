@@ -161,8 +161,7 @@ function equipmentName(id: string) {
     <div class="actions">
       <NcButton variant="primary" :disabled="disabled || !reviewed" @click="$emit('apply')">{{
         t('save')
-      }}</NcButton
-      ><NcButton :disabled="disabled" @click="$emit('back')">{{ t('back') }}</NcButton>
+      }}</NcButton><NcButton :disabled="disabled" @click="$emit('back')">{{ t('back') }}</NcButton>
     </div>
   </section>
 </template>

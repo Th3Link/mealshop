@@ -34,8 +34,7 @@ const offers = computed(() => (selectedOffer.value ? [selectedOffer.value] : pro
     <h2 id="stock-review-title" tabindex="-1">{{ t('stockPreviewTitle') }}</h2>
     <ul v-if="preview.changes.length" class="stock-change-list">
       <li v-for="change in preview.changes" :key="change.after.id">
-        <strong>{{ stockName(change.after.binding) }}</strong
-        ><span class="muted"
+        <strong>{{ stockName(change.after.binding) }}</strong><span class="muted"
           >{{ change.after.metadata.location
           }}<template v-if="change.after.metadata.batch">
             · {{ change.after.metadata.batch }}</template
@@ -49,8 +48,7 @@ const offers = computed(() => (selectedOffer.value ? [selectedOffer.value] : pro
         >
         <div class="stock-comparison">
           <div>
-            <span>{{ t('stockBefore') }}</span
-            ><strong
+            <span>{{ t('stockBefore') }}</span><strong
               >{{ change.before ? compactExact(change.before.remaining) : t('stockNewLot') }}
               {{
                 change.before ? shoppingUnit(change.before.unit, change.before.remaining) : ''
@@ -60,8 +58,7 @@ const offers = computed(() => (selectedOffer.value ? [selectedOffer.value] : pro
             >
           </div>
           <div>
-            <span>{{ t('stockAfter') }}</span
-            ><strong
+            <span>{{ t('stockAfter') }}</span><strong
               >{{ compactExact(change.after.remaining) }}
               {{ shoppingUnit(change.after.unit, change.after.remaining) }}</strong
             ><span>{{ t('stockReserved') }}: {{ compactExact(change.after.reserved) }}</span

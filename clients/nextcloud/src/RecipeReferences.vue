@@ -18,8 +18,7 @@ function update(value: unknown) {
 </script>
 <template>
   <div class="labeled-field">
-    <label :for="id">{{ label }}</label
-    ><NcSelect
+    <label :for="id">{{ label }}</label><NcSelect
       :input-id="id"
       :disabled="disabled"
       :input-label="label"

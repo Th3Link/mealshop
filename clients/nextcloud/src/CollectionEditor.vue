@@ -82,15 +82,15 @@ function latest(id: string) {
       <h2>{{ t('recipes') }}</h2>
       <p class="muted">{{ t('collectionRevisionHelp') }}</p>
       <div v-if="model.entries.length" class="collection-entry-head" aria-hidden="true">
-        <span>{{ t('collectionRecipe') }}</span
-        ><span>{{ t('revision') }}</span>
+        <span>{{ t('collectionRecipe') }}</span><span>{{ t('revision') }}</span>
       </div>
       <ol class="collection-editor-entries">
         <li v-for="(entry, index) in model.entries" :key="entry.recipe_id">
           <strong>{{ name(entry.recipe_id) }}</strong>
           <div class="collection-revision">
-            <span class="collection-revision-caption" aria-hidden="true">{{ t('revision') }}</span
-            ><LabeledField
+            <span class="collection-revision-caption" aria-hidden="true">{{
+              t('revision')
+            }}</span><LabeledField
               v-model="entry.revision"
               type="number"
               :label="`${t('revision')} · ${name(entry.recipe_id)}`"

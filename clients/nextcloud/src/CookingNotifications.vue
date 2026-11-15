@@ -61,10 +61,13 @@ const deliveryKeys = {
     <p>{{ t('cookNotificationHelp') }}</p>
     <NcNoteCard v-if="!detail.notification_transport" type="info">{{
       t('cookNoTransport')
-    }}</NcNoteCard
-    ><NcNoteCard v-if="permission === 'denied' || permission === 'unsupported'" type="warning">{{
-      t(permission === 'denied' ? 'cookPermissionDenied' : 'cookPermissionUnsupported')
-    }}</NcNoteCard>
+    }}</NcNoteCard><NcNoteCard
+      v-if="permission === 'denied' || permission === 'unsupported'"
+      type="warning"
+      >{{
+        t(permission === 'denied' ? 'cookPermissionDenied' : 'cookPermissionUnsupported')
+      }}</NcNoteCard
+    >
     <p>
       {{ t('cookBrowserPermission') }}:
       {{
@@ -129,8 +132,7 @@ const deliveryKeys = {
           <NcButton
             :disabled="disabled"
             @click="emit('command', { operation: 'acknowledge', notice_id: notice.id })"
-            >{{ t('cookAcknowledge') }}</NcButton
-          ><NcButton
+            >{{ t('cookAcknowledge') }}</NcButton><NcButton
             v-if="
               (notice.delivery.state === 'failed' || notice.delivery.state === 'unknown') &&
               notice.attempts < 3 &&

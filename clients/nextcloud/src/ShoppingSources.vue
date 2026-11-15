@@ -136,8 +136,7 @@ async function remove(id: string) {
     <div v-if="writable" class="actions">
       <NcButton :disabled="busy || !recipes.recipes.length" @click="recipe()">{{
         t('shoppingAddRecipe')
-      }}</NcButton
-      ><NcButton :disabled="busy" @click="plan">{{ t('shoppingFromPlan') }}</NcButton>
+      }}</NcButton><NcButton :disabled="busy" @click="plan">{{ t('shoppingFromPlan') }}</NcButton>
     </div>
     <form v-if="showRecipe" class="narrow" @submit.prevent="addRecipe" @input="mark">
       <h2>{{ t('shoppingAddRecipe') }}</h2>
@@ -166,8 +165,7 @@ async function remove(id: string) {
         <div class="actions">
           <NcButton type="submit" variant="primary" :disabled="busy || !recipeId">{{
             t('save')
-          }}</NcButton
-          ><NcButton :disabled="busy" @click="cancel">{{ t('cancel') }}</NcButton>
+          }}</NcButton><NcButton :disabled="busy" @click="cancel">{{ t('cancel') }}</NcButton>
         </div>
       </fieldset>
     </form>
@@ -205,8 +203,7 @@ async function remove(id: string) {
       <div class="actions">
         <NcButton variant="primary" type="submit" :disabled="busy">{{
           t('shoppingSyncPlan')
-        }}</NcButton
-        ><NcButton :disabled="busy" @click="cancel">{{ t('cancel') }}</NcButton>
+        }}</NcButton><NcButton :disabled="busy" @click="cancel">{{ t('cancel') }}</NcButton>
       </div>
     </form>
     <template v-if="data.sources.some((source) => source.active)"
@@ -219,8 +216,11 @@ async function remove(id: string) {
               v-if="['manual', 'recipe'].includes(source.origin.kind)"
               :disabled="busy"
               @click="source.origin.kind === 'manual' ? emit('manual', source) : recipe(source)"
-              >{{ t(source.origin.kind === 'manual' ? 'shoppingEditItem' : 'edit') }}</NcButton
-            ><NcButton :disabled="busy" @click="remove(source.id)">{{ t('remove') }}</NcButton>
+              >{{
+                t(source.origin.kind === 'manual' ? 'shoppingEditItem' : 'edit')
+              }}</NcButton><NcButton :disabled="busy" @click="remove(source.id)">{{
+              t('remove')
+            }}</NcButton>
           </div>
         </li>
       </ul></template

@@ -80,8 +80,7 @@ onMounted(load)
       <h2>{{ t('invitations') }}</h2>
       <NcNoteCard type="info">{{ t('invitationNotice') }}</NcNoteCard>
       <div v-for="invite in data.invitations" :key="invite.id" class="inline-row">
-        <strong>{{ invite.name }}</strong
-        ><span>{{ t(invite.role) }}</span
+        <strong>{{ invite.name }}</strong><span>{{ t(invite.role) }}</span
         ><NcButton :disabled="busy" variant="primary" @click="answer(invite.id, true)">{{
           t('accept')
         }}</NcButton

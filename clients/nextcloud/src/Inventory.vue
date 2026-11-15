@@ -351,8 +351,7 @@ onMounted(() => {
         :to="base"
         :variant="section === 'stock' ? 'primary' : 'tertiary'"
         :aria-current="section === 'stock' ? 'page' : undefined"
-        >{{ t('inventory') }}</NcButton
-      ><NcButton
+        >{{ t('inventory') }}</NcButton><NcButton
         :to="`${base}/offers`"
         :variant="section === 'offers' ? 'primary' : 'tertiary'"
         :aria-current="section === 'offers' ? 'page' : undefined"
@@ -424,8 +423,7 @@ onMounted(() => {
               busy || !writable || Boolean(prepared && draft.operation === 'add_offer' && !reviewed)
             "
             @click="confirm"
-            >{{ t(submission ? 'stockRetry' : 'stockConfirm') }}</NcButton
-          ><NcButton
+            >{{ t(submission ? 'stockRetry' : 'stockConfirm') }}</NcButton><NcButton
             v-if="prepared && !submission"
             :disabled="busy"
             @click="prepared = undefined"
@@ -437,8 +435,7 @@ onMounted(() => {
         ><div v-if="writable" class="actions stock-workflows">
           <NcButton :disabled="busy || !shopping.sources.some((s) => s.active)" @click="reserve">{{
             t('stockReserve')
-          }}</NcButton
-          ><NcButton :disabled="busy || !data.purchases.length" @click="receive">{{
+          }}</NcButton><NcButton :disabled="busy || !data.purchases.length" @click="receive">{{
             t('stockReceive')
           }}</NcButton
           ><NcButton

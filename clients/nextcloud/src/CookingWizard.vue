@@ -153,8 +153,7 @@ onMounted(() =>
     />
     <form v-else-if="!draft" class="editor-fields" @submit.prevent="template">
       <div class="labeled-field">
-        <label for="cooking-recipe">{{ t('recipes') }}</label
-        ><NcSelect
+        <label for="cooking-recipe">{{ t('recipes') }}</label><NcSelect
           v-model="selection"
           input-id="cooking-recipe"
           :input-label="t('recipes')"
@@ -219,10 +218,12 @@ onMounted(() =>
       <div class="actions">
         <NcButton :disabled="disabled || draft.stages.length >= 100" @click="add">{{
           t('cookAddStage')
-        }}</NcButton
-        ><NcButton type="submit" variant="primary" :disabled="disabled || !draft.stages.length">{{
-          t('cookPreview')
-        }}</NcButton>
+        }}</NcButton><NcButton
+          type="submit"
+          variant="primary"
+          :disabled="disabled || !draft.stages.length"
+          >{{ t('cookPreview') }}</NcButton
+        >
       </div>
     </form>
   </section>

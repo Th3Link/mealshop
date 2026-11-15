@@ -95,8 +95,8 @@ watch(draft, () => emit('dirty', true), { deep: true })
   >
     <fieldset :disabled="disabled">
       <legend class="visually-hidden">{{ t('brewNewBatch') }}</legend>
-      <NcNoteCard v-if="!recipes.length" type="info">{{ t('brewFirstRecipe') }}</NcNoteCard
-      ><label class="field"
+      <NcNoteCard v-if="!recipes.length" type="info">{{ t('brewFirstRecipe') }}</NcNoteCard><label
+        class="field"
         >{{ t('brewRecipes')
         }}<select v-model="draft.recipe_id" required @change="choose">
           <option value="" disabled>{{ t('brewRecipes') }}</option>

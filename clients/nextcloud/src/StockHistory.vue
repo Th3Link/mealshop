@@ -91,8 +91,7 @@ function quantity(id: string, amount: string) {
     <NcButton
       :disabled="busy || data.movement_offset === 0"
       @click="emit('page', Math.max(0, data.movement_offset - data.movement_limit))"
-      >{{ t('stockPagesPrevious') }}</NcButton
-    ><span
+      >{{ t('stockPagesPrevious') }}</NcButton><span
       >{{ data.movement_offset + 1 }}–{{
         Math.min(data.movement_total, data.movement_offset + data.movement_limit)
       }}

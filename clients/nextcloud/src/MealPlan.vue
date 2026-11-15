@@ -301,8 +301,10 @@ onMounted(load)
   <NcNoteCard v-if="plans && profiles && recipes && !recipes.recipes.length" type="info">
     {{ t('planPrerequisites') }}
     <div class="actions">
-      <NcButton :to="`/h/${home}/recipes`">{{ t('recipes') }}</NcButton
-      ><NcButton :to="`/h/${home}/household`">{{ t('profiles') }}</NcButton>
+      <NcButton :to="`/h/${home}/recipes`">{{ t('recipes') }}</NcButton><NcButton
+        :to="`/h/${home}/household`"
+        >{{ t('profiles') }}</NcButton
+      >
     </div>
   </NcNoteCard>
   <NcEmptyContent
@@ -311,8 +313,10 @@ onMounted(load)
     :description="t('emptyPlanText')"
     ><template #action
       ><div class="actions">
-        <NcButton :to="`/h/${home}/recipes`">{{ t('recipes') }}</NcButton
-        ><NcButton :to="`/h/${home}/household`">{{ t('profiles') }}</NcButton>
+        <NcButton :to="`/h/${home}/recipes`">{{ t('recipes') }}</NcButton><NcButton
+          :to="`/h/${home}/household`"
+          >{{ t('profiles') }}</NcButton
+        >
       </div></template
     ></NcEmptyContent
   >
@@ -502,8 +506,7 @@ onMounted(load)
               <NcCheckboxRadioSwitch
                 :model-value="Boolean(draft.calendar)"
                 @update:model-value="setCalendar"
-                >{{ t('consent') }}</NcCheckboxRadioSwitch
-              ><template v-if="draft.calendar"
+                >{{ t('consent') }}</NcCheckboxRadioSwitch><template v-if="draft.calendar"
                 ><NcCheckboxRadioSwitch
                   :model-value="draft.attendees !== null"
                   @update:model-value="
@@ -534,8 +537,11 @@ onMounted(load)
               >
             </details>
             <div class="actions editor-actions">
-              <NcButton type="submit" variant="primary" :disabled="busy">{{ t('review') }}</NcButton
-              ><NcButton :disabled="busy" @click="suggest()">{{ t('suggestions') }}</NcButton
+              <NcButton type="submit" variant="primary" :disabled="busy">{{
+                t('review')
+              }}</NcButton><NcButton :disabled="busy" @click="suggest()">{{
+                t('suggestions')
+              }}</NcButton
               ><NcButton :disabled="busy" @click="cancelPlan">{{ t('cancel') }}</NcButton>
             </div>
           </fieldset>
@@ -553,8 +559,9 @@ onMounted(load)
             >
               <div class="suggestion-item">
                 <div>
-                  <strong>{{ title(suggestion.plan) }}</strong
-                  ><RecommendationReasons :value="suggestion.recommendation" />
+                  <strong>{{ title(suggestion.plan) }}</strong><RecommendationReasons
+                    :value="suggestion.recommendation"
+                  />
                 </div>
                 <NcButton
                   :disabled="busy"

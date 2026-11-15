@@ -56,8 +56,7 @@ function methodName(id: string) {
             variant="tertiary"
             :to="`${base}/equipment/${e.id}?edit=1`"
             :disabled="disabled"
-            >{{ t('edit') }}</NcButton
-          ><NcButton
+            >{{ t('edit') }}</NcButton><NcButton
             v-if="writable"
             variant="tertiary"
             :disabled="disabled"

@@ -79,8 +79,10 @@ onMounted(() => {
       </template>
       <template #footer
         ><div class="language">
-          <label for="mealshop-language">{{ t('language') }}</label
-          ><select id="mealshop-language" v-model="locale">
+          <label for="mealshop-language">{{ t('language') }}</label><select
+            id="mealshop-language"
+            v-model="locale"
+          >
             <option value="en">English</option>
             <option value="de">Deutsch</option>
           </select>
@@ -92,8 +94,9 @@ onMounted(() => {
         <p v-if="home" class="context">
           {{ home.name }} <span>· {{ t(home.role) }}</span>
         </p>
-        <NcNoteCard v-if="home?.role === 'reader'" type="info">{{ t('readOnly') }}</NcNoteCard
-        ><RouterView :key="String(route.params.home ?? '')" /></div
+        <NcNoteCard v-if="home?.role === 'reader'" type="info">{{
+          t('readOnly')
+        }}</NcNoteCard><RouterView :key="String(route.params.home ?? '')" /></div
     ></NcAppContent>
   </NcContent>
 </template>
