@@ -1,6 +1,6 @@
 # Smartphone interaction plan
 
-Status: P1/P2 merged; P3 implemented for review in PR #48. The ZIP's UX is a target;
+Status: P1–P4 merged; P5 implemented for review in PR #50. The ZIP's UX is a target;
 this document reconciles it with existing data and the five complete deliveries.
 
 ## Navigation and the first useful launch

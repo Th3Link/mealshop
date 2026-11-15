@@ -1,6 +1,6 @@
 # Flutter delivery plan — five complete phone releases
 
-Status: P1 merged in PR #44, P2 in PR #45 and P3 in PR #48. P4 is implemented for review in PR #49 (`story/flutter-cooking-fermentation`); P5 is not started.
+Status: P1 merged in PR #44, P2 in PR #45, P3 in PR #48 and P4 in PR #49. P5 is implemented for review in PR #50 (`story/flutter-capture-import`). Physical Android acceptance remains open.
 Task/checkpoint authority: this file, following the repository's spec-folder convention. Do not
 create a second `tasks/` backlog or mark the imported pack's checklist as delivered.
 
@@ -231,7 +231,7 @@ Phone demo: share a supported public recipe URL, import a photo with an unresolv
 review ingredient mappings/quantities, scan a product/nutrition label and recover after camera/lookup denial. Save and
 reopen the original source and reviewed values; share an imported recipe as its source link only.
 
-- [ ] P5.1 **Share-sheet and URL review.** Reuse F16 network bounds and explicit retrieval consent.
+- [x] P5.1 **Share-sheet and URL review.** Reuse F16 network bounds and explicit retrieval consent.
   Mobile original/reviewed views, manual fallback, preview expiry/idempotent save and source-only
   exports must preserve the same rules as Nextcloud. Verify blocked/private/redirect URLs and retries.
 - [ ] P5.2 **Camera/barcode and on-device OCR candidates.** Review platform/plugin/licence support and
@@ -245,6 +245,11 @@ reopen the original source and reviewed values; share an imported recipe as its 
   phone platform, upgrades, cache/outbox schema migrations, account removal/export and accessibility.
   Document provider/platform limits and safe unsupported-video/manual paths. Do not add social-media
   bypasses, scale drivers, wearables, autonomous purchases or commercial admission to finish the checklist.
+
+Implementation evidence: 72 local Flutter tests, 207 Rust tests, 39 Vue tests and successful Android
+CI (including bundled OCR, rotated-image/barcode and protected import replay) are recorded in verification.
+P5.2 software ships in this PR; its real-phone permission/quality checks and the physical-device portion
+of P5.3 stay open for handset acceptance. This is an installable Android delivery, not an iOS release.
 
 **P5 release gate:** all F35 acceptance criteria have real evidence. Source-pack proposals blocked by
 external product/provider decisions remain explicit follow-up requirements, with original criteria;
