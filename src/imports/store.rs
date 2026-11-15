@@ -8,6 +8,8 @@ use std::{
 };
 #[derive(Clone, Serialize)]
 pub(super) struct PreviewData {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) capture: Option<crate::capture::Photo>,
     pub(super) requested_url: String,
     pub(super) final_url: Option<String>,
     pub(super) method: Method,

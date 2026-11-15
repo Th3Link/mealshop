@@ -30,6 +30,8 @@ pub(crate) struct Candidate {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Product {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) label_capture: Option<Box<crate::capture::Label>>,
     pub(crate) barcode: String,
     pub(crate) name: String,
     pub(crate) brand: String,
@@ -41,6 +43,8 @@ pub(crate) struct Product {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct ProductInput {
+    #[serde(default)]
+    pub(crate) label_capture: Option<Box<crate::capture::Label>>,
     pub(crate) barcode: String,
     pub(crate) name: String,
     pub(crate) brand: String,
@@ -82,7 +86,8 @@ pub(crate) fn evidence_valid(e: &Evidence, barcode: &str) -> bool {
         && optional_text(&e.original_quantity, 200)
 }
 pub(crate) fn product_valid(p: &Product) -> bool {
-    gtin(&p.barcode).is_ok()
+    p.label_capture.as_ref().is_none_or(|label| label.valid())
+        && gtin(&p.barcode).is_ok()
         && text(&p.name, 200)
         && optional_text(&p.brand, 200)
         && optional_text(&p.label_quantity, 200)
@@ -135,6 +140,12 @@ impl Data {
                 })
         };
         let product = Product {
+            label_capture: input.label_capture.or_else(|| {
+                self.products
+                    .records
+                    .get(&canonical)
+                    .and_then(|p| p.label_capture.clone())
+            }),
             barcode: input.barcode,
             name: input.name,
             brand: input.brand,
@@ -257,6 +268,7 @@ mod tests {
             evidence,
         });
         let input = |barcode: &str| ProductInput {
+            label_capture: None,
             barcode: barcode.to_owned(),
             name: "Reviewed label".to_owned(),
             brand: String::new(),
@@ -292,5 +304,50 @@ mod tests {
         );
         assert_eq!(product.ingredient_id, None);
         assert!(data.validate_products().is_ok());
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod capture_tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn reviewed_labels_keep_basis_precision_unknown_definitions_and_do_not_become_catalogue_nutrition()
+     {
+        let mut data = Data::default();
+        let catalogue = crate::nutrition::catalogue::Catalogue::from_json(include_str!(
+            "../../data/catalogue.json"
+        ))
+        .unwrap();
+        let mut input = json!({"barcode":"4006381333931","name":"Synthetic product","brand":"","label_quantity":"250 ml", "quantity":{"amount":"250","unit":"ml"},"ingredient_id":null,"match_confirmed":false,
+          "label_capture":{"photo":{"image_id":"image-00000001.png","text":"per 100 ml\nSalt <0.250001 g","engine":"manual_transcription","score":null},"basis":"per 100 ml","reviewed":true,
+          "values":[{"name":"Salt","value":"0.250001","unit":"g","qualifier":"less_than","definition":null}]}});
+        data.save_product(
+            serde_json::from_value(input.clone()).unwrap(),
+            &catalogue,
+            100,
+        )
+        .unwrap();
+        let saved = serde_json::to_value(data.products.records.values().next().unwrap()).unwrap();
+        assert_eq!(saved["label_capture"]["basis"], "per 100 ml");
+        assert_eq!(saved["label_capture"]["values"][0]["value"], "0.250001");
+        assert!(saved["label_capture"]["values"][0]["definition"].is_null());
+        assert!(saved["ingredient_id"].is_null());
+        input["label_capture"]["reviewed"] = json!(false);
+        assert!(
+            data.save_product(
+                serde_json::from_value(input.clone()).unwrap(),
+                &catalogue,
+                100
+            )
+            .is_err()
+        );
+        input["label_capture"]["reviewed"] = json!(true);
+        input["label_capture"]["values"][0]["value"] = json!("0,25");
+        assert!(
+            data.save_product(serde_json::from_value(input).unwrap(), &catalogue, 100)
+                .is_err()
+        );
     }
 }

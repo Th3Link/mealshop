@@ -13,9 +13,18 @@ export const importCandidateSchema = z.object({
   total_time: z.string().nullable(),
 })
 export const importSourceSchema = z.object({
+  capture: z
+    .object({
+      image_id: z.string(),
+      rotation: z.number().optional(),
+      text: z.string(),
+      engine: z.string(),
+      score: z.number().nullable(),
+    })
+    .optional(),
   requested_url: z.string(),
   final_url: z.string().nullable(),
-  method: z.enum(['json_ld', 'manual']),
+  method: z.enum(['json_ld', 'manual', 'photo']),
   retrieved_at: z.number().int().nonnegative().nullable(),
   importer_version: z.string(),
   original: importCandidateSchema,
@@ -23,9 +32,18 @@ export const importSourceSchema = z.object({
 export const importPreviewSchema = z.object({
   preview_id: z.string(),
   expires_at: z.number().int().nonnegative(),
+  capture: z
+    .object({
+      image_id: z.string(),
+      rotation: z.number().optional(),
+      text: z.string(),
+      engine: z.string(),
+      score: z.number().nullable(),
+    })
+    .optional(),
   requested_url: z.string(),
   final_url: z.string().nullable(),
-  method: z.enum(['json_ld', 'manual']),
+  method: z.enum(['json_ld', 'manual', 'photo']),
   retrieved_at: z.number().int().nonnegative().nullable(),
   candidates: z.array(importCandidateSchema),
 })

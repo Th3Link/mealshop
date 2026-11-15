@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { t, locale } from './i18n'
 import type { ImportSource } from './recipe-import'
-defineProps<{ source: ImportSource; withText?: boolean }>()
+defineProps<{ source: ImportSource; withText?: boolean; sourceImage?: string }>()
 </script>
 <template>
   <section class="import-evidence">
     <h2>{{ t('importOriginal') }}</h2>
+    <template v-if="source.capture"
+      ><p>{{ t('privatePhotoSource') }}</p>
+      <pre class="source-text">{{ source.capture.text }}</pre>
+    </template>
     <p class="muted">{{ t('importSourceNote') }}</p>
-    <p>
+    <p v-if="source.requested_url">
       <strong>{{ t('importSource') }}:</strong>
       <a :href="source.requested_url" target="_blank" rel="noopener noreferrer">{{
         source.requested_url
@@ -63,3 +67,15 @@ defineProps<{ source: ImportSource; withText?: boolean }>()
     </template>
   </section>
 </template>
+
+<style scoped>
+.source-photo {
+  max-width: 100%;
+  max-height: 24rem;
+  object-fit: contain;
+}
+.source-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+</style>

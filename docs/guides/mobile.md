@@ -226,3 +226,6 @@ A local loopback test server needs its ADB reverse tunnel after each AVD reboot.
 retained-key `install` command restores it without clearing data. To restore only the development
 tunnel, run `var/mobile/android-sdk/platform-tools/adb -P 5038 -s emulator-5556 reverse tcp:8080 tcp:8080`.
 Without this tunnel the app is correctly offline; device alarms still use their saved absolute deadlines.
+
+P5 camera, source review, barcode/label declarations and USB handset installation are documented in
+[mobile capture](mobile-capture.md).

@@ -620,7 +620,9 @@ async function scale() {
             />
             <RecipeOriginEditor
               v-model="draft.origin"
-              :locked="importing || sourceOrigin?.kind === 'imported'"
+              :locked="
+                importing || sourceOrigin?.kind === 'imported' || sourceOrigin?.kind === 'captured'
+              "
               @update:model-value="dirty = true"
             />
             <fieldset class="recipe-image-editor">
@@ -652,7 +654,13 @@ async function scale() {
           </div>
         </section>
       </fieldset>
-      <ImportEvidence v-if="importEvidence" :source="importEvidence" />
+      <ImportEvidence
+        v-if="importEvidence"
+        :source="importEvidence"
+        :source-image="
+          importEvidence.capture ? imageUrl(home, importEvidence.capture.image_id) : undefined
+        "
+      />
       <NcCheckboxRadioSwitch
         v-if="importReview"
         v-model="importReviewed"
@@ -702,7 +710,7 @@ async function scale() {
           :home="home"
           :title="selected.recipe.title"
           :resource="{ kind: 'recipe', recipe_id: selected.id, revision: selected.revision }"
-          :source-only="sourceOrigin?.kind === 'imported'"
+          :source-only="sourceOrigin?.kind === 'imported' || sourceOrigin?.kind === 'captured'"
         /><NcButton v-if="writable && !historical" :to="{ query: { ...route.query, edit: '1' } }">{{
           t('edit')
         }}</NcButton>
@@ -751,7 +759,16 @@ async function scale() {
     </div>
     <RecipeContents :record="selected" :lines="scaledLines ?? selected.display_lines" />
     <Nutrition :value="preview ?? selected.nutrition" />
-    <ImportEvidence v-if="selected.import_source" :source="selected.import_source" with-text />
+    <ImportEvidence
+      v-if="selected.import_source"
+      :source="selected.import_source"
+      :source-image="
+        selected.import_source.capture
+          ? imageUrl(home, selected.import_source.capture.image_id)
+          : undefined
+      "
+      with-text
+    />
   </template>
   <IngredientEditor
     v-if="creatingIngredient !== null && catalogue"

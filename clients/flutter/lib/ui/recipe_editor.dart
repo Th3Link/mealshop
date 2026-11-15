@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../connection/nextcloud.dart';
 import '../content/api.dart';
+import '../capture/import.dart';
 import 'common.dart';
 import 'content_common.dart';
 import 'ingredient_picker.dart';
@@ -65,9 +66,10 @@ Future<List<String>?> chooseReferences(
 );
 
 class RecipeEditor extends StatefulWidget {
-  const RecipeEditor(this.api, {super.key, this.record});
+  const RecipeEditor(this.api, {super.key, this.record, this.importSession});
   final HouseholdApi api;
   final Json? record;
+  final ImportSession? importSession;
   @override
   State<RecipeEditor> createState() => _RecipeEditorState();
 }
@@ -79,7 +81,34 @@ class _RecipeEditorState extends State<RecipeEditor> {
   Catalogue? catalogue;
   List<Json> conversions = [];
   int? expectedCount;
-  bool dirty = false, busy = false;
+  bool dirty = false, busy = false, reviewed = false;
+  Timer? draftTimer;
+  String? draftError;
+  ImportSession? get importing => widget.importSession;
+  @override
+  void dispose() {
+    draftTimer?.cancel();
+    super.dispose();
+  }
+
+  void retainDraft() {
+    draftTimer?.cancel();
+    if (importing == null || importing!.frozen) return;
+    draftTimer = Timer(const Duration(milliseconds: 350), () async {
+      try {
+        await importing!.retain(clone(recipe));
+      } catch (_) {
+        if (mounted) setState(() => draftError = 'storage_failed');
+      }
+    });
+  }
+
+  bool get sourceMapped =>
+      importing == null ||
+      List.generate(
+        (importing!.original['ingredients'] as List).length,
+        (i) => 'line-import-$i',
+      ).every((id) => ingredients.any((line) => line['id'] == id));
   final Set<String> expanded = {};
   String get language => widget.api.controller.language;
   List<Json> get parts => objects(recipe['parts'] ?? []);
@@ -88,7 +117,9 @@ class _RecipeEditorState extends State<RecipeEditor> {
   @override
   void initState() {
     super.initState();
-    recipe = widget.record == null
+    recipe = importing != null
+        ? clone(importing!.seed())
+        : widget.record == null
         ? {
             'title': '',
             'language': language,
@@ -144,6 +175,8 @@ class _RecipeEditorState extends State<RecipeEditor> {
   void change(VoidCallback action) => setState(() {
     action();
     dirty = true;
+    reviewed = false;
+    retainDraft();
   });
   String name(String id) => catalogue?.find(id) == null
       ? id
@@ -166,7 +199,27 @@ class _RecipeEditorState extends State<RecipeEditor> {
   }
 
   Future<void> save() async {
-    if (!form.currentState!.validate()) return;
+    if (importing?.frozen == true) {
+      setState(() => busy = true);
+      try {
+        final id = await importing!.submit(
+          object(importing!.envelope!['recipe']),
+        );
+        dirty = false;
+        if (mounted) Navigator.pop(context, id);
+      } catch (e) {
+        if (mounted) await showFailure(context, e);
+      } finally {
+        if (mounted) setState(() => busy = false);
+      }
+      return;
+    }
+    if (!form.currentState!.validate() ||
+        !sourceMapped ||
+        (importing != null && !reviewed)) {
+      return;
+    }
+    draftTimer?.cancel();
     setState(() => busy = true);
     try {
       final result = clone(recipe);
@@ -189,6 +242,12 @@ class _RecipeEditorState extends State<RecipeEditor> {
             signed: true,
           );
         }
+      }
+      if (importing != null) {
+        final id = await importing!.submit(result);
+        dirty = false;
+        if (mounted) Navigator.pop(context, id);
+        return;
       }
       final value = await widget.api.recipes(
         widget.record == null
@@ -240,7 +299,15 @@ class _RecipeEditorState extends State<RecipeEditor> {
     dirty: () => dirty,
     child: Scaffold(
       appBar: AppBar(
-        title: Text(context.t(widget.record == null ? 'new_recipe' : 'edit')),
+        title: Text(
+          context.t(
+            importing != null
+                ? 'capture_review'
+                : widget.record == null
+                ? 'new_recipe'
+                : 'edit',
+          ),
+        ),
       ),
       body: catalogue == null
           ? failure == null
@@ -251,152 +318,268 @@ class _RecipeEditorState extends State<RecipeEditor> {
                     action: 'retry',
                     onAction: load,
                   )
-          : Form(
-              key: form,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
-                children: [
-                  EditText(
-                    'title',
-                    recipe['title'] as String,
-                    (v) => change(() => recipe['title'] = v),
-                    required: true,
-                  ),
-                  EditText(
-                    'author',
-                    recipe['author'] as String? ?? '',
-                    (v) => change(() => recipe['author'] = v),
-                  ),
-                  Choice('source_language', recipe['language'] as String, {
-                    'en': 'English',
-                    'de': 'Deutsch',
-                  }, (v) => change(() => recipe['language'] = v)),
-                  EditText(
-                    'servings',
-                    '${recipe['servings']}',
-                    (v) => change(() => recipe['servings'] = int.tryParse(v)),
-                    required: true,
-                    numeric: true,
-                    integer: true,
-                  ),
-                  PhotoField(
-                    widget.api,
-                    recipe['image_id'] as String?,
-                    (id) => change(() => recipe['image_id'] = id),
-                  ),
-                  if (object(recipe['origin'] ?? <String, dynamic>{})['kind'] ==
-                      'imported')
-                    Note(context.t('source_only')),
-                  SectionTitle(context.t('parts')),
-                  for (final part in parts)
-                    Column(
-                      key: ValueKey(part['id']),
-                      children: [
-                        EditText(
-                          'name',
-                          part['name'] as String,
-                          (v) => change(() => part['name'] = v),
-                          required: true,
-                        ),
-                        references('uses_parts', part, 'uses_parts', {
-                          for (final p in parts.where(
-                            (p) => p['id'] != part['id'],
-                          ))
-                            p['id'] as String: p['name'] as String,
-                        }),
-                        references('starts_after', part, 'starts_after', {
-                          for (final p in parts.where(
-                            (p) => p['id'] != part['id'],
-                          ))
-                            p['id'] as String: p['name'] as String,
-                        }),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: IconButton(
-                            tooltip: context.t('delete'),
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () async {
-                              final id = part['id'];
-                              final used =
-                                  ingredients.any(
-                                    (l) =>
-                                        l['part_id'] == id ||
-                                        l['prepared_part'] == id,
-                                  ) ||
-                                  steps.any(
-                                    (s) =>
-                                        s['part_id'] == id ||
-                                        (s['prepared_parts'] as List? ?? [])
-                                            .contains(id),
-                                  ) ||
-                                  parts.any(
-                                    (p) =>
-                                        (p['uses_parts'] as List? ?? [])
-                                            .contains(id) ||
-                                        (p['starts_after'] as List? ?? [])
-                                            .contains(id),
-                                  );
-                              if (used) {
-                                await showFailure(
-                                  context,
-                                  const ApiFailure('part_in_use'),
-                                );
-                                return;
-                              }
-                              change(
-                                () => (recipe['parts'] as List).remove(part),
+          : importing?.frozen == true
+          ? ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Note(context.t('capture_frozen')),
+                Text(object(importing!.envelope!['recipe'])['title'] as String),
+                FilledButton(
+                  onPressed: busy ? null : save,
+                  child: Text(context.t('capture_retry')),
+                ),
+                TextButton(
+                  onPressed: busy ? null : () => Navigator.pop(context),
+                  child: Text(context.t('capture_inspect')),
+                ),
+                TextButton(
+                  onPressed: busy
+                      ? null
+                      : () async {
+                          if (await confirm(
+                            context,
+                            'capture_discard',
+                            body: 'capture_discard_body',
+                          )) {
+                            await importing!.discard();
+                            dirty = false;
+                            if (context.mounted) Navigator.pop(context);
+                          }
+                        },
+                  child: Text(context.t('delete')),
+                ),
+              ],
+            )
+          : AbsorbPointer(
+              absorbing: busy,
+              child: Form(
+                key: form,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
+                  children: [
+                    if (importing != null) ...[
+                      ImportOriginal(
+                        widget.api,
+                        importing!.preview,
+                        importing!.original,
+                      ),
+                      if (draftError != null) Note(context.t(draftError!)),
+                      for (
+                        var i = 0;
+                        i < (importing!.original['ingredients'] as List).length;
+                        i++
+                      )
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            (importing!.original['ingredients'] as List)[i]
+                                as String,
+                          ),
+                          leading: Icon(
+                            ingredients.any((l) => l['id'] == 'line-import-$i')
+                                ? Icons.check_circle_outline
+                                : Icons.link_off,
+                          ),
+                          subtitle: Text(
+                            context.t(
+                              ingredients.any(
+                                    (l) => l['id'] == 'line-import-$i',
+                                  )
+                                  ? 'capture_mapped'
+                                  : 'capture_map',
+                            ),
+                          ),
+                          onTap: () async {
+                            final item = await pickIngredient(
+                              context,
+                              widget.api,
+                              create: true,
+                            );
+                            if (item == null || !mounted) return;
+                            await load();
+                            final q = metricSuggestion(
+                              (importing!.original['ingredients'] as List)[i]
+                                  as String,
+                              importing!.original['language'] as String?,
+                            );
+                            change(() {
+                              (recipe['lines'] as List).removeWhere(
+                                (l) => object(l)['id'] == 'line-import-$i',
                               );
-                            },
-                          ),
-                        ),
-                        const Divider(),
-                      ],
-                    ),
-                  OutlinedButton.icon(
-                    onPressed: parts.length >= 30
-                        ? null
-                        : () => change(() {
-                            recipe['parts'] ??= <Json>[];
-                            (recipe['parts'] as List).add({
-                              'id': newId('part-'),
-                              'name': '',
-                              'uses_parts': <String>[],
-                              'starts_after': <String>[],
+                              (recipe['lines'] as List).add({
+                                'id': 'line-import-$i',
+                                'ingredient_id': item['id'],
+                                'quantity': {
+                                  'amount': inputDecimal(
+                                    q?['amount'] as String? ?? '',
+                                    language,
+                                  ),
+                                  'unit': q?['unit'] ?? 'g',
+                                },
+                              });
                             });
-                          }),
-                    icon: const Icon(Icons.add),
-                    label: Text(context.t('new_part')),
-                  ),
-                  SectionTitle(context.t('ingredients')),
-                  for (final line in ingredients) ingredientRow(line),
-                  OutlinedButton.icon(
-                    onPressed: ingredients.length >= 100 ? null : addIngredient,
-                    icon: const Icon(Icons.add),
-                    label: Text(context.t('find_ingredient')),
-                  ),
-                  SectionTitle(context.t('steps')),
-                  for (var i = 0; i < steps.length; i++) stepRow(steps[i], i),
-                  OutlinedButton.icon(
-                    onPressed: steps.length >= 100
-                        ? null
-                        : () => change(
-                            () => (recipe['steps'] as List).add({
-                              'instruction': '',
-                              'active_seconds': 0,
-                              'passive_seconds': 0,
-                              'ingredient_line_ids': <String>[],
-                              'prepared_parts': <String>[],
-                            }),
+                          },
+                        ),
+                    ],
+                    EditText(
+                      'title',
+                      recipe['title'] as String,
+                      (v) => change(() => recipe['title'] = v),
+                      required: true,
+                    ),
+                    EditText(
+                      'author',
+                      recipe['author'] as String? ?? '',
+                      (v) => change(() => recipe['author'] = v),
+                    ),
+                    Choice('source_language', recipe['language'] as String, {
+                      'en': 'English',
+                      'de': 'Deutsch',
+                    }, (v) => change(() => recipe['language'] = v)),
+                    EditText(
+                      'servings',
+                      recipe['servings'] == null ? '' : '${recipe['servings']}',
+                      (v) => change(() => recipe['servings'] = int.tryParse(v)),
+                      required: true,
+                      numeric: true,
+                      integer: true,
+                    ),
+                    PhotoField(
+                      widget.api,
+                      recipe['image_id'] as String?,
+                      (id) => change(() => recipe['image_id'] = id),
+                    ),
+                    if (object(
+                          recipe['origin'] ?? <String, dynamic>{},
+                        )['kind'] ==
+                        'imported')
+                      Note(context.t('source_only')),
+                    SectionTitle(context.t('parts')),
+                    for (final part in parts)
+                      Column(
+                        key: ValueKey(part['id']),
+                        children: [
+                          EditText(
+                            'name',
+                            part['name'] as String,
+                            (v) => change(() => part['name'] = v),
+                            required: true,
                           ),
-                    icon: const Icon(Icons.add),
-                    label: Text(context.t('new_step')),
-                  ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: busy || ingredients.isEmpty ? null : save,
-                    child: Text(context.t('save')),
-                  ),
-                ],
+                          references('uses_parts', part, 'uses_parts', {
+                            for (final p in parts.where(
+                              (p) => p['id'] != part['id'],
+                            ))
+                              p['id'] as String: p['name'] as String,
+                          }),
+                          references('starts_after', part, 'starts_after', {
+                            for (final p in parts.where(
+                              (p) => p['id'] != part['id'],
+                            ))
+                              p['id'] as String: p['name'] as String,
+                          }),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: IconButton(
+                              tooltip: context.t('delete'),
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () async {
+                                final id = part['id'];
+                                final used =
+                                    ingredients.any(
+                                      (l) =>
+                                          l['part_id'] == id ||
+                                          l['prepared_part'] == id,
+                                    ) ||
+                                    steps.any(
+                                      (s) =>
+                                          s['part_id'] == id ||
+                                          (s['prepared_parts'] as List? ?? [])
+                                              .contains(id),
+                                    ) ||
+                                    parts.any(
+                                      (p) =>
+                                          (p['uses_parts'] as List? ?? [])
+                                              .contains(id) ||
+                                          (p['starts_after'] as List? ?? [])
+                                              .contains(id),
+                                    );
+                                if (used) {
+                                  await showFailure(
+                                    context,
+                                    const ApiFailure('part_in_use'),
+                                  );
+                                  return;
+                                }
+                                change(
+                                  () => (recipe['parts'] as List).remove(part),
+                                );
+                              },
+                            ),
+                          ),
+                          const Divider(),
+                        ],
+                      ),
+                    OutlinedButton.icon(
+                      onPressed: parts.length >= 30
+                          ? null
+                          : () => change(() {
+                              recipe['parts'] ??= <Json>[];
+                              (recipe['parts'] as List).add({
+                                'id': newId('part-'),
+                                'name': '',
+                                'uses_parts': <String>[],
+                                'starts_after': <String>[],
+                              });
+                            }),
+                      icon: const Icon(Icons.add),
+                      label: Text(context.t('new_part')),
+                    ),
+                    SectionTitle(context.t('ingredients')),
+                    for (final line in ingredients) ingredientRow(line),
+                    OutlinedButton.icon(
+                      onPressed: ingredients.length >= 100
+                          ? null
+                          : addIngredient,
+                      icon: const Icon(Icons.add),
+                      label: Text(context.t('find_ingredient')),
+                    ),
+                    SectionTitle(context.t('steps')),
+                    for (var i = 0; i < steps.length; i++) stepRow(steps[i], i),
+                    OutlinedButton.icon(
+                      onPressed: steps.length >= 100
+                          ? null
+                          : () => change(
+                              () => (recipe['steps'] as List).add({
+                                'instruction': '',
+                                'active_seconds': 0,
+                                'passive_seconds': 0,
+                                'ingredient_line_ids': <String>[],
+                                'prepared_parts': <String>[],
+                              }),
+                            ),
+                      icon: const Icon(Icons.add),
+                      label: Text(context.t('new_step')),
+                    ),
+                    const SizedBox(height: 24),
+                    if (importing != null)
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        value: reviewed,
+                        title: Text(context.t('capture_confirm')),
+                        onChanged: (v) => setState(() => reviewed = v == true),
+                      ),
+                    FilledButton(
+                      onPressed:
+                          busy ||
+                              ingredients.isEmpty ||
+                              !sourceMapped ||
+                              (importing != null && !reviewed)
+                          ? null
+                          : save,
+                      child: Text(context.t('save')),
+                    ),
+                  ],
+                ),
               ),
             ),
     ),
@@ -415,6 +598,17 @@ class _RecipeEditorState extends State<RecipeEditor> {
       key: ValueKey(id),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (importing != null && id.startsWith('line-import-'))
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              (importing!.original['ingredients'] as List)[int.parse(
+                    id.substring(12),
+                  )]
+                  as String,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         Row(
           children: [
             Expanded(
@@ -663,6 +857,47 @@ class _RecipeEditorState extends State<RecipeEditor> {
           integer: true,
         ),
       const Divider(),
+    ],
+  );
+}
+
+class ImportOriginal extends StatelessWidget {
+  const ImportOriginal(this.api, this.source, this.original, {super.key});
+  final HouseholdApi api;
+  final Json source, original;
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      SectionTitle(context.t('capture_original')),
+      if (source['capture'] != null) ...[
+        PrivateImage(
+          api,
+          '${api.domain}/household/images/${object(source['capture'])['image_id']}',
+        ),
+        SelectableText(object(source['capture'])['text'] as String),
+      ],
+      if ((source['requested_url'] as String? ?? '').isNotEmpty)
+        SelectableText(source['requested_url'] as String),
+      if (source['final_url'] != null &&
+          source['final_url'] != source['requested_url'])
+        SelectableText(source['final_url'] as String),
+      for (final field in [
+        'title',
+        'author',
+        'language',
+        'yield_text',
+        'prep_time',
+        'cook_time',
+        'total_time',
+      ])
+        if (original[field] != null)
+          Text('${context.t('capture_$field')}: ${original[field]}'),
+      for (final line in original['ingredients'] as List? ?? [])
+        SelectableText(line as String),
+      for (final step in objects(original['steps'] ?? []))
+        SelectableText('${step['section'] ?? ''} ${step['text']}'),
+      Note(context.t('capture_unknown')),
     ],
   );
 }

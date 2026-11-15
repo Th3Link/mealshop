@@ -94,5 +94,5 @@ selected owner-managed permissions **without automatic owner access**: an owner 
 permission to their own account before reading/editing activity. Existing shared dietary profiles keep
 their household roles; no new medical/weight fields are introduced. ADR 0028 defines atomic storage,
 revocation, generation/revision guards and live deletion/export. P2 remains part of the same substantial
-frontend/backend PR. P3 is merged; P4 is implemented for review in PR #49 with emulator/live-proxy evidence. P5 and
-physical-handset acceptance remain open.
+frontend/backend PR. P3 and P4 (PR #49) are merged. P5 capture is being implemented with frontend/backend together;
+physical-handset acceptance remains open and is not inferred from emulator evidence.

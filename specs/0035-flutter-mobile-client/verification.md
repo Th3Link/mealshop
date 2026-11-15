@@ -416,3 +416,30 @@ All screenshots below contain synthetic records only.
 - [Dark mode with 200% text](screenshots/p4-brewing-dark-large.png)
 - [Explicit actual cooking history](screenshots/p4-history-form.png)
 - [Preparation agenda](screenshots/p4-plan-agenda.png)
+
+## P5 implementation and verification
+
+Branch: `story/flutter-capture-import`. Frontend and backend ship together. See
+[ADR 0031](../../docs/adr/0031-mobile-reviewed-capture.md) and the
+[capture/handset guide](../../docs/guides/mobile-capture.md).
+
+Local evidence on 2026-11-15:
+
+- Required repository gates pass: catalogue import/check, verifier, keyed messages, format, strict
+  Clippy, **207 Nextest tests**, licence deny, advisory audit and rustdoc with warnings denied.
+- Flutter analysis passes; widget/API tests cover exact decimals/unresolved cups, frozen body replay,
+  scoped recovery, classification, 320 dp/200% text and read-only label inspection.
+- Vue strict types and **39 tests** pass. Source/captured provenance and `private_source` projections
+  are recognized by the existing Nextcloud client in the same delivery.
+- Two direct native capture archives and two model files have pinned SHA-256; 68 Pub licence entries,
+  60 external Pub packages and the two direct Maven coordinates have no matched OSV advisory. OSV
+  matching does not establish full vulnerability coverage of native engine/model code.
+- Three ABI APKs build with retained key, package/version `org.mealshop.pocket.dev` / `0.5.0+6`.
+  The arm64 APK passes 16 KiB ZIP alignment and bundled OCR ELF load-segment alignment checks.
+- Mutation review: removing photo-detail share redaction makes the actual Axum privacy test fail;
+  restoring the source passes that unchanged test. No mutation remains in source.
+
+Native CI, real test-proxy/browser journeys, exact-head artifact/deployment identity and synthetic-only
+cleanup evidence are recorded below when completed. Physical smartphone camera, USB/browser login,
+TalkBack, device upgrade and manufacturer behavior remain explicitly unverified until the customer
+tries the handset. F35 remains In progress; no iOS distribution/provider/commercial decision is implied.

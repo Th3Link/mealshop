@@ -287,10 +287,7 @@ impl Store {
                     if index != 0
                         || record.creation.is_some()
                         || !receipt.valid()
-                        || record.recipe.origin
-                            != (crate::recipe_origin::Origin::Imported {
-                                source_url: receipt.source.requested_url.clone(),
-                            })
+                        || record.recipe.origin != receipt.source.origin()
                         || !import_keys.insert((receipt.actor.clone(), receipt.key.clone()))
                     {
                         return Err("Invalid or duplicate recipe import receipt".to_owned());
@@ -548,12 +545,7 @@ impl Store {
         catalogue: &Catalogue,
         receipt: crate::imports::Receipt,
     ) -> Result<Record, Error> {
-        if !receipt.valid()
-            || recipe.origin
-                != (crate::recipe_origin::Origin::Imported {
-                    source_url: receipt.source.requested_url.clone(),
-                })
-        {
+        if !receipt.valid() || recipe.origin != receipt.source.origin() {
             return Err(Error::Invalid(
                 "An import must retain its reviewed original source".to_owned(),
             ));

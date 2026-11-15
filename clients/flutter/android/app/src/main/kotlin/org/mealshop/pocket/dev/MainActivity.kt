@@ -17,6 +17,16 @@ class MainActivity : FlutterActivity() {
         // Activity recreation must not create a second writer to the same atomic file.
         private val worker = DeviceReminders.worker
     }
+    private val capture by lazy { DeviceCapture(applicationContext) }
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        DeviceCapture.receive(applicationContext, intent)
+    }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        DeviceCapture.receive(applicationContext, intent)
+    }
     private var exportResult: MethodChannel.Result? = null
     private var exportValue: ByteArray? = null
     @Deprecated("Android activity result bridge")
@@ -73,6 +83,8 @@ class MainActivity : FlutterActivity() {
                     }
                 }
             }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.mealshop/capture")
+            .setMethodCallHandler { call, result -> capture.handle(this, call, result) }
         val vault = DeviceVault(applicationContext)
         val main = Handler(Looper.getMainLooper())
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.mealshop/device_vault")

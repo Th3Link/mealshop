@@ -224,6 +224,9 @@ limits. No medical claim or physical fermentation-complete claim follows from el
 
 ## P5 — Camera and reviewed capture
 
+Implementation: `story/flutter-capture-import`; ADR 0031 and the mobile capture guide define exact
+privacy/recovery/platform limits. Implementation and verification checkpoints stay separate.
+
 Phone demo: share a supported public recipe URL, import a photo with an unresolved cup measurement,
 review ingredient mappings/quantities, scan a product/nutrition label and recover after camera/lookup denial. Save and
 reopen the original source and reviewed values; share an imported recipe as its source link only.

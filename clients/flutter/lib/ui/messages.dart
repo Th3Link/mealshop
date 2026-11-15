@@ -1,11 +1,13 @@
 import 'package:flutter/widgets.dart';
 
 import 'content_messages.dart';
+import 'capture_messages.dart';
 import 'planning_messages.dart';
 import 'process_messages.dart';
 
 const messages = <String, (String, String)>{
   ...contentMessages,
+  ...captureMessages,
   ...planningMessages,
   ...processMessages,
   'licences': ('Open-source licences', 'Open-Source-Lizenzen'),

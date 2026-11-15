@@ -19,7 +19,7 @@ internal class DeviceVault(private val context: Context) {
     private val limit = 1_048_576
     private val header = byteArrayOf(0x4d, 0x53, 0x56, 0x31)
     private fun location(namespace: String): AtomicFile {
-        require(namespace == "mealshop.phone.v1" || namespace == "mealshop.phone.integration-test" || namespace == "mealshop.reminders.v1")
+        require(namespace == "mealshop.phone.v1" || namespace == "mealshop.phone.integration-test" || namespace == "mealshop.reminders.v1" || namespace == DeviceCapture.INBOX)
         return AtomicFile(File(context.noBackupFilesDir, "$namespace.bin"))
     }
     private fun key(namespace: String, create: Boolean): SecretKey {
@@ -85,7 +85,7 @@ internal class DeviceVault(private val context: Context) {
         }
     }
     fun clear(namespace: String) {
-        if (namespace == "mealshop.phone.v1") DeviceReminders(context).clear()
+        if (namespace == "mealshop.phone.v1") { DeviceReminders(context).clear(); clear(DeviceCapture.INBOX) }
         val file = location(namespace)
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         // Destroy the key first: any interrupted deletion leaves only unreadable ciphertext.

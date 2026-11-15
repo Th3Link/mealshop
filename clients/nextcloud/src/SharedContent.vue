@@ -153,6 +153,9 @@ function paginate(delta: number) {
         >{{ data.content.source_url }}</a
       ></template
     >
+    <NcNoteCard v-else-if="data.content.kind === 'private_source'" type="info">{{
+      t('privatePhotoSource')
+    }}</NcNoteCard>
     <template v-else>
       <header class="page-header">
         <div>
