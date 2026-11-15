@@ -6,6 +6,12 @@ defineProps<{ source: ImportSource; withText?: boolean; sourceImage?: string }>(
 <template>
   <section class="import-evidence">
     <h2>{{ t('importOriginal') }}</h2>
+    <img
+      v-if="source.capture && sourceImage"
+      :src="sourceImage"
+      :alt="t('importOriginal')"
+      class="source-photo"
+    />
     <template v-if="source.capture"
       ><p>{{ t('privatePhotoSource') }}</p>
       <pre class="source-text">{{ source.capture.text }}</pre>
