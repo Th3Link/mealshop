@@ -120,7 +120,7 @@ python3 scripts/test_exapp_container.py
 ```
 
 The image pins base digests, uses the Rust 1.99 compiler image and builds the Vue IIFE with
-Node 24/npm 12.2.2. The declared Rust 1.85 MSRV is checked separately. The image includes the
+Node 24/npm 12.2.2. The declared Rust 1.89 MSRV is checked separately. The image includes the
 manifest, assets, CA store and FRP entrypoint. Runtime uses a supported Alpine
 3.24 release. The isolated smoke test exercises both TCP and Unix socket, lifecycle registration,
 assets, authorization, CSRF and private storage as UID 1000 with a read-only root filesystem.
@@ -129,7 +129,8 @@ Its OCS mock is a transport fixture, not evidence of a real `HaRP` tunnel.
 The copied Nextcloud reference entrypoint retains its copyright/licence. Local adaptations set
 `umask 077` and put its FRP configuration in `/tmp/frpc.toml` for rootless/read-only operation.
 `HP_SHARED_KEY` selects `/tmp/exapp.sock`; otherwise `APP_HOST`/`APP_PORT` select TCP.
-The manifest uses a local-only image registry; nothing has been published to it.
+The manifest now declares GHCR release coordinates. Publication is triggered by stable tags;
+see the [release and Helm guide](releases-and-helm.md). Local smoke/Compose images stay local.
 
 `deploy/nextcloud/compose.yaml` can attach a separately managed test container to the existing
 Nextcloud network, with the same secret and data, no added capabilities and an internal bridge

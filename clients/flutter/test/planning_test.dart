@@ -211,6 +211,8 @@ void main() {
         );
         await tester.enterText(field, e.value);
       }
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
       final button = find.text('Bestandsänderungen prüfen');
       await tester.scrollUntilVisible(
         button,

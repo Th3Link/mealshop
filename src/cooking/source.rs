@@ -68,10 +68,10 @@ pub(crate) fn template(
             }
             name.push(c);
         }
-        if first_in_part {
-            if let Some(part) = key.and_then(|id| record.recipe.parts.iter().find(|p| p.id == id)) {
-                name.clone_from(&part.name);
-            }
+        if first_in_part
+            && let Some(part) = key.and_then(|id| record.recipe.parts.iter().find(|p| p.id == id))
+        {
+            name.clone_from(&part.name);
         }
         stages.push(Stage {
             start_after_work: step.passive_seconds > 0,
@@ -133,10 +133,10 @@ fn validate(draft: &Draft, record: &Record) -> Result<(), &'static str> {
         {
             return Err("cooking_timezone_invalid");
         }
-        if let StageOrigin::RecipeStep { index } = stage.origin {
-            if record.recipe.steps.get(index).is_none() {
-                return Err("cooking_stage_invalid");
-            }
+        if let StageOrigin::RecipeStep { index } = stage.origin
+            && record.recipe.steps.get(index).is_none()
+        {
+            return Err("cooking_stage_invalid");
         }
     }
     Ok(())
@@ -240,10 +240,10 @@ pub(crate) fn available_at(
     let mut earliest = run
         .created_at
         .max(step.not_before.unwrap_or(run.created_at));
-    if run.kind.is_brewing() {
-        if let Some(anchor) = &step.stage.start_at {
-            earliest = earliest.max(anchor.resolve()?);
-        }
+    if run.kind.is_brewing()
+        && let Some(anchor) = &step.stage.start_at
+    {
+        earliest = earliest.max(anchor.resolve()?);
     }
     for id in &step.stage.dependencies {
         let dependency = run

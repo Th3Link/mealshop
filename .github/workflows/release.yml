@@ -1,0 +1,189 @@
+name: Release
+on:
+  push:
+    tags: ['v[0-9]*.[0-9]*.[0-9]*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  metadata:
+    name: Validate stable release identity
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      image: ${{ steps.release.outputs.image }}
+      chart-registry: ${{ steps.release.outputs.chart-registry }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Validate tag and main ancestry
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          version=$(python3 scripts/release.py --tag "$RELEASE_TAG")
+          git merge-base --is-ancestor HEAD origin/main
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "chart-registry=ghcr.io/${OWNER,,}/charts" >> "$GITHUB_OUTPUT"
+  quality:
+    needs: metadata
+    uses: ./.github/workflows/ci.yml
+  security:
+    needs: metadata
+    permissions:
+      contents: read
+      checks: write
+      issues: write
+    uses: ./.github/workflows/audit.yml
+  android:
+    needs: metadata
+    uses: ./.github/workflows/mobile.yml
+  images:
+    name: Test and publish / ${{ matrix.arch }}
+    needs: [metadata, quality, security, android]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    env:
+      ARCH_IMAGE: ${{ needs.metadata.outputs.image }}:${{ needs.metadata.outputs.version }}-${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4.4.1
+      - name: Build native release image
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: .
+          platforms: linux/${{ matrix.arch }}
+          load: true
+          tags: ${{ env.ARCH_IMAGE }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ needs.metadata.outputs.version }}
+            org.opencontainers.image.licenses=AGPL-3.0-only
+          cache-from: type=gha,scope=release-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=release-${{ matrix.arch }}
+      - name: Test the exact image before pushing
+        run: python3 scripts/test_exapp_container.py --image "$ARCH_IMAGE"
+      - uses: docker/login-action@v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push tested image and retain its digest
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          docker push "$ARCH_IMAGE"
+          mkdir -p digests
+          docker image inspect --format '{{index .RepoDigests 0}}' "$ARCH_IMAGE" > "digests/$ARCH.txt"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: image-digest-${{ matrix.arch }}
+          path: digests/*.txt
+          if-no-files-found: error
+  publish:
+    name: Publish multi-platform image, OCI chart and release assets
+    needs: [metadata, images]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      packages: write
+    env:
+      IMAGE: ${{ needs.metadata.outputs.image }}
+      VERSION: ${{ needs.metadata.outputs.version }}
+      CHART_REGISTRY: ${{ needs.metadata.outputs.chart-registry }}
+      RELEASE_TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4.4.1
+      - uses: docker/login-action@v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: image-digest-*
+          path: dist/digests
+          merge-multiple: true
+      - name: Assemble only the verified architecture digests
+        run: |
+          docker buildx imagetools create \
+            --tag "$IMAGE:$VERSION" --tag "$IMAGE:v$VERSION" \
+            "$(cat dist/digests/amd64.txt)" "$(cat dist/digests/arm64.txt)"
+          docker buildx imagetools inspect "$IMAGE:$VERSION" \
+            --format '{{.Manifest.Digest}}' > dist/image-digest.txt
+          digest=$(cat dist/image-digest.txt)
+          echo "$IMAGE@$digest" > dist/image.txt
+      - uses: azure/setup-helm@v5.1.0
+        with:
+          version: v4.3.2
+      - name: Set up Python for chart packaging
+        uses: actions/setup-python@v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Package the chart with the verified image digest
+        run: |
+          python3 -m pip install PyYAML==6.0.3
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          import yaml
+          digest = Path('dist/image-digest.txt').read_text().strip()
+          if not re.fullmatch(r'sha256:[a-f0-9]{64}', digest):
+              raise SystemExit('Missing combined image digest; refusing to package the chart')
+          path = Path('charts/mealshop/values.yaml')
+          values = yaml.safe_load(path.read_text())
+          values['image'].update(repository=os.environ['IMAGE'], digest=digest)
+          path.write_text(yaml.safe_dump(values, sort_keys=False))
+          PY
+          helm lint charts/mealshop --strict \
+            --set nextcloud.url=https://cloud.example.org --set appApi.existingSecret=release-check
+          helm package charts/mealshop --destination dist
+      - name: Publish OCI chart
+        run: |
+          printf '%s' "$GH_TOKEN" | helm registry login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          helm push "dist/mealshop-$VERSION.tgz" "oci://$CHART_REGISTRY"
+      - name: Publish reviewable release assets
+        run: |
+          cp appinfo/info.xml dist/info.xml
+          cp charts/mealshop/files/registration.py dist/registration.py
+          cd dist
+          sha256sum "mealshop-$VERSION.tgz" info.xml registration.py image.txt > SHA256SUMS
+          {
+            echo "Container: \`$IMAGE:$VERSION\` (Linux AMD64 and ARM64)."
+            echo
+            echo "Pinned image: \`$(cat image.txt)\`."
+            echo
+            echo "Helm chart: \`oci://$CHART_REGISTRY/mealshop\`, version \`$VERSION\`."
+            echo
+            echo 'Installation and Flux: https://github.com/Th3Link/mealshop/blob/main/docs/guides/releases-and-helm.md'
+            echo
+            echo 'Check GHCR package visibility on first publication; public source does not imply public packages.'
+          } > release-notes.md
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "mealshop-$VERSION.tgz" info.xml registration.py image.txt SHA256SUMS --clobber
+          else
+            gh release create "$RELEASE_TAG" --verify-tag --title "Mealshop $VERSION" \
+              --notes-file release-notes.md "mealshop-$VERSION.tgz" info.xml registration.py image.txt SHA256SUMS
+          fi
+          cat release-notes.md >> "$GITHUB_STEP_SUMMARY"

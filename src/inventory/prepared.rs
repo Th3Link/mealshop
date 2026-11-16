@@ -203,8 +203,7 @@ pub(super) fn execute(
         member_ids,
         ..
     } = command
-    {
-        if data
+        && data
             .inventory
             .prepared
             .iter()
@@ -216,9 +215,8 @@ pub(super) fn execute(
                     && a.state != AllocationState::Released
                     && member_ids.iter().any(|id| a.member_ids.contains(id))
             })
-        {
-            return Err("prepared_slot_conflict");
-        }
+    {
+        return Err("prepared_slot_conflict");
     }
     let b = data
         .inventory

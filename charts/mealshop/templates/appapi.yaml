@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mealshop.fullname" . }}-appapi
+  labels:
+    {{- include "mealshop.labels" . | nindent 4 }}
+data:
+  registration.json: |
+    {{- dict "id" "mealshop" "name" "Mealshop" "version" .Chart.AppVersion "port" (int .Values.service.port) "routes" (.Files.Get "files/routes.json" | fromJsonArray) | toPrettyJson | nindent 4 }}

@@ -28,10 +28,9 @@ pub(super) fn input(
     if let ReadingSource::Instrument {
         device_id, name, ..
     } = &value.source
+        && (!cooking::model::text(device_id, 120) || !cooking::model::text(name, 200))
     {
-        if !cooking::model::text(device_id, 120) || !cooking::model::text(name, 200) {
-            return Err("brewing_reading_invalid");
-        }
+        return Err("brewing_reading_invalid");
     }
     if let Calibration::Declared {
         details,

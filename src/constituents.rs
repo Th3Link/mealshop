@@ -65,10 +65,13 @@ pub(crate) fn validate(catalogue: &crate::nutrition::catalogue::Catalogue) -> Re
             {
                 return Err("Constituents need stable IDs, names and explicit units".to_owned());
             }
-            if let Some(previous) = definitions.insert(id, (&declaration.name, &declaration.unit)) {
-                if previous != (&declaration.name, &declaration.unit) {
-                    return Err("A constituent ID must retain the same name and unit throughout a catalogue".to_owned());
-                }
+            if let Some(previous) = definitions.insert(id, (&declaration.name, &declaration.unit))
+                && previous != (&declaration.name, &declaration.unit)
+            {
+                return Err(
+                    "A constituent ID must retain the same name and unit throughout a catalogue"
+                        .to_owned(),
+                );
             }
         }
     }

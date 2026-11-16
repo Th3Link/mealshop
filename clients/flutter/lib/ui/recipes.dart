@@ -91,7 +91,11 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 return EmptyContent(
                   icon: Icons.menu_book_outlined,
                   title: query.isEmpty ? 'nothing_yet' : 'no_results',
-                  body: query.isEmpty ? 'online_content' : null,
+                  body: query.isEmpty
+                      ? (widget.api.credential.isDevice
+                            ? 'local_content'
+                            : 'online_content')
+                      : null,
                 );
               }
               return ListView.builder(
@@ -365,7 +369,9 @@ class _RecipeDetailState extends State<RecipeDetail> {
                   }),
                   child: Text(unit),
                 ),
-                if (!shared && widget.api.owner)
+                if (!shared &&
+                    widget.api.owner &&
+                    !widget.api.credential.isDevice)
                   OutlinedButton.icon(
                     onPressed: () => openPage<void>(
                       context,

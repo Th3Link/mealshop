@@ -344,6 +344,8 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       await tester.enterText(reason, 'Synthetic transcription correction');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
       final review = find.widgetWithText(
         FilledButton,
         message('brewReview', 'de'),

@@ -479,7 +479,10 @@ class CookingController extends ChangeNotifier {
       if (entries.isEmpty) {
         await device.clear();
       } else {
-        deviceStatus = await device.replace(entries.take(200).toList());
+        deviceStatus = await device.replace(
+          entries.take(200).toList(),
+          generation: api.credential.generation,
+        );
       }
     } on ApiFailure catch (failure) {
       error = failure.code;

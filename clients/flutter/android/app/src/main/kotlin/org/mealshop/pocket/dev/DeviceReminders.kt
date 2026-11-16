@@ -62,7 +62,7 @@ internal class DeviceReminders(private val context: Context) {
                         "clock" -> bridge.clock()
                         "status" -> bridge.status()
                         "replace" -> {
-                            bridge.replace(requireNotNull(call.argument<List<Map<String, Any>>>("entries")), epoch)
+                            bridge.replace(requireNotNull(call.argument<List<Map<String, Any>>>("entries")), epoch, call.argument<String>("generation"))
                             bridge.status()
                         }
                         "clear" -> { bridge.clear(); bridge.status() }
@@ -129,8 +129,20 @@ internal class DeviceReminders(private val context: Context) {
         alarms.cancel(intent(key))
         manager.cancel(key, 0)
     }
-    fun replace(input: List<Map<String, Any>>, expected: Long) {
+    private fun generationMatches(generation: String?): Boolean {
+        if (generation == null) return true
+        if (!generation.matches(Regex("[0-9a-f]{32}"))) return false
+        return try {
+            val file = java.io.File(DeviceEngine.root(context), "active.json")
+            if (file.length() > 4096) false else {
+                val value = JSONObject(file.readText())
+                value.optInt("schema_version") == 1 && value.optString("id") == generation
+            }
+        } catch (_: Exception) { false }
+    }
+    fun replace(input: List<Map<String, Any>>, expected: Long, generation: String?) {
         if (expected != epoch()) return
+        if (!generationMatches(generation)) { clear(); return }
         require(input.size <= 200)
         val previous = rows()
         val instant = now()
@@ -147,6 +159,7 @@ internal class DeviceReminders(private val context: Context) {
             JSONObject().put("key", key).put("due", due).put("expires_at", expires).put("language", language).put("attempted", attempted)
         }
         save(next)
+        check(preferences.edit().putString("local_generation", generation).commit())
         if (!gate(true, expected)) return
         check(preferences.edit().putString("scope", next.firstOrNull()?.getString("key")?.substringBefore(":" ) ?: "").commit())
         for (old in previous) if (next.none { it.getString("key") == old.getString("key") && it.getLong("due") == old.getLong("due") }) cancel(old)
@@ -162,6 +175,7 @@ internal class DeviceReminders(private val context: Context) {
     }
     fun reconcile(key: String? = null) {
         if (!enabled()) return
+        if (!generationMatches(preferences.getString("local_generation", null))) { clear(); return }
         val current = rows()
         val instant = now()
         for (row in current) {

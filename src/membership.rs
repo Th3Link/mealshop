@@ -88,6 +88,17 @@ pub(crate) struct Membership {
     writable: bool,
 }
 impl Membership {
+    #[cfg(feature = "device")]
+    pub(crate) fn validate_device(&self, principal: &str) -> Result<(), String> {
+        if self.data.homes.iter().any(|home| {
+            home.members.len() != 1
+                || home.members.get(principal) != Some(&Role::Owner)
+                || !home.invitations.is_empty()
+        }) {
+            return Err("Device dataset contains incompatible membership".to_owned());
+        }
+        Ok(())
+    }
     pub(crate) fn owner(&self, id: &str) -> Option<&str> {
         self.data
             .homes

@@ -362,18 +362,17 @@ fn validate(p: &Plan) -> Result<(), &'static str> {
     {
         return Err("invalid_meal_plan");
     }
-    if let Some(c) = &p.calendar {
-        if !c.consent
+    if let Some(c) = &p.calendar
+        && (!c.consent
             || c.source.trim().is_empty()
             || c.source.len() > 200
             || c.event_id.trim().is_empty()
             || c.event_id.len() > 200
             || c.date != p.date
             || c.member_ids.is_empty()
-            || c.member_ids.len() > 100
-        {
-            return Err("calendar_consent_or_source_required");
-        }
+            || c.member_ids.len() > 100)
+    {
+        return Err("calendar_consent_or_source_required");
     }
     let attendees = p
         .attendees

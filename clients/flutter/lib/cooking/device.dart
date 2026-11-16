@@ -27,7 +27,7 @@ abstract interface class ReminderDevice {
   Future<Json> status();
   Future<Json> requestPermission();
   Future<Json> requestPrecision();
-  Future<Json> replace(List<Json> entries);
+  Future<Json> replace(List<Json> entries, {String? generation});
   Future<void> clear();
 }
 
@@ -69,8 +69,8 @@ class AndroidReminders implements ReminderDevice {
   @override
   Future<Json> requestPrecision() => _call('requestPrecision');
   @override
-  Future<Json> replace(List<Json> entries) =>
-      _call('replace', {'entries': entries});
+  Future<Json> replace(List<Json> entries, {String? generation}) =>
+      _call('replace', {'entries': entries, 'generation': generation});
   @override
   Future<void> clear() async {
     await _call('clear');

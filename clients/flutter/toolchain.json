@@ -23,5 +23,6 @@
   "emulator_browser": {
     "package": "com.android.chrome",
     "source": "Google APIs API 36 system image"
-  }
+  },
+  "rust_version": "1.100.0"
 }
