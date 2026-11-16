@@ -2,11 +2,14 @@
 name = "mealshop-server"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.89"
 license = "AGPL-3.0-only"
 description = "Mealshop recipe, shopping and family meal planning server"
 repository = "https://github.com/Th3Link/mealshop"
 publish = false
+
+[features]
+device = ["dep:age", "dep:tar"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -22,6 +25,8 @@ jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bun
 
 html5ever = "=0.35.0"
 robotstxt = "=0.3.0"
+age = { version = "0.11.5", default-features = false, optional = true }
+tar = { version = "0.4.46", default-features = false, optional = true }
 
 [dev-dependencies]
 

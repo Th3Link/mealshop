@@ -1,0 +1,71 @@
+[
+  {
+    "name": "fluent-langneg",
+    "version": "0.13.1",
+    "source": "https://raw.githubusercontent.com/projectfluent/fluent-langneg-rs/7fdc590466ea63ca2367ac10fb1b881fe561f1a8/LICENSE-MIT",
+    "file": "assets/rust-licences/fluent-langneg-0.13.1.txt",
+    "sha256": "016fcc02048817d628b04b140c54db290fd9d29a5e8a55b77871194e810716ac"
+  },
+  {
+    "name": "match_token",
+    "version": "0.35.0",
+    "source": "https://raw.githubusercontent.com/servo/html5ever/6db7bbf1c4dfaecd28731950d427e40c8b911bef/LICENSE-MIT",
+    "file": "assets/rust-licences/match_token-0.35.0.txt",
+    "sha256": "86dd7f026f916daf7511e39951ad8ea8cf55a8db67ae64060dacf829761c18f3"
+  },
+  {
+    "name": "cookie-factory",
+    "version": "0.3.3",
+    "source": "https://raw.githubusercontent.com/rust-bakery/cookie-factory/d36b805dbd7dd65f2df947235c5bcc573afe2c76/LICENSES/MIT.txt",
+    "file": "assets/rust-licences/cookie-factory-0.3.3.txt",
+    "sha256": "d09216dc1ea5f273997667935a8d6514d80f00b89fb6954ecc3a43e0a6e360de"
+  },
+  {
+    "name": "intl_pluralrules",
+    "version": "7.0.2",
+    "source": "https://raw.githubusercontent.com/zbraniecki/pluralrules/d0715d5b7cca72e228d6e6c4de154bd30dfdd06a/intl_pluralrules/LICENSE-MIT",
+    "file": "assets/rust-licences/intl_pluralrules-7.0.2.txt",
+    "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+  },
+  {
+    "name": "io_tee",
+    "version": "0.1.1",
+    "source": "https://crates.io/api/v1/crates/io_tee/0.1.1/download#README.md",
+    "selected_licence": "Apache-2.0",
+    "readme_sha256": "0ba20a4b5d8188a85014c5f6d52b5407aec2077986c05f6ba686f9899b767b95",
+    "standard_licence_source": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+    "file": "assets/rust-licences/io_tee-0.1.1.txt",
+    "sha256": "15c2849920663589778850f01f2e969429711b5dca36415134625eb00aeff4bc"
+  },
+  {
+    "name": "mac",
+    "version": "0.1.1",
+    "source": "https://crates.io/api/v1/crates/mac/0.1.1/download#README.md",
+    "selected_licence": "Apache-2.0",
+    "readme_sha256": "8edb7a912d295acf1e1cfeafdd19a6813a63b301c7bbfda3c67f65509bd8d8cc",
+    "standard_licence_source": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+    "file": "assets/rust-licences/mac-0.1.1.txt",
+    "sha256": "00ec0b20793edfd01a4cf4072f9c001fe93b0cd6a843f6c00338ce24fdcbdc09"
+  },
+  {
+    "name": "age",
+    "version": "0.11.5",
+    "source": "https://raw.githubusercontent.com/str4d/rage/7f29934dc58e058e7a588ac3a9a7e946198a73a7/LICENSE-MIT",
+    "file": "assets/rust-licences/age-0.11.5.txt",
+    "sha256": "fe56c030c2d8c3404a37fe711cebb27ebea13d0aacf7e3524db4198335ad8cd1"
+  },
+  {
+    "name": "age-core",
+    "version": "0.11.0",
+    "source": "https://raw.githubusercontent.com/str4d/rage/17446612f865c705e44fe392d9d41dd102fed137/LICENSE-MIT",
+    "file": "assets/rust-licences/age-core-0.11.0.txt",
+    "sha256": "fe56c030c2d8c3404a37fe711cebb27ebea13d0aacf7e3524db4198335ad8cd1"
+  },
+  {
+    "name": "bech32",
+    "version": "0.9.1",
+    "source": "https://github.com/rust-bitcoin/rust-bech32/blob/d12513f1e3768a7f2a2e1b4d650139eb92a4ae9b/src/lib.rs#L1-L19",
+    "file": "assets/rust-licences/bech32-0.9.1.txt",
+    "sha256": "74375f18b087dc11b0d356d423601acf4bcfc2bc86ac95dc72336d362f869f0d"
+  }
+]

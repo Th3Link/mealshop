@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'connection/nextcloud.dart';
 import 'connection/vault.dart';
+import 'connection/device.dart';
 import 'shopping/controller.dart';
 import 'ui/connect.dart';
 import 'ui/home.dart';
@@ -21,6 +22,11 @@ Future<void> main() async {
       'ZXing',
       'tessdata_fast',
     ], await rootBundle.loadString('assets/capture-notices.txt'));
+  });
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks([
+      'Mealshop Rust core and dependencies',
+    ], await DeviceGateway().notices());
   });
   final controller = ShoppingController(Nextcloud(), DeviceVault());
   runApp(MealshopApp(controller));
@@ -89,6 +95,8 @@ class _MealshopAppState extends State<MealshopApp> with WidgetsBindingObserver {
           )),
           debugShowCheckedModeBanner: false,
           title: 'Mealshop',
+          builder: (context, child) =>
+              DeviceMessageScope(enabled: c.isDevice, child: child!),
           theme: theme(Brightness.light),
           darkTheme: theme(Brightness.dark),
           locale: Locale(c.language),

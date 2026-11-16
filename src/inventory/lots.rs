@@ -209,15 +209,14 @@ pub(super) fn reverse(
         })
         .collect();
     for entry in &movement.entries {
-        if entry.direction == Direction::Out {
-            if let Some(lot) = data
+        if entry.direction == Direction::Out
+            && let Some(lot) = data
                 .inventory
                 .lots
                 .iter_mut()
                 .find(|l| l.id == entry.lot_id)
-            {
-                lot.archived = false;
-            }
+        {
+            lot.archived = false;
         }
     }
     for allocation in &mut data.inventory.allocations {

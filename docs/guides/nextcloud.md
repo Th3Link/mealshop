@@ -120,7 +120,7 @@ python3 scripts/test_exapp_container.py
 ```
 
 The image pins base digests, uses the Rust 1.99 compiler image and builds the Vue IIFE with
-Node 24/npm 12.2.2. The declared Rust 1.85 MSRV is checked separately. The image includes the
+Node 24/npm 12.2.2. The declared Rust 1.89 MSRV is checked separately. The image includes the
 manifest, assets, CA store and FRP entrypoint. Runtime uses a supported Alpine
 3.24 release. The isolated smoke test exercises both TCP and Unix socket, lifecycle registration,
 assets, authorization, CSRF and private storage as UID 1000 with a read-only root filesystem.

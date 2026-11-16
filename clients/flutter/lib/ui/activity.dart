@@ -241,7 +241,9 @@ class _ActivityAccessState extends State<ActivityAccess> {
               Note(context.t('activity_access_note')),
               for (final user in object(data!['accounts']).keys)
                 Choice(
-                  user,
+                  widget.api.credential.isDevice
+                      ? context.t('local_account')
+                      : user,
                   grants[user] as String? ?? 'none',
                   {
                     'none': context.t('no_access'),

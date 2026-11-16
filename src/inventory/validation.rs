@@ -28,7 +28,7 @@ pub(crate) fn offer(value: &Offer) -> bool {
         && (value.binding.ingredient_id.is_some() || value.binding.product.is_some())
         && value.quantity.normalized().is_ok()
         && value.price.atoms() > 0
-        && value.price.atoms() % 10_000 == 0
+        && value.price.atoms().is_multiple_of(10_000)
         && matches!(value.currency.as_str(), "EUR" | "GBP" | "USD" | "CHF")
         && crate::planning::date(&value.valid_from)
         && crate::planning::date(&value.valid_until)
@@ -101,10 +101,10 @@ pub(crate) fn validate(data: &Shopping) -> Result<(), &'static str> {
                 return Err("inventory_data_invalid");
             }
         }
-        if let MovementKind::Adjustment { reason, observed } = &m.kind {
-            if !text(reason, 500) || m.entries.len() != 1 || lots::normalize(observed).is_err() {
-                return Err("inventory_data_invalid");
-            }
+        if let MovementKind::Adjustment { reason, observed } = &m.kind
+            && (!text(reason, 500) || m.entries.len() != 1 || lots::normalize(observed).is_err())
+        {
+            return Err("inventory_data_invalid");
         }
     }
     super::ledger::validate(data)?;

@@ -275,23 +275,21 @@ impl Store {
                 );
             }
             for (index, record) in revisions.iter().enumerate() {
-                if let Some(creation) = &record.creation {
-                    if record.revision != 1
+                if let Some(creation) = &record.creation
+                    && (record.revision != 1
                         || !creation.valid()
-                        || !creation_keys.insert((creation.actor.clone(), creation.key.clone()))
-                    {
-                        return Err("Invalid or duplicate recipe creation receipt".to_owned());
-                    }
+                        || !creation_keys.insert((creation.actor.clone(), creation.key.clone())))
+                {
+                    return Err("Invalid or duplicate recipe creation receipt".to_owned());
                 }
-                if let Some(receipt) = &record.import_receipt {
-                    if index != 0
+                if let Some(receipt) = &record.import_receipt
+                    && (index != 0
                         || record.creation.is_some()
                         || !receipt.valid()
                         || record.recipe.origin != receipt.source.origin()
-                        || !import_keys.insert((receipt.actor.clone(), receipt.key.clone()))
-                    {
-                        return Err("Invalid or duplicate recipe import receipt".to_owned());
-                    }
+                        || !import_keys.insert((receipt.actor.clone(), receipt.key.clone())))
+                {
+                    return Err("Invalid or duplicate recipe import receipt".to_owned());
                 }
                 if record.revision != index as u64 + 1 {
                     return Err("Recipe history has duplicate or missing revisions".to_owned());
@@ -482,15 +480,15 @@ impl Store {
         preview: &str,
     ) -> Result<Option<Record>, Error> {
         for revisions in self.records.values() {
-            if let Some(record) = revisions.first() {
-                if let Some(creation) = &record.creation {
-                    if creation.actor == actor && creation.key == key {
-                        if creation.preview_id != preview {
-                            return Err(Error::Conflict);
-                        }
-                        return self.get(&record.id, Some(1)).map(Some);
-                    }
+            if let Some(record) = revisions.first()
+                && let Some(creation) = &record.creation
+                && creation.actor == actor
+                && creation.key == key
+            {
+                if creation.preview_id != preview {
+                    return Err(Error::Conflict);
                 }
+                return self.get(&record.id, Some(1)).map(Some);
             }
         }
         Ok(None)
@@ -522,19 +520,19 @@ impl Store {
         recipe: &Recipe,
     ) -> Result<Option<Record>, Error> {
         for revisions in self.records.values() {
-            if let Some(record) = revisions.first() {
-                if let Some(receipt) = &record.import_receipt {
-                    if receipt.actor == actor && receipt.key == key {
-                        if receipt.preview_id != preview
-                            || receipt.candidate != candidate
-                            || serde_json::to_value(&record.recipe).map_err(|_| Error::Storage)?
-                                != serde_json::to_value(recipe).map_err(|_| Error::Storage)?
-                        {
-                            return Err(Error::Conflict);
-                        }
-                        return self.get(&record.id, Some(1)).map(Some);
-                    }
+            if let Some(record) = revisions.first()
+                && let Some(receipt) = &record.import_receipt
+                && receipt.actor == actor
+                && receipt.key == key
+            {
+                if receipt.preview_id != preview
+                    || receipt.candidate != candidate
+                    || serde_json::to_value(&record.recipe).map_err(|_| Error::Storage)?
+                        != serde_json::to_value(recipe).map_err(|_| Error::Storage)?
+                {
+                    return Err(Error::Conflict);
                 }
+                return self.get(&record.id, Some(1)).map(Some);
             }
         }
         Ok(None)
@@ -586,9 +584,9 @@ impl Store {
             file.write_all(&bytes)?;
             file.sync_all()?;
             // Atomic publication without ever overwriting an existing revision.
-            fs::hard_link(&pending, &target)?;
+            crate::storage::publish_new(&pending, &target)?;
             sync_directory(&self.directory)?;
-            fs::remove_file(&pending)?;
+            crate::storage::finish_publish(&pending)?;
             sync_directory(&self.directory)
         };
         if persist().is_err() {

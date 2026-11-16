@@ -174,14 +174,14 @@ pub(super) fn validate_capture(
     command: &Command,
     images: &std::path::Path,
 ) -> Result<(), &'static str> {
-    if let Command::SaveProduct { product } = command {
-        if let Some(label) = &product.label_capture {
-            if !label.valid() {
-                return Err("shopping_product_invalid");
-            }
-            crate::recipe_images::validate_reference(Some(images), Some(&label.photo.image_id))
-                .map_err(|_| "capture_image_missing")?;
+    if let Command::SaveProduct { product } = command
+        && let Some(label) = &product.label_capture
+    {
+        if !label.valid() {
+            return Err("shopping_product_invalid");
         }
+        crate::recipe_images::validate_reference(Some(images), Some(&label.photo.image_id))
+            .map_err(|_| "capture_image_missing")?;
     }
     Ok(())
 }

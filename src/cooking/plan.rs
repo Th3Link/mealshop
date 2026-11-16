@@ -200,10 +200,10 @@ pub(crate) fn schedule(
             ready = ready.max(time::add(previous.finish, i64::from(step.lag_seconds))?);
             start = start.max(ready);
         }
-        if let Some((id, at)) = delay {
-            if step.stage.id == id {
-                start = start.max(at);
-            }
+        if let Some((id, at)) = delay
+            && step.stage.id == id
+        {
+            start = start.max(at);
         }
         let (start, active_until, finish) = actual_timing(step, start, now, &mut warnings)?;
         times[index] = Some(Timing {

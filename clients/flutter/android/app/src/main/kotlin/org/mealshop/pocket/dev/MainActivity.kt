@@ -18,6 +18,7 @@ class MainActivity : FlutterActivity() {
         private val worker = DeviceReminders.worker
     }
     private val capture by lazy { DeviceCapture(applicationContext) }
+    private val backups by lazy { DeviceBackups(this) }
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         DeviceCapture.receive(applicationContext, intent)
@@ -32,6 +33,7 @@ class MainActivity : FlutterActivity() {
     @Deprecated("Android activity result bridge")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (backups.activityResult(requestCode,resultCode,data)) return
         if (requestCode != 508) return
         val result = exportResult ?: return
         val bytes = exportValue
@@ -55,6 +57,10 @@ class MainActivity : FlutterActivity() {
     }
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.mealshop/device_engine")
+            .setMethodCallHandler { call, result -> DeviceEngine.handle(applicationContext, call, result) }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.mealshop/device_backups")
+            .setMethodCallHandler { call, result -> backups.handle(call,result) }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.mealshop/reminders")
             .setMethodCallHandler { call, result -> DeviceReminders.handle(this, call, result) }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "org.mealshop/documents")

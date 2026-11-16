@@ -286,7 +286,7 @@ async fn cooking_notifications_use_only_the_opted_in_actor_and_hide_other_subscr
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let url = format!("http://{}", listener.local_addr().unwrap());
     let ocs = tokio::spawn(async move {
-        axum::serve(listener,Router::new().fallback(axum::routing::any(move |headers: axum::http::HeaderMap,body: axum::body::Bytes|{let notices=collected.clone();async move {if let Ok(value)=serde_json::from_slice::<Value>(&body) {if value.pointer("/params/object")==Some(&json!("mealshop_cooking")){notices.lock().unwrap().push(json!({"authorization":headers.get("authorization-app-api").unwrap().to_str().unwrap(),"value":value}));}}Json(json!({"ocs":{"meta":{"statuscode":100},"data":true}}))}}))).await.unwrap();
+        axum::serve(listener,Router::new().fallback(axum::routing::any(move |headers: axum::http::HeaderMap,body: axum::body::Bytes|{let notices=collected.clone();async move {if let Ok(value)=serde_json::from_slice::<Value>(&body)&& value.pointer("/params/object")==Some(&json!("mealshop_cooking")){notices.lock().unwrap().push(json!({"authorization":headers.get("authorization-app-api").unwrap().to_str().unwrap(),"value":value}));}Json(json!({"ocs":{"meta":{"statuscode":100},"data":true}}))}}))).await.unwrap();
     });
     let app = router(Config {
         secret: SECRET.to_owned(),

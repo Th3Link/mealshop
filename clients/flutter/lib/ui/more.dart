@@ -17,6 +17,7 @@ import 'stock.dart';
 import 'cooking.dart';
 import 'brewing.dart';
 import 'history.dart';
+import 'backups.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen(this.c, {super.key});
@@ -24,11 +25,15 @@ class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListView(
     children: [
-      SectionTitle(context.t('account')),
+      SectionTitle(context.t(c.isDevice ? 'local_data' : 'account')),
       ListTile(
         leading: const Icon(Icons.account_circle_outlined),
-        title: Text(c.credential!.user),
-        subtitle: Text(c.credential!.server.root.toString()),
+        title: Text(
+          c.isDevice ? context.t('local_account') : c.credential!.user,
+        ),
+        subtitle: c.isDevice
+            ? null
+            : Text(c.credential!.server.root.toString()),
       ),
       ListTile(
         leading: const Icon(Icons.people_outline),
@@ -37,11 +42,22 @@ class MoreScreen extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right),
         onTap: () => showHomes(context, c),
       ),
+      if (c.isDevice)
+        ListTile(
+          leading: const Icon(Icons.backup_outlined),
+          title: Text(context.t('backups')),
+          subtitle: Text(context.t('backup_caption')),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => openPage<void>(context, BackupsScreen(c)),
+        ),
       ListTile(
         leading: const Icon(Icons.folder_shared_outlined),
         title: Text(context.t('shared')),
+        subtitle: c.isDevice ? Text(context.t('local_sharing_body')) : null,
         trailing: const Icon(Icons.chevron_right),
-        onTap: () => openPage<void>(context, SharedScreen(HouseholdApi(c))),
+        onTap: c.isDevice
+            ? null
+            : () => openPage<void>(context, SharedScreen(HouseholdApi(c))),
       ),
       if (c.home != null) ...[
         SectionTitle(context.t('library')),
@@ -71,7 +87,7 @@ class MoreScreen extends StatelessWidget {
             CollectionsScreen(HouseholdApi(c)),
           ),
 
-          if (c.home!.role == 'owner')
+          if (c.home!.role == 'owner' && !c.isDevice)
             ('shares', Icons.share_outlined, SharesScreen(HouseholdApi(c))),
         ])
           ListTile(
@@ -127,18 +143,24 @@ class MoreScreen extends StatelessWidget {
       ListTile(
         leading: const Icon(Icons.lock_outline),
         title: Text(context.t('privacy')),
-        subtitle: Text(context.t('privacy_body')),
+        subtitle: Text(
+          context.t(c.isDevice ? 'local_privacy' : 'privacy_body'),
+        ),
       ),
       Padding(
         padding: const EdgeInsets.all(20),
         child: OutlinedButton.icon(
           onPressed: () async {
-            if (await confirm(context, 'sign_out', body: 'sign_out_body')) {
+            if (await confirm(
+              context,
+              c.isDevice ? 'local_exit' : 'sign_out',
+              body: c.isDevice ? 'local_exit_body' : 'sign_out_body',
+            )) {
               await c.signOut();
             }
           },
           icon: const Icon(Icons.logout),
-          label: Text(context.t('sign_out')),
+          label: Text(context.t(c.isDevice ? 'local_exit' : 'sign_out')),
         ),
       ),
       ListTile(
@@ -147,13 +169,13 @@ class MoreScreen extends StatelessWidget {
         onTap: () => showLicensePage(
           context: context,
           applicationName: 'Mealshop',
-          applicationVersion: '0.4.0',
+          applicationVersion: '0.6.0',
           applicationLegalese: 'AGPL-3.0-only',
         ),
       ),
       const Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Text('Mealshop · 0.4.0 · AGPL-3.0-only'),
+        child: Text('Mealshop · 0.6.0 · AGPL-3.0-only'),
       ),
     ],
   );

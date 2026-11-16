@@ -186,21 +186,21 @@ pub(crate) fn attach(catalogue: &mut Catalogue) -> Result<(), String> {
         if incompatible_groups.contains(&item.id) {
             continue;
         }
-        if item.nutrition_estimates.is_empty() {
-            if let Some(entry) = registry.profiles.get(&item.id).filter(|e| {
+        if item.nutrition_estimates.is_empty()
+            && let Some(entry) = registry.profiles.get(&item.id).filter(|e| {
                 e.source_name == item.source.name
                     && e.source_record_id == item.source.record_id
                     && e.source_version == item.source.version
                     && e.form == item.form
-            }) {
-                for profile in &entry.profiles {
-                    if profile.version != registry.version {
-                        return Err("Nutrition estimate version mismatch".to_owned());
-                    }
-                    profile.validate(item)?;
+            })
+        {
+            for profile in &entry.profiles {
+                if profile.version != registry.version {
+                    return Err("Nutrition estimate version mismatch".to_owned());
                 }
-                item.nutrition_estimates.clone_from(&entry.profiles);
+                profile.validate(item)?;
             }
+            item.nutrition_estimates.clone_from(&entry.profiles);
         }
     }
     Ok(())

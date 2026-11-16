@@ -142,3 +142,8 @@ F36 adds customer-requested stable-tag GHCR images and an OCI Helm chart for Flu
 installations. N01/N08 apply. Versioned artifacts and existing-secret/persistent single-writer deployment
 extend F18 AC3 without closing its remaining adapters or implying acceptance on a customer's cluster.
 See [F36](../specs/0036-release-images-helm/specification.md).
+
+F37 adds the customer's app-only Android mode with persistent local records and encrypted portable
+backup/validated restore. It replaces the requested demo, reuses domain rules, separates local and
+remote datasets and does not introduce automatic cloud sync or local-to-server uploads. N01/N03/N04/
+N06–N10 apply; see [F37](../specs/0037-app-only-backups/specification.md).

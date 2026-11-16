@@ -136,7 +136,7 @@ impl Quantity {
         let from = self.unit.factor().ok_or("spoon_standard_required")?;
         let to = target.factor().ok_or("spoon_standard_required")?;
         let numerator = self.amount.atoms() * from;
-        if numerator % to != 0 {
+        if !numerator.is_multiple_of(to) {
             return Err("precision_exceeded");
         }
         let atoms = numerator / to;
@@ -196,7 +196,7 @@ impl Quantity {
                 return Err("portion_unit_mismatch".to_owned());
             }
             let numerator = self.amount.atoms() * e.grams_per_base_unit.atoms();
-            if numerator % SCALE != 0 {
+            if !numerator.is_multiple_of(SCALE) {
                 return Err("precision_exceeded".to_owned());
             }
             let atoms = numerator / SCALE;
@@ -217,7 +217,7 @@ impl Quantity {
                     .as_ref()
                     .ok_or("spoon_standard_required")?
                     .atoms();
-                if size == 0 || self.amount.atoms() * size % SCALE != 0 {
+                if size == 0 || !(self.amount.atoms() * size).is_multiple_of(SCALE) {
                     return Err("precision_exceeded".to_owned());
                 }
                 self.amount.atoms() * size / SCALE

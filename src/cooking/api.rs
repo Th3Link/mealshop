@@ -194,16 +194,16 @@ async fn preview(
             let now = time::now()?;
             let (run, previous, proposal) = match input.proposal {
                 Proposal::Create { draft } => {
-                    if let Some(slot) = &draft.plan_slot {
-                        if !plans.cooking_source(
+                    if let Some(slot) = &draft.plan_slot
+                        && !plans.cooking_source(
                             &slot.date,
                             &slot.meal,
                             &draft.recipe_id,
                             draft.recipe_revision,
                             draft.servings,
-                        ) {
-                            return Err("cooking_plan_source_changed");
-                        }
+                        )
+                    {
+                        return Err("cooking_plan_source_changed");
                     }
                     let record = source::recipe(&recipes, &draft.recipe_id, draft.recipe_revision)?;
                     let (run, proposal) = source::create(draft, &record, now)?;

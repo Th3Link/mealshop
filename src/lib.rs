@@ -3,6 +3,8 @@
 mod api;
 mod constituents;
 mod cooking;
+#[cfg(feature = "device")]
+pub mod device;
 pub mod exapp;
 mod household;
 mod ingredient_api;
@@ -20,6 +22,7 @@ mod recipe_origin;
 mod recipe_structure;
 mod recipes;
 mod shopping;
+mod storage;
 
 /// Builds the application with the bundled, versioned starter catalogue.
 ///

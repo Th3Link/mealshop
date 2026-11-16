@@ -2,8 +2,27 @@
 
 use std::{error::Error, net::SocketAddr};
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
+    #[cfg(feature = "device")]
+    {
+        let mut arguments = std::env::args_os().skip(1);
+        if arguments.next().as_deref() == Some(std::ffi::OsStr::new("--device-stdio")) {
+            let root = arguments
+                .next()
+                .ok_or("A private device directory is required")?;
+            if arguments.next().is_some() {
+                return Err("Unexpected device arguments".into());
+            }
+            return mealshop_server::device::run_stdio(std::path::Path::new(&root))
+                .map_err(Into::into);
+        }
+    }
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?
+        .block_on(run_http())
+}
+async fn run_http() -> Result<(), Box<dyn Error>> {
     if std::env::var_os("APP_SECRET").is_some() {
         return run_exapp().await;
     }

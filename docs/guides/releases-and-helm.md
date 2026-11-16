@@ -37,7 +37,8 @@ Use the next unused version; do not move published tags. A tag push initiates pu
 deployment to any cluster. Wait for the full Release workflow before referencing new packages.
 A failed run can leave architecture images or the image published before the chart; re-running the
 failed jobs completes the same tagged release. Do not create a second tag to hide a failed release.
-The first real GHCR publication remains unverified until a maintainer pushes that first tag.
+The first real GHCR publication, `v0.1.0`, is verified in the
+[F36 release evidence](../../specs/0036-release-images-helm/plan.md#first-release-acceptance--2026-11-16).
 
 ## Install with Flux
 
@@ -193,8 +194,8 @@ PR CI runs both native container architectures, release metadata/route checks, H
 schema/render/package contracts and a disposable
 Kind install/upgrade/uninstall test with an OCS fixture, in addition to existing transport tests.
 The fixture is not a real Nextcloud deployment. The release workflow repeats all quality/security/
-Android gates, tests both native image architectures, then publishes. A maintainer's first real tag
-is still required to verify registry permissions and publication; the customer's cluster remains untouched.
+Android gates, tests both native image architectures, then publishes. The first real tag verified
+registry permissions and publication for `v0.1.0`; the customer's cluster remains untouched.
 
 - [GitHub GHCR publication and GITHUB_TOKEN](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images)
 - [Helm OCI registries](https://helm.sh/docs/topics/registries/)

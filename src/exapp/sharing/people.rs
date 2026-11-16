@@ -18,6 +18,10 @@ struct Meta {
 }
 
 pub(super) async fn verify(app: Shared, actor: &str, recipient: &str) -> Result<(), Failure> {
+    let host = app
+        .config
+        .nextcloud()
+        .ok_or_else(|| failure("requires_server"))?;
     if !crate::membership::valid_user(recipient) {
         return Err(failure("invalid_share_recipient"));
     }
@@ -25,7 +29,7 @@ pub(super) async fn verify(app: Shared, actor: &str, recipient: &str) -> Result<
         .client
         .get(format!(
             "{}/ocs/v1.php/apps/app_api/api/v1/users?format=json",
-            app.config.nextcloud_url.trim_end_matches('/')
+            host.url.trim_end_matches('/')
         ))
         .header("EX-APP-ID", "mealshop")
         .header("EX-APP-VERSION", env!("CARGO_PKG_VERSION"))

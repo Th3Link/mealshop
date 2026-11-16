@@ -25,8 +25,9 @@ Mealshop is an **External App (`ExApp`)**: the released container runs the Rust 
 interface, integrated through Nextcloud `AppAPI`. Do not copy this repository into Nextcloud's `apps/`.
 
 Stable tags `vX.Y.Z` publish Linux AMD64/ARM64 images to `ghcr.io/th3link/mealshop` and an OCI Helm
-chart to `oci://ghcr.io/th3link/charts/mealshop` after all release gates pass. The first tagged
-publication is still pending; use a version whose **Release** workflow has succeeded.
+chart to `oci://ghcr.io/th3link/charts/mealshop` after all release gates pass.
+[Release v0.1.0](https://github.com/Th3Link/mealshop/releases/tag/v0.1.0) is published: both
+architectures and the chart are anonymously pullable, with verified checksums and image-digest pinning.
 
 With Nextcloud 35/`AppAPI` 35 and a dedicated existing `APP_SECRET` Secret, install the matching chart:
 
@@ -48,7 +49,7 @@ The [Nextcloud development guide](docs/guides/nextcloud.md) retains local/test t
 the [Android guide](docs/guides/mobile-capture.md#install-on-a-smartphone) covers phone connection.
 
 ## Run the ingredient and nutrition demo
-Install stable Rust (declared minimum: 1.85), then:
+Install stable Rust (declared minimum: 1.89), then:
 ```sh
 cargo run --locked
 curl --fail http://127.0.0.1:3000/health
@@ -152,6 +153,10 @@ P2 adds the resumable person tour, explicit dietary rules, online recipe/ingredi
 views and private person activities with explicit grants; [permissions and API](docs/guides/people-activity.md).
 See the [mobile guide](docs/guides/mobile.md) for the pinned emulator, APKs and upgrade instructions,
 and F35 verification for actual evidence and physical-handset testing limits.
+
+The Android app also supports real [on-device operation with encrypted backups](docs/guides/app-only.md),
+without a Nextcloud account or running server. Choose **Use on this device**, then manage manual
+backup and restore from **More**. Local data and connected households remain separate.
 
 F35 P3 adds native Today/Plan, reviewed server-owned household weeks, recurring attendance and
 explicit physical prepared portions alongside existing inventory. P3 emulator/live-proxy verification is recorded in
