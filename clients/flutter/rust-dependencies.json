@@ -535,6 +535,22 @@
       ]
     },
     {
+      "name": "fastrand",
+      "version": "2.5.0",
+      "licence": "Apache-2.0 OR MIT",
+      "repository": "https://github.com/smol-rs/fastrand",
+      "notices": [
+        {
+          "file": "LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "file": "LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+        }
+      ]
+    },
+    {
       "name": "filetime",
       "version": "0.2.29",
       "licence": "MIT/Apache-2.0",
@@ -655,22 +671,6 @@
         {
           "file": "LICENSE-MIT",
           "sha256": "20c7855c364d57ea4c97889a5e8d98470a9952dade37bd9248b9a54431670e5e"
-        }
-      ]
-    },
-    {
-      "name": "futf",
-      "version": "0.1.5",
-      "licence": "MIT / Apache-2.0",
-      "repository": "https://github.com/servo/futf",
-      "notices": [
-        {
-          "file": "LICENSE-APACHE",
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
-        },
-        {
-          "file": "LICENSE-MIT",
-          "sha256": "60a7062291b01ba068f300612cdbdc20382ac1d4934f07bcdd7167c15299f309"
         }
       ]
     },
@@ -896,7 +896,7 @@
     },
     {
       "name": "html5ever",
-      "version": "0.35.0",
+      "version": "0.40.1",
       "licence": "MIT OR Apache-2.0",
       "repository": "https://github.com/servo/html5ever",
       "notices": [
@@ -1439,20 +1439,8 @@
       ]
     },
     {
-      "name": "mac",
-      "version": "0.1.1",
-      "licence": "MIT/Apache-2.0",
-      "repository": "https://github.com/reem/rust-mac.git",
-      "notices": [
-        {
-          "file": "Upstream supplement: https://crates.io/api/v1/crates/mac/0.1.1/download#README.md",
-          "sha256": "00ec0b20793edfd01a4cf4072f9c001fe93b0cd6a843f6c00338ce24fdcbdc09"
-        }
-      ]
-    },
-    {
       "name": "markup5ever",
-      "version": "0.35.0",
+      "version": "0.40.0",
       "licence": "MIT OR Apache-2.0",
       "repository": "https://github.com/servo/html5ever",
       "notices": [
@@ -1462,18 +1450,6 @@
         },
         {
           "file": "LICENSE-MIT",
-          "sha256": "86dd7f026f916daf7511e39951ad8ea8cf55a8db67ae64060dacf829761c18f3"
-        }
-      ]
-    },
-    {
-      "name": "match_token",
-      "version": "0.35.0",
-      "licence": "MIT OR Apache-2.0",
-      "repository": "https://github.com/servo/html5ever",
-      "notices": [
-        {
-          "file": "Upstream supplement: https://raw.githubusercontent.com/servo/html5ever/6db7bbf1c4dfaecd28731950d427e40c8b911bef/LICENSE-MIT",
           "sha256": "86dd7f026f916daf7511e39951ad8ea8cf55a8db67ae64060dacf829761c18f3"
         }
       ]
@@ -1704,7 +1680,7 @@
     },
     {
       "name": "phf",
-      "version": "0.11.3",
+      "version": "0.14.0",
       "licence": "MIT",
       "repository": "https://github.com/rust-phf/rust-phf",
       "notices": [
@@ -1716,7 +1692,7 @@
     },
     {
       "name": "phf_codegen",
-      "version": "0.11.3",
+      "version": "0.14.0",
       "licence": "MIT",
       "repository": "https://github.com/rust-phf/rust-phf",
       "notices": [
@@ -1728,7 +1704,7 @@
     },
     {
       "name": "phf_generator",
-      "version": "0.11.3",
+      "version": "0.14.0",
       "licence": "MIT",
       "repository": "https://github.com/rust-phf/rust-phf",
       "notices": [
@@ -1740,7 +1716,7 @@
     },
     {
       "name": "phf_shared",
-      "version": "0.11.3",
+      "version": "0.14.0",
       "licence": "MIT",
       "repository": "https://github.com/rust-phf/rust-phf",
       "notices": [
@@ -2640,7 +2616,7 @@
     },
     {
       "name": "string_cache",
-      "version": "0.8.9",
+      "version": "0.11.0",
       "licence": "MIT OR Apache-2.0",
       "repository": "https://github.com/servo/string-cache",
       "notices": [
@@ -2656,7 +2632,7 @@
     },
     {
       "name": "string_cache_codegen",
-      "version": "0.5.4",
+      "version": "0.11.2",
       "licence": "MIT OR Apache-2.0",
       "repository": "https://github.com/servo/string-cache",
       "notices": [
@@ -2768,9 +2744,9 @@
     },
     {
       "name": "tendril",
-      "version": "0.4.3",
-      "licence": "MIT/Apache-2.0",
-      "repository": "https://github.com/servo/tendril",
+      "version": "0.5.1",
+      "licence": "MIT OR Apache-2.0",
+      "repository": "https://github.com/servo/html5ever",
       "notices": [
         {
           "file": "LICENSE-APACHE",
@@ -3167,22 +3143,6 @@
       ]
     },
     {
-      "name": "utf-8",
-      "version": "0.7.6",
-      "licence": "MIT OR Apache-2.0",
-      "repository": "https://github.com/SimonSapin/rust-utf8",
-      "notices": [
-        {
-          "file": "LICENSE-APACHE",
-          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
-        },
-        {
-          "file": "LICENSE-MIT",
-          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
-        }
-      ]
-    },
-    {
       "name": "utf8_iter",
       "version": "1.1.0",
       "licence": "Apache-2.0 OR MIT",
@@ -3260,7 +3220,7 @@
     },
     {
       "name": "web_atoms",
-      "version": "0.1.3",
+      "version": "0.3.0",
       "licence": "MIT OR Apache-2.0",
       "repository": "https://github.com/servo/html5ever",
       "notices": [

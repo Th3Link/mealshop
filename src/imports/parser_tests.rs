@@ -1,5 +1,15 @@
 use super::parser::extract;
 #[test]
+fn tokenizer_attribute_atoms_preserve_language_and_json_ld_selection() {
+    let document = r#"<HTML data-lang="en" LANG="de"><script data-type="application/ld+json">{"@type":"Recipe","name":"Ignore this script"}</script><script TYPE=" Application/LD+JSON ; charset=utf-8">{"@type":"Recipe","name":"Selected source","recipeIngredient":["1,000001 g oats"]}</script></HTML>"#;
+    let recipes = extract(document).unwrap();
+    assert_eq!(recipes.len(), 1);
+    assert_eq!(recipes[0].title.as_deref(), Some("Selected source"));
+    assert_eq!(recipes[0].language.as_deref(), Some("de"));
+    assert_eq!(recipes[0].ingredients, ["1,000001 g oats"]);
+}
+
+#[test]
 fn graph_recipes_nested_steps_original_text_and_unknown_fields_are_preserved() {
     let document = r#"<html lang="de"><script>throw new Error('never execute')</script><script type="application/ld+json">{"@graph":[{"@type":"Recipe","name":"Brot &amp; Butter","author":{"@type":"Person","name":"Synthetic author"},"recipeYield":"4 Portionen","recipeIngredient":["100,500 g Haferkorn","Salz nach Geschmack"],"recipeInstructions":[{"@type":"HowToSection","name":"Dough","itemListElement":[{"@type":"HowToStep","text":"<p>Mix</p><p>carefully.</p>"}]}]}]}</script></html>"#;
     let parsed = extract(document).unwrap();

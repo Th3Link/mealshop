@@ -1,5 +1,6 @@
 //! A bounded token stream, not a browser or DOM: only text and inline JSON-LD are collected.
 use html5ever::{
+    local_name,
     tendril::StrTendril,
     tokenizer::{
         BufferQueue, TagKind, Token, TokenSink, TokenSinkResult, Tokenizer, states::RawKind,
@@ -49,14 +50,14 @@ impl TokenSink for Sink {
                         data.language = tag
                             .attrs
                             .iter()
-                            .find(|a| a.name.local.as_ref() == "lang")
+                            .find(|a| a.name.local == local_name!("lang"))
                             .map(|a| a.value.to_string());
                     }
                     if name == "script" {
                         let wanted = !self.text
                             && data.ignored.is_empty()
                             && tag.attrs.iter().any(|a| {
-                                a.name.local.as_ref() == "type"
+                                a.name.local == local_name!("type")
                                     && a.value.split(';').next().is_some_and(|t| {
                                         t.trim().eq_ignore_ascii_case("application/ld+json")
                                     })
