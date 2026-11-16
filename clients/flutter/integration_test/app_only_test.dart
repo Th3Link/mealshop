@@ -143,7 +143,10 @@ void main() {
             .length,
         2,
       );
-      await device.command({'operation': 'discard_restore','token':preview['token']});
+      await device.command({
+        'operation': 'discard_restore',
+        'token': preview['token'],
+      });
       // ignore: avoid_print
       print('MEALSHOP_VERIFY_DAMAGED');
       final damaged = (await const BackupDocuments().select())!;

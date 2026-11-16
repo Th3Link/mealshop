@@ -184,7 +184,10 @@ class _BackupsScreenState extends State<BackupsScreen> {
       if (id != null) {
         try {
           if (!committed && token != null) {
-            await device.command({'operation': 'discard_restore','token':token});
+            await device.command({
+              'operation': 'discard_restore',
+              'token': token,
+            });
           }
           await device.command({'operation': 'discard_import', 'id': id});
         } on ApiFailure {
