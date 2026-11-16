@@ -14,11 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write
       issues: write
     steps:
       - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        if: github.event_name != 'schedule'
+      - uses: taiki-e/install-action@v2
+        if: github.event_name != 'schedule'
+        with:
+          tool: cargo-audit@0.23.0
+      - name: Audit locked dependencies
+        if: github.event_name != 'schedule'
+        run: cargo audit --file Cargo.lock
       - uses: rustsec/audit-check@v2.0.0
+        if: github.event_name == 'schedule'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
   licenses:
