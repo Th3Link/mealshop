@@ -239,18 +239,18 @@ fn source(
     requested: RequestedSource,
     previous: Option<&Entry>,
 ) -> Result<(Source, Recipe, u32), &'static str> {
-    if let Some(previous) = previous {
-        if let Source::Session { run_id: old } = &previous.source {
-            return if matches!(&requested,RequestedSource::Session{run_id} if run_id==old) {
-                Ok((
-                    previous.source.clone(),
-                    previous.recipe.clone(),
-                    previous.servings,
-                ))
-            } else {
-                Err("history_source_changed")
-            };
-        }
+    if let Some(previous) = previous
+        && let Source::Session { run_id: old } = &previous.source
+    {
+        return if matches!(&requested,RequestedSource::Session{run_id} if run_id==old) {
+            Ok((
+                previous.source.clone(),
+                previous.recipe.clone(),
+                previous.servings,
+            ))
+        } else {
+            Err("history_source_changed")
+        };
     }
     match requested {
         RequestedSource::Manual {

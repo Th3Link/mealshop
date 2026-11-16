@@ -208,10 +208,10 @@ impl Data {
             {
                 return Err("history_storage_failed");
             }
-            if let Source::Session { run_id } = &entry.source {
-                if !super::valid_id(run_id) || !sessions.insert(run_id) {
-                    return Err("history_duplicate_session");
-                }
+            if let Source::Session { run_id } = &entry.source
+                && (!super::valid_id(run_id) || !sessions.insert(run_id))
+            {
+                return Err("history_duplicate_session");
             }
             rebuilt.delta(entry, 1)?;
         }

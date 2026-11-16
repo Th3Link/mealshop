@@ -25,3 +25,6 @@ __pycache__/
 *.jks
 # Pinned offline OCR models are verified/downloaded by scripts/mobile.py.
 /clients/flutter/android/app/src/main/assets/tessdata/*.traineddata
+/clients/flutter/android/app/src/main/jniLibs/*/libmealshop_core.so
+/clients/flutter/android/app/src/main/assets/mealshop-core-notices.txt
+/clients/flutter/android/app/src/main/assets/mealshop-core-build.json

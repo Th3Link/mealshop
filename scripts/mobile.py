@@ -7,6 +7,7 @@ import os
 import resource
 import shutil
 import tempfile
+import time
 from pathlib import Path
 import subprocess
 import tarfile
@@ -34,6 +35,7 @@ def environment():
         'ANDROID_ADB_SERVER_PORT': str(CONFIG['adb_server_port']),
         'ADB_SERVER_SOCKET': 'tcp:127.0.0.1:' + str(CONFIG['adb_server_port']),
         'PUB_CACHE': str(BASE / 'pub-cache'), 'GRADLE_USER_HOME': str(BASE / 'gradle'),
+        'DASH__SUPPRESS_ANALYTICS': 'true',
     }
     info = BASE / 'jdk-info.json'
     if info.exists():
@@ -122,6 +124,8 @@ def bootstrap(include_emulator=True):
         input='y\n' * 100, text=True)
     run([tools / 'bin/android', '--no-metrics', '--sdk=' + str(SDK), 'sdk', 'install', *packages])
     run([FLUTTER / 'bin/flutter', 'pub', 'get', '--enforce-lockfile'], cwd=APP)
+    run(['rustup','toolchain','install',CONFIG['rust_version'],'--profile','minimal',
+         '--target','x86_64-linux-android,aarch64-linux-android,armv7-linux-androideabi'])
 
 
 def check_sdk():
@@ -158,13 +162,17 @@ def emulator(headless=False, host_gpu=False):
     config = avd / 'config.ini'
     values = config.read_text().splitlines()
     values = [line for line in values if not line.startswith('hw.keyboard=')]
+    if CONFIG['emulator_avd'] == 'Mealshop_AppOnly_API36':
+        values = [line for line in values if not line.startswith('disk.dataPartition.size=')]
+        values.append('disk.dataPartition.size=2G')
     config.write_text('\n'.join([*values, 'hw.keyboard=yes']) + '\n')
     devices = subprocess.check_output([str(ADB), '-P', str(CONFIG['adb_server_port']), 'devices'], env=environment(), text=True)
     if SERIAL not in devices:
         with (BASE / 'emulator.log').open('ab') as log:
             subprocess.Popen([str(SDK / 'emulator/emulator'), '-avd', CONFIG['emulator_avd'],
                 '-port', str(CONFIG['emulator_console_port']), '-accel', 'on', '-gpu', 'host' if host_gpu else 'swiftshader', '-feature', '-Vulkan,-GuestAngle',
-                '-memory', '3072', '-cores', '4', '-no-audio', '-no-boot-anim', '-no-metrics', '-crash-report-mode', 'disabled', '-no-snapshot-load', '-no-snapshot-save', *(['-no-window'] if headless else [])],
+                '-memory', '2048' if CONFIG['emulator_avd'] == 'Mealshop_AppOnly_API36' else '3072',
+                '-cores', '2' if CONFIG['emulator_avd'] == 'Mealshop_AppOnly_API36' else '4', '-no-audio', '-no-boot-anim', '-no-metrics', '-crash-report-mode', 'disabled', '-no-snapshot-load', '-no-snapshot-save', *(['-no-window'] if headless else [])],
                 env=environment(), stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
                 preexec_fn=lambda: resource.setrlimit(resource.RLIMIT_CORE, (0, 0)))
     print('Dedicated emulator:', SERIAL, '— wait for sys.boot_completed=1 using status')
@@ -182,19 +190,58 @@ def verify_integration_apk(apk):
 
 
 def integration(arguments):
+    global SERIAL
+    local = "--local" in arguments
+    host_gpu = "--host-gpu" in arguments
+    arguments = [value for value in arguments if value not in ("--local","--host-gpu")]
+    target = "app_only_test.dart" if local else "shopping_smoke_test.dart"
     if any(value.startswith(('--use-application-binary', '--target', '--driver', '--device-id', '-d', '-t')) for value in arguments):
         raise SystemExit('Integration target, device, driver and verified binary cannot be overridden')
     os.environ['MEALSHOP_ANDROID_VERIFICATION'] = '1'
-    prepare_emulator()
-    run([FLUTTER / 'bin/flutter', 'build', 'apk', '--debug', '--target=integration_test/shopping_smoke_test.dart'], cwd=APP)
+    if local:
+        # A separate clean document provider avoids exposing retained files from the daily AVD.
+        CONFIG['emulator_avd'] = 'Mealshop_AppOnly_API36'
+        CONFIG['emulator_console_port'] = 5558
+        SERIAL = 'emulator-5558'
+    devices = subprocess.check_output([str(ADB), '-P', str(CONFIG['adb_server_port']), 'devices'], env=environment(), text=True)
+    if SERIAL in devices:
+        prepare_emulator()
+        adb('emu', 'kill')
+        for _ in range(30):
+            devices = subprocess.check_output([str(ADB), '-P', str(CONFIG['adb_server_port']), 'devices'], env=environment(), text=True)
+            if SERIAL not in devices: break
+            time.sleep(1)
+    from native_core import build as build_core
+    build_core(['x86_64'])
     with tempfile.TemporaryDirectory(prefix='verification-', dir=BASE) as folder:
-        # Inspect a private stable copy; concurrent normal builds cannot retarget driver cleanup.
+        upgrade = Path(folder) / 'normal-verification.apk'
+        if local:
+            run([FLUTTER / 'bin/flutter', 'build', 'apk', '--debug', '--target=lib/main.dart',
+                 '--target-platform=android-x64'], cwd=APP)
+            shutil.copyfile(APP / 'build/app/outputs/flutter-apk/app-debug.apk', upgrade)
+            verify_integration_apk(upgrade)
+        run([FLUTTER / 'bin/flutter', 'build', 'apk', '--debug', '--target=integration_test/' + target,
+             '--target-platform=android-x64'], cwd=APP)
         binary = Path(folder) / 'verification.apk'
         shutil.copyfile(APP / 'build/app/outputs/flutter-apk/app-debug.apk', binary)
         verify_integration_apk(binary)
-        run([FLUTTER / 'bin/flutter', 'drive', '--driver=test_driver/integration_test.dart',
-             '--target=integration_test/shopping_smoke_test.dart', '-d', SERIAL, '--no-dds',
-             '--use-application-binary=' + str(binary), *arguments], cwd=APP)
+        run([APP / 'android/gradlew', '--stop'], cwd=APP / 'android')
+        emulator(headless=True, host_gpu=host_gpu)
+        for _ in range(120):
+            ready = subprocess.run([str(ADB), '-P', str(CONFIG['adb_server_port']), '-s', SERIAL,
+                                    'shell', 'getprop', 'sys.boot_completed'],
+                                   env=environment(), capture_output=True, text=True, timeout=15)
+            if ready.stdout.strip() == '1': break
+            time.sleep(2)
+        else: raise SystemExit('Verification emulator failed to boot')
+        prepare_emulator()
+        if local:
+            from app_only_verification import drive
+            drive(__import__(__name__), binary, upgrade, arguments)
+        else:
+            run([FLUTTER / 'bin/flutter', 'drive', '--driver=test_driver/integration_test.dart',
+                 '--target=integration_test/' + target, '-d', SERIAL, '--no-dds',
+                 '--use-application-binary=' + str(binary), *arguments], cwd=APP)
 
 
 def signing_key():
@@ -242,6 +289,9 @@ def main():
         if args.action == 'integration':
             integration(args.arguments)
             return
+        if args.action == 'build':
+            from native_core import build as build_core, TARGETS
+            build_core(list(TARGETS))
         command = {
             'doctor': ['doctor', '-v'], 'build': ['build', 'apk', '--debug', '--split-per-abi', '--target=lib/main.dart'],
             'test': ['test'],
@@ -260,7 +310,14 @@ def main():
                     for field in ['application-id', 'version-name', 'version-code']}
                 if versions['application_id'] != 'org.mealshop.pocket.dev':
                     raise SystemExit('Refusing to publish development APK metadata for a different package')
-                apk.with_suffix('.apk.build.json').write_text(json.dumps({'commit': commit, 'flutter': CONFIG['flutter_version'], **versions, 'sha256': digest, 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())}, indent=2) + '\n')
+                from native_core import verify
+                abi = apk.name.removeprefix('app-').removesuffix('-debug.apk')
+                verify([abi])
+                core = json.loads((APP/'android/app/src/main/assets/mealshop-core-build.json').read_text())[abi]
+                with zipfile.ZipFile(apk) as archive:
+                    if hashlib.sha256(archive.read('lib/'+abi+'/libmealshop_core.so')).hexdigest() != core['binary_sha256']:
+                        raise SystemExit('Packaged native core differs from its verified build')
+                apk.with_suffix('.apk.build.json').write_text(json.dumps({'commit': commit, 'flutter': CONFIG['flutter_version'], **versions, 'sha256': digest, 'core':core, 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())}, indent=2) + '\n')
 
 
 if __name__ == '__main__':

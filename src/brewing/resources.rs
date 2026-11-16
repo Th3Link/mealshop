@@ -104,10 +104,10 @@ fn capacity(data: &Data, batch: &Batch) -> Result<(), &'static str> {
                 .iter()
                 .find(|e| &e.id == id)
                 .ok_or("brewing_equipment_invalid")?;
-            if let (Some(volume), Some(capacity)) = (&phase.volume, &equipment.details.capacity) {
-                if volume.normalized()?.1.atoms() > capacity.normalized()?.1.atoms() {
-                    return Err("brewing_equipment_capacity");
-                }
+            if let (Some(volume), Some(capacity)) = (&phase.volume, &equipment.details.capacity)
+                && volume.normalized()?.1.atoms() > capacity.normalized()?.1.atoms()
+            {
+                return Err("brewing_equipment_capacity");
             }
         }
     }

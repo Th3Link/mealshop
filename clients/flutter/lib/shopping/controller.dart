@@ -13,6 +13,7 @@ class ShoppingController extends ChangeNotifier {
   final Nextcloud api;
   final Vault vault;
   Credential? credential;
+  bool get isDevice => credential?.isDevice == true;
   List<Home> homes = [], invitations = [];
   String? selected, error;
   String language = 'en';
@@ -85,6 +86,21 @@ class ShoppingController extends ChangeNotifier {
         _records = object(value['records']);
         _drafts = object(value['drafts'] ?? <String, dynamic>{});
         _offset = value['clock_offset'] as int;
+        if (isDevice) {
+          final local = await api.device.status();
+          final generation = local['generation'] as String?;
+          if (credential!.generation != generation) {
+            // A restore may have committed before the app could discard its old cache/outbox.
+            homes = [];
+            invitations = [];
+            selected = null;
+            _records = {};
+            _drafts = {};
+            _selectionRequired = false;
+            credential = Credential.device(generation: generation);
+            await _save();
+          }
+        }
         if (_expireRecords()) await _save();
       }
     } catch (_) {
@@ -137,8 +153,14 @@ class ShoppingController extends ChangeNotifier {
     await refresh();
   }
 
+  Future<void> useOnDevice() async {
+    final local = await api.device.status();
+    await signIn(Credential.device(generation: local['generation'] as String?));
+  }
+
   Future<void> signOut() => _clearing ??= _clearAccount();
   Future<void> _clearAccount() async {
+    final wasDevice = isDevice;
     _epoch++;
     _refreshing = null;
     credential = null;
@@ -156,6 +178,13 @@ class ShoppingController extends ChangeNotifier {
     initialized = false;
     notifyListeners();
     try {
+      if (wasDevice) {
+        try {
+          await api.device.stop();
+        } on ApiFailure {
+          /* Saved local data remains in its own dataset. */
+        }
+      }
       await _storageTail;
       await vault.clear();
     } catch (_) {

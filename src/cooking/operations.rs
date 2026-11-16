@@ -140,14 +140,14 @@ fn acknowledge_elapsed_dependencies(
             deadline,
             ..
         } = parent.timer
+            && parent.stage.timer_active_seconds() == 0
+            && deadline <= now
         {
-            if parent.stage.timer_active_seconds() == 0 && deadline <= now {
-                parent.timer = Timer::Completed {
-                    started_at: Some(started_at),
-                    completed_at: deadline,
-                };
-                parent.generation = parent.generation.checked_add(1).ok_or("cooking_capacity")?;
-            }
+            parent.timer = Timer::Completed {
+                started_at: Some(started_at),
+                completed_at: deadline,
+            };
+            parent.generation = parent.generation.checked_add(1).ok_or("cooking_capacity")?;
         }
     }
 

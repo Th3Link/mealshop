@@ -67,7 +67,7 @@ pub(crate) fn gtin(code: &str) -> Result<String, &'static str> {
         .enumerate()
         .map(|(i, b)| u32::from(b - b'0') * if i % 2 == 0 { 1 } else { 3 })
         .sum();
-    if sum % 10 != 0 {
+    if !sum.is_multiple_of(10) {
         return Err("shopping_barcode_invalid");
     }
     Ok(format!("{code:0>14}"))

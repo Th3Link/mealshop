@@ -153,11 +153,13 @@ fn notification(job: &Job, link: &str, home: &str) -> Value {
     json!({"params":{"object":"mealshop_cooking","object_id":format!("{home}-{}",job.id),"subject_type":"app_api_ex_app","subject_params":{"rich_subject":subject,"rich_subject_params":{},"rich_message":"{action}","rich_message_params":{"action":{"type":"highlight","id":job.id,"name":format!("{}{}",job.action,equipment)}},"link":link}}})
 }
 async fn send(app: &App, home: &str, job: &Job) -> Outcome {
-    let public = app
-        .config
+    let Some(host) = app.config.nextcloud() else {
+        return Outcome::Unknown;
+    };
+    let public = host
         .public_url
         .as_ref()
-        .unwrap_or(&app.config.nextcloud_url)
+        .unwrap_or(&host.url)
         .trim_end_matches('/');
     let link = format!(
         "{public}/index.php/apps/app_api/embedded/mealshop/main/h/{home}/{}/{}",
@@ -166,7 +168,7 @@ async fn send(app: &App, home: &str, job: &Job) -> Outcome {
     );
     let url = format!(
         "{}/ocs/v1.php/apps/app_api/api/v1/notification?format=json",
-        app.config.nextcloud_url.trim_end_matches('/')
+        host.url.trim_end_matches('/')
     );
     let response = app
         .client

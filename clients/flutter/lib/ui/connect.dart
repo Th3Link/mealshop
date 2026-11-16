@@ -27,6 +27,22 @@ class _ConnectScreenState extends State<ConnectScreen> {
     super.dispose();
   }
 
+  Future<void> useDevice() async {
+    generation++;
+    setState(() {
+      busy = true;
+      flow = null;
+      error = null;
+    });
+    try {
+      await widget.controller.useOnDevice();
+    } on ApiFailure catch (failure) {
+      if (mounted) setState(() => error = failure.code);
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   Future<void> openBrowser() async {
     if (flow != null &&
         !await launchUrl(flow!.login, mode: LaunchMode.externalApplication)) {
@@ -106,15 +122,34 @@ class _ConnectScreenState extends State<ConnectScreen> {
               ),
               const SizedBox(height: 32),
               Text(
-                context.t('connect'),
+                context.t('local_mode_title'),
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 12),
               Text(
-                context.t('connect_intro'),
+                context.t('local_mode_intro'),
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 32),
+              FilledButton.icon(
+                onPressed: busy ? null : useDevice,
+                icon: const Icon(Icons.phone_android_outlined),
+                label: Text(context.t('local_use')),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                context.t('local_intro'),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Divider(),
+              ),
+              Text(
+                context.t('connect'),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
               TextField(
                 controller: address,
                 enabled: !busy,
@@ -154,7 +189,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
                   child: Text(context.t('open_browser')),
                 ),
               ] else
-                FilledButton.icon(
+                OutlinedButton.icon(
                   onPressed: busy ? null : start,
                   icon: busy
                       ? const SizedBox.square(

@@ -27,10 +27,10 @@ fn item_valid(item: &Item, source: &str) -> bool {
             .all(|(lang, name)| text(lang, 20) && text(name, 200))
 }
 pub(crate) fn origin_valid(origin: &Origin) -> bool {
-    if let Origin::Meal { date, meal, .. } = origin {
-        if !crate::planning::date(date) || !text(meal, 80) {
-            return false;
-        }
+    if let Origin::Meal { date, meal, .. } = origin
+        && (!crate::planning::date(date) || !text(meal, 80))
+    {
+        return false;
     }
     match origin {
         Origin::Offer { offer, packages } => {

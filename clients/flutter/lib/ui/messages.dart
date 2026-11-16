@@ -4,12 +4,14 @@ import 'content_messages.dart';
 import 'capture_messages.dart';
 import 'planning_messages.dart';
 import 'process_messages.dart';
+import 'device_messages.dart';
 
 const messages = <String, (String, String)>{
   ...contentMessages,
   ...captureMessages,
   ...planningMessages,
   ...processMessages,
+  ...deviceMessages,
   'licences': ('Open-source licences', 'Open-Source-Lizenzen'),
   'preferred_shop': ('Preferred shop', 'Bevorzugtes Geschäft'),
   'fallback_shop': ('Alternative shop', 'Alternatives Geschäft'),
@@ -251,6 +253,29 @@ String message(String key, String language) {
 }
 
 extension LocalMessages on BuildContext {
-  String t(String key) =>
-      message(key, Localizations.localeOf(this).languageCode);
+  String t(String key) {
+    final language = Localizations.localeOf(this).languageCode;
+    final local =
+        dependOnInheritedWidgetOfExactType<DeviceMessageScope>()?.enabled ==
+            true
+        ? localMessageOverrides[key]
+        : null;
+    return local == null
+        ? message(key, language)
+        : language == 'de'
+        ? local.$2
+        : local.$1;
+  }
+}
+
+class DeviceMessageScope extends InheritedWidget {
+  const DeviceMessageScope({
+    super.key,
+    required this.enabled,
+    required super.child,
+  });
+  final bool enabled;
+  @override
+  bool updateShouldNotify(DeviceMessageScope oldWidget) =>
+      enabled != oldWidget.enabled;
 }

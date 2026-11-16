@@ -29,7 +29,7 @@ class FakeReminders implements ReminderDevice {
   @override
   Future<Json> requestPrecision() => status();
   @override
-  Future<Json> replace(List<Json> entries) async {
+  Future<Json> replace(List<Json> entries, {String? generation}) async {
     this.entries = entries;
     return status();
   }

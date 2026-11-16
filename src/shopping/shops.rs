@@ -70,15 +70,14 @@ impl Data {
                 .find(|r| r.item.key == key)
                 .and_then(|r| r.item.ingredient_id.as_deref());
             let assigned = self.assigned_shop(key, ingredient);
-            if let Some(session) = self.shops.sessions.iter_mut().find(|s| !s.completed) {
-                if assigned.as_ref() == Some(&session.shop_id)
-                    && !session.events.iter().any(|e| e == key)
-                {
-                    if session.events.len() >= 1000 {
-                        return Err("shopping_capacity");
-                    }
-                    session.events.push(key.to_owned());
+            if let Some(session) = self.shops.sessions.iter_mut().find(|s| !s.completed)
+                && assigned.as_ref() == Some(&session.shop_id)
+                && !session.events.iter().any(|e| e == key)
+            {
+                if session.events.len() >= 1000 {
+                    return Err("shopping_capacity");
                 }
+                session.events.push(key.to_owned());
             }
         }
         Ok(())

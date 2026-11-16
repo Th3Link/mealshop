@@ -5,22 +5,16 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-typedef Json = Map<String, dynamic>;
-
-class ApiFailure implements Exception {
-  const ApiFailure(this.code, [this.status = 0]);
-  final String code;
-  final int status;
-  bool get denied => status == 401 || status == 403;
-}
-
-Json object(Object? value) {
-  if (value is! Json) throw const ApiFailure('invalid_response');
-  return value;
-}
+import 'device.dart';
+import 'errors.dart';
+export 'errors.dart';
 
 /// A configured installation root, never a response-controlled redirect target.
 class Server {
+  // A local cache/reminder identity; never an HTTP endpoint or a simulated Nextcloud host.
+  Server.device([String? generation]) {
+    root = Uri(scheme: 'mealshop-device', path: '/${generation ?? ''}');
+  }
   Server(String value, {bool allowLoopback = kDebugMode}) {
     String decoded;
     try {
@@ -72,20 +66,41 @@ class Server {
 }
 
 class Credential {
-  const Credential(this.server, this.user, this.password);
+  const Credential(this.server, this.user, this.password)
+    : isDevice = false,
+      generation = null;
+  Credential.device({this.generation})
+    : server = Server.device(generation),
+      user = 'device',
+      password = '',
+      isDevice = true;
+  final bool isDevice;
+  final String? generation;
   final Server server;
   final String user;
   final String password;
-  Json toJson() => {
-    'server': server.root.toString(),
-    'user': user,
-    'password': password,
-  };
-  static Credential parse(Json value) => Credential(
-    Server(value['server'] as String),
-    value['user'] as String,
-    value['password'] as String,
-  );
+  Json toJson() => isDevice
+      ? {'kind': 'device', if (generation != null) 'generation': generation}
+      : {'server': server.root.toString(), 'user': user, 'password': password};
+  static Credential parse(Json value) {
+    if (value['kind'] == 'device') {
+      final generation = value['generation'];
+      if (generation != null &&
+          (generation is! String ||
+              !RegExp(r'^[0-9a-f]{32}$').hasMatch(generation))) {
+        throw const ApiFailure('storage_version');
+      }
+      return Credential.device(generation: generation as String?);
+    }
+    if (value['kind'] != null && value['kind'] != 'nextcloud') {
+      throw const ApiFailure('storage_version');
+    }
+    return Credential(
+      Server(value['server'] as String),
+      value['user'] as String,
+      value['password'] as String,
+    );
+  }
 }
 
 class LoginFlow {
@@ -97,8 +112,11 @@ class LoginFlow {
 }
 
 class Nextcloud {
-  Nextcloud({http.Client? client}) : _client = client ?? http.Client();
+  Nextcloud({http.Client? client, DeviceGateway? device})
+    : _client = client ?? http.Client(),
+      device = device ?? DeviceGateway();
   final http.Client _client;
+  final DeviceGateway device;
   void close() => _client.close();
 
   Future<Object?> request(
@@ -109,6 +127,7 @@ class Nextcloud {
     bool form = false,
     bool polling = false,
   }) async {
+    if (credential?.isDevice == true) throw const ApiFailure('requires_server');
     final request = http.Request(method, uri)..followRedirects = false;
     request.headers['accept'] = 'application/json';
     request.headers['user-agent'] = 'Mealshop Android/0.2';
@@ -160,6 +179,14 @@ class Nextcloud {
   }
 
   Future<Uint8List> bytes(Credential who, String path) async {
+    if (who.isDevice) {
+      final reply = await device.request(path, generation: who.generation);
+      if (reply.status != 200) throw ApiFailure('request_failed', reply.status);
+      if (reply.bytes.length > 5242880) {
+        throw const ApiFailure('response_too_large');
+      }
+      return reply.bytes;
+    }
     final uri = who.server.path('/index.php/apps/app_api/proxy/mealshop$path');
     who.server.validate(uri.toString());
     final request = http.Request('GET', uri)..followRedirects = false;
@@ -201,6 +228,17 @@ class Nextcloud {
     if (bytes.length > 5242880 ||
         !['image/jpeg', 'image/png', 'image/webp'].contains(mime)) {
       throw const ApiFailure('image_invalid');
+    }
+    if (who.isDevice) {
+      return _deviceJson(
+        await device.request(
+          path,
+          generation: who.generation,
+          method: 'POST',
+          bytes: bytes,
+          mime: mime,
+        ),
+      );
     }
     final uri = who.server.path('/index.php/apps/app_api/proxy/mealshop$path');
     who.server.validate(uri.toString());
@@ -278,12 +316,48 @@ class Nextcloud {
     String path, {
     String method = 'GET',
     Object? body,
-  }) async => object(
-    await request(
-      who.server.path('/index.php/apps/app_api/proxy/mealshop$path'),
-      method: method,
-      body: body,
-      credential: who,
-    ),
-  );
+  }) async {
+    if (who.isDevice) {
+      return _deviceJson(
+        await device.request(
+          path,
+          generation: who.generation,
+          method: method,
+          bytes: body == null
+              ? null
+              : Uint8List.fromList(utf8.encode(jsonEncode(body))),
+          mime: body == null ? null : 'application/json',
+        ),
+      );
+    }
+    return object(
+      await request(
+        who.server.path('/index.php/apps/app_api/proxy/mealshop$path'),
+        method: method,
+        body: body,
+        credential: who,
+      ),
+    );
+  }
+
+  Json _deviceJson(DeviceReply response) {
+    if (response.bytes.length > 4194304) {
+      throw const ApiFailure('response_too_large');
+    }
+    Object? value;
+    try {
+      value = jsonDecode(utf8.decode(response.bytes));
+    } on FormatException {
+      throw ApiFailure('invalid_response', response.status);
+    }
+    if (response.status < 200 || response.status >= 300) {
+      throw ApiFailure(
+        value is Json
+            ? value['code'] as String? ?? 'request_failed'
+            : 'request_failed',
+        response.status,
+      );
+    }
+    return object(value);
+  }
 }

@@ -35,6 +35,8 @@ jobs:
       - run: node --test tests/i18n.test.mjs
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      - run: cargo nextest run --workspace --all-features --locked
       - run: cargo llvm-cov nextest --workspace --locked --no-report
       - run: cargo llvm-cov report --lcov --output-path lcov.info
       - name: Coverage summary
@@ -54,6 +56,7 @@ jobs:
         with:
           tool: cargo-msrv
       - run: cargo msrv verify -- cargo check --all-targets --locked
+      - run: cargo msrv verify -- cargo check --all-targets --all-features --locked
   build:
     name: build / ${{ matrix.profile }}
     runs-on: ubuntu-latest

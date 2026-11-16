@@ -9,6 +9,11 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    // Installed, read-only executable code; never execute a copied writable asset.
+    packaging {
+        jniLibs.useLegacyPackaging = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -57,6 +62,16 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+val verifyDeviceCore by tasks.registering(Exec::class) {
+    val platforms = (project.findProperty("target-platform") as? String ?: "android-arm,android-arm64,android-x64").split(",")
+    val mapping = mapOf("android-arm" to "armeabi-v7a", "android-arm64" to "arm64-v8a", "android-x64" to "x86_64")
+    workingDir(rootProject.projectDir.resolve("../../.."))
+    commandLine(listOf("python3", "scripts/native_core.py", "--check") + platforms.flatMap {
+        listOf("--abi", mapping[it] ?: throw GradleException("Unsupported Android core platform"))
+    })
+}
+tasks.named("preBuild") { dependsOn(verifyDeviceCore) }
 
 // Local, bundled recognition. No Play Services, external inference or runtime model download.
 dependencies {

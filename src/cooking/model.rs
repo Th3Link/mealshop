@@ -83,10 +83,10 @@ impl Stage {
         {
             return Err("cooking_stage_invalid");
         }
-        if let StageOrigin::Custom { note } = &self.origin {
-            if !text(note, 500) {
-                return Err("cooking_stage_invalid");
-            }
+        if let StageOrigin::Custom { note } = &self.origin
+            && !text(note, 500)
+        {
+            return Err("cooking_stage_invalid");
         }
         Ok(())
     }

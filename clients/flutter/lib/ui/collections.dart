@@ -150,7 +150,7 @@ class _CollectionDetailState extends State<CollectionDetail> {
                     icon: const Icon(Icons.edit_outlined),
                     label: Text(context.t('edit')),
                   ),
-                if (widget.api.owner)
+                if (widget.api.owner && !widget.api.credential.isDevice)
                   OutlinedButton.icon(
                     onPressed: () => openPage<void>(
                       context,

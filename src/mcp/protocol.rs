@@ -62,13 +62,12 @@ fn header_matches(headers: &HeaderMap, key: &str, value: &str, encoded: bool) ->
         .get(key)
         .and_then(|h| h.to_str().ok())
         .is_some_and(|h| {
-            if encoded {
-                if let Some(text) = h
+            if encoded
+                && let Some(text) = h
                     .strip_prefix("=?base64?")
                     .and_then(|s| s.strip_suffix("?="))
-                {
-                    return STANDARD.decode(text).is_ok_and(|b| b == value.as_bytes());
-                }
+            {
+                return STANDARD.decode(text).is_ok_and(|b| b == value.as_bytes());
             }
             h == value
         })
@@ -79,15 +78,15 @@ fn era(request: &Request, headers: &HeaderMap) -> Result<bool, Fault> {
     let header = headers
         .get("mcp-protocol-version")
         .and_then(|v| v.to_str().ok());
-    if let Some(version) = version.or(header) {
-        if !matches!(version, MODERN | LEGACY) {
-            return Err(Fault {
-                status: StatusCode::BAD_REQUEST,
-                code: -32022,
-                message: "Unsupported protocol version",
-                data: json!({"supported":[MODERN,LEGACY],"requested":version}),
-            });
-        }
+    if let Some(version) = version.or(header)
+        && !matches!(version, MODERN | LEGACY)
+    {
+        return Err(Fault {
+            status: StatusCode::BAD_REQUEST,
+            code: -32022,
+            message: "Unsupported protocol version",
+            data: json!({"supported":[MODERN,LEGACY],"requested":version}),
+        });
     }
     let modern =
         version == Some(MODERN) || header == Some(MODERN) || request.method == "server/discover";

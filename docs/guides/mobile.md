@@ -1,5 +1,9 @@
 # Android app development and installation
 
+[On-device mode and encrypted backups](app-only.md) are available alongside the Nextcloud connection.
+Use **Use on this device** to start without a server. Saved local records survive signed APK updates;
+keep a portable backup before uninstalling or clearing app storage.
+
 F35 P1 provides native shared shopping against the existing Nextcloud installation. Rust remains the
 authority for quantities, membership and shopping transactions. P1 delivered Shopping/More and P2 delivered Recipes and people. P3 activates all five
 destinations: Today, Plan, Shopping, Recipes and More. [Planning and stock](mobile-planning.md)
@@ -9,9 +13,11 @@ documents the P3 server/client contract. P4 adds [cooking, fermentation and reco
 
 The customer selected Android APKs and requested an actual emulator. The pinned toolchain is in
 `clients/flutter/toolchain.json`: Flutter 3.50.0/Dart 3.14.0, JDK 17, Android compile/target 36,
-minimum 24, NDK 28.2.13676358, API 36 Google APIs `x86_64` Pixel 6 emulator. Linux `x86_64` and working
+minimum 24, NDK 28.2.13676358, Rust 1.100.0 with three Android targets, API 36 Google APIs `x86_64` Pixel 6 emulator. Linux `x86_64` and working
 `/dev/kvm` access are required by the local setup helper. It verifies official download checksums,
-keeps tools under ignored `var/mobile/`, accepts the Android SDK package licences for this development setup, and never resets Nextcloud or another AVD.
+keeps SDK tools under ignored `var/mobile/`, installs an additional pinned rustup toolchain without
+changing its default, accepts the Android SDK package licences for this development setup, and never
+resets Nextcloud or the daily AVD. App-only verification uses its own disposable package and AVD.
 
 From the repository root:
 
@@ -63,7 +69,8 @@ local credential/cache. Production release signing and store distribution remain
 - `clients/flutter/build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk`: most current Android phones.
 - `app-armeabi-v7a-debug.apk`: supported older ARM phones.
 - `app-x86_64-debug.apk`: this emulator.
-- Matching `.apk.sha256` and `.apk.build.json`: checksum, source commit, dirty-source flag, app ID and actual APK version name/code.
+- Matching `.apk.sha256` and `.apk.build.json`: checksum, source commit, dirty-source flag, app ID,
+  actual APK version name/code, packaged Rust core/source checksums and Android target.
 
 Install an upgrade with `adb install -r <apk>` using the same retained signing identity. Do not uninstall
 or clear application data as an upgrade step. Debug build numbers can be overridden using the Flutter

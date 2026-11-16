@@ -199,8 +199,8 @@ fn persist(directory: &FsPath, data: &[u8], ext: &str) -> Result<String, &'stati
         let mut file = options.open(&pending)?;
         file.write_all(data)?;
         file.sync_all()?;
-        fs::hard_link(&pending, directory.join(&id))?;
-        fs::remove_file(pending)?;
+        crate::storage::publish_new(&pending, &directory.join(&id))?;
+        crate::storage::finish_publish(&pending)?;
         #[cfg(unix)]
         File::open(directory)?.sync_all()?;
         Ok(())

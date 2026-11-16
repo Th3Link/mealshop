@@ -1,6 +1,6 @@
 # Tagged container and Helm releases
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer, 2026-11-15
 Milestone: M1

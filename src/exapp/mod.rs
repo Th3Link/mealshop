@@ -34,8 +34,36 @@ pub struct Config {
     /// Directory containing the built Vite IIFE and stylesheet.
     pub assets: PathBuf,
 }
+struct NextcloudHost {
+    url: String,
+    public_url: Option<String>,
+    assets: PathBuf,
+}
+struct AppConfig {
+    secret: String,
+    directory: PathBuf,
+    nextcloud: Option<NextcloudHost>,
+}
+impl AppConfig {
+    fn nextcloud(&self) -> Option<&NextcloudHost> {
+        self.nextcloud.as_ref()
+    }
+}
+impl From<Config> for AppConfig {
+    fn from(config: Config) -> Self {
+        Self {
+            secret: config.secret,
+            directory: config.directory,
+            nextcloud: Some(NextcloudHost {
+                url: config.nextcloud_url,
+                public_url: config.public_url,
+                assets: config.assets,
+            }),
+        }
+    }
+}
 struct App {
-    config: Config,
+    config: AppConfig,
     membership: Mutex<Membership>,
     library: Mutex<crate::library::Store>,
     routers: Mutex<BTreeMap<String, Router>>,
@@ -131,27 +159,13 @@ pub async fn router(config: Config) -> Result<Router, String> {
         }
     }
     validate_public_url(&config)?;
-    let membership = Membership::open(&config.directory)?;
-    let library = crate::library::Store::open(&config.directory)?;
-    let app = Arc::new(App {
-        config,
-        membership: Mutex::new(membership),
-        library: Mutex::new(library),
-        routers: Mutex::new(BTreeMap::new()),
-        enabled: AtomicBool::new(false),
-        catalogue: crate::router()?,
-        cooking_worker: Mutex::new(None),
-        client: reqwest::Client::builder()
-            .redirect(reqwest::redirect::Policy::none())
-            .timeout(std::time::Duration::from_secs(15))
-            .build()
-            .map_err(|_| "Cannot initialize Nextcloud HTTP client")?,
-    });
+    let app = build_app(config.into())?;
+    let host = app.config.nextcloud().ok_or("Nextcloud host is required")?;
     let state_response = app
         .client
         .get(format!(
             "{}/ocs/v1.php/apps/app_api/ex-app/state?format=json",
-            app.config.nextcloud_url.trim_end_matches('/')
+            host.url.trim_end_matches('/')
         ))
         .header("EX-APP-ID", "mealshop")
         .header("EX-APP-VERSION", env!("CARGO_PKG_VERSION"))
@@ -181,7 +195,57 @@ pub async fn router(config: Config) -> Result<Router, String> {
         );
     }
     cooking::start(&app);
-    Ok(Router::new()
+    Ok(app_routes(app))
+}
+fn build_app(config: AppConfig) -> Result<Shared, String> {
+    let membership = Membership::open(&config.directory)?;
+    let library = crate::library::Store::open(&config.directory)?;
+    Ok(Arc::new(App {
+        config,
+        membership: Mutex::new(membership),
+        library: Mutex::new(library),
+        routers: Mutex::new(BTreeMap::new()),
+        enabled: AtomicBool::new(false),
+        catalogue: crate::router()?,
+        cooking_worker: Mutex::new(None),
+        client: reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            .timeout(std::time::Duration::from_secs(15))
+            .build()
+            .map_err(|_| "Cannot initialize Nextcloud HTTP client")?,
+    }))
+}
+#[cfg(feature = "device")]
+pub(crate) async fn device_router(
+    directory: PathBuf,
+    secret: String,
+    principal: &str,
+) -> Result<Router, String> {
+    let app = build_app(AppConfig {
+        secret,
+        directory,
+        nextcloud: None,
+    })?;
+    let homes = {
+        let registry = app
+            .membership
+            .lock()
+            .map_err(|_| "Device membership unavailable")?;
+        registry.validate_device(principal)?;
+        registry.household_ids()
+    };
+    for home in homes {
+        drop(
+            household_router(app.clone(), home)
+                .await
+                .map_err(str::to_owned)?,
+        );
+    }
+    app.enabled.store(true, Ordering::Release);
+    Ok(app_routes(app))
+}
+fn app_routes(app: Shared) -> Router {
+    Router::new()
         .route("/heartbeat", get(|| async { Json(json!({"status":"ok"})) }))
         .route("/enabled", put(enabled))
         .merge(library::routes())
@@ -196,14 +260,15 @@ pub async fn router(config: Config) -> Result<Router, String> {
         )
         .fallback(dispatch)
         .layer(axum::extract::DefaultBodyLimit::max(131_072))
-        .with_state(app))
+        .with_state(app)
 }
 async fn ocs(app: &App, path: &str, body: Value) -> Result<(), ()> {
+    let host = app.config.nextcloud().ok_or(())?;
     let response = app
         .client
         .post(format!(
             "{}/ocs/v1.php/apps/app_api/{path}?format=json",
-            app.config.nextcloud_url.trim_end_matches('/')
+            host.url.trim_end_matches('/')
         ))
         .header("EX-APP-ID", "mealshop")
         .header("EX-APP-VERSION", env!("CARGO_PKG_VERSION"))
@@ -376,6 +441,9 @@ struct Invite {
     role: Role,
 }
 async fn invite(State(app): State<Shared>, Path(id): Path<String>, request: Request) -> Response {
+    if app.config.nextcloud().is_none() {
+        return reply(StatusCode::UNPROCESSABLE_ENTITY, "requires_server");
+    }
     let actor = match user(&app, &request) {
         Ok(u) => u,
         Err(r) => return r.into_response(),
@@ -396,6 +464,9 @@ struct Accept {
     accept: bool,
 }
 async fn accept(State(app): State<Shared>, Path(id): Path<String>, request: Request) -> Response {
+    if app.config.nextcloud().is_none() {
+        return reply(StatusCode::UNPROCESSABLE_ENTITY, "requires_server");
+    }
     let actor = match user(&app, &request) {
         Ok(u) => u,
         Err(r) => return r.into_response(),
@@ -419,6 +490,9 @@ async fn change(
     Path((id, target)): Path<(String, String)>,
     request: Request,
 ) -> Response {
+    if app.config.nextcloud().is_none() {
+        return reply(StatusCode::UNPROCESSABLE_ENTITY, "requires_server");
+    }
     let actor = match user(&app, &request) {
         Ok(u) => u,
         Err(r) => return r.into_response(),
@@ -478,7 +552,10 @@ async fn dispatch(State(app): State<Shared>, request: Request) -> Response {
         _ => None,
     };
     if let Some((file, mime)) = asset {
-        return match std::fs::read(app.config.assets.join(file)) {
+        let Some(host) = app.config.nextcloud() else {
+            return StatusCode::NOT_FOUND.into_response();
+        };
+        return match std::fs::read(host.assets.join(file)) {
             Ok(body) => (
                 [
                     (header::CONTENT_TYPE, mime),
@@ -582,7 +659,7 @@ async fn dispatch_household(
     request.headers_mut().remove(header::COOKIE);
     request.extensions_mut().insert(crate::cooking::Actor {
         user: actor.clone(),
-        notifications_available: true,
+        notifications_available: app.config.nextcloud().is_some(),
     });
     request
         .extensions_mut()
@@ -639,10 +716,10 @@ mod library;
 mod sharing;
 impl Drop for App {
     fn drop(&mut self) {
-        if let Ok(slot) = self.cooking_worker.get_mut() {
-            if let Some(handle) = slot.take() {
-                handle.abort();
-            }
+        if let Ok(slot) = self.cooking_worker.get_mut()
+            && let Some(handle) = slot.take()
+        {
+            handle.abort();
         }
     }
 }
