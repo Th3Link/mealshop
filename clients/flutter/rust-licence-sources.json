@@ -7,13 +7,6 @@
     "sha256": "016fcc02048817d628b04b140c54db290fd9d29a5e8a55b77871194e810716ac"
   },
   {
-    "name": "match_token",
-    "version": "0.35.0",
-    "source": "https://raw.githubusercontent.com/servo/html5ever/6db7bbf1c4dfaecd28731950d427e40c8b911bef/LICENSE-MIT",
-    "file": "assets/rust-licences/match_token-0.35.0.txt",
-    "sha256": "86dd7f026f916daf7511e39951ad8ea8cf55a8db67ae64060dacf829761c18f3"
-  },
-  {
     "name": "cookie-factory",
     "version": "0.3.3",
     "source": "https://raw.githubusercontent.com/rust-bakery/cookie-factory/d36b805dbd7dd65f2df947235c5bcc573afe2c76/LICENSES/MIT.txt",
@@ -36,16 +29,6 @@
     "standard_licence_source": "https://www.apache.org/licenses/LICENSE-2.0.txt",
     "file": "assets/rust-licences/io_tee-0.1.1.txt",
     "sha256": "15c2849920663589778850f01f2e969429711b5dca36415134625eb00aeff4bc"
-  },
-  {
-    "name": "mac",
-    "version": "0.1.1",
-    "source": "https://crates.io/api/v1/crates/mac/0.1.1/download#README.md",
-    "selected_licence": "Apache-2.0",
-    "readme_sha256": "8edb7a912d295acf1e1cfeafdd19a6813a63b301c7bbfda3c67f65509bd8d8cc",
-    "standard_licence_source": "https://www.apache.org/licenses/LICENSE-2.0.txt",
-    "file": "assets/rust-licences/mac-0.1.1.txt",
-    "sha256": "00ec0b20793edfd01a4cf4072f9c001fe93b0cd6a843f6c00338ce24fdcbdc09"
   },
   {
     "name": "age",

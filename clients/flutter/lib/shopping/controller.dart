@@ -566,15 +566,34 @@ class ShoppingController extends ChangeNotifier {
   }
 
   Future<void> createHome(String name) async {
-    if (credential == null || busy) return;
-    final result = await api.api(
-      credential!,
-      '/api/households',
-      method: 'POST',
-      body: {'name': name},
-    );
-    selected = result['id'] as String;
-    await refresh();
+    final who = credential;
+    if (who == null) return;
+    final epoch = _epoch;
+    final refreshing = _refreshing;
+    if (refreshing != null) await refreshing;
+    if (epoch != _epoch || !identical(credential, who)) {
+      throw const ApiFailure('access_removed', 403);
+    }
+    if (storageBlocked) throw const ApiFailure('storage_failed');
+    if (busy) throw const ApiFailure('request_failed');
+    busy = true;
+    notifyListeners();
+    try {
+      final result = await api.api(
+        who,
+        '/api/households',
+        method: 'POST',
+        body: {'name': name},
+      );
+      if (epoch != _epoch) return;
+      selected = result['id'] as String;
+    } finally {
+      if (epoch == _epoch) {
+        busy = false;
+        notifyListeners();
+      }
+    }
+    if (epoch == _epoch) await refresh();
   }
 
   Future<void> invitation(String id, bool accept) async {
