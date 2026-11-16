@@ -23,7 +23,7 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 tower = { version = "0.5", features = ["util"] }
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
 
-html5ever = "=0.35.0"
+html5ever = "=0.40.1"
 robotstxt = "=0.3.0"
 age = { version = "0.11.5", default-features = false, optional = true }
 tar = { version = "0.4.46", default-features = false, optional = true }
