@@ -56,6 +56,10 @@ internal class DeviceBackups(private val activity: MainActivity) {
         pending = null; exported = null
         val uri = data?.data
         if (outcome != Activity.RESULT_OK || uri == null) { result.success(null); return true }
+        if (uri.scheme != "content") {
+            result.error("device_document_failed", "Invalid document provider URI", null)
+            return true
+        }
         DeviceEngine.worker.execute {
             var partial: File? = null
             try {

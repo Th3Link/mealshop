@@ -1,6 +1,6 @@
 # App-only operation and portable backups
 
-Status: In progress
+Status: Done
 Priority: Must
 Origin: Customer, 2026-11-15; demo request explicitly replaced by app-only operation with backup
 Milestone: M1
@@ -35,7 +35,7 @@ restore it on the same or another device. This is a product operating mode, not 
    replacing active local data. Wrong passwords, damage, cancellation and unsupported versions preserve
    current data. Publication of a validated replacement is atomic and crash recoverable.
 7. Backup and restore expose progress, cancellation where safe, actionable failures and keyed DE/EN
-   messages. Passphrases and household data never enter logs or screenshots. Retained old datasets and
+   messages. Passphrases and private household data never enter logs or verification artifacts. Retained old datasets and
    temporary decrypted restore files are cleaned after successful publication/cancellation.
 8. Native emulator tests prove offline creation/editing, process-death durability, backup/restore and
    failed-restore preservation using a dedicated verification package and synthetic data. Existing

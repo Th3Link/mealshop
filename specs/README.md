@@ -14,7 +14,6 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 |---|---|---|---|
 | F18 | [Storage adapters, Nextcloud `ExApp` and Flutter](0018-storage-deployment/specification.md) | Must | M1 |
 | F35 | [Flutter mobile client and smartphone delivery](0035-flutter-mobile-client/specification.md) | Must | M1 |
-| F37 | [App-only operation and portable backups](0037-app-only-backups/specification.md) | Must | M1 |
 
 ## Draft
 
@@ -43,6 +42,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F27 | [Complete catalogue organization](0027-catalogue-organization/specification.md) | Must | M1 |
 | F28 | [Native usability review](0028-native-usability-review/specification.md) | Must | M1 |
 | F36 | [Tagged container and Helm releases](0036-release-images-helm/specification.md) | Must | M1 |
+| F37 | [App-only operation and portable backups](0037-app-only-backups/specification.md) | Must | M1 |
 | F05 | [Recipe sharing and collections](0005-sharing-collections/specification.md) | Must | M2 |
 | F06 | [Shopping lists and recipe provenance](0006-shopping-list/specification.md) | Must | M2 |
 | F07 | [Preferred shops and learned shopping order](0007-shops-order-learning/specification.md) | Should | M2 |
