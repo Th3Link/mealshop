@@ -62,7 +62,7 @@ and retains `var/mobile/development.keystore`, owner-only, for local development
 development identity, with Android's standard development key password, not production signing.
 Back up the key privately if its installed development app must survive moving this checkout.
 Never commit or upload it. Losing the key requires uninstalling that development app and loses its
-local credential/cache. Production release signing and store distribution remain separate work.
+local credential/cache and on-device household data. Production release signing and store distribution remain separate work.
 
 `python3 scripts/mobile.py build` writes:
 

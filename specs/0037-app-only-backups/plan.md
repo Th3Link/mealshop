@@ -41,6 +41,9 @@ The customer's production Nextcloud/GitOps configuration remains untouched.
   active-pointer publication prevent concurrent/stale operations from silently replacing data.
 - Document import/export accepts only Android document-provider content URIs; external file URIs
   cannot redirect the app into overwriting its own private files.
+- Fresh Android CI exposed a missing Cargo-source preparation step. Bootstrap now fetches the locked
+  source graph before offline native licence verification; this is verified with an empty temporary
+  Cargo cache, which is removed after the check.
 - Native licence inventories include exact upstream supplements and pinned runtime notices.
   Build guards reject missing/stale/modified Android core files and check the packaged binary digest.
 - Raising the Rust minimum to 1.89 enables safe standard-library file locks. Mechanical Clippy updates

@@ -126,6 +126,8 @@ def bootstrap(include_emulator=True):
     run([FLUTTER / 'bin/flutter', 'pub', 'get', '--enforce-lockfile'], cwd=APP)
     run(['rustup','toolchain','install',CONFIG['rust_version'],'--profile','minimal',
          '--target','x86_64-linux-android,aarch64-linux-android,armv7-linux-androideabi'])
+    # Fetch locked sources during setup; licence verification/builds stay offline-capable.
+    run(['cargo','+'+CONFIG['rust_version'],'fetch','--locked'],cwd=ROOT)
 
 
 def check_sdk():

@@ -89,7 +89,8 @@ path is accepted from the Flutter channel. Temporary plaintext is confined to pr
 ## Build and verification
 
 Use the pinned [mobile setup](mobile.md). Bootstrap installs Rust 1.100.0 and its three Android standard
-targets through rustup without changing the default toolchain. `python3 scripts/mobile.py build`
+targets through rustup without changing the default toolchain. Setup fetches the locked Cargo source
+graph before the offline native licence verification; a fresh build does not rely on a warm workstation cache. `python3 scripts/mobile.py build`
 builds and bundles the core for `arm64-v8a`, `armeabi-v7a` and `x86_64`. Android uses atomic same-directory
 rename under exclusive ownership because its app `SELinux` policy rejects hard links. Other targets
 retain the existing hard-link publication path and sync ordering.
