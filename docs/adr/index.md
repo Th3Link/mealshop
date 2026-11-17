@@ -56,3 +56,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0031: Tagged OCI images and a Flux-owned `ExApp`](0031-tagged-oci-releases.md) — Customer-requested release and Helm delivery.
 
 - [0032: App-only core execution and portable backups](0032-app-only-core-and-backups.md) — Corrected customer request for durable on-device operation.
+
+- [0033: Guarded Renovate licence inventories](0033-guarded-renovate-inventories.md) — Automatic version refresh with explicit licence review boundaries.

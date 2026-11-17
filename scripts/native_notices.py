@@ -5,6 +5,7 @@ import hashlib
 from html.parser import HTMLParser
 import json
 from pathlib import Path
+import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +24,15 @@ class Text(HTMLParser):
         if not self.hidden: self.parts.append(data)
 
 
-def generate(write=False):
+def rust_sysroot(version):
+    compiler = ['rustup', 'run', version, 'rustc'] if shutil.which('rustup') else ['rustc']
+    actual = subprocess.check_output([*compiler, '--version'], text=True).split()
+    if len(actual) < 2 or actual[1] != version:
+        raise SystemExit('Native licence generation requires pinned Rust '+version)
+    return Path(subprocess.check_output([*compiler, '--print', 'sysroot'], text=True).strip())
+
+
+def collect():
     config = json.loads((APP/'toolchain.json').read_text())
     supplements = {(p['name'],p['version']):p for p in json.loads((APP/'rust-licence-sources.json').read_text())}
     packages = {}
@@ -55,11 +64,15 @@ def generate(write=False):
                     'Authors: '+', '.join(package['authors'])+'\n',
                     'Source: '+str(package['repository'])+'\n']
         for name, data in material: notices += ['\n'+name+'\n\n',data.decode('utf-8')+'\n']
-    rustc = Path(subprocess.check_output(['rustup','which','--toolchain',config['rust_version'],'rustc'],text=True).strip())
-    runtime = (rustc.parent.parent/'share/doc/rust/COPYRIGHT-library.html').read_bytes()
+    runtime = (rust_sysroot(config['rust_version'])/'share/doc/rust/COPYRIGHT-library.html').read_bytes()
     parser = Text(); parser.feed(runtime.decode('utf-8'))
     notices += ['\nRust standard library '+config['rust_version']+'\n', ''.join(parser.parts)]
     value = {'rust':config['rust_version'],'runtime_notices_sha256':hashlib.sha256(runtime).hexdigest(),'packages':inventory}
+    return value, ''.join(notices)
+
+
+def generate(write=False):
+    value, notices = collect()
     content = json.dumps(value,indent=2)+'\n'
     target = APP/'rust-dependencies.json'
     if write: target.write_text(content)
@@ -67,8 +80,8 @@ def generate(write=False):
         raise SystemExit('Review native licences and run python3 scripts/native_notices.py --write')
     asset = APP/'android/app/src/main/assets/mealshop-core-notices.txt'
     asset.parent.mkdir(parents=True,exist_ok=True)
-    asset.write_text(''.join(notices))
-    print('PASS:',len(inventory),'locked Rust package licences and pinned runtime notices bundled')
+    asset.write_text(notices)
+    print('PASS:',len(value['packages']),'locked Rust package licences and pinned runtime notices bundled')
 
 
 if __name__ == '__main__':

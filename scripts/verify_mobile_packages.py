@@ -20,7 +20,7 @@ def inventory():
         folder=Path(unquote(urlparse(urljoin((APP/'.dart_tool/package_config.json').as_uri(),package['rootUri'])).path))
         spec=(folder/'pubspec.yaml').read_text()
         version=re.search(r'^version:\s*([^\s#]+)',spec,re.M)
-        sdk=bool(re.search(r'^resolution:\s*workspace',spec,re.M)) and 'flutter/packages' in str(folder)
+        sdk=any((parent/'bin/flutter').is_file() for parent in folder.parents)
         license_file=next((folder/name for name in ['LICENSE','LICENSE.md','LICENSE.txt'] if (folder/name).is_file()),None)
         if license_file is None:
             license_file=next((parent/'LICENSE' for parent in folder.parents if (parent/'LICENSE').is_file() and (parent/'bin/flutter').is_file()),None)
@@ -38,7 +38,7 @@ def inventory():
         if not version:
             sdk=True
         entries.append({'name':package['name'],'version':version.group(1).strip("'\"") if version else 'Flutter SDK',
-                        'licence':spdx,'licence_sha256':hashlib.sha256(data).hexdigest(),'sdk':sdk or 'var/mobile/flutter/packages' in str(folder)})
+                        'licence':spdx,'licence_sha256':hashlib.sha256(data).hexdigest(),'sdk':sdk})
     return sorted(entries,key=lambda value:value['name'])
 
 

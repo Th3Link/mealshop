@@ -281,7 +281,7 @@
   },
   {
     "name": "material_ui",
-    "version": "1.11.0",
+    "version": "1.11.1",
     "licence": "BSD-3-Clause",
     "licence_sha256": "420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d",
     "sdk": false

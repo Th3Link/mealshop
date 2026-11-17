@@ -201,6 +201,16 @@ jobs:
       - name: Validate workflow contracts
         if: matrix.helm == 'v4.3.2'
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck=''
+      - name: Test guarded Renovate licence publication
+        if: matrix.helm == 'v4.3.2'
+        run: python3 -m unittest discover -s tests -p 'test_licence_inventories.py'
+      - name: Validate actual self-hosted Renovate configuration
+        if: matrix.helm == 'v4.3.2'
+        run: |
+          python3 scripts/renovate_licences.py --config > "$RUNNER_TEMP/renovate-licences.json"
+          docker run --rm --entrypoint renovate-config-validator \
+            -v "$RUNNER_TEMP/renovate-licences.json:/renovate-licences.json:ro" \
+            ghcr.io/renovatebot/renovate:44 --strict /renovate-licences.json
       - run: python3 -m unittest discover -s tests -p 'test_release.py'
   mcp-client:
     name: MCP / official client and stdio interoperability
