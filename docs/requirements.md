@@ -147,3 +147,7 @@ F37 adds the customer's app-only Android mode with persistent local records and 
 backup/validated restore. It replaces the requested demo, reuses domain rules, separates local and
 remote datasets and does not introduce automatic cloud sync or local-to-server uploads. N01/N03/N04/
 N06–N10 apply; see [F37](../specs/0037-app-only-backups/specification.md).
+
+F38 refreshes reviewed Dart/native Rust licence identities before self-hosted Renovate commits
+Cargo/Pub updates. New or changed licence material retains explicit review and existing CI gates.
+N05/N08 apply; see [F38](../specs/0038-renovate-licence-inventories/specification.md).

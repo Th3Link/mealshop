@@ -43,6 +43,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F28 | [Native usability review](0028-native-usability-review/specification.md) | Must | M1 |
 | F36 | [Tagged container and Helm releases](0036-release-images-helm/specification.md) | Must | M1 |
 | F37 | [App-only operation and portable backups](0037-app-only-backups/specification.md) | Must | M1 |
+| F38 | [Automatic Renovate licence inventories](0038-renovate-licence-inventories/specification.md) | Must | M1 |
 | F05 | [Recipe sharing and collections](0005-sharing-collections/specification.md) | Must | M2 |
 | F06 | [Shopping lists and recipe provenance](0006-shopping-list/specification.md) | Must | M2 |
 | F07 | [Preferred shops and learned shopping order](0007-shops-order-learning/specification.md) | Should | M2 |

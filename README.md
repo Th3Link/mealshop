@@ -83,6 +83,8 @@ recipes and compatible meal plans between independent servers.
 Start with [AGENTS.md](AGENTS.md), the [roadmap](docs/roadmap.md) and an affected feature spec.
 The repository uses spec-driven development inspired by Curvyo and CI adapted from
 homeautomation; exact source revisions and adaptation notes are in [provenance](docs/provenance.md).
+Renovate refreshes reviewed mobile licence inventories with dependency versions; see
+[automatic refresh and manual licence review](docs/guides/development.md#renovate-licence-inventories).
 
 ## License
 AGPL-3.0-only. See [LICENSE](LICENSE). Paid distribution does not remove recipients' rights
