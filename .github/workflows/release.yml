@@ -140,7 +140,7 @@ jobs:
       - name: Set up Python for chart packaging
         uses: actions/setup-python@v7.1.0
         with:
-          python-version: '3.13'
+          python-version: '3.15'
       - name: Package the chart with the verified image digest
         run: |
           python3 -m pip install PyYAML==6.0.3
