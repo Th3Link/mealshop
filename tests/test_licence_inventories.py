@@ -114,7 +114,10 @@ class LicenceInventories(unittest.TestCase):
     def test_wrong_flutter_revision_stops_before_resolution_or_publication(self):
         pins = json.loads((self.refresh.APP / 'toolchain.json').read_text())
         wrong = json.dumps({'frameworkVersion': pins['flutter_version'], 'frameworkRevision': 'wrong'})
-        with patch.object(self.refresh.subprocess, 'check_output', return_value=wrong), \
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.object(self.refresh, 'ROOT', Path(directory)), \
+                patch.object(self.refresh.shutil, 'which', return_value='/synthetic/bin/flutter'), \
+                patch.object(self.refresh.subprocess, 'check_output', return_value=wrong), \
                 patch.object(self.refresh.subprocess, 'run') as run, \
                 self.assertRaisesRegex(SystemExit, 'pinned Flutter'):
             self.refresh.refresh()
