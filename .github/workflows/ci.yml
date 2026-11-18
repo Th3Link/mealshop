@@ -142,7 +142,12 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: clients/nextcloud/package-lock.json
-      - run: npm install --global npm@12.2.2 --ignore-scripts --no-audit --no-fund
+      - name: Validate the declared npm toolchain
+        run: node --test ../../tests/npm-toolchain.test.mjs
+      - name: Install the declared npm toolchain
+        run: |
+          npm_spec="$(node ../../scripts/npm_toolchain.mjs)"
+          npm install --global "$npm_spec" --ignore-scripts --no-audit --no-fund
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run format:check
       - run: node ../../scripts/generate_mcp_schema.mjs --check
@@ -223,7 +228,10 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: clients/nextcloud/package-lock.json
-      - run: npm install --global npm@12.2.2 --ignore-scripts --no-audit --no-fund
+      - name: Install the declared npm toolchain
+        run: |
+          npm_spec="$(node scripts/npm_toolchain.mjs)"
+          npm install --global "$npm_spec" --ignore-scripts --no-audit --no-fund
       - run: npm --prefix clients/nextcloud ci --ignore-scripts --no-audit --no-fund
       - uses: actions/download-artifact@v8
         with:

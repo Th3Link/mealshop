@@ -23,6 +23,13 @@ cargo msrv verify -- cargo check --all-targets --locked
 Install cargo-nextest, cargo-deny, cargo-audit and cargo-msrv if absent. CI additionally
 uses cargo-llvm-cov and cargo-sbom. Tests may unwrap assertion setup; production may not.
 
+The Nextcloud client's `packageManager` field is the npm version pin. Docker and both JavaScript
+CI jobs use `scripts/npm_toolchain.mjs` to validate and install that exact specification from
+`clients/nextcloud/package.json`; missing pins, ranges and other package managers fail before
+installation. A Renovate update
+there also updates the tool used for frontend builds and MCP verification. Frozen installs keep
+dependency scripts disabled with `npm ci --ignore-scripts`.
+
 ## Workflows
 - CI: fmt/clippy, nextest/coverage, MSRV, debug/release artifacts, SPDX SBOM and size metrics.
 - Security audit: `RustSec` advisory checks and dependency licence policy; runs daily as well.
