@@ -7,7 +7,7 @@ COPY clients/nextcloud/ ./
 COPY data/allergens.json data/intolerance-triggers.json /build/data/
 RUN npm run build
 
-FROM rust:1.100-alpine@sha256:de1e0058543a81ed7b046629167db587c67a94bdf37cce14eb27f0ec83baaffb AS server
+FROM rust:1.100-alpine@sha256:8d0e82abfdf9a38071e07cabc5afba4ddbe077631a80e4e742a760c38beadc33 AS server
 RUN apk add --no-cache musl-dev build-base
 WORKDIR /build
 COPY Cargo.toml Cargo.lock ./
