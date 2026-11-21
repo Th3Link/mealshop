@@ -139,7 +139,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: '26'
           cache: npm
           cache-dependency-path: clients/nextcloud/package-lock.json
       - name: Validate the declared npm toolchain
@@ -225,7 +225,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: '26'
           cache: npm
           cache-dependency-path: clients/nextcloud/package-lock.json
       - name: Install the declared npm toolchain
