@@ -7,6 +7,10 @@ dependency because Vite 8 uses Rolldown and no longer installs it transitively. 
 production build keeps the previous Chrome/Edge 107, Firefox 104 and Safari 16 target
 instead of silently adopting Vite 8's newer browser baseline.
 
+PR #76 includes the Vitest 5 commit from PR #77 and resolves their shared npm manifest
+and lockfile conflict without rewriting either branch. Merge #77 first, then #76. The
+combined Vite 8 / Vitest 5 dependency graph is checked with a clean installation.
+
 Validation: clean `npm ci --ignore-scripts`, `npm run format:check`, all 39 client
 tests, `npm run build` (including strict Vue type checking), the unchanged MCP schema
 check and `npm audit --audit-level=moderate` passed. All eight repository push gates
