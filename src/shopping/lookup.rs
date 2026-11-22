@@ -85,7 +85,8 @@ async fn perform(state: Shared, input: Input) -> Result<Value, &'static str> {
     })
     .await
     .map_err(|_| "shopping_storage_failed")??;
-    let client = reqwest::Client::builder()
+    let client = crate::http::client()
+        .map_err(|_| "shopping_lookup_unavailable")?
         .redirect(reqwest::redirect::Policy::none())
         .no_proxy()
         .timeout(Duration::from_secs(8))

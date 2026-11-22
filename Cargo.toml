@@ -19,7 +19,9 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal
 
 base64 = "0.23"
 subtle = "2.6"
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls-no-provider"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+webpki-roots = "1"
 tower = { version = "0.5", features = ["util"] }
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
 

@@ -7,6 +7,7 @@ mod cooking;
 pub mod device;
 pub mod exapp;
 mod household;
+mod http;
 mod ingredient_api;
 mod ingredient_extensions;
 mod ingredient_groups;

@@ -1,5 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "dependencyDashboard": true
+  "dependencyDashboard": { "enabled": true },
+  "packageRules": [
+    {
+      "description": "Keep password backups on the audited age series until the HPKE/P-256 graph is fixed and reviewed (ADR 0035, RUSTSEC-2026-0387).",
+      "matchManagers": ["cargo"],
+      "matchPackageNames": ["age"],
+      "allowedVersions": "<0.12.0"
+    }
+  ]
 }

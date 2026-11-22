@@ -58,3 +58,9 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0032: App-only core execution and portable backups](0032-app-only-core-and-backups.md) — Corrected customer request for durable on-device operation.
 
 - [0033: Guarded Renovate licence inventories](0033-guarded-renovate-inventories.md) — Automatic version refresh with explicit licence review boundaries.
+
+- [0034: Preserve outbound TLS behavior across reqwest 0.13](0034-outbound-tls-compatibility.md) — Explicit ring and Mozilla roots for server and Android clients.
+
+- [0035: Keep password backups on the audited age series](0035-backup-dependency-compatibility.md) — Version policy preserves encrypted-backup compatibility and the advisory gate.
+
+- [0036: Official TypeScript 7 and Vue compiler boundaries](0036-official-typescript-compiler-boundaries.md) — Native modules and full Vue checks use explicit official compiler entry points.
