@@ -208,7 +208,7 @@ fn build_app(config: AppConfig) -> Result<Shared, String> {
         enabled: AtomicBool::new(false),
         catalogue: crate::router()?,
         cooking_worker: Mutex::new(None),
-        client: reqwest::Client::builder()
+        client: crate::http::client()?
             .redirect(reqwest::redirect::Policy::none())
             .timeout(std::time::Duration::from_secs(15))
             .build()

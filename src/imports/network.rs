@@ -206,7 +206,8 @@ impl Network for PublicNetwork {
         limit: usize,
     ) -> Result<Reply, &'static str> {
         let host = url.host_str().ok_or("import_url_invalid")?;
-        let client = reqwest::Client::builder()
+        let client = crate::http::client()
+            .map_err(|_| "import_transport_failed")?
             .https_only(true)
             .no_proxy()
             .redirect(reqwest::redirect::Policy::none())
