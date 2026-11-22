@@ -624,7 +624,7 @@
     },
     {
       "name": "form_urlencoded",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "licence": "MIT OR Apache-2.0",
       "repository": "https://github.com/servo/rust-url",
       "notices": [
@@ -3052,7 +3052,7 @@
     },
     {
       "name": "url",
-      "version": "2.5.8",
+      "version": "2.5.9",
       "licence": "MIT OR Apache-2.0",
       "repository": "https://github.com/servo/rust-url",
       "notices": [

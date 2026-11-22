@@ -216,6 +216,13 @@ jobs:
           docker run --rm --entrypoint renovate-config-validator \
             -v "$RUNNER_TEMP/renovate-licences.json:/renovate-licences.json:ro" \
             ghcr.io/renovatebot/renovate:44 --strict /renovate-licences.json
+          docker run --rm --network none --entrypoint renovate-config-validator \
+            -v "$PWD/renovate.json:/renovate.json:ro" \
+            ghcr.io/renovatebot/renovate:44 --strict /renovate.json
+          docker run --rm --network none --entrypoint node -w /usr/local/renovate \
+            -v "$PWD/renovate.json:/policy/renovate.json:ro" \
+            -v "$PWD/tests/renovate-policy.cjs:/policy/tests/renovate-policy.cjs:ro" \
+            ghcr.io/renovatebot/renovate:44 /policy/tests/renovate-policy.cjs
       - run: python3 -m unittest discover -s tests -p 'test_release.py'
   mcp-client:
     name: MCP / official client and stdio interoperability
