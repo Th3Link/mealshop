@@ -27,5 +27,5 @@ allow = ["CDLA-Permissive-2.0"]
 # DER form of the same Mozilla data, pulled by reqwest 0.13 (ADR 0034).
 [[licenses.exceptions]]
 name = "webpki-root-certs"
-version = "1.0.12"
+version = "=1.0.12"
 allow = ["CDLA-Permissive-2.0"]
