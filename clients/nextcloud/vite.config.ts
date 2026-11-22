@@ -9,6 +9,7 @@ export default defineConfig({
     appVersion: JSON.stringify('0.1.0'),
   },
   build: {
+    target: ['chrome107', 'edge107', 'firefox104', 'safari16'],
     lib: {
       entry: 'src/main.ts',
       name: 'Mealshop',
