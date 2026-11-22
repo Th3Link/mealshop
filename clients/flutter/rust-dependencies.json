@@ -3160,7 +3160,7 @@
     },
     {
       "name": "webpki-roots",
-      "version": "1.0.10",
+      "version": "1.0.12",
       "licence": "CDLA-Permissive-2.0",
       "repository": "https://github.com/rustls/webpki-roots",
       "notices": [
