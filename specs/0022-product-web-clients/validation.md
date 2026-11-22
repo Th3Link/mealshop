@@ -1,5 +1,18 @@
 # Nextcloud client validation
 
+## Vite 8 maintenance (PR #76, 2026-11-22)
+
+The MCP schema generator imports `esbuild` directly. It is now an explicit development
+dependency because Vite 8 uses Rolldown and no longer installs it transitively. The
+production build keeps the previous Chrome/Edge 107, Firefox 104 and Safari 16 target
+instead of silently adopting Vite 8's newer browser baseline.
+
+Validation: clean `npm ci --ignore-scripts`, `npm run format:check`, all 39 client
+tests, `npm run build` (including strict Vue type checking), the unchanged MCP schema
+check and `npm audit --audit-level=moderate` passed. All eight repository push gates
+passed. No running Nextcloud instance or retained mobile data was changed. Final
+commit-specific CI evidence is recorded in PR #76.
+
 Environment: local Nextcloud 35.0.2, `AppAPI` 35.0.0, Chromium, native embedded route. Only fictional browser-test households and profiles were used. Host data was not reset.
 
 ## Completed checks
