@@ -1,5 +1,13 @@
 # Nextcloud client validation
 
+## Official TypeScript 7 compatibility (PR #75, 2026-11-22)
+
+The native TypeScript-7 pass checks ordinary source modules and Vite configuration.
+The full original Vue project, including SFC scripts/templates and `main.ts`, is also
+checked through the pinned official TypeScript-6 adapter. Both passes are required
+before the production build. Actual positive/negative compiler tests prevent silently
+skipping script or template errors. See ADR 0036 and PR #75 for final verification.
+
 ## Vite 8 maintenance (PR #76, 2026-11-22)
 
 The MCP schema generator imports `esbuild` directly. It is now an explicit development
