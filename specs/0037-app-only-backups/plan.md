@@ -29,6 +29,11 @@ The customer's production Nextcloud/GitOps configuration remains untouched.
 
 ## Security and engineering review
 
+- PR #72 encodes the age 0.11 compatibility boundary in repository Renovate rules (ADR 0035).
+  The 0.12 graph remains affected by RUSTSEC-2026-0387; this repair retains the audited
+  implementation and synthetic 0.12 restore test without an advisory exclusion.
+  The current audit also requires the compatible `url` 2.5.9 security patch for
+  RUSTSEC-2026-0592; its native licence identities/text hashes remain unchanged.
 - Existing per-person activity permissions apply to whole-device backups: saved unreadable activities
   refuse the complete export, with no omission or automatic owner/self grant.
 - Version 0.12.1 of age introduced a transitive `crypto-bigint` advisory through its unconditional
