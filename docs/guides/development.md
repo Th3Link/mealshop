@@ -46,6 +46,15 @@ No upstream advisory ignores, ESP targets or machine-specific paths are retained
 To repeat a run: `gh workflow run <file>.yml --ref main --repo Th3Link/mealshop`.
 Inspect `gh run list` and failed job logs; a dispatched workflow is not evidence of success.
 
+## Node toolchain
+
+Use the Node range in `clients/nextcloud/package.json` and its exact npm pin. Both Vue
+and MCP CI jobs read the Node version from that manifest; the web image stays digest-pinned
+to the same supported major. Current Nextcloud 35 libraries require the Node 24 series.
+Renovate still updates patches/digests, while its tested version rule holds incompatible
+majors until the dependency graph supports them. Engine checks and lifecycle-script
+restrictions remain enabled. See ADR 0037 and the real Renovate regression in CI.
+
 ## Renovate licence inventories
 
 The self-hosted workflow renders its runner policy with

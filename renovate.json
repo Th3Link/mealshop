@@ -8,6 +8,12 @@
       "matchManagers": ["cargo"],
       "matchPackageNames": ["age"],
       "allowedVersions": "<0.12.0"
+    },
+    {
+      "description": "Keep the web/MCP toolchain on the Node 24 series supported by locked Nextcloud libraries; reopen after dependency and image validation (ADR 0037).",
+      "matchDatasources": ["node-version", "docker"],
+      "matchPackageNames": ["node"],
+      "allowedVersions": "/^v?24([.-]|$)/"
     }
   ]
 }

@@ -64,3 +64,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0035: Keep password backups on the audited age series](0035-backup-dependency-compatibility.md) — Version policy preserves encrypted-backup compatibility and the advisory gate.
 
 - [0036: Official TypeScript 7 and Vue compiler boundaries](0036-official-typescript-compiler-boundaries.md) — Native modules and full Vue checks use explicit official compiler entry points.
+
+- [0037: Keep Node toolchains within Nextcloud compatibility](0037-nextcloud-node-toolchain.md) — Shared CI version source and guarded Node/Docker updates retain supported strict builds.
