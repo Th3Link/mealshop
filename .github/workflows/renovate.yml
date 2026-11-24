@@ -17,7 +17,7 @@ jobs:
       - name: Configure guarded licence refresh with pinned mobile tools
         run: python3 scripts/renovate_licences.py --config > "$RUNNER_TEMP/renovate-licences.json"
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@v46.3.14
+        uses: renovatebot/github-action@v46.3.15
         with:
           token: "${{ secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}"
           configurationFile: ${{ runner.temp }}/renovate-licences.json
