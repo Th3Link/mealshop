@@ -139,7 +139,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version-file: clients/nextcloud/package.json
           cache: npm
           cache-dependency-path: clients/nextcloud/package-lock.json
       - name: Validate the declared npm toolchain
@@ -222,6 +222,10 @@ jobs:
           docker run --rm --network none --entrypoint node -w /usr/local/renovate \
             -v "$PWD/renovate.json:/policy/renovate.json:ro" \
             -v "$PWD/tests/renovate-policy.cjs:/policy/tests/renovate-policy.cjs:ro" \
+            -v "$PWD/clients/nextcloud/package.json:/policy/clients/nextcloud/package.json:ro" \
+            -v "$PWD/clients/nextcloud/package-lock.json:/policy/clients/nextcloud/package-lock.json:ro" \
+            -v "$PWD/.github/workflows/ci.yml:/policy/.github/workflows/ci.yml:ro" \
+            -v "$PWD/Dockerfile:/policy/Dockerfile:ro" \
             ghcr.io/renovatebot/renovate:44 /policy/tests/renovate-policy.cjs
       - run: python3 -m unittest discover -s tests -p 'test_release.py'
   mcp-client:
@@ -232,7 +236,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version-file: clients/nextcloud/package.json
           cache: npm
           cache-dependency-path: clients/nextcloud/package-lock.json
       - name: Install the declared npm toolchain

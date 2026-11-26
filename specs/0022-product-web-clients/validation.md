@@ -1,5 +1,13 @@
 # Nextcloud client validation
 
+## Supported Node toolchain (PR #81, 2026-11-24)
+
+Node 26 installation fails on published Nextcloud engine constraints. The repair retains
+Node 24, makes the package manifest the shared CI version source and guards incompatible
+Node/Docker updates with Renovate's actual matcher. Strict installation and all compiler,
+test, audit and image gates remain required. ADR 0037 records the migration criteria;
+PR #81 records separate current-main and final-PR build evidence.
+
 ## Official TypeScript 7 compatibility (PR #75, 2026-11-22)
 
 The native TypeScript-7 pass checks ordinary source modules and Vite configuration.
