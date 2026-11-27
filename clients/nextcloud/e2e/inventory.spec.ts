@@ -39,6 +39,7 @@ async function stock(page: Page, amount: string) {
 }
 async function recipe(page: Page) {
   await page.getByRole('link', { name: 'Recipes', exact: true }).click()
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Inventory acceptance recipe')
   await page.getByLabel('Servings', { exact: true }).fill('2')

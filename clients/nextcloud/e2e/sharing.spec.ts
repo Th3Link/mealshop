@@ -30,6 +30,7 @@ async function createHome(page: Page) {
   return { id, name }
 }
 async function createRecipe(page: Page, title: string, imported = false) {
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill(title)
   await page.getByLabel('Servings', { exact: true }).fill('2')

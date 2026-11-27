@@ -929,3 +929,34 @@ async fn guarded_mobile_creation_cannot_duplicate_after_a_lost_response_and_rest
     assert_eq!(listing.1["recipes"].as_array().unwrap().len(), 1);
     assert_eq!(listing.1["recipes"][0]["id"], created.1["id"]);
 }
+
+#[tokio::test]
+async fn household_declared_unit_weight_needs_its_unit_but_no_source_url() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let catalogue: Value = serde_json::from_str(include_str!("../data/catalogue.json")).unwrap();
+    let form = catalogue["ingredients"][0]["form"].clone();
+    let mut input = recipe();
+    input["lines"] = json!([{"ingredient_id":"oats","quantity":{"amount":"2","unit":"tbsp"},"conversion":{"ingredient_id":"oats","form":form,"source_url":"","version":"household declaration 2026-11-27","uncertainty":"Weighed or estimated by the household; not a source record.","grams_per_base_unit":"7.5","input_unit":"tbsp","spoon_standard":null,"millilitres_per_spoon":null}}]);
+    let saved = request(&app, "POST", "/api/recipes", input.clone()).await;
+    assert_eq!(saved.0, StatusCode::CREATED);
+    assert_eq!(saved.1["recipe"]["lines"][0]["grams"], "15.000000");
+    assert_eq!(
+        saved.1["recipe"]["lines"][0]["conversion"]["source_url"],
+        ""
+    );
+    input["lines"][0]["conversion"]
+        .as_object_mut()
+        .unwrap()
+        .remove("input_unit");
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", input.clone()).await.0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    input["lines"][0]["conversion"]["input_unit"] = json!("tbsp");
+    input["lines"][0]["conversion"]["source_url"] = json!("http://example.org/insecure");
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", input).await.0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+}

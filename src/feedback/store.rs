@@ -168,3 +168,36 @@ impl Store {
         })
     }
 }
+
+/// Reported ratings per recipe, counted from every retained completed cook.
+/// Independent of the opt-in learning epochs: nothing here is learned or smoothed.
+#[derive(Default, serde::Serialize)]
+pub(crate) struct RecipeRatings {
+    pub(crate) cooked: u32,
+    pub(crate) last_date: String,
+    pub(crate) household_count: u32,
+    pub(crate) household_sum: u32,
+    pub(crate) person_count: u32,
+    pub(crate) person_sum: u32,
+}
+impl Store {
+    pub(crate) fn recipe_ratings(&self) -> std::collections::BTreeMap<&str, RecipeRatings> {
+        let mut all = std::collections::BTreeMap::<&str, RecipeRatings>::new();
+        for entry in self.data.entries.values() {
+            let item = all.entry(entry.recipe.id.as_str()).or_default();
+            item.cooked = item.cooked.saturating_add(1);
+            if entry.input.date > item.last_date {
+                item.last_date.clone_from(&entry.input.date);
+            }
+            if let Some(rating) = entry.input.household_rating {
+                item.household_count = item.household_count.saturating_add(1);
+                item.household_sum = item.household_sum.saturating_add(u32::from(rating));
+            }
+            for rating in entry.input.ratings.values() {
+                item.person_count = item.person_count.saturating_add(1);
+                item.person_sum = item.person_sum.saturating_add(u32::from(*rating));
+            }
+        }
+        all
+    }
+}

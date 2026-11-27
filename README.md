@@ -170,3 +170,8 @@ F35 P4 adds recoverable native cooking, reviewed multi-day/brew workflows, Andro
 preparation agenda and completed cooking history/owner learning controls. Absolute deadlines, offline
 intent, uncertain delivery and explicit physical-stock booking remain distinct. See
 [mobile cooking and recovery](docs/guides/mobile-cooking.md); final delivery evidence is in the P4 PR.
+
+F39 (in progress) adds guided recipe entry to the Nextcloud client: paste or dictate text, keep a
+picture beside it, review once and save; spoons and pieces need only what one unit weighs. Recipes
+show ratings from completed cooks and a rounded per-serving nutrition overview above the exact
+table. No AI provider is integrated yet. [F39](specs/0039-guided-recipe-capture/specification.md).

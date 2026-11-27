@@ -17,6 +17,7 @@ test('compact open recipe parts preserve exact homemade inputs through editing a
     .fill(`Browser verification ${Date.now()}`)
   await page.getByRole('button', { name: 'Create household', exact: true }).click()
   await recordFixture(page, 'compact-recipes.spec.ts')
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Compact recipe acceptance')
   await page.getByLabel('Servings', { exact: true }).fill('2')

@@ -5,6 +5,7 @@ import { computed } from 'vue'
 import type { z } from 'zod'
 import { recipeRecordSchema, displayLinesSchema } from './contracts'
 import { t, locale, compactExact, exact } from './i18n'
+import { unitLabel } from './unit-label'
 const props = defineProps<{
   record: z.infer<typeof recipeRecordSchema>
   lines: z.infer<typeof displayLinesSchema>
@@ -86,7 +87,10 @@ function lineName(id: string) {
             >
               · {{ t('originalInput') }}:
               {{ exact(record.recipe.lines[entry.index]?.quantity?.amount ?? null) }}
-              {{ record.recipe.lines[entry.index]?.quantity?.unit }}</small
+              {{ unitLabel(record.recipe.lines[entry.index]?.quantity?.unit ?? 'g')
+              }}<template v-if="record.recipe.lines[entry.index]?.conversion?.source_url === ''">
+                · {{ t('ownWeightNote') }}</template
+              ></small
             >
           </li>
         </ul>

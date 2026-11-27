@@ -46,6 +46,7 @@ async function home(page: Page) {
 }
 async function recipe(page: Page, name = title, ingredient = 'Oats') {
   await page.getByRole('link', { name: 'Recipes', exact: true }).click()
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill(name)
   await page.getByLabel('Servings', { exact: true }).fill('2')
@@ -63,6 +64,12 @@ async function recipe(page: Page, name = title, ingredient = 'Oats') {
   if (!id) throw new Error('Synthetic history recipe identity missing')
   return id
 }
+async function rate(page: Page, name: string, rating: string) {
+  await page
+    .getByRole('group', { name, exact: true })
+    .getByRole('radio', { name: `${rating} / 5`, exact: true })
+    .check({ force: true })
+}
 async function beginRecord(page: Page, name = title, rating = '5') {
   await page.getByRole('link', { name: 'Cooking history', exact: true }).click()
   await page.getByRole('link', { name: 'Record a completed cook', exact: true }).click()
@@ -70,10 +77,8 @@ async function beginRecord(page: Page, name = title, rating = '5') {
   await page.getByRole('option', { name, exact: true }).click()
   await page.getByLabel('Date cooked', { exact: true }).fill('2026-11-01')
   await check(page.getByRole('checkbox', { name: attendee, exact: true }))
-  await page.getByRole('combobox', { name: 'Household rating', exact: true }).selectOption(rating)
-  await page
-    .getByRole('combobox', { name: `Rating for · ${attendee}`, exact: true })
-    .selectOption(rating)
+  await rate(page, 'Household rating', rating)
+  await rate(page, `Rating for · ${attendee}`, rating)
 }
 async function finishRecord(page: Page, name = title) {
   await check(page.getByRole('checkbox', { name: 'This was actually cooked.', exact: true }))
@@ -159,7 +164,7 @@ test('completed history keeps exact reports, epoch consent, revisions and confli
   await other.goto(`${recordPath}?edit=1`)
   await other.getByLabel('Actual active effort', { exact: true }).fill('127')
   await page.goto(`${recordPath}?edit=1`)
-  await page.getByRole('combobox', { name: 'Household rating', exact: true }).selectOption('4')
+  await rate(page, 'Household rating', '4')
   await finishRecord(page)
   await check(other.getByRole('checkbox', { name: 'This was actually cooked.', exact: true }))
   await other.getByRole('button', { name: 'Save changes', exact: true }).click()

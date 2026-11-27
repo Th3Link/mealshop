@@ -24,6 +24,7 @@ async function setup(page: Page) {
   await recordFixture(page, 'recipe-import.spec.ts')
   const id = new URL(page.url()).pathname.match(/\/h\/(home-\d+)\//)?.[1]
   if (!id) throw new Error('Owned import fixture identity missing')
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Import from link', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Import from link', exact: true })).toBeVisible()
   return { id, name }
@@ -245,7 +246,7 @@ test('reader account sees no import action and cannot submit a source request', 
     const joined = reader.locator(`.record-list a[href$="/h/${household.id}/recipes"]`)
     await expect(joined).toBeVisible()
     await joined.click()
-    await expect(reader.getByRole('link', { name: 'Import from link', exact: true })).toHaveCount(0)
+    await expect(reader.getByRole('link', { name: 'Add recipe', exact: true })).toHaveCount(0)
     await reader.goto(`${embedded}/h/${household.id}/recipes/import`)
     await expect(
       reader.getByRole('button', { name: 'Enter privately without fetching', exact: true }),

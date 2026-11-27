@@ -8,7 +8,8 @@ export const quantitySchema = z.object({ amount: decimalSchema, unit: unitSchema
 export const evidenceSchema = z.object({
   ingredient_id: z.string(),
   form: z.string(),
-  source_url: z.url().refine((s) => s.startsWith('https://')),
+  // Empty only for a household-declared weight of one input unit (see input_unit).
+  source_url: z.union([z.literal(''), z.url().refine((s) => s.startsWith('https://'))]),
   version: z.string(),
   uncertainty: z.string(),
   grams_per_base_unit: decimalSchema,
@@ -22,6 +23,7 @@ export const conversionsSchema = z.object({
     z.object({ id: z.string(), label: z.string(), unit: unitSchema, evidence: evidenceSchema }),
   ),
 })
+export type Conversions = z.infer<typeof conversionsSchema>
 export const ingredientExtensionSchema = z.discriminatedUnion('type', [
   z
     .object({

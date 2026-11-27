@@ -173,3 +173,22 @@ fn corrupted_aggregates_or_interrupted_transactions_fail_startup() {
     std::fs::write(directory.0.join(".history.pending"), "{}").unwrap();
     assert!(Store::open(&directory.0).is_err());
 }
+
+#[test]
+fn recipe_ratings_count_reported_values_without_learning() {
+    let directory = Directory::new();
+    let mut store = directory.store();
+    store.save(0, None, draft(Some(5)), "alice", 100).unwrap();
+    let mut later = draft(None);
+    later.input.date = "2026-11-12".to_owned();
+    store.save(1, None, later, "alice", 200).unwrap();
+    assert!(store.data.stats.is_empty());
+    let ratings = store.recipe_ratings();
+    let recipe = &ratings["recipe-00000001"];
+    assert_eq!(
+        (recipe.cooked, recipe.last_date.as_str()),
+        (2, "2026-11-12")
+    );
+    assert_eq!((recipe.household_count, recipe.household_sum), (1, 5));
+    assert_eq!((recipe.person_count, recipe.person_sum), (2, 8));
+}

@@ -29,7 +29,8 @@ test('native household, recipe, exact serving preview, profiles and plan review'
   await recordFixture(page, 'nextcloud.spec.ts')
   await expect(page.getByRole('heading', { name: 'Recipes', exact: true })).toBeVisible()
   const homePath = new URL(page.url()).pathname.replace(/\/recipes$/, '')
-  await page.getByText('Create recipe', { exact: true }).click()
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
+  await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Exact oat breakfast')
   await expect(page.getByRole('heading', { name: 'Optional details', exact: true })).toBeVisible()
   await page.getByLabel('Author', { exact: true }).fill('Browser verification')
@@ -165,7 +166,7 @@ test('addressed invitation, native reader access, revocation and stale revision 
   await expect(
     reader.getByText('You have read-only access to this household.', { exact: true }),
   ).toBeVisible()
-  await expect(reader.getByText('Create recipe', { exact: true })).toHaveCount(0)
+  await expect(reader.getByRole('link', { name: 'Add recipe', exact: true })).toHaveCount(0)
   await reader.locator('.record-list').getByRole('link').first().click()
   await expect(reader.getByText('Edit recipe', { exact: true })).toHaveCount(0)
   await reader.getByRole('link', { name: 'Shopping list', exact: true }).click()
@@ -225,7 +226,8 @@ test('German quantities, curated source portions and hard dietary conflicts rema
   await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
   await page.getByRole('button', { name: 'Log in', exact: true }).click({ timeout: 30000 })
   await openFixture(page, 'nextcloud.spec.ts')
-  await page.getByText('Create recipe', { exact: true }).click()
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
+  await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Quantity verification')
   await expect(page.getByRole('heading', { name: 'Optional details', exact: true })).toBeVisible()
   await page.getByLabel('Author', { exact: true }).fill('Browser verification')
