@@ -84,27 +84,28 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: OutlinedButton.icon(
-                onPressed: () => showHomes(context, c),
-                icon: const Icon(Icons.people_outline),
-                label: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Text(
-                          c.home?.name ?? context.t('households'),
-                          maxLines: 3,
+            if (c.showsHomes)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: OutlinedButton.icon(
+                  onPressed: () => showHomes(context, c),
+                  icon: const Icon(Icons.people_outline),
+                  label: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Text(
+                            c.home?.name ?? context.t('households'),
+                            maxLines: 3,
+                          ),
                         ),
                       ),
-                    ),
-                    const Icon(Icons.expand_more),
-                  ],
+                      const Icon(Icons.expand_more),
+                    ],
+                  ),
                 ),
               ),
-            ),
             if (c.error != null && c.error != 'connection_failed')
               Material(
                 color: Theme.of(context).colorScheme.errorContainer,
@@ -265,22 +266,29 @@ class NoHousehold extends StatelessWidget {
             onTap: () => c.select(home.id),
           ),
       const SizedBox(height: 24),
-      OutlinedButton.icon(
-        onPressed: c.busy
-            ? null
-            : () async {
-                final name = await askName(context, 'new_home');
-                if (name != null) {
-                  try {
-                    await c.createHome(name);
-                  } catch (e) {
-                    if (context.mounted) await showFailure(context, e);
+      if (c.isDevice && c.homes.isEmpty)
+        FilledButton.icon(
+          onPressed: c.busy ? null : c.refresh,
+          icon: const Icon(Icons.refresh),
+          label: Text(context.t('retry')),
+        )
+      else
+        OutlinedButton.icon(
+          onPressed: c.busy
+              ? null
+              : () async {
+                  final name = await askName(context, 'new_home');
+                  if (name != null) {
+                    try {
+                      await c.createHome(name);
+                    } catch (e) {
+                      if (context.mounted) await showFailure(context, e);
+                    }
                   }
-                }
-              },
-        icon: const Icon(Icons.add),
-        label: Text(context.t('new_home')),
-      ),
+                },
+          icon: const Icon(Icons.add),
+          label: Text(context.t('new_home')),
+        ),
       for (final invitation in c.invitations)
         ListTile(
           title: Text(invitation.name),

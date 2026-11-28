@@ -14,6 +14,12 @@ class ShoppingController extends ChangeNotifier {
   final Vault vault;
   Credential? credential;
   bool get isDevice => credential?.isDevice == true;
+
+  /// Internal, never displayed and not localized: on-device use has one implicit household.
+  static const deviceHomeName = 'Home';
+
+  /// On-device data has no household concept unless an older dataset already holds several.
+  bool get showsHomes => !isDevice || homes.length > 1;
   List<Home> homes = [], invitations = [];
   String? selected, error;
   String language = 'en';
@@ -284,8 +290,21 @@ class ShoppingController extends ChangeNotifier {
     busy = true;
     notifyListeners();
     try {
-      final membership = await api.api(who, '/api/households');
+      var membership = await api.api(who, '/api/households');
       if (epoch != _epoch) return;
+      if (who.isDevice &&
+          membership['user'] == who.user &&
+          (membership['households'] as List).isEmpty) {
+        await api.api(
+          who,
+          '/api/households',
+          method: 'POST',
+          body: {'name': deviceHomeName},
+        );
+        if (epoch != _epoch) return;
+        membership = await api.api(who, '/api/households');
+        if (epoch != _epoch) return;
+      }
       if (membership['user'] != who.user) {
         throw const ApiFailure('invalid_response');
       }

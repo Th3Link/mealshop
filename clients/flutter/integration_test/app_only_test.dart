@@ -27,7 +27,9 @@ void main() {
       );
       await c.initialize();
       await c.useOnDevice();
-      await c.createHome('Synthetic offline household');
+      // On-device mode prepares its single internal household by itself (F41 AC1).
+      expect(c.homes, hasLength(1));
+      expect(c.showsHomes, false);
       final home = c.selected!;
       final root = '/api/households/$home/domain/api';
       Future<Json> call(String path, {String method = 'GET', Json? body}) =>

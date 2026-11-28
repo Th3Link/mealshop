@@ -1,15 +1,16 @@
 # On-device operation and encrypted backups
 
-The Android client can use real local households without a Nextcloud account, URL or running service.
+The Android client keeps real local data without a Nextcloud account, URL or running service.
 Choose **Use on this device** on the connection screen. The bundled catalogue and saved shopping,
 recipes, images, collections, people, planning, cooking, inventory and brewing use the same Rust rules
-as the server. This mode contains no pre-populated demo household. Explicit website imports still
+as the server. There is nothing to set up: the app keeps one internal household that is never shown
+or named, and no demo content is pre-populated. Data from earlier builds with several local
+households stays reachable through a switcher that appears only in that case. Explicit website imports still
 need network access and source consent; saved local workflows work without a server.
 
 ## Save and restore a backup
 
-Open **More → Backup and restore**. A backup includes every saved local household and its canonical
-records and images. Unsaved drafts, pending client intents, server credentials, device reminder settings
+Open **More → Backup and restore**. A backup includes all saved local records and images. Unsaved drafts, pending client intents, server credentials, device reminder settings
 and temporary capture buffers are excluded. Saved activities require explicit read grants for this
 device; a whole backup is refused when any stored activity is unreadable. Grant access visibly
 through **More → Activities → Access** before retrying. No protected records are silently omitted
@@ -37,7 +38,7 @@ not receive a newly fabricated duration.
 
 ## Switching modes and access
 
-**More → Connection options** returns to the connection screen. Saved local households remain on
+**More → Connection options** returns to the connection screen. Saved local data remains on
 the device. The current credential/cache/draft session is cleared; choosing a Nextcloud connection
 does not upload or merge local data. Cross-account invitations and recipe/collection grants require
 connected mode and are unavailable locally. Existing source-attribution and import-sharing rules

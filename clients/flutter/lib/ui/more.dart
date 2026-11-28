@@ -35,13 +35,14 @@ class MoreScreen extends StatelessWidget {
             ? null
             : Text(c.credential!.server.root.toString()),
       ),
-      ListTile(
-        leading: const Icon(Icons.people_outline),
-        title: Text(context.t('households')),
-        subtitle: Text(c.home?.name ?? context.t('no_home')),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => showHomes(context, c),
-      ),
+      if (c.showsHomes)
+        ListTile(
+          leading: const Icon(Icons.people_outline),
+          title: Text(context.t('households')),
+          subtitle: Text(c.home?.name ?? context.t('no_home')),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => showHomes(context, c),
+        ),
       if (c.isDevice)
         ListTile(
           leading: const Icon(Icons.backup_outlined),
