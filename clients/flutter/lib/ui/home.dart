@@ -10,6 +10,7 @@ import 'recipes.dart';
 import 'plan.dart';
 import 'content_common.dart';
 import 'capture_incoming.dart';
+import 'start_assistant.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(this.controller, {super.key});
@@ -22,6 +23,48 @@ class _HomeScreenState extends State<HomeScreen> {
   static const destinations = ['today', 'plan', 'shopping', 'recipes', 'more'];
   late int tab = destinations.indexOf(widget.controller.destination);
   int refresh = 0;
+  bool assistantChecked = false;
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(maybeAssist);
+    WidgetsBinding.instance.addPostFrameCallback((_) => maybeAssist());
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(maybeAssist);
+    super.dispose();
+  }
+
+  /// Opens the start assistant once for fresh on-device data, or resumes an interrupted one.
+  Future<void> maybeAssist() async {
+    final c = widget.controller;
+    if (assistantChecked ||
+        !c.isDevice ||
+        c.home?.writable != true ||
+        c.assistantDone) {
+      return;
+    }
+    assistantChecked = true;
+    final api = HouseholdApi(c);
+    try {
+      if (!c.assistantStarted) {
+        final profiles = await api.household('/profiles');
+        if ((profiles['members'] as List).isNotEmpty) {
+          // Existing data from an earlier build or a restore: never interrupt it.
+          await c.setAssistant(done: true);
+          return;
+        }
+      }
+      if (mounted && api.current) {
+        await openPage<void>(context, StartAssistant(api));
+      }
+    } catch (_) {
+      // The assistant is optional; More keeps it reachable.
+    }
+  }
+
   Future<void> select(int value) async {
     setState(() => tab = value);
     await runAction(

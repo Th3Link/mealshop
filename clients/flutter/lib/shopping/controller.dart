@@ -43,6 +43,34 @@ class ShoppingController extends ChangeNotifier {
   bool _selectionRequired = false;
   Json _records = {};
   Json _drafts = {};
+
+  /// Device-local start-assistant state per household: `done`, `started`, `main_person`.
+  Json _assistant = {};
+  Json get _assist => object(_assistant[selected] ?? const <String, dynamic>{});
+  bool get assistantDone => _assist['done'] == true;
+  bool get assistantStarted => _assist['started'] == true;
+
+  /// The person using this device. Deliberately not a household record: each device has its own.
+  String? get mainPerson => _assist['main_person'] as String?;
+  Future<void> setAssistant({
+    bool? done,
+    bool? started,
+    String? mainPerson,
+    bool clearMainPerson = false,
+  }) async {
+    if (credential == null || selected == null || storageBlocked) {
+      throw const ApiFailure('storage_failed');
+    }
+    final next = {..._assist};
+    if (done != null) next['done'] = done;
+    if (started != null) next['started'] = started;
+    if (mainPerson != null) next['main_person'] = mainPerson;
+    if (clearMainPerson) next.remove('main_person');
+    _assistant[selected!] = next;
+    await _save();
+    notifyListeners();
+  }
+
   Timer? _timer;
   Future<void>? _refreshing;
   Future<void>? _clearing;
@@ -91,6 +119,7 @@ class ShoppingController extends ChangeNotifier {
         _selectionRequired = value['selection_required'] as bool? ?? false;
         _records = object(value['records']);
         _drafts = object(value['drafts'] ?? <String, dynamic>{});
+        _assistant = object(value['assistant'] ?? <String, dynamic>{});
         _offset = value['clock_offset'] as int;
         if (isDevice) {
           final local = await api.device.status();
@@ -102,6 +131,7 @@ class ShoppingController extends ChangeNotifier {
             selected = null;
             _records = {};
             _drafts = {};
+            _assistant = {};
             _selectionRequired = false;
             credential = Credential.device(generation: generation);
             await _save();
@@ -131,6 +161,7 @@ class ShoppingController extends ChangeNotifier {
     'selection_required': _selectionRequired,
     'records': _records,
     'drafts': _drafts,
+    'assistant': _assistant,
     'clock_offset': _offset,
   };
   Future<void> _save() async {
@@ -177,6 +208,7 @@ class ShoppingController extends ChangeNotifier {
     _selectionRequired = false;
     _records = {};
     _drafts = {};
+    _assistant = {};
     error = null;
     busy = false;
     online = false;
@@ -318,6 +350,7 @@ class ShoppingController extends ChangeNotifier {
       final removed = selected != null && !allowed.contains(selected);
       _records.removeWhere((key, _) => !allowed.contains(key));
       _drafts.removeWhere((key, _) => !allowed.contains(key.split(':').first));
+      _assistant.removeWhere((key, _) => !allowed.contains(key));
       if (!allowed.contains(selected)) {
         if (selected != null) {
           _selectionRequired = true;

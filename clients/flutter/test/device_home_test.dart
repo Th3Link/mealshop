@@ -9,6 +9,7 @@ import 'package:mealshop/shopping/controller.dart';
 import 'package:mealshop/ui/home.dart';
 import 'package:mealshop/ui/messages.dart';
 import 'package:mealshop/ui/more.dart';
+import 'package:mealshop/ui/start_assistant.dart';
 
 import 'fixtures.dart';
 
@@ -18,7 +19,9 @@ void main() {
   final homes = <Json>[];
   final created = <String>[];
   var failCreate = false;
+  var members = <Json>[];
   setUp(() {
+    members = [];
     homes.clear();
     created.clear();
     failCreate = false;
@@ -66,6 +69,8 @@ void main() {
               'households': homes,
               'invitations': <Object?>[],
             };
+          } else if (path.endsWith('/household/profiles')) {
+            body = {'schema_version': 1, 'revision': 0, 'members': members};
           } else if (path.endsWith('/shopping/mobile')) {
             body = capability(1);
           } else {
@@ -179,5 +184,42 @@ void main() {
       await c.refresh();
     });
     expect(c.selected, 'home-1');
+  });
+
+  testWidgets('fresh on-device data opens the start assistant exactly once', (
+    tester,
+  ) async {
+    final c = (await tester.runAsync(local))!;
+    addTearDown(c.dispose);
+    await tester.pumpWidget(app(HomeScreen(c)));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(find.byType(StartAssistant), findsOneWidget);
+    expect(find.text('Your answers stay on this device.'), findsOneWidget);
+    await tester.tap(find.text('Skip for now'));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(find.byType(StartAssistant), findsNothing);
+    expect(c.assistantDone, true);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(app(HomeScreen(c)));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(find.byType(StartAssistant), findsNothing);
+  });
+
+  testWidgets('existing people are never interrupted by the assistant', (
+    tester,
+  ) async {
+    members = [
+      {'id': 'person-1', 'name': 'Synthetic existing'},
+    ];
+    final c = (await tester.runAsync(local))!;
+    addTearDown(c.dispose);
+    await tester.pumpWidget(app(HomeScreen(c)));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(find.byType(StartAssistant), findsNothing);
+    expect(c.assistantDone, true);
   });
 }

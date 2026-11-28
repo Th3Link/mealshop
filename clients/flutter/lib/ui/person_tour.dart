@@ -39,9 +39,21 @@ const weekdays = [
 const meals = ['breakfast', 'lunch', 'snack', 'dinner'];
 
 class PersonTour extends StatefulWidget {
-  const PersonTour(this.api, {super.key, this.profiles, this.person});
+  const PersonTour(
+    this.api, {
+    super.key,
+    this.profiles,
+    this.person,
+    this.main = false,
+    this.saved,
+  });
   final HouseholdApi api;
   final Json? profiles, person;
+
+  /// The start assistant's first person: the one holding this device.
+  final bool main;
+  final ValueChanged<String>? saved;
+  static const last = 5;
   @override
   State<PersonTour> createState() => _PersonTourState();
 }
@@ -53,6 +65,7 @@ class _PersonTourState extends State<PersonTour> {
   List<Json> allergens = [];
   int step = 0;
   int? draftRevision;
+  bool me = false;
   bool loaded = false,
       busy = false,
       dirty = false,
@@ -78,11 +91,21 @@ class _PersonTourState extends State<PersonTour> {
       person = draft?['person'] is Json
           ? clone(object(draft!['person']))
           : clone(widget.person ?? emptyPerson());
-      if (draft == null && widget.person == null) {
+      if (draft == null && widget.person == null && !widget.main) {
         person['name'] = 'Person ${objects(profiles['members']).length + 1}';
       }
       person['rules'] ??= emptyPerson()['rules'];
-      step = draft?['step'] as int? ?? (widget.person == null ? 0 : 4);
+      step =
+          draft?['step'] as int? ??
+          (widget.person == null ? 0 : PersonTour.last);
+      // Drafts written before the separate tastes step counted five steps.
+      if (draft != null && draft['steps'] != 6 && step >= 3) step++;
+      step = step.clamp(0, PersonTour.last);
+      me =
+          draft?['me'] as bool? ??
+          (widget.main ||
+              (widget.person != null &&
+                  widget.api.controller.mainPerson == person['id']));
       catalogue = Catalogue(await widget.api.household('/ingredients'));
       allergens = objects((await widget.api.household('/allergens'))['groups']);
       if (mounted) setState(() => loaded = true);
@@ -111,6 +134,8 @@ class _PersonTourState extends State<PersonTour> {
         'person': person,
         'profile_revision': draftRevision,
         'step': step,
+        'steps': 6,
+        'me': me,
       });
     } catch (e) {
       if (mounted) await showFailure(context, e);
@@ -143,6 +168,13 @@ class _PersonTourState extends State<PersonTour> {
       finished = true;
       timer?.cancel();
       await widget.api.controller.saveDraft(draftKey, null);
+      final c = widget.api.controller;
+      if (me) {
+        await c.setAssistant(mainPerson: person['id'] as String);
+      } else if (c.mainPerson == person['id']) {
+        await c.setAssistant(clearMainPerson: true);
+      }
+      widget.saved?.call(person['id'] as String);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) await showFailure(context, e);
@@ -213,13 +245,13 @@ class _PersonTourState extends State<PersonTour> {
             key: form,
             child: Column(
               children: [
-                LinearProgressIndicator(value: (step + 1) / 5),
+                LinearProgressIndicator(value: (step + 1) / 6),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      '${step + 1} / 5 · ${context.t(['person_name', 'rules', 'allergies', 'availability', 'summary'][step])}',
+                      '${step + 1} / 6 · ${context.t(['person_name', 'rules', 'allergies', 'tastes', 'availability', 'summary'][step])}',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
@@ -295,7 +327,11 @@ class _PersonTourState extends State<PersonTour> {
                       ],
                       if (!widget.api.writable) Note(context.t('reader')),
                       if (step == 0) ...[
-                        Note(context.t('tour_intro')),
+                        Note(
+                          context.t(
+                            widget.main ? 'tour_main_intro' : 'tour_intro',
+                          ),
+                        ),
                         EditText(
                           'person_name',
                           person['name'] as String,
@@ -308,16 +344,39 @@ class _PersonTourState extends State<PersonTour> {
                           (id) =>
                               change(() => person['avatar'] = {'image_id': id}),
                         ),
+                        if (widget.person == null && widget.api.writable)
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: busy || conflict ? null : save,
+                              icon: const Icon(Icons.bolt_outlined),
+                              label: Text(context.t('save_name_only')),
+                            ),
+                          ),
                       ],
                       if (step == 1) ...[
-                        Choice('preset', rules['preset'] as String, {
-                          for (final key in [
-                            'unrestricted',
-                            'vegetarian',
-                            'vegan',
-                          ])
-                            key: context.t(key),
-                        }, (v) => change(() => rules['preset'] = v)),
+                        Text(
+                          context.t('diet_question'),
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        for (final (key, icon) in const [
+                          ('unrestricted', Icons.restaurant_outlined),
+                          ('vegetarian', Icons.egg_alt_outlined),
+                          ('vegan', Icons.eco_outlined),
+                        ])
+                          OptionCard(
+                            key: ValueKey('preset_$key'),
+                            icon: icon,
+                            title: context.t(
+                              key == 'unrestricted'
+                                  ? 'preset_unrestricted_title'
+                                  : key,
+                            ),
+                            body: context.t('preset_${key}_body'),
+                            selected: rules['preset'] == key,
+                            onTap: () => change(() => rules['preset'] = key),
+                          ),
                         Note(context.t('exceptions_note')),
                         SectionTitle(context.t('exceptions')),
                         for (final exception in objects(rules['exceptions']))
@@ -372,8 +431,15 @@ class _PersonTourState extends State<PersonTour> {
                           icon: const Icon(Icons.add),
                           label: Text(context.t('find_ingredient')),
                         ),
-                        ingredientList('excluded_ingredients'),
+                      ],
+                      if (step == 3) ...[
+                        Text(
+                          context.t('tastes_question'),
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        Note(context.t('tastes_note')),
                         ingredientList('disliked_ingredients'),
+                        ingredientList('excluded_ingredients'),
                       ],
                       if (step == 2) ...[
                         Note(context.t('allergen_review'), warning: true),
@@ -422,7 +488,7 @@ class _PersonTourState extends State<PersonTour> {
                           max: 2400,
                         ),
                       ],
-                      if (step == 3) ...[
+                      if (step == 4) ...[
                         EditText(
                           'max_active',
                           rules['max_active_seconds']?.toString() ?? '',
@@ -480,7 +546,7 @@ class _PersonTourState extends State<PersonTour> {
                           label: Text(context.t('add_window')),
                         ),
                       ],
-                      if (step == 4) ...[
+                      if (step == PersonTour.last) ...[
                         Text(
                           person['name'] as String,
                           style: Theme.of(context).textTheme.headlineSmall,
@@ -535,6 +601,15 @@ class _PersonTourState extends State<PersonTour> {
                             '${(w['weekdays'] as List).map((d) => context.t(weekdays[d as int])).join(', ')} · ${context.t(w['meal'] as String)}',
                           ),
                         Note(context.t('activity_access_note')),
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(context.t('this_is_me')),
+                          subtitle: Text(context.t('this_is_me_body')),
+                          value: me,
+                          onChanged: widget.api.writable
+                              ? (v) => change(() => me = v)
+                              : null,
+                        ),
                         if (widget.person != null && widget.api.owner)
                           TextButton.icon(
                             onPressed: busy
@@ -585,7 +660,10 @@ class _PersonTourState extends State<PersonTour> {
                   top: false,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                    child: Row(
+                    child: OverflowBar(
+                      alignment: MainAxisAlignment.spaceBetween,
+                      overflowAlignment: OverflowBarAlignment.end,
+                      overflowDirection: VerticalDirection.up,
                       children: [
                         TextButton(
                           onPressed: busy
@@ -601,12 +679,12 @@ class _PersonTourState extends State<PersonTour> {
                                 },
                           child: Text(context.t(step == 0 ? 'skip' : 'back')),
                         ),
-                        const Spacer(),
+
                         FilledButton(
                           onPressed: busy || conflict || !widget.api.writable
                               ? null
                               : () async {
-                                  if (step == 4) {
+                                  if (step == PersonTour.last) {
                                     await save();
                                     return;
                                   }
@@ -614,7 +692,11 @@ class _PersonTourState extends State<PersonTour> {
                                   setState(() => step++);
                                   await persist();
                                 },
-                          child: Text(context.t(step == 4 ? 'save' : 'next')),
+                          child: Text(
+                            context.t(
+                              step == PersonTour.last ? 'save' : 'next',
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -624,4 +706,55 @@ class _PersonTourState extends State<PersonTour> {
             ),
           ),
   );
+}
+
+/// A large, single-choice answer. Selection is announced, not only coloured.
+class OptionCard extends StatelessWidget {
+  const OptionCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.selected,
+    required this.onTap,
+    this.body,
+  });
+  final IconData icon;
+  final String title;
+  final String? body;
+  final bool selected;
+  final VoidCallback? onTap;
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      checked: selected,
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        elevation: 0,
+        color: selected
+            ? scheme.secondaryContainer
+            : scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: selected ? scheme.primary : scheme.outlineVariant,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          minVerticalPadding: 14,
+          leading: Icon(icon, size: 28),
+          title: Text(title),
+          subtitle: body == null ? null : Text(body!),
+          trailing: Icon(
+            selected ? Icons.check_circle : Icons.circle_outlined,
+            color: selected ? scheme.primary : scheme.outline,
+          ),
+          onTap: onTap,
+        ),
+      ),
+    );
+  }
 }
