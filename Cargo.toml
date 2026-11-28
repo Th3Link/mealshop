@@ -23,7 +23,7 @@ reqwest = { version = "0.13", default-features = false, features = ["json", "rus
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 webpki-roots = "1"
 tower = { version = "0.5", features = ["util"] }
-jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
+jiff = { version = "1.0", default-features = false, features = ["std", "tzdb-bundle-always"] }
 
 html5ever = "=0.40.1"
 robotstxt = "=0.3.0"

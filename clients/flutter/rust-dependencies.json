@@ -1244,7 +1244,7 @@
     },
     {
       "name": "jiff",
-      "version": "0.2.46",
+      "version": "1.0.3",
       "licence": "Unlicense OR MIT",
       "repository": "https://github.com/BurntSushi/jiff",
       "notices": [
@@ -1260,7 +1260,7 @@
     },
     {
       "name": "jiff-core",
-      "version": "0.1.8",
+      "version": "1.0.2",
       "licence": "Unlicense OR MIT",
       "repository": "https://github.com/BurntSushi/jiff",
       "notices": [
@@ -1276,7 +1276,7 @@
     },
     {
       "name": "jiff-tzdb",
-      "version": "0.1.10",
+      "version": "1.0.0",
       "licence": "Unlicense OR MIT",
       "repository": "https://github.com/BurntSushi/jiff",
       "notices": [
