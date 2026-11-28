@@ -10,15 +10,23 @@ See [ADR 0038](../../docs/adr/0038-guided-capture-and-household-unit-weights.md)
 - The nutrition overview is presentation only. Rounding happens in the client for five tiles; the
   server calculation, exact strings and range rules are untouched.
 
-## Proposals awaiting a customer decision
-- **AI provider boundary.** Proposed: Nextcloud Task Processing called by the ExApp on behalf of the
-  user (the OCS impersonation pattern already used for notifications), so the instance admin picks
-  a local or remote model and Mealshop stores no key. Which task types (text, speech, vision) the
-  customer's instance offers is unverified. Alternative: an owner-supplied provider key.
-- **Suggestion inbox.** Proposed: an MCP tool and endpoint that accept an unreviewed candidate
-  (raw lines, steps, source URL, optional transcript) without ingredient IDs. The cook reviews it
-  in the capture review. Imported candidates keep source-link-only sharing (N06).
-- **Instagram.** The server cannot and should not fetch reels (login walls, robots, terms).
-  Proposed: a customer-operated companion modelled on the customer's `reelcatch` (saved collection
-  → download → local Whisper transcript → model summary) that posts candidates to the inbox.
-  It uses the customer's own session on the customer's machine; Mealshop ships no scraper.
+## Customer decisions, 2026-11-28
+- **F39-AI: Nextcloud Task Processing.** AI structuring will be called by the server on behalf of
+  the user through Nextcloud, so the instance admin picks the model and Mealshop stores no key.
+  Not implemented: the local test instance has no provider, and which task types (text, speech,
+  vision) the customer's instance offers is unverified.
+- **F39-INBOX: suggestion inbox plus customer-operated companion.** Suggestions live in
+  `suggestions.json` per household (schema 1, at most 50, 64 KiB each, replaced atomically).
+  The only write path is the MCP tool `recipe_suggest` (creation scope); the client lists and
+  discards through `GET/DELETE /api/household/suggestions`. Review reuses the import preview with
+  `mode: suggestion`, which stages the suggested wording as a `manual` import of its source URL, so
+  N06 source-link-only sharing and import evidence apply unchanged. A suggestion without a source
+  URL becomes an owned recipe. The inbox is not an activity log and keeps no history.
+- **Instagram.** The server does not fetch reels (login walls, robots, terms). The customer's own
+  pipeline (modelled on `reelcatch`: saved collection → download → local transcript → summary)
+  pipes JSON lines into `scripts/suggest_recipe.py`. Mealshop ships no scraper.
+- **F39-WEIGHTS: general estimates, clearly marked.** The only general estimate offered is water
+  density for volume units and metric spoons (1 ml = 1 g, 5/15 ml). It is stored like a household
+  declaration with version prefix `household estimate` and an uncertainty text naming the
+  assumption. No per-ingredient densities or piece weights are invented; those stay
+  source-backed reference portions or the household's own value.

@@ -52,6 +52,16 @@ export type LineDraft = {
   evidence: Evidence | null
   mode: string
   density: string
+  /** The weight is the general water-density estimate the cook accepted, not a weighed value. */
+  estimated?: boolean
   spoon: string
   invalidFields: ('input' | 'density' | 'spoon' | 'temperature')[]
+}
+
+/** Version prefix marking an accepted general estimate instead of a household-weighed value. */
+export const estimateVersion = 'household estimate'
+/** Grams of one unit if the ingredient weighed like water, using metric 5/15 ml spoons.
+ * Pieces have no general weight and never get an estimate. */
+export function waterEstimate(unit: Unit): string | null {
+  return { ml: '1', l: '1000', tsp: '5', tbsp: '15', g: null, kg: null, piece: null }[unit]
 }

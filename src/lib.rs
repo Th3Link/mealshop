@@ -131,6 +131,7 @@ mod recipe_creation_tests;
 mod capture;
 mod imports;
 mod mcp;
+mod suggestions;
 
 mod brewing;
 mod inventory;

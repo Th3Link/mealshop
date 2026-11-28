@@ -81,6 +81,7 @@ pub(crate) struct Household {
     pub(crate) cooking: Mutex<crate::cooking::store::Store>,
     pub(crate) feedback: Mutex<crate::feedback::Store>,
     pub(crate) mcp: Mutex<crate::mcp::Store>,
+    pub(crate) suggestions: Mutex<crate::suggestions::Store>,
     pub(crate) imports: Mutex<crate::imports::Store>,
     pub(crate) images: PathBuf,
     pub(crate) catalogue: crate::ingredients::Shared,
@@ -248,6 +249,7 @@ pub(crate) fn router(
         cooking: Mutex::new(crate::cooking::store::Store::open(directory)?),
         feedback: Mutex::new(crate::feedback::Store::open(directory)?),
         mcp: Mutex::new(crate::mcp::Store::open(directory)?),
+        suggestions: Mutex::new(crate::suggestions::Store::open(directory)?),
         imports: Mutex::new(crate::imports::Store::default()),
         token,
         reader_token,
@@ -269,6 +271,7 @@ pub(crate) fn router(
         .merge(crate::cooking::routes())
         .merge(crate::feedback::routes())
         .merge(crate::mcp::routes())
+        .merge(crate::suggestions::routes())
         .merge(crate::imports::routes())
         .merge(crate::ingredient_api::routes())
         .merge(crate::recipe_images::routes())

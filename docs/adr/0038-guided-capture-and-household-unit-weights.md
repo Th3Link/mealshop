@@ -1,6 +1,6 @@
 # Guided capture and household-declared unit weights
 
-Status: Proposed with F39 slice 1; awaiting customer acceptance
+Status: Accepted; amended by customer decisions of 2026-11-28
 Date: 2026-11-27
 Scope: F03/F04/F11/F16/F39
 
@@ -32,8 +32,13 @@ Text, speech and pictures are captured into the existing editor by a determinist
 reader; identities are matched only on one exact name or alias. Ratings remain history facts and
 are summarized per recipe without learned state. The nutrition overview rounds for reading only.
 
-AI structuring, a suggestion inbox and an Instagram companion are proposals in the F39 spec and
-need customer decisions; none is implemented or implied here.
+Amendment 2026-11-28 (customer decisions): the cook may accept one general estimate, water
+density for volume units and metric spoons, which is offered explicitly, stored with the version
+prefix `household estimate` and labelled as a rough estimate. This is an explicit, visible
+conversion and does not relax ADR 0002's ban on implicit ones. Assistants and customer-operated
+tools hand recipes in as unreviewed suggestions (`recipe_suggest`, per-household inbox) that
+become recipes only through the existing review; a suggestion naming a source URL is an import.
+AI structuring inside Mealshop will go through Nextcloud Task Processing and is not implemented.
 
 ## Consequences
 

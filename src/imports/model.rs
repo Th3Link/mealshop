@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-#[derive(Clone, Default, Deserialize, Serialize)]
+#[derive(Clone, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Candidate {
     pub(crate) title: Option<String>,
@@ -12,7 +12,7 @@ pub(crate) struct Candidate {
     pub(crate) cook_time: Option<String>,
     pub(crate) total_time: Option<String>,
 }
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct SourceStep {
     pub(crate) text: String,

@@ -9,7 +9,9 @@ Origin: Customer request, 2026-11-27.
 Adding a recipe in the Nextcloud client is guided and pleasant instead of form-driven: the cook
 brings text, speech, a picture or a link, reviews once and saves. Recipes show household ratings,
 and nutrition is readable at a glance while exact values, sources and unknowns stay inspectable.
-AI-assisted capture reuses the same review step; no provider is chosen by this slice.
+Assistants and customer-operated tools hand recipes in as suggestions that go through the same
+review step. AI structuring inside Mealshop will use Nextcloud Task Processing (customer decision
+2026-11-28) and is not implemented yet.
 
 Customer wording (German, summarized): the current UI "feels like phpMyAdmin"; "I do not want to
 enter a hundred things"; "adding recipes should be a treat"; recipes need ratings; nutrition
@@ -43,12 +45,30 @@ Slice 1 (this delivery):
 10. German/English, keyboard, axe (WCAG 2.2 AA tags), narrow and wide layouts are verified in the
     embedded Nextcloud client.
 
-Later slices (not implemented, see plan and open customer decisions):
-11. AI structuring of text, speech and pictures into the same review step.
-12. A suggestion inbox that assistants (MCP) and a customer-operated Instagram companion fill with
-    unreviewed candidates.
-13. Nutrition calculation gaps: wider reference-portion coverage, cooking yield/retention and
-    unresolved quantities that keep a recipe saveable with explicitly incomplete nutrition.
+Slice 2 (suggestion inbox and accepted estimates; customer decisions F39-INBOX A, F39-WEIGHTS B):
+11. An assistant with the creation scope can hand in an unreviewed recipe (`recipe_suggest`): title,
+    original ingredient lines and steps, optional HTTPS source URL and note, without ingredient IDs.
+    It is stored as a suggestion, never as a recipe, is never calculated and repeats are recognised.
+    At most 50 suggestions wait per household; readers can neither add nor see them.
+12. **Add recipe** lists waiting suggestions with date, line count and source host. Reviewing one
+    opens the same review as typed text. A suggestion that names a source URL is saved as an import
+    of that source (source-link-only sharing, original wording retained as import evidence); one
+    without is the household's own recipe. Saving removes the suggestion; discarding needs a second
+    click. The recipe list shows how many suggestions wait.
+13. A customer-operated companion can submit suggestions from its own pipeline with
+    `scripts/suggest_recipe.py` (one JSON object per line). Mealshop fetches nothing from
+    Instagram or any other login-walled source.
+14. For millilitres, litres and metric tea/tablespoons the cook may accept a general estimate
+    "as if it weighed like water" instead of typing a weight. It is offered, never applied
+    silently, is stored and labelled as a rough estimate with its assumption, and typing a value
+    replaces it. Pieces have no general weight and get no estimate.
+
+Later slices (not implemented):
+15. AI structuring of text, speech and pictures through Nextcloud Task Processing into the same
+    review step, after the task types available on the customer's instance are known.
+16. Nutrition calculation gaps: wider source-backed reference portions (including pieces), cooking
+    yield/retention, estimates carried into nutrition as a visible warning, and unresolved
+    quantities that keep a recipe saveable with explicitly incomplete nutrition.
 
 ## Out of scope
 Server-side scraping of Instagram, automatic ingredient substitution, health claims, a redesign of

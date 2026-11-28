@@ -10,6 +10,8 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 spec=importlib.util.spec_from_file_location('mealshop_mcp_stdio',pathlib.Path(__file__).resolve().parents[1]/'scripts/mcp_stdio.py')
 bridge=importlib.util.module_from_spec(spec);spec.loader.exec_module(bridge)
+sender_spec=importlib.util.spec_from_file_location('mealshop_suggest_recipe',pathlib.Path(__file__).resolve().parents[1]/'scripts/suggest_recipe.py')
+sender=importlib.util.module_from_spec(sender_spec);sender_spec.loader.exec_module(sender)
 
 
 class Fixture:
@@ -60,6 +62,22 @@ class StdioTests(unittest.TestCase):
         f=self.fixture();out=io.StringIO();source=io.BytesIO(b'{\n'+b'x'*(bridge.LIMIT+1)+b'\n')
         bridge.run(source,out,f.env());values=[json.loads(line) for line in out.getvalue().splitlines()]
         self.assertEqual([v['error']['code'] for v in values],[-32700,-32600]);self.assertEqual(f.requests,[])
+
+    def test_suggestion_sender_reports_each_line_and_never_prints_credentials(self):
+        reply={'jsonrpc':'2.0','id':1,'result':{'isError':False,'structuredContent':{'suggestion_id':'suggestion-'+'a'*32,'replayed':False}}}
+        f=self.fixture(response=json.dumps(reply).encode());out=io.StringIO()
+        lines=json.dumps({'title':'Synthetic','ingredients':['2 tbsp oil'],'source_url':'https://example.org/r','note':None}).encode()+b'\n\n{"unknown":1}\nnot json\n'
+        self.assertEqual(sender.run(io.BytesIO(lines),out,f.env()),1)
+        rows=[row.split('\t') for row in out.getvalue().splitlines()]
+        self.assertEqual([row[:2] for row in rows],[['1','added'],['3','failed'],['4','failed']]);self.assertEqual(rows[0][2],'suggestion-'+'a'*32)
+        self.assertEqual(len(f.requests),1);sent=json.loads(f.requests[0][1])
+        self.assertEqual(sent['params']['name'],'recipe_suggest');self.assertEqual(sent['params']['arguments'],{'title':'Synthetic','ingredients':['2 tbsp oil'],'source_url':'https://example.org/r'})
+        self.assertNotIn('synthetic-only-password',out.getvalue())
+    def test_suggestion_sender_surfaces_tool_errors_as_codes(self):
+        reply={'jsonrpc':'2.0','id':1,'result':{'isError':True,'structuredContent':{'code':'suggestion_capacity','message':'x'}}}
+        f=self.fixture(response=json.dumps(reply).encode());out=io.StringIO()
+        self.assertEqual(sender.run(io.BytesIO(b'{"title":"Synthetic"}\n'),out,f.env()),1)
+        self.assertEqual(out.getvalue(),'1\tfailed\tsuggestion_capacity\n')
 
 
 if __name__=='__main__':unittest.main()

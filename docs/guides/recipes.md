@@ -189,6 +189,17 @@ uncertainty text, and the line shows **own weight**. An empty `source_url` is re
 `input_unit`; **Use a source record instead** keeps the full evidence form. Nutrition and shopping
 masses for that line are only as accurate as your number.
 
+For `ml`, `l`, `tsp` and `tbsp` you can instead accept **Use a rough estimate**: the weight the
+unit would have if the ingredient weighed like water (1 ml = 1 g, metric 5/15 ml spoons). It is
+saved with `version: "household estimate <date>"`, names its assumption and shows **rough
+estimate** on the line. Powders such as flour are lighter, honey and syrups heavier; type your own value
+to replace it. Pieces have no general weight and never get an estimate.
+
+Suggestions handed in by an assistant or your own tools (see the [MCP guide](mcp.md)) wait at the
+top of **Add recipe**. **Review** opens the same review as typed text; saving removes the
+suggestion, **Discard** needs a second click. A suggestion with a source URL is saved as an import
+of that source and is shared only as a link.
+
 `GET /api/household/recipe-ratings` returns, per recipe ID, `cooked`, `last_date` and count/sum of
 household and person ratings from all retained history entries, independent of learning. The
 recipe page's **Cooked it? Rate it** records a completed cook (date, who ate, household rating) in

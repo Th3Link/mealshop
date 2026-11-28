@@ -155,6 +155,7 @@ N05/N08 apply; see [F38](../specs/0038-renovate-licence-inventories/specificatio
 F39 starts the customer's requested guided Nextcloud recipe entry (2026-11-27): one add-recipe
 entry for pasted/dictated text, pictures, links and the empty form; household-declared unit weights
 instead of evidence forms; recipe ratings from completed cooks; a readable nutrition overview.
-AI structuring, a suggestion inbox for assistants and a customer-operated Instagram companion are
-proposals awaiting decisions, not delivered behaviour. N03/N04/N06/N09/N10 apply; see
+Customer decisions of 2026-11-28: assistants and a customer-operated Instagram companion hand
+recipes in through a reviewed suggestion inbox; general unit-weight estimates are allowed when
+clearly marked; AI structuring will use Nextcloud Task Processing and is not delivered yet. N03/N04/N06/N09/N10 apply; see
 [F39](../specs/0039-guided-recipe-capture/specification.md) and ADR 0038.

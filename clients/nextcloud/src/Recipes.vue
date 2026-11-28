@@ -18,7 +18,7 @@ import {
 import type { Recipe } from './contracts'
 import { homes, useTask, loadCatalogue } from './state'
 import { servingCount, exact, locale, parseGrams, t } from './i18n'
-import { mdiPlus, mdiSilverwareForkKnife } from '@mdi/js'
+import { mdiInboxArrowDown, mdiPlus, mdiSilverwareForkKnife } from '@mdi/js'
 import Icon from './Icon.vue'
 import { foldSearch } from './ingredient-search'
 import { useUnsavedChanges } from './useUnsavedChanges'
@@ -26,6 +26,7 @@ import Nutrition from './Nutrition.vue'
 import RecipeStructureEditor from './RecipeStructureEditor.vue'
 import ImportEntry from './ImportEntry.vue'
 import RecipeCapture from './RecipeCapture.vue'
+import { suggestionsSchema } from './suggestion-api'
 import RecipeRate from './RecipeRate.vue'
 import StarAverage from './StarAverage.vue'
 import { textLines, type TextRecipe } from './recipe-text'
@@ -42,7 +43,7 @@ import RecipeContents from './RecipeContents.vue'
 import RecipeOriginEditor from './RecipeOriginEditor.vue'
 import ShareControls from './ShareControls.vue'
 import IngredientEditor from './IngredientEditor.vue'
-import { conversionsSchema } from './quantity-api'
+import { conversionsSchema, estimateVersion } from './quantity-api'
 import type { LineDraft } from './quantity-api'
 const route = useRoute(),
   router = useRouter()
@@ -95,7 +96,22 @@ function reviewImport(preview: ImportPreview, candidate: number) {
   void nextTick(() => document.querySelector<HTMLElement>('.recipe-editor-header h1')?.focus())
 }
 
-function captured(recipe: TextRecipe, preview?: ImportPreview) {
+const reviewedSuggestion = ref('')
+/** A saved suggestion leaves the inbox; failing to remove it never fails the save. */
+async function settleSuggestion() {
+  const id = reviewedSuggestion.value
+  reviewedSuggestion.value = ''
+  if (!id) return
+  try {
+    await api(request(`/api/household/suggestions/${id}`), z.object({ discarded: z.string() }), {
+      method: 'DELETE',
+    })
+  } catch {
+    // It stays in the inbox and can be discarded there.
+  }
+}
+function captured(recipe: TextRecipe, preview?: ImportPreview, suggestion?: string) {
+  reviewedSuggestion.value = suggestion ?? ''
   const prepared = textLines(recipe, catalogue.value?.ingredients ?? [], conversions.value)
   if (preview) importReview.value = { preview, candidate: 0, key: crypto.randomUUID() }
   draft.value = {
@@ -106,7 +122,9 @@ function captured(recipe: TextRecipe, preview?: ImportPreview) {
     preparation: 'as_recorded',
     ...(preview?.capture
       ? { origin: { kind: 'captured', source_image_id: preview.capture.image_id } }
-      : {}),
+      : preview
+        ? { origin: { kind: 'imported', source_url: preview.requested_url } }
+        : {}),
     lines: [],
     parts: [],
     steps: recipe.steps.map((instruction) => ({
@@ -124,6 +142,16 @@ function captured(recipe: TextRecipe, preview?: ImportPreview) {
   dirty.value = true
   void nextTick(() => document.querySelector<HTMLElement>('.recipe-editor-header h1')?.focus())
 }
+const waiting = ref(0)
+async function refreshWaiting() {
+  try {
+    waiting.value = (
+      await api(domain(home.value, '/api/household/suggestions'), suggestionsSchema)
+    ).suggestions.length
+  } catch {
+    waiting.value = 0
+  }
+}
 const ratings = ref<RecipeRatings>({})
 async function refreshRatings() {
   const generation = loadGeneration
@@ -136,6 +164,13 @@ async function refreshRatings() {
 }
 const sort = ref<'title' | 'rating' | 'recent'>('title')
 const writable = computed(() => homes.value.some((h) => h.id === home.value && h.role !== 'reader'))
+watch(
+  [() => route.params.id, writable, home],
+  ([id, canWrite]) => {
+    if (!id && canWrite) void refreshWaiting()
+  },
+  { immediate: true },
+)
 const records = ref<z.infer<typeof recipesSchema>>()
 const selected = ref<z.infer<typeof recipeRecordSchema>>()
 const latestRevision = ref<number>()
@@ -329,6 +364,7 @@ async function load() {
         evidence: l.conversion ? structuredClone(toRaw(l.conversion)) : null,
         mode: l.conversion ? (l.conversion.source_url ? 'saved' : 'own') : 'manual',
         density: l.conversion ? exact(l.conversion.grams_per_base_unit) : '',
+        estimated: l.conversion?.version.startsWith(estimateVersion) ?? false,
         spoon: l.conversion?.millilitres_per_spoon ? exact(l.conversion.millilitres_per_spoon) : '',
         invalidFields: [],
       })) ?? []
@@ -386,6 +422,7 @@ async function sendImport() {
       if (generation !== loadGeneration) return
       dirty.value = false
       selected.value = result
+      await settleSuggestion()
       await router.push(`${path}/${result.id}`)
     } catch (error) {
       if (generation !== loadGeneration) return
@@ -447,8 +484,10 @@ async function save() {
           ingredient_id: line.ingredient_id,
           form: catalogue.value?.ingredients.find((i) => i.id === line.ingredient_id)?.form ?? '',
           source_url: '',
-          version: `household declaration ${new Date().toISOString().slice(0, 10)}`,
-          uncertainty: 'Weighed or estimated by the household; not a source record.',
+          version: `${line.estimated ? estimateVersion : 'household declaration'} ${new Date().toISOString().slice(0, 10)}`,
+          uncertainty: line.estimated
+            ? 'General estimate accepted by the household: assumes water density (1 g per ml) and metric 5/15 ml spoons. Powders weigh less, syrups more; not a source record.'
+            : 'Weighed or estimated by the household; not a source record.',
           grams_per_base_unit: weight,
           input_unit: line.unit,
           spoon_standard: null,
@@ -527,6 +566,7 @@ async function save() {
     )
     dirty.value = false
     selected.value = result
+    await settleSuggestion()
     await router.push({
       path: `${listPath.value}/${result.id}`,
       query: { q: search.value || undefined },
@@ -569,8 +609,12 @@ async function scale() {
         <h1 tabindex="-1">{{ t('recipes') }}</h1>
         <p>{{ t('recipeIntro') }}</p>
       </div>
-      <div v-if="writable && records?.recipes.length" class="actions">
-        <NcButton variant="primary" :to="`${listPath}/add`"
+      <div v-if="writable && (records?.recipes.length || waiting)" class="actions">
+        <NcButton v-if="waiting" :to="`${listPath}/add`" class="waiting-suggestions"
+          ><template #icon><Icon :path="mdiInboxArrowDown" /></template>{{ waiting }}
+          {{ t('suggestionWaiting') }}</NcButton
+        >
+        <NcButton v-if="records?.recipes.length" variant="primary" :to="`${listPath}/add`"
           ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addRecipe') }}</NcButton
         >
       </div>

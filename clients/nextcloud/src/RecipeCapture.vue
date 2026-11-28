@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, useId } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import {
   mdiCameraOutline,
+  mdiInboxArrowDown,
   mdiLinkVariant,
   mdiMicrophone,
   mdiPencilOutline,
@@ -19,9 +20,10 @@ import { locale, servingCount, t } from './i18n'
 import { importPreviewSchema, type ImportPreview } from './recipe-import'
 import { parseRecipeText, type TextRecipe } from './recipe-text'
 import { unitLabel } from './unit-label'
+import { sourceHost, suggestedRecipe, suggestionsSchema, type Suggestion } from './suggestion-api'
 const props = defineProps<{ home: string; listPath: string }>()
 const emit = defineEmits<{
-  captured: [recipe: TextRecipe, preview?: ImportPreview]
+  captured: [recipe: TextRecipe, preview?: ImportPreview, suggestion?: string]
   changed: []
 }>()
 const mode = ref<'choose' | 'text' | 'photo'>('choose')
@@ -33,6 +35,50 @@ const parsed = computed(() => parseRecipeText(text.value, locale.value))
 const empty = computed(
   () => !parsed.value.title && !parsed.value.ingredients.length && !parsed.value.steps.length,
 )
+const suggestions = ref<Suggestion[]>([]),
+  discarding = ref('')
+async function loadSuggestions() {
+  try {
+    suggestions.value = (
+      await api(domain(props.home, '/api/household/suggestions'), suggestionsSchema)
+    ).suggestions
+  } catch {
+    // Readers and older servers have no inbox; adding a recipe works without it.
+    suggestions.value = []
+  }
+}
+onMounted(loadSuggestions)
+function received(suggestion: Suggestion) {
+  return new Date(suggestion.received_at * 1000).toLocaleDateString(locale.value)
+}
+async function review(suggestion: Suggestion) {
+  const recipe = suggestedRecipe(suggestion, locale.value)
+  await run(async () => {
+    // A suggestion that names its source is saved as an import of that source.
+    const preview = suggestion.source_url
+      ? await api(domain(props.home, '/api/household/imports/preview'), importPreviewSchema, {
+          method: 'POST',
+          data: { mode: 'suggestion', id: suggestion.id },
+        })
+      : undefined
+    emit('captured', recipe, preview, suggestion.id)
+  })
+}
+async function discard(suggestion: Suggestion) {
+  if (discarding.value !== suggestion.id) {
+    discarding.value = suggestion.id
+    return
+  }
+  await run(async () => {
+    await api(
+      domain(props.home, `/api/household/suggestions/${suggestion.id}`),
+      z.object({ discarded: z.string() }),
+      { method: 'DELETE' },
+    )
+    discarding.value = ''
+    await loadSuggestions()
+  })
+}
 async function open(next: 'text' | 'photo') {
   mode.value = next
   await nextTick()
@@ -180,6 +226,47 @@ async function proceed() {
       </div>
       <NcButton :to="listPath">{{ t('back') }}</NcButton>
     </header>
+    <NcNoteCard v-if="error" type="error" role="alert">{{ errorMessage(error) }}</NcNoteCard>
+    <section v-if="suggestions.length" class="capture-inbox" :aria-label="t('suggestionInbox')">
+      <h2><Icon :path="mdiInboxArrowDown" />{{ t('suggestionInbox') }}</h2>
+      <p class="muted">{{ t('suggestionInboxHelp') }}</p>
+      <ul class="suggestion-list">
+        <li v-for="suggestion in suggestions" :key="suggestion.id" class="suggestion">
+          <div>
+            <strong>{{ suggestion.original.title || t('captureUntitled') }}</strong>
+            <span class="muted">
+              {{ received(suggestion) }} · {{ suggestion.original.ingredients.length }}
+              {{ t('suggestionLines')
+              }}<template v-if="suggestion.source_url">
+                ·
+                <a :href="suggestion.source_url" target="_blank" rel="noopener noreferrer">{{
+                  sourceHost(suggestion.source_url) || t('source')
+                }}</a></template
+              >
+            </span>
+            <p v-if="suggestion.note" class="muted suggestion-note">{{ suggestion.note }}</p>
+          </div>
+          <div class="actions">
+            <NcButton
+              variant="primary"
+              :disabled="busy"
+              :aria-label="`${t('suggestionReview')}: ${suggestion.original.title || t('captureUntitled')}`"
+              @click="review(suggestion)"
+              >{{ t('suggestionReview') }}</NcButton
+            >
+            <NcButton
+              :variant="discarding === suggestion.id ? 'error' : 'tertiary'"
+              :disabled="busy"
+              :aria-label="`${t(discarding === suggestion.id ? 'suggestionDiscardConfirm' : 'suggestionDiscard')}: ${suggestion.original.title || t('captureUntitled')}`"
+              @click="discard(suggestion)"
+              >{{
+                t(discarding === suggestion.id ? 'suggestionDiscardConfirm' : 'suggestionDiscard')
+              }}</NcButton
+            >
+          </div>
+        </li>
+      </ul>
+    </section>
     <ul class="capture-choices">
       <li>
         <button type="button" @click="open('text')">

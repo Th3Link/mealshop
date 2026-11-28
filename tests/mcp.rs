@@ -172,7 +172,7 @@ async fn mcp_is_disabled_by_default_and_intersects_explicit_grants_with_current_
     )
     .await;
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(tools["result"]["tools"].as_array().unwrap().len(), 6);
+    assert_eq!(tools["result"]["tools"].as_array().unwrap().len(), 7);
     let tools = call(
         &app,
         Some(READER),
@@ -509,7 +509,7 @@ async fn legacy_clients_initialize_then_use_the_same_scoped_tools_and_empty_noti
     )
     .await;
     assert_eq!(listed.0, StatusCode::OK);
-    assert_eq!(listed.1["result"]["tools"].as_array().unwrap().len(), 6);
+    assert_eq!(listed.1["result"]["tools"].as_array().unwrap().len(), 7);
     let read = json!({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"ingredient_search","arguments":{"query":"Haferkorn"}}});
     let result = wire(&app, &read.to_string(), &headers).await;
     assert_eq!(result.0, StatusCode::OK);
@@ -707,5 +707,108 @@ async fn ingredient_reads_supply_exact_source_portions_without_inventing_custom_
     assert_eq!(
         result["result"]["structuredContent"]["reference_conversions"]["entries"],
         json!([])
+    );
+}
+
+#[tokio::test]
+async fn suggestions_wait_unreviewed_in_the_inbox_and_become_imports_only_through_review() {
+    let dir = Directory::new();
+    let app = dir.app();
+    enable(&app).await;
+    let input = json!({"title":"Reel pasta","ingredients":["2 EL Olivenöl","1 Zwiebel"],"steps":["Alles anbraten."],"source_url":"https://www.instagram.com/reel/synthetic/","note":"Synthetic transcript"});
+    let denied = rpc(&app, Some(READER), "recipe_suggest", input.clone())
+        .await
+        .1;
+    assert_eq!(
+        denied["result"]["structuredContent"]["code"],
+        "mcp_read_only"
+    );
+    let first = rpc(&app, Some(OWNER), "recipe_suggest", input.clone())
+        .await
+        .1;
+    let first = &first["result"]["structuredContent"];
+    assert_eq!(first["saved"], false, "{first}");
+    assert_eq!(first["replayed"], false);
+    let again = rpc(&app, Some(OWNER), "recipe_suggest", input).await.1;
+    assert_eq!(again["result"]["structuredContent"]["replayed"], true);
+    assert_eq!(
+        again["result"]["structuredContent"]["suggestion_id"],
+        first["suggestion_id"]
+    );
+    let invalid = rpc(
+        &app,
+        Some(OWNER),
+        "recipe_suggest",
+        json!({"title":"Plain","source_url":"http://example.org/r"}),
+    )
+    .await
+    .1;
+    assert_eq!(
+        invalid["result"]["structuredContent"]["code"],
+        "suggestion_invalid"
+    );
+    // Nothing was saved as a recipe.
+    let found = rpc(&app, Some(OWNER), "recipe_search", json!({})).await.1;
+    assert_eq!(found["result"]["structuredContent"]["total"], 0);
+    assert_eq!(
+        call(
+            &app,
+            Some(READER),
+            "GET",
+            "/api/household/suggestions",
+            Value::Null
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    let (status, listed) = call(
+        &app,
+        Some(OWNER),
+        "GET",
+        "/api/household/suggestions",
+        Value::Null,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(listed["suggestions"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        listed["suggestions"][0]["original"]["ingredients"][0],
+        "2 EL Olivenöl"
+    );
+    let id = first["suggestion_id"].as_str().unwrap();
+    let (status, staged) = call(
+        &app,
+        Some(OWNER),
+        "POST",
+        "/api/household/imports/preview",
+        json!({"mode":"suggestion","id":id}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{staged}");
+    assert_eq!(staged["method"], "manual");
+    assert_eq!(
+        staged["requested_url"],
+        "https://www.instagram.com/reel/synthetic/"
+    );
+    assert_eq!(staged["candidates"][0]["title"], "Reel pasta");
+    let path = format!("/api/household/suggestions/{id}");
+    assert_eq!(
+        call(&app, Some(READER), "DELETE", &path, Value::Null)
+            .await
+            .0,
+        StatusCode::FORBIDDEN
+    );
+    assert_eq!(
+        call(&app, Some(OWNER), "DELETE", &path, Value::Null)
+            .await
+            .0,
+        StatusCode::OK
+    );
+    assert_eq!(
+        call(&app, Some(OWNER), "DELETE", &path, Value::Null)
+            .await
+            .0,
+        StatusCode::NOT_FOUND
     );
 }

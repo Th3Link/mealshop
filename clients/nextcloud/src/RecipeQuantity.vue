@@ -12,7 +12,7 @@ import Icon from './Icon.vue'
 import { mdiPlus, mdiThermometer, mdiChefHat, mdiClose } from '@mdi/js'
 import { locale, exact, parseGrams, parseNonnegative, t } from './i18n'
 import type { Ingredient } from './contracts'
-import { conversionsSchema } from './quantity-api'
+import { conversionsSchema, waterEstimate } from './quantity-api'
 import type { LineDraft } from './quantity-api'
 import { applyReference } from './recipe-text'
 import { unitLabel } from './unit-label'
@@ -99,9 +99,18 @@ function reset() {
   model.value.evidence = null
   model.value.mode = 'manual'
   model.value.density = ''
+  model.value.estimated = false
   model.value.spoon = ''
   model.value.invalidFields = model.value.invalidFields.filter((key) => key === 'temperature')
   applyReference(model.value, props.ingredients, props.conversions)
+}
+const estimate = computed(() => waterEstimate(model.value.unit))
+function useEstimate() {
+  if (!estimate.value) return
+  model.value.density = exact(estimate.value)
+  model.value.estimated = true
+  model.value.invalidFields = model.value.invalidFields.filter((key) => key !== 'density')
+  emit('changed')
 }
 function choose() {
   emit('changed')
@@ -252,11 +261,16 @@ watch(locale, (_, previous) => {
           maxlength="32"
           required
           :error="invalid && !parseGrams(model.density)"
-          :helper-text="t('ownWeightHelp')"
+          :helper-text="t(model.estimated ? 'estimateWeightHelp' : 'ownWeightHelp')"
           @update:model-value="
-            model.invalidFields = model.invalidFields.filter((k) => k !== 'density')
+            ((model.estimated = false),
+            (model.invalidFields = model.invalidFields.filter((k) => k !== 'density')))
           "
         />
+        <NcButton v-if="estimate && !model.density" variant="secondary" @click="useEstimate"
+          >{{ t('estimateWeightUse') }}: {{ exact(estimate) }} g</NcButton
+        >
+        <span v-if="model.estimated" class="estimate-badge">{{ t('estimateWeightNote') }}</span>
       </div>
       <p v-else class="muted">{{ t('conversionHelp') }}</p>
       <component :is="model.mode === 'own' ? 'details' : 'div'" class="conversion-more">

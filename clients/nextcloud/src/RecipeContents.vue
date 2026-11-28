@@ -6,6 +6,7 @@ import type { z } from 'zod'
 import { recipeRecordSchema, displayLinesSchema } from './contracts'
 import { t, locale, compactExact, exact } from './i18n'
 import { unitLabel } from './unit-label'
+import { estimateVersion } from './quantity-api'
 const props = defineProps<{
   record: z.infer<typeof recipeRecordSchema>
   lines: z.infer<typeof displayLinesSchema>
@@ -89,7 +90,16 @@ function lineName(id: string) {
               {{ exact(record.recipe.lines[entry.index]?.quantity?.amount ?? null) }}
               {{ unitLabel(record.recipe.lines[entry.index]?.quantity?.unit ?? 'g')
               }}<template v-if="record.recipe.lines[entry.index]?.conversion?.source_url === ''">
-                · {{ t('ownWeightNote') }}</template
+                ·
+                {{
+                  t(
+                    record.recipe.lines[entry.index]?.conversion?.version.startsWith(
+                      estimateVersion,
+                    )
+                      ? 'estimateWeightNote'
+                      : 'ownWeightNote',
+                  )
+                }}</template
               ></small
             >
           </li>

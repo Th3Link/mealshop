@@ -7,7 +7,7 @@ mod network;
 mod parser;
 mod store;
 pub(crate) use api::routes;
-pub(crate) use model::Receipt;
+pub(crate) use model::{Candidate, Receipt, SourceStep};
 pub(crate) use store::Store;
 #[cfg(test)]
 #[allow(clippy::unwrap_used)]

@@ -37,6 +37,14 @@ export const captureEnglish = {
   captureReviewHelp:
     'Check the highlighted ingredients. Your original line stays next to each one until you save.',
   captureSuggestions: 'Did you mean',
+  suggestionInbox: 'Suggestions waiting for you',
+  suggestionInboxHelp:
+    'Handed in by an assistant or your own tools. Nothing is a recipe until you review and save it.',
+  suggestionLines: 'ingredients',
+  suggestionReview: 'Review',
+  suggestionDiscard: 'Discard',
+  suggestionDiscardConfirm: 'Really discard?',
+  suggestionWaiting: 'suggestions waiting',
   servingsQuestion: 'How many servings does this make?',
   ownWeight: 'Weight of 1',
   ownWeightUnit: 'in grams',
@@ -51,6 +59,10 @@ export const captureEnglish = {
   tileFat: 'Fat',
   tileFibre: 'Fibre',
   ownWeightNote: 'own weight',
+  estimateWeightUse: 'Use a rough estimate',
+  estimateWeightNote: 'rough estimate',
+  estimateWeightHelp:
+    'Rough estimate as if it weighed like water (1 ml = 1 g). Flour and other powders are lighter, honey and syrups heavier. Type your own value to replace it.',
   unitG: 'g',
   unitKg: 'kg',
   unitMl: 'ml',
@@ -123,6 +135,14 @@ export const captureGerman: Record<keyof typeof captureEnglish, string> = {
   captureReviewHelp:
     'Prüfe die markierten Zutaten. Deine ursprüngliche Zeile bleibt bis zum Speichern daneben stehen.',
   captureSuggestions: 'Meintest du',
+  suggestionInbox: 'Vorschläge, die auf dich warten',
+  suggestionInboxHelp:
+    'Von einem Assistenten oder deinen eigenen Werkzeugen eingereicht. Nichts ist ein Rezept, bevor du es geprüft und gespeichert hast.',
+  suggestionLines: 'Zutaten',
+  suggestionReview: 'Prüfen',
+  suggestionDiscard: 'Verwerfen',
+  suggestionDiscardConfirm: 'Wirklich verwerfen?',
+  suggestionWaiting: 'Vorschläge warten',
   servingsQuestion: 'Für wie viele Portionen reicht das?',
   ownWeight: 'Gewicht von 1',
   ownWeightUnit: 'in Gramm',
@@ -137,6 +157,10 @@ export const captureGerman: Record<keyof typeof captureEnglish, string> = {
   tileFat: 'Fett',
   tileFibre: 'Ballaststoffe',
   ownWeightNote: 'eigenes Gewicht',
+  estimateWeightUse: 'Groben Schätzwert übernehmen',
+  estimateWeightNote: 'grober Schätzwert',
+  estimateWeightHelp:
+    'Grober Schätzwert, als wöge es wie Wasser (1 ml = 1 g). Mehl und andere Pulver sind leichter, Honig und Sirup schwerer. Trag einen eigenen Wert ein, um ihn zu ersetzen.',
   unitG: 'g',
   unitKg: 'kg',
   unitMl: 'ml',

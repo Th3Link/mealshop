@@ -11,16 +11,21 @@
 - [ ] Real-microphone dictation check in Chromium and Firefox (AC 5) — not testable headless.
 - [ ] Customer review of the new screens on the customer's instance.
 
-## Slice 2 — suggestion inbox and MCP (needs decision F39-INBOX)
-- [ ] Candidate store, `recipe_suggest` MCP tool, inbox list and review hand-off.
-- [ ] Companion contract for customer-operated sources (Instagram), documented, not bundled.
+## Slice 2 — suggestion inbox, MCP and accepted estimates
+- [x] Suggestion store, `recipe_suggest` MCP tool, list/discard endpoints (AC 11).
+- [x] Inbox on **Add recipe**, review hand-off as import or owned recipe, waiting count (AC 12).
+- [x] `scripts/suggest_recipe.py` for customer-operated pipelines, documented in the MCP guide (AC 13).
+- [x] Accepted water-density estimate for volume and spoon units, labelled (AC 14).
+- [ ] Adapt the customer's `reelcatch` to emit JSON lines — customer-side, outside this repository.
 
-## Slice 3 — AI structuring (needs decision F39-AI)
-- [ ] Verify available Task Processing types on the customer's instance.
-- [ ] Text/speech/picture → candidate, always through review; consent and provider shown.
+## Slice 3 — AI structuring through Nextcloud Task Processing (decision F39-AI: A)
+- [ ] Learn which Task Processing types the customer's instance offers; the local test instance
+  has no provider, so nothing can be verified here yet.
+- [ ] Text/speech/picture → suggestion, always through review; consent and provider shown.
 
-## Slice 4 — nutrition calculation (needs decision F39-WEIGHTS)
-- [ ] Wider source-backed reference portions; offer them as prefilled, labelled suggestions.
+## Slice 4 — nutrition calculation
+- [ ] Wider source-backed reference portions, including pieces, offered as labelled suggestions.
+- [ ] Carry rough estimates and household weights into nutrition as a visible warning.
 - [ ] Recipes saveable with unresolved quantities and explicitly incomplete nutrition.
 - [ ] Cooking yield/retention model (F02/F03 debt).
 

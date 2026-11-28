@@ -174,4 +174,5 @@ intent, uncertain delivery and explicit physical-stock booking remain distinct. 
 F39 (in progress) adds guided recipe entry to the Nextcloud client: paste or dictate text, keep a
 picture beside it, review once and save; spoons and pieces need only what one unit weighs. Recipes
 show ratings from completed cooks and a rounded per-serving nutrition overview above the exact
-table. No AI provider is integrated yet. [F39](specs/0039-guided-recipe-capture/specification.md).
+table. Assistants and your own tools can hand recipes in as suggestions that wait for review
+(`recipe_suggest`). No AI provider is integrated yet. [F39](specs/0039-guided-recipe-capture/specification.md).
