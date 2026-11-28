@@ -240,3 +240,81 @@ test('a suggestion handed in by a companion waits in the inbox and is saved as a
   await expect(page.locator('.capture-inbox').getByText(sourced)).toHaveCount(0)
   expect(errors).toEqual([])
 })
+
+test('the Assistant reads a picture into the capture text when the instance offers it', async ({
+  page,
+}) => {
+  test.setTimeout(120000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  // The local instance has no Assistant provider: its three answers are simulated here, the
+  // rest of the page and the picture upload are real.
+  let polls = 0
+  const sent: string[] = []
+  await page.route('**/proxy/mealshop/api/assist', (route) =>
+    route.fulfill({ json: { speech: false, picture: true, handwriting: false } }),
+  )
+  await page.route('**/proxy/mealshop/api/assist/transcriptions?kind=*', (route) => {
+    sent.push(`${route.request().method()} ${new URL(route.request().url()).search}`)
+    return route.fulfill({ status: 202, json: { id: 7, kind: 'picture', status: 'waiting' } })
+  })
+  await page.route('**/proxy/mealshop/api/assist/transcriptions/7', (route) =>
+    route.fulfill({
+      json:
+        polls++ === 0
+          ? { id: 7, kind: 'picture', status: 'running', progress: 0.5 }
+          : {
+              id: 7,
+              kind: 'picture',
+              status: 'done',
+              text: 'Synthetic picture bowl\nfor 2 people\n\nIngredients\n100 g Oats',
+            },
+    }),
+  )
+  await page.goto('/index.php/apps/app_api/embedded/mealshop/main/households')
+  await page.locator('#user').fill(process.env.MEALSHOP_TEST_USER ?? '')
+  await page.locator('#password').fill(process.env.MEALSHOP_TEST_PASSWORD ?? '')
+  await page.getByRole('button', { name: 'Log in', exact: true }).click()
+  await page.locator('#mealshop-language').selectOption('en')
+  await openFixture(page, 'guided-capture.spec.ts')
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
+  await page.getByRole('button', { name: /^Photo or screenshot/ }).click()
+  const read = page.getByRole('button', { name: 'Read printed text', exact: true })
+  // Nothing can be read before a picture is chosen; handwriting and recording are not offered.
+  await expect(read).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Read handwriting', exact: true })).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: 'Record and transcribe', exact: true }),
+  ).toHaveCount(0)
+  await page.locator('.capture-file input[type="file"]').setInputFiles({
+    name: 'synthetic.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
+    ),
+  })
+  await expect(read).toBeEnabled()
+  await expect(page.locator('.capture-photo')).toContainText('Assistant provider your Nextcloud')
+  await read.click()
+  await expect(page.getByLabel('Recipe text', { exact: true })).toHaveValue(
+    /Synthetic picture bowl/,
+    {
+      timeout: 15000,
+    },
+  )
+  expect(sent).toEqual(['POST ?kind=picture'])
+  // The words are only text: the deterministic reader shows what it found, nothing is saved.
+  const found = page.locator('.capture-found')
+  await expect(found).toContainText('Synthetic picture bowl · 2 servings')
+  await expect(found).toContainText('100 g Oats')
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .include('.mealshop')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+        .analyze()
+    ).violations,
+  ).toEqual([])
+  expect(errors).toEqual([])
+})

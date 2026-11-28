@@ -59,6 +59,17 @@ export const captureEnglish = {
   tileFat: 'Fat',
   tileFibre: 'Fibre',
   ownWeightNote: 'own weight',
+  assistRecord: 'Record and transcribe',
+  assistRecordStop: 'Stop recording',
+  assistRecording: 'Recording … read the recipe aloud, then stop.',
+  assistReadPicture: 'Read printed text',
+  assistReadHandwriting: 'Read handwriting',
+  assistWaiting: 'Waiting for your Nextcloud Assistant …',
+  assistRunning: 'Your Nextcloud Assistant is reading …',
+  assistFailed:
+    'The Assistant returned nothing usable. Check the microphone permission or the picture, or type the text.',
+  assistPrivacy:
+    'Recordings and pictures you send for reading go to the Assistant provider your Nextcloud administrator chose. A temporary copy is placed in your files and removed when the reading ends. The text is yours to correct before anything is saved.',
   weightUnknownNote: 'weight unknown',
   nutritionUnweighed: 'Incomplete — no weight for:',
   nutritionUnweighedHelp:
@@ -163,6 +174,17 @@ export const captureGerman: Record<keyof typeof captureEnglish, string> = {
   tileFat: 'Fett',
   tileFibre: 'Ballaststoffe',
   ownWeightNote: 'eigenes Gewicht',
+  assistRecord: 'Aufnehmen und abschreiben',
+  assistRecordStop: 'Aufnahme beenden',
+  assistRecording: 'Aufnahme läuft … lies das Rezept vor und beende dann.',
+  assistReadPicture: 'Gedruckten Text lesen',
+  assistReadHandwriting: 'Handschrift lesen',
+  assistWaiting: 'Warte auf deinen Nextcloud-Assistenten …',
+  assistRunning: 'Dein Nextcloud-Assistent liest …',
+  assistFailed:
+    'Der Assistent hat nichts Brauchbares geliefert. Prüfe die Mikrofon-Freigabe oder das Bild oder tippe den Text ein.',
+  assistPrivacy:
+    'Aufnahmen und Bilder, die du lesen lässt, gehen an den Assistenten-Anbieter, den deine Nextcloud-Administration gewählt hat. Eine vorübergehende Kopie liegt in deinen Dateien und wird nach dem Lesen entfernt. Den Text korrigierst du, bevor etwas gespeichert wird.',
   weightUnknownNote: 'Gewicht unbekannt',
   nutritionUnweighed: 'Unvollständig – kein Gewicht für:',
   nutritionUnweighedHelp:
