@@ -1,0 +1,27 @@
+# Interdata intake service. Run from the repository root:
+#   docker compose -f deploy/interdata/compose.yaml --env-file /path/to/private.env up -d --build
+# The service speaks plain HTTP; put a TLS-terminating reverse proxy in front of the bound port.
+name: mealshop-interdata
+services:
+  interdata:
+    image: ${INTERDATA_IMAGE:-mealshop.local/interdata:0.1.0}
+    build:
+      context: ../..
+      dockerfile: interdata/Dockerfile
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      INTERDATA_UPLOAD_SECRET: ${INTERDATA_UPLOAD_SECRET:?Set a random upload secret of at least 32 bytes}
+      INTERDATA_CDN_ORIGIN: ${INTERDATA_CDN_ORIGIN:-}
+      INTERDATA_CAPACITY: ${INTERDATA_CAPACITY:-10000}
+      INTERDATA_UPLOADS_PER_MINUTE: ${INTERDATA_UPLOADS_PER_MINUTE:-60}
+    ports:
+      - "${INTERDATA_BIND_ADDR:-127.0.0.1}:${INTERDATA_PORT:-3100}:3100"
+    volumes:
+      - submissions:/data
+volumes:
+  submissions:

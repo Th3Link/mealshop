@@ -14,6 +14,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 |---|---|---|---|
 | F18 | [Storage adapters, Nextcloud `ExApp` and Flutter](0018-storage-deployment/specification.md) | Must | M1 |
 | F35 | [Flutter mobile client and smartphone delivery](0035-flutter-mobile-client/specification.md) | Must | M1 |
+| F43 | [Interdata: buffered recipe and ingredient intake service](0043-interdata-intake/specification.md) | Must | M4 |
 
 ## Draft
 

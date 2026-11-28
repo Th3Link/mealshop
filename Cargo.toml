@@ -8,6 +8,9 @@ description = "Mealshop recipe, shopping and family meal planning server"
 repository = "https://github.com/Th3Link/mealshop"
 publish = false
 
+[workspace]
+members = [".", "interdata"]
+
 [features]
 device = ["dep:age", "dep:tar"]
 
