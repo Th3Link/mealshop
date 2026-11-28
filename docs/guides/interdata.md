@@ -4,6 +4,7 @@ Interdata is a separate service that receives recipes and ingredients for a shar
 ([F43](../../specs/0043-interdata-intake/specification.md)). **Only intake exists today:**
 uploads are validated for shape and size and buffered unchanged. Nothing is checked for
 plausibility, matched, reviewed or published yet, and the service is not deployed anywhere.
+Accepted recipes will be published under CC0 1.0.
 
 ## Run locally
 ```sh
@@ -19,6 +20,18 @@ INTERDATA_UPLOAD_SECRET="$(head -c 32 /dev/urandom | base64)" \
 | `INTERDATA_CDN_ORIGIN` | unset | HTTPS origin image links must use. Unset: image links are rejected. |
 | `INTERDATA_CAPACITY` | `10000` | Buffered submissions after which uploads are refused. |
 | `INTERDATA_UPLOADS_PER_MINUTE` | `60` | New submissions per minute across all uploaders. |
+
+## Run in a container
+```sh
+docker compose -f deploy/interdata/compose.yaml --env-file /path/to/private.env up -d --build
+```
+The private environment file sets `INTERDATA_UPLOAD_SECRET` and optionally
+`INTERDATA_CDN_ORIGIN`, `INTERDATA_CAPACITY`, `INTERDATA_UPLOADS_PER_MINUTE`,
+`INTERDATA_BIND_ADDR` (default `127.0.0.1`) and `INTERDATA_PORT` (default `3100`). The
+container speaks plain HTTP on that port: put a TLS-terminating reverse proxy for the public
+host in front of it and do not publish the port directly. Submissions live in the
+`submissions` volume; back it up. The image runs as an unprivileged user on a read-only root
+file system. Without compose: `docker build -f interdata/Dockerfile .` from the repository root.
 
 The secret admits uploads and identifies nobody; who uploaded what is not recorded. One process
 owns the data directory.
@@ -38,7 +51,7 @@ underscores (a UUID fits). Bodies are limited to 256 KiB. Unknown fields are rej
 Repeating an upload with the same key and body returns `200` and the first submission; the same
 key with a different body returns `409`. Errors are `{"error": {"code", "message"}}` with a
 stable `code`: `401 upload_secret_required`, `400 idempotency_key_required`, `415 json_required`,
-`422` for content (`invalid_json`, `invalid_recipe`, `invalid_ingredients`, `invalid_amount`,
+`422` for content (`license_required`, `invalid_json`, `invalid_recipe`, `invalid_ingredients`, `invalid_amount`,
 `invalid_steps`, `invalid_tags`, `invalid_source_url`, `invalid_image_links`,
 `image_links_unavailable`, `invalid_ingredient`, `invalid_source`, `nutrients_need_source`,
 `invalid_nutrients`), `429 too_many_uploads`, `507 buffer_full`.
@@ -46,6 +59,7 @@ stable `code`: `401 upload_secret_required`, `400 idempotency_key_required`, `41
 ### Recipe
 ```json
 {
+  "license": "CC0-1.0",
   "title": "Linsensuppe",
   "language": "de",
   "author": "optional",
@@ -60,7 +74,9 @@ stable `code`: `401 upload_secret_required`, `400 idempotency_key_required`, `41
   "image_links": [{"url": "https://cdn.example/r/1.jpg", "alt": "Suppe im Teller"}]
 }
 ```
-`title` and 1–100 `ingredients` are required. Each line needs its original `text` or an
+`license`, `title` and 1–100 `ingredients` are required. `"license": "CC0-1.0"` is your
+confirmation that you may dedicate the recipe to the public domain; for someone else's recipe,
+write it in your own words and give its `source_url`. Each line needs its original `text` or an
 `ingredient_id`. `amount` is an exact decimal **string** with at most six fractional digits;
 JSON numbers, ranges and fractions are rejected, so keep those in `text`. `unit` is kept as
 written; nothing is converted. Optional texts: `yield_text`, `prep_time`, `cook_time`,
@@ -86,4 +102,5 @@ health-related tag is an unverified hint, not a medical statement.
 }
 ```
 Only `name` is required. Nutrient readings need the `source` record they come from; without a
-source the ingredient is accepted as an identity with unknown nutrition.
+source the ingredient is accepted as an identity with unknown nutrition. An ingredient keeps
+the licence of its source record; it is not relabelled as CC0.

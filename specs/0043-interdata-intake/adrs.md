@@ -21,6 +21,12 @@
 - Check escalation: rules, self-hosted micro model, frontier model with moderator approval
   (F43-AI).
 
+## Customer decisions (2026-11-28, third round)
+- A fixed operator-configured upload secret until registration exists (F43-ADMISSION).
+- CC0 1.0 for recipes with a mandatory dedication field; ingredients keep their source licence
+  (F43-LICENCE).
+- Dockerfile and compose file now, so the customer can deploy (F43-DOCKER).
+
 ## Proposals (not accepted)
 - **Reuse the existing shapes.** Raw uploads use the `imports::Candidate` shape; accepted recipes
   use the existing recipe/line/quantity shape plus `tags` and `image_links`. Household servers

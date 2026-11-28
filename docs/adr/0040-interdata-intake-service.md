@@ -39,6 +39,12 @@ uploader identity is kept.
 - Without accounts, abuse bounds are global: body size, a per-minute ceiling for new
   submissions and a buffer capacity. Replays are exempt.
 - Image links are accepted only on one configured HTTPS origin and are never fetched.
+- A recipe upload must carry `"license": "CC0-1.0"` (customer decision F43-LICENCE). With no
+  uploader identity, this stored statement is the only record of the dedication. Ingredient
+  uploads carry the licence of their source record instead.
+- `interdata/Dockerfile` builds a static binary into a minimal image that runs as an
+  unprivileged user with a read-only root file system and one data volume;
+  `deploy/interdata/compose.yaml` binds it to loopback for a TLS-terminating reverse proxy.
 - Intake validates shape and bounds only. Amounts are exact decimal strings; JSON numbers are
   rejected. Tags are syntactic ids at this stage; vocabulary, ingredient matching, unit
   normalization and nutrition belong to the check stages.
@@ -53,4 +59,5 @@ uploader identity is kept.
   decision.
 - The file buffer suits one instance. Review, publication and queries (slice 3) need a
   persistence decision in a follow-up ADR before they are built.
-- No container image, Helm chart or DNS exists for the service yet.
+- No published image, Helm chart or DNS exists for the service yet; the compose file builds
+  the image locally. The image pins the same base digests as the `ExApp` image.

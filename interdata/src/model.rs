@@ -5,6 +5,9 @@
 use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet};
 
+/// The only licence a recipe upload may declare.
+const RECIPE_LICENSE: &str = "CC0-1.0";
+
 /// A rejected upload: a stable code for clients and an English explanation.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct Invalid {
@@ -127,6 +130,8 @@ struct Step {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Recipe {
+    /// The uploader's explicit dedication of this recipe (F43-LICENCE).
+    license: Option<String>,
     title: String,
     language: Option<String>,
     author: Option<String>,
@@ -199,6 +204,12 @@ fn unit(value: &str) -> bool {
 /// Checks an uploaded recipe; `cdn` is the configured image origin, if any.
 pub(crate) fn recipe(body: &[u8], cdn: Option<&CdnOrigin>) -> Result<(), Invalid> {
     let r: Recipe = parse(body)?;
+    if r.license.as_deref() != Some(RECIPE_LICENSE) {
+        return invalid(
+            "license_required",
+            "Recipes are published under CC0 1.0. Add \"license\": \"CC0-1.0\" to confirm that you may dedicate this recipe to the public domain; for someone else's recipe, write it in your own words and give its source_url",
+        );
+    }
     if !text(&r.title, 200)
         || !optional(r.author.as_ref(), 200)
         || !optional(r.yield_text.as_ref(), 200)

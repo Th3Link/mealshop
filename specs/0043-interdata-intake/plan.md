@@ -4,7 +4,8 @@ Slice 1 is implemented and not deployed. Later slices stay unchecked proposals.
 
 ## Affected modules
 `interdata/` (new workspace crate `mealshop-interdata`), root `Cargo.toml` (workspace),
-`Dockerfile` (builds the server package only), `docs/guides/interdata.md`, ADR 0040.
+`Dockerfile` and `.dockerignore` (server image builds its package only), `interdata/Dockerfile`,
+`deploy/interdata/compose.yaml`, `docs/guides/interdata.md`, ADR 0040.
 
 ## Proposed slices
 - [x] Slice 1 — intake only: service skeleton, upload admission (F43-ADMISSION), `POST`/`GET` of
@@ -16,14 +17,16 @@ Slice 1 is implemented and not deployed. Later slices stay unchecked proposals.
       revisions, read API with tag filters (AC 9, 11, 12).
 - [ ] Slice 4 — self-hosted micro model for what the rules leave open (AC 5, 6).
 - [ ] Slice 5 — frontier escalation queue with moderator approval per item (AC 5).
-- [ ] Deployment to `interdata.mealshop.luehr.dev` (DNS, TLS, image, Helm).
+- [x] Container image definition and compose file (F43-DOCKER).
+- [ ] Deployment to `interdata.mealshop.luehr.dev` (DNS, TLS, reverse proxy, published image);
+      done by the customer.
 
 ## Validation
 Slice 1 evidence, `interdata/tests/api.rs` and unit tests in `interdata/src/model.rs`:
 
 | AC | Tests |
 |---|---|
-| 1 | `upload_is_buffered_unchanged_and_readable`, `full_recipe_and_ingredient_are_accepted`, `upload_needs_the_secret`, `short_secret_and_bad_cdn_origin_refuse_to_start`, `invalid_recipes_are_rejected_with_a_reason` |
+| 1 | `upload_is_buffered_unchanged_and_readable`, `full_recipe_and_ingredient_are_accepted`, `upload_needs_the_secret`, `short_secret_and_bad_cdn_origin_refuse_to_start`, `invalid_recipes_are_rejected_with_a_reason` (including a missing or different licence) |
 | 2 | `replay_returns_the_same_submission_and_changed_body_conflicts`, `replay_survives_restart`, `idempotency_key_is_required_and_safe` |
 | 3 | `upload_is_buffered_unchanged_and_readable` (stored body equals the bytes sent), `decimals_are_exact_strings`, `ingredient_nutrients_need_a_source` |
 | 4 | `invalid_recipes_are_rejected_with_a_reason` (foreign and look-alike hosts), `image_links_wait_for_a_cdn_origin`, `cdn_origin_rejects_paths_and_plain_http` |

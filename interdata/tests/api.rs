@@ -59,6 +59,7 @@ async fn post(app: &Router, path: &str, key: &str, body: &Value) -> (StatusCode,
 
 fn recipe() -> Value {
     json!({
+        "license": "CC0-1.0",
         "title": "Linsensuppe",
         "language": "de",
         "servings": 4,
@@ -86,7 +87,7 @@ fn code(body: &Value) -> &str {
 async fn upload_is_buffered_unchanged_and_readable() {
     let app = app("buffered");
     // Unusual spacing and key order must survive: the original is kept as sent.
-    let original = r#"{ "ingredients":[{"text":"1 Ei"}],   "title":"Ei" }"#;
+    let original = r#"{ "ingredients":[{"text":"1 Ei"}],   "title":"Ei", "license":"CC0-1.0" }"#;
     let (status, body) = send(&app, upload(RECIPES, KEY, original.to_owned())).await;
     assert_eq!(status, StatusCode::CREATED);
     assert_eq!(body["status"], "received");
@@ -190,7 +191,7 @@ async fn replay_returns_the_same_submission_and_changed_body_conflicts() {
 async fn replay_survives_restart() {
     let data = dir("restart");
     let first = app_in(data.clone(), None, 100, 100);
-    let body = json!({"title": "Ei", "ingredients": [{"text": "1 Ei"}]});
+    let body = json!({"license": "CC0-1.0", "title": "Ei", "ingredients": [{"text": "1 Ei"}]});
     let (_, created) = post(&first, RECIPES, KEY, &body).await;
     let second = app_in(data, None, 100, 100);
     let (status, again) = post(&second, RECIPES, KEY, &body).await;
@@ -217,6 +218,11 @@ async fn invalid_recipes_are_rejected_with_a_reason() {
     let app = app("invalid");
     let cases: Vec<(&str, Change)> = vec![
         ("invalid_recipe", Box::new(|r| r["title"] = json!("  "))),
+        (
+            "license_required",
+            Box::new(|r| r["license"] = json!("CC-BY-4.0")),
+        ),
+        ("license_required", Box::new(|r| r["license"] = Value::Null)),
         (
             "invalid_ingredients",
             Box::new(|r| r["ingredients"] = json!([])),
@@ -308,7 +314,7 @@ async fn oversized_and_non_json_uploads_are_refused() {
 
 #[tokio::test]
 async fn rate_limit_and_capacity_refuse_new_uploads_but_not_replays() {
-    let body = json!({"title": "Ei", "ingredients": [{"text": "1 Ei"}]});
+    let body = json!({"license": "CC0-1.0", "title": "Ei", "ingredients": [{"text": "1 Ei"}]});
 
     let limited = app_in(dir("rate"), None, 100, 1);
     assert_eq!(

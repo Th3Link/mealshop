@@ -21,7 +21,8 @@ resistance" and "lactose-free, gluten-free, vegan, vegetarian, fish, beef, high-
 high-fibre, low carb, low fat".
 
 ## Delivered
-Slice 1 (2026-11-28): acceptance criteria 1–4 and 13 as an undeployed service; see the
+Slice 1 (2026-11-28): acceptance criteria 1–4 and 13 as an undeployed service with a container
+image definition and compose file; see the
 [guide](../../docs/guides/interdata.md), [plan.md](plan.md) and ADR 0040. Criteria 5–12 are not
 implemented: nothing is checked, reviewed or published yet.
 
@@ -55,7 +56,8 @@ Criteria 1–4 and 13 are accepted and delivered with slice 1. Criteria 5–12 r
 until their slice is Ready.
 
 ### Acceptance criteria
-1. Given an upload presenting the configured upload secret (F43-ADMISSION), `POST` of a recipe or an ingredient is validated
+1. Given an upload presenting the configured upload secret (F43-ADMISSION) and, for a recipe,
+   the CC0 dedication (F43-LICENCE), `POST` of a recipe or an ingredient is validated
    for size and shape, stored unchanged as a submission and answered with an id and status `received`.
    Nothing uploaded is visible in the published data set at that point.
 2. Given a repeated upload with the same idempotency key and body, the same submission is
@@ -128,9 +130,17 @@ servers to consume the data set is a later slice.
   upload secret. It is compared in constant time, never logged and identifies nobody; it is
   replaced once registration is decided.
 
+- **F43-LICENCE.** Recipes, their tags and everything the checks normalize from them are
+  published under CC0 1.0. A recipe upload must state `"license": "CC0-1.0"`; that is the
+  uploader's confirmation that they may dedicate it, and it is stored with the upload. Someone
+  else's recipe is uploaded in the uploader's own words with its `source_url` (N06). Ingredient
+  records keep the licence of their source record and are never relabelled. Image files on the
+  CDN are not covered.
+- **F43-DOCKER.** A container image definition and a compose file are part of slice 1 so that
+  the customer can deploy the service.
+
 ## Open customer decisions
-- **F43-LICENCE.** Under which content licence open, unattributed uploads are published, and how
-  uploads of third-party recipes are kept to the source link (N06).
+None block slice 2. Registration (F43-RIGHTS) and the model hosts (F43-AI) are still undecided.
 
 ## UX notes
 The reviewer workflow (queue, finding display, corrections) needs `ux-notes.md` before Ready if
