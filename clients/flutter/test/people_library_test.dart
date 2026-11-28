@@ -258,7 +258,9 @@ void main() {
       await tester.pumpWidget(const SizedBox());
       await tester.pumpWidget(app(PersonTour(api)));
       await tester.pumpAndSettle();
-      expect(find.text('2 / 5 · Dietary rules'), findsOneWidget);
+      expect(find.text('2 / 6 · Dietary rules'), findsOneWidget);
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Next'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Next'));

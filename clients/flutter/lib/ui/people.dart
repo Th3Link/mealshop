@@ -89,7 +89,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                   ? 'read'
                                   : 'no_access',
                             )
-                          : '${context.t(rules['preset'] as String? ?? 'unrestricted')}${exceptions.isEmpty ? '' : ' · ${context.t('exceptions')}: ${exceptions.length}'}',
+                          : '${member['id'] == widget.api.controller.mainPerson ? '${context.t('you')} · ' : ''}${context.t(rules['preset'] as String? ?? 'unrestricted')}${exceptions.isEmpty ? '' : ' · ${context.t('exceptions')}: ${exceptions.length}'}',
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () async {

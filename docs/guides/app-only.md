@@ -8,6 +8,16 @@ or named, and no demo content is pre-populated. Data from earlier builds with se
 households stays reachable through a switcher that appears only in that case. Explicit website imports still
 need network access and source consent; saved local workflows work without a server.
 
+## Start assistant
+
+With fresh local data a short assistant opens once: yourself first, then the people you cook for.
+Each person is asked one thing per screen — name, diet, allergies and intolerances, dislikes and
+strict exclusions, meal availability — and a name alone is enough. Everything can be skipped; an
+unfinished profile is kept as a protected draft and the assistant returns to the people overview.
+"This is me" is remembered on the device only. **More → Start assistant** opens it again, also
+when connected to Nextcloud. Goals, dish ranking, sharing consent and in-app dictation are
+specified in F41/F42 and not available yet.
+
 ## Save and restore a backup
 
 Open **More → Backup and restore**. A backup includes all saved local records and images. Unsaved drafts, pending client intents, server credentials, device reminder settings

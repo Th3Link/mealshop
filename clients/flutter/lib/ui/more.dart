@@ -18,6 +18,7 @@ import 'cooking.dart';
 import 'brewing.dart';
 import 'history.dart';
 import 'backups.dart';
+import 'start_assistant.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen(this.c, {super.key});
@@ -60,6 +61,14 @@ class MoreScreen extends StatelessWidget {
             ? null
             : () => openPage<void>(context, SharedScreen(HouseholdApi(c))),
       ),
+      if (c.home?.writable == true)
+        ListTile(
+          leading: const Icon(Icons.waving_hand_outlined),
+          title: Text(context.t('assistant')),
+          subtitle: Text(context.t('assistant_caption')),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => openPage<void>(context, StartAssistant(HouseholdApi(c))),
+        ),
       if (c.home != null) ...[
         SectionTitle(context.t('library')),
         for (final item in <(String, IconData, Widget)>[

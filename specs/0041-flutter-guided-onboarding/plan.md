@@ -12,10 +12,14 @@ Branch `story/flutter-guided-onboarding`. One usable slice per PR.
 
 ## Slice 2 — start assistant and people (AC4–7)
 
-- [ ] Assistant shell with resumable protected draft, skip, reopen from More.
-- [ ] Rework the person tour into one-topic screens with selectable options; mark the main user
-      (compatible profile field, Rust core + Vue contract in the same PR).
-- [ ] Tests: interruption/relaunch, skip paths, name-only person, DE/EN, large text.
+- [x] Assistant shell: welcome, main user, further people, finish; opens once for fresh on-device
+      data, resumes when interrupted, skippable, reopenable from More (both modes).
+- [x] Person tour as six one-topic steps with selectable diet cards, a separate dislikes and
+      exclusions step, name-only save and a device-local "This is me" marker (adrs D6).
+- [x] Tests: automatic opening exactly once, existing people not interrupted, interruption and
+      restart, skip, name-only people, summary marker, DE/EN at 320 dp and 200 % text.
+- [ ] Emulator check: fresh install, process death inside the assistant, `TalkBack` order.
+- [ ] Sharing-consent step inside the assistant (slice 4) and dictation button (F42 slice B).
 
 ## Slice 3 — goals and calibration (AC8–10)
 
@@ -42,3 +46,10 @@ existing household, legacy switcher, hidden row/name in More, retry instead of h
 Repository gate (catalogue import/verify, i18n, fmt, Clippy, 212 nextest tests, licences, audit,
 generated docs check) passed. The emulator integration test `app_only_test.dart` was adapted but
 not run; fresh-install and upgrade evidence on the emulator is open and is not inferred.
+
+Slice 2, 2026-11-28, same toolchain: `flutter analyze` without findings, `flutter test` 96 passed
+(6 in `test/start_assistant_test.dart`, 2 more in `test/device_home_test.dart`). The large-text
+check found and fixed an overflow of the tour's bottom actions, which now stack. Repository gate
+passed. Emulator and handset evidence is open; allergen and dislike selection still uses the
+existing checkbox list and ingredient search, and answers cannot be dictated in the app yet.
+

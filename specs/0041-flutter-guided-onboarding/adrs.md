@@ -53,3 +53,18 @@ none. The client contract (endpoint, authentication, recipe format, licence and 
 language, filtering by hard rules) is defined by that server's API and is a dependency of the
 calibration slice. Fetching is a visible, consented network request; hard rules are applied on
 the device, so no dietary profile is sent to the server.
+
+## D6 — The main user is remembered per device (accepted with slice 2)
+
+Context: the customer's main user is "whoever is typing on this device". Household profiles are
+shared; in connected mode every phone has a different main user, and the profile schema rejects
+unknown fields for older clients.
+
+Alternatives: a `main_user` flag on the household member (wrong for several devices, needs a
+schema change and a Vue round trip); a device-local reference to the person ID.
+
+Decision: store the reference in the app's protected local state per household, together with the
+assistant's started/done state. No core or schema change. It is cleared with the local session and
+is not part of a backup; "This is me" in a person's summary sets it again. A person is still not
+a login account and the marker grants nothing.
+
