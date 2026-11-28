@@ -66,3 +66,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0036: Official TypeScript 7 and Vue compiler boundaries](0036-official-typescript-compiler-boundaries.md) — Native modules and full Vue checks use explicit official compiler entry points.
 
 - [0037: Keep Node toolchains within Nextcloud compatibility](0037-nextcloud-node-toolchain.md) — Shared CI version source and guarded Node/Docker updates retain supported strict builds.
+
+- [0040: Interdata as a second workspace crate with a file buffer](0040-interdata-intake-service.md) — Separate intake service for F43; upload secret, no uploader identity.
