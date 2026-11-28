@@ -11,11 +11,6 @@ Status: Draft. Nothing here is implemented.
 - [ ] Slice C: handwriting model, if the measurement supports it.
 - [ ] Guide, licence notices, emulator and handset evidence.
 
-## Open customer decisions
+## Customer decisions
 
-Frage 3 (FL-MODELS): how speech and handwriting models reach the phone.
-A: bundled in the APK (fully offline from the first start, APK grows by roughly 100–300 MB
-depending on the measured choice). B: fetched once after explicit consent from a pinned,
-checksummed source (small APK, needs hosting or an upstream mirror). C: small speech model
-bundled, handwriting model fetched.
-Recommendation: C. Default if unanswered: B.
+Answered 2026-11-28: FL-MODELS — B, fetched once after explicit consent (adrs D3).

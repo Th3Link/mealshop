@@ -17,9 +17,11 @@ Branch `story/flutter-guided-onboarding`. One usable slice per PR.
       (compatible profile field, Rust core + Vue contract in the same PR).
 - [ ] Tests: interruption/relaunch, skip paths, name-only person, DE/EN, large text.
 
-## Slice 3 — goals and calibration (AC8–10; needs FL-GOALS, FL-STARTER)
+## Slice 3 — goals and calibration (AC8–10)
 
+- [ ] Health-data ADR, private goal/weight record with grants in the core, Nextcloud contract.
 - [ ] Versioned declared-preference extension in the core (ADR), planner prior, explanations.
+- [ ] Starter recipe client against the recipe server API (blocked until that API exists).
 - [ ] Calibration UI, repeat from the person page, offline evaluation against the F11 baseline.
 
 ## Slice 4 — consent, privacy, dictation hook (AC11–12, AC7)
@@ -27,19 +29,10 @@ Branch `story/flutter-guided-onboarding`. One usable slice per PR.
 - [ ] Consent records, privacy summary, revoke/export/erase paths, backup round trip.
 - [ ] Dictation button wired to the on-device recogniser delivered by F42.
 
-## Open customer decisions
+## Customer decisions
 
-Frage 1 (FL-STARTER): source of the dishes shown for calibration.
-A: a small bundled starter set written for Mealshop (own content, exact quantities, usable as real
-recipes afterwards). B: dish cards only (title, tags, main ingredients; no recipe) until the public
-exchange can deliver recipes. C: only the user's own recipes, so calibration appears later.
-Recommendation: B for the first calibration slice, A as a later content task.
-Default if unanswered: B.
-
-Frage 2 (FL-GOALS): weight and target weight.
-A: coarse goal only, no numbers. B: coarse goal plus optional weight/target weight, on-device only,
-never synced or shared, separately erasable. C: also in connected Nextcloud mode.
-Recommendation: B. Default if unanswered: A.
+Answered 2026-11-28: FL-STARTER — real starter recipes from the online recipe server, not bundled
+(adrs D5); FL-GOALS — C (adrs D4). Calibration is blocked until the recipe server API exists.
 
 ## Verification
 

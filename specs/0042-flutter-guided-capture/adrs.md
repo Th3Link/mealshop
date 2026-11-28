@@ -20,10 +20,12 @@ handwritten model (MIT) exported to ONNX. Open risks: German handwriting coverag
 (tens to hundreds of MB), memory on older phones, and the licence of each model's training data.
 One on-device inference runtime should serve both speech and handwriting if possible.
 
-## D3 — Model delivery (open, FL-MODELS)
+## D3 — Model delivery (decided: FL-MODELS B, 2026-11-28)
 
 Bundling keeps first use offline but grows every APK; fetching needs a pinned, checksummed
 source, explicit consent, resumable download and a place to host or mirror the files.
+Decision: fetch after consent. Still open with the measurement: the exact pinned upstream or a
+mirror on the customer's server, and removal of a downloaded model from More.
 
 ## D4 — One recipe-text reader for two clients (proposed)
 

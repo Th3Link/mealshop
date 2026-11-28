@@ -45,11 +45,16 @@ Slice 2 — start assistant and people:
 7. Every free-text answer can be dictated (slice 4) or typed. Dictated text is shown and editable
    before it is used; nothing is interpreted silently into a hard rule without confirmation.
 
-Slice 3 — goals and taste calibration (blocked on FL-GOALS, FL-STARTER):
+Slice 3 — goals and taste calibration (calibration waits for the recipe server API):
 8. An optional goal step records a coarse intention (none, eat more balanced, lose, gain, keep)
    and, only when the person chooses to, current and target weight. No calorie target, diet plan
-   or health claim is derived. Goal data follows the accepted privacy decision.
-9. A calibration step shows a small set of dishes that already satisfy the person's hard rules.
+   or health claim is derived. Goal and weight data is stored in on-device and in connected
+   Nextcloud mode (FL-GOALS C), only after explicit health-data consent, readable and editable
+   through person-specific grants like activities (ADR 0028), never shared, exported with the
+   person and erasable on its own.
+9. A calibration step shows a small set of real starter recipes fetched from the online recipe
+   server (FL-STARTER); none are bundled in the app. Only recipes that satisfy the person's hard
+   rules are shown. Without a network or server the step explains that and is skipped.
    The person orders or rates them, or skips. The result is stored as explicit, inspectable
    starting preferences for that person, labelled as declared at setup, not as observed cooking.
 10. Calibration can be repeated later for any person ("train again"); repeating replaces the
@@ -77,10 +82,12 @@ targets, loading/empty/error states; exact evidence in [plan.md](plan.md).
 - The public exchange protocol, its server, access control, identity and licence of shared
   recipes belong to F20 and the customer's parallel session. This feature only records consent.
 
-## Open customer decisions
+## Customer decisions, 2026-11-28
 
-- FL-STARTER: where the dishes for calibration come from (see plan).
-- FL-GOALS: whether and where weight and target weight are stored.
+- FL-STARTER: real starter recipes, served online by the customer's recipe server whose API is
+  being built in a separate session; nothing is bundled into the app.
+- FL-GOALS: C — coarse goal plus optional weight and target weight, also in connected mode.
+- FL-MODELS (F42): B — models are fetched once after explicit consent from a pinned source.
 
 ## Links
 

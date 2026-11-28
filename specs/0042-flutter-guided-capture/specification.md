@@ -31,7 +31,8 @@ embeddable models where possible.
 4. Dictation transcribes on the device, in German and English, shows the text for correction
    before it is read into a recipe, and works without a network once its model is present.
 5. Models are pinned by source, version, licence and SHA-256 like the existing OCR data. Whether
-   a model is bundled or fetched after explicit consent follows FL-MODELS. No audio, image or
+   Speech and handwriting models are fetched once after explicit consent (FL-MODELS B, customer
+   decision 2026-11-28), resumable and verified before use; the printed-text data stays bundled. No audio, image or
    text leaves the device for recognition. Licence notices ship in the app.
 6. Measured evidence precedes any quality statement: a synthetic, versioned test set of printed
    and handwritten German/English recipe pages and spoken recipes, with character/word error
