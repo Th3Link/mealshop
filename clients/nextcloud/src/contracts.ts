@@ -1,7 +1,7 @@
 import { importSourceSchema } from './recipe-import'
 import { ingredientExtensionSchema } from './quantity-api'
 import { z } from 'zod'
-import { quantitySchema, evidenceSchema } from './quantity-api'
+import { quantitySchema, evidenceSchema, unitSchema, massBasisSchema } from './quantity-api'
 export const roleSchema = z.enum(['owner', 'editor', 'reader'])
 export const homesSchema = z.object({
   user: z.string(),
@@ -191,7 +191,10 @@ export const nutritionSchema = z.object({
       nutrient_ranges: z.record(z.string(), boundsSchema).default({}),
       ingredient_id: z.string(),
       name: z.string(),
-      grams: z.string(),
+      // Absent while a volume, spoon or piece quantity has no known mass.
+      grams: z.string().optional(),
+      quantity: quantitySchema.optional(),
+      mass_basis: massBasisSchema.default('weighed'),
       translations: z
         .record(
           z.string(),
@@ -246,7 +249,7 @@ export const recipeSchema = z.object({
       prepared_part: z.string().nullable().optional(),
       ingredient_id: z.string(),
       extensions: z.array(ingredientExtensionSchema).max(1).optional(),
-      grams: z.string(),
+      grams: z.string().optional(),
       quantity: quantitySchema.optional(),
       conversion: evidenceSchema.optional(),
     }),
@@ -276,7 +279,9 @@ export const displayLinesSchema = z.array(
       .string()
       .max(40)
       .regex(/^\d+(?:\.\d{1,9})?$/),
-    unit: z.enum(['g', 'kg']),
+    // The original unit while the mass is unknown; grams or kilograms otherwise.
+    unit: unitSchema,
+    mass_basis: massBasisSchema.default('weighed'),
   }),
 )
 export const recipeRecordSchema = z.object({

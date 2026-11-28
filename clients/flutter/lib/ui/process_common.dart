@@ -220,7 +220,7 @@ class ProcessSteps extends StatelessWidget {
           SectionTitle(context.t('cook_all_ingredients')),
           for (final line in objects(detail!['ingredients']))
             Text(
-              '${(line['translations'] as Json?)?[Localizations.localeOf(context).languageCode]?['name'] ?? line['name']} · ${exactNumber(context, line['grams'] as String)} g${line['prepared_part_name'] == null ? '' : ' · ${line['prepared_part_name']}'}',
+              '${(line['translations'] as Json?)?[Localizations.localeOf(context).languageCode]?['name'] ?? line['name']} · ${lineAmount(context, line)}${line['prepared_part_name'] == null ? '' : ' · ${line['prepared_part_name']}'}',
             ),
         ],
         for (final step in steps) ...[
@@ -314,7 +314,7 @@ class ProcessSteps extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 3),
                             child: Text(
-                              '${(lines[index]['translations'] as Json?)?[Localizations.localeOf(context).languageCode]?['name'] ?? lines[index]['name']} · ${exactNumber(context, lines[index]['grams'] as String)} g${lines[index]['prepared_part_name'] == null ? '' : ' · ${lines[index]['prepared_part_name']}'}',
+                              '${(lines[index]['translations'] as Json?)?[Localizations.localeOf(context).languageCode]?['name'] ?? lines[index]['name']} · ${lineAmount(context, lines[index])}${lines[index]['prepared_part_name'] == null ? '' : ' · ${lines[index]['prepared_part_name']}'}',
                             ),
                           ),
                     ],
@@ -561,4 +561,13 @@ class _ProcessMomentScreenState extends State<ProcessMomentScreen> {
       ],
     ),
   );
+}
+
+/// Grams when the mass is known; otherwise the original quantity in its own unit.
+String lineAmount(BuildContext context, Json line) {
+  final grams = line['grams'] as String?;
+  if (grams != null) return '${exactNumber(context, grams)} g';
+  final quantity = line['unweighed_quantity'] as Json?;
+  if (quantity == null) return '?';
+  return '${exactNumber(context, quantity['amount'] as String)} ${quantity['unit']}';
 }

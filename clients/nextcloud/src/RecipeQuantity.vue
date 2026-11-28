@@ -259,8 +259,7 @@ watch(locale, (_, previous) => {
           :label="`${t('ownWeight')} ${unitLabel(model.unit)} ${t('ownWeightUnit')}`"
           inputmode="decimal"
           maxlength="32"
-          required
-          :error="invalid && !parseGrams(model.density)"
+          :error="invalid && !!model.density.trim() && !parseGrams(model.density)"
           :helper-text="t(model.estimated ? 'estimateWeightHelp' : 'ownWeightHelp')"
           @update:model-value="
             ((model.estimated = false),
@@ -271,6 +270,9 @@ watch(locale, (_, previous) => {
           >{{ t('estimateWeightUse') }}: {{ exact(estimate) }} g</NcButton
         >
         <span v-if="model.estimated" class="estimate-badge">{{ t('estimateWeightNote') }}</span>
+        <span v-else-if="!model.density.trim()" class="estimate-badge unknown">{{
+          t('weightUnknownNote')
+        }}</span>
       </div>
       <p v-else class="muted">{{ t('conversionHelp') }}</p>
       <component :is="model.mode === 'own' ? 'details' : 'div'" class="conversion-more">

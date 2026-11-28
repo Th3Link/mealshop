@@ -2205,3 +2205,20 @@
 .mealshop .capture-inbox .suggestion a {
   text-decoration: underline;
 }
+.mealshop .nutrition-basis {
+  display: grid;
+  gap: 6px;
+  max-width: 720px;
+  padding: 0;
+  margin: 12px 0 16px;
+  list-style: none;
+}
+.mealshop .nutrition-basis li {
+  padding: 8px 12px;
+  border-inline-start: 3px solid var(--color-border-dark);
+  background: var(--color-background-hover);
+  border-radius: var(--border-radius, 4px);
+}
+.mealshop .nutrition-basis li.unknown {
+  border-inline-start-color: var(--color-warning);
+}

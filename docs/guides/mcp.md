@@ -56,8 +56,10 @@ stdio bridge. Protocol support is MCP 2026-07-28 and legacy 2025-11-25, verified
 The tool list contains machine-readable schemas. Use stable ingredient IDs and **decimal strings**,
 for example a line with `ingredient_id: "oats"` and `quantity: { amount: "0.100500", unit: "kg" }`.
 Canonical validation preserves the original quantity and normalizes it to `100.500000` grams.
-A floating-point number, unknown ingredient, invalid image reference, invalid recipe composition or
-implicit volume/mass conversion fails with a structured tool error, as in the regular recipe API.
+A floating-point number, unknown ingredient, invalid image reference or invalid recipe composition
+fails with a structured tool error, as in the regular recipe API. A volume, spoon or piece
+quantity without `conversion` is saved without a mass: no weight is derived, and nutrition reports
+that ingredient as missing (`unweighed_ingredients`) instead of a total.
 Unknown nutrition/allergens remain unknown. Tools never claim dietary safety.
 `ingredient_get.reference_conversions` contains only bundled portions matching that exact ingredient ID,
 form, source record and source URL, retaining version, licence and full conversion evidence. Copy the

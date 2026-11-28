@@ -25,6 +25,12 @@ See [ADR 0038](../../docs/adr/0038-guided-capture-and-household-unit-weights.md)
 - **Instagram.** The server does not fetch reels (login walls, robots, terms). The customer's own
   pipeline (modelled on `reelcatch`: saved collection → download → local transcript → summary)
   pipes JSON lines into `scripts/suggest_recipe.py`. Mealshop ships no scraper.
+- **Low-cost models first (2026-11-28).** The customer prefers AI steps that work with small,
+  cheap models and wants larger models only where needed. Deterministic reading stays the first
+  step; AI tasks are to be short, constrained and structured, with a larger model as a fallback.
+- **Unweighed quantities (2026-11-28, ADR 0039).** Continuing with the nutrition gaps, a
+  non-mass line may be saved without a weight. The mass is optional in the model and unknown is
+  carried explicitly; nothing is defaulted.
 - **F39-WEIGHTS: general estimates, clearly marked.** The only general estimate offered is water
   density for volume units and metric spoons (1 ml = 1 g, 5/15 ml). It is stored like a household
   declaration with version prefix `household estimate` and an uncertainty text naming the

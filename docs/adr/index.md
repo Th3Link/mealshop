@@ -68,3 +68,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0037: Keep Node toolchains within Nextcloud compatibility](0037-nextcloud-node-toolchain.md) — Shared CI version source and guarded Node/Docker updates retain supported strict builds.
 
 - [0038: Guided capture and household-declared unit weights](0038-guided-capture-and-household-unit-weights.md) — One reviewed entry for text, speech and pictures; own unit weights instead of evidence forms.
+
+- [0039: Recipe quantities without a known mass](0039-unweighed-recipe-quantities.md) — Optional line mass; unknown is carried explicitly through nutrition, shopping, planning and cooking.

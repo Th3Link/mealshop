@@ -34,6 +34,25 @@ pub(crate) struct ResultRow {
     status: &'static str,
     missing_ingredients: Vec<String>,
 }
+impl ResultRow {
+    /// Ingredients without a known mass make the total unknown; the known part remains.
+    pub(crate) fn leave_unknown(&mut self, unweighed: &[String]) {
+        if unweighed.is_empty() {
+            return;
+        }
+        for id in unweighed {
+            if !self.missing_ingredients.contains(id) {
+                self.missing_ingredients.push(id.clone());
+            }
+        }
+        self.missing_ingredients.sort();
+        if self.status == "complete" {
+            self.status = "partial";
+        }
+        self.total = None;
+        self.per_serving = None;
+    }
+}
 pub(crate) fn validate(catalogue: &crate::nutrition::catalogue::Catalogue) -> Result<(), String> {
     let mut definitions = BTreeMap::new();
     for item in &catalogue.ingredients {

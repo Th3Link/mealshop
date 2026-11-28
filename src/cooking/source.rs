@@ -184,8 +184,11 @@ pub(crate) fn ingredients(
 ) -> Result<serde_json::Value, &'static str> {
     let lines=record.recipe.lines.iter().map(|line| {
         let ingredient=record.catalogue.find(&line.ingredient_id).ok_or("unknown_ingredient")?;
-        let grams=line.grams.0.scaled(servings,record.recipe.servings).map_err(|_|"cooking_quantity_invalid")?;
-        Ok(serde_json::json!({"ingredient_id":line.ingredient_id,"name":ingredient.name,"translations":ingredient.translations,"grams":grams,"original_quantity":line.quantity,"part_id":line.part_id,"extensions":line.extensions,"prepared_part":line.prepared_part,"prepared_part_name":line.prepared_part.as_ref().and_then(|id|record.recipe.parts.iter().find(|p|&p.id==id)).map(|p|&p.name)}))
+        let scaled=line.scaled(servings,record.recipe.servings).map_err(|_|"cooking_quantity_invalid")?;
+        let grams=scaled.grams;
+        // Present only while the mass is unknown: the original quantity for this serving count.
+        let unweighed=grams.is_none().then_some(scaled.quantity).flatten();
+        Ok(serde_json::json!({"unweighed_quantity":unweighed,"ingredient_id":line.ingredient_id,"name":ingredient.name,"translations":ingredient.translations,"grams":grams,"original_quantity":line.quantity,"part_id":line.part_id,"extensions":line.extensions,"prepared_part":line.prepared_part,"prepared_part_name":line.prepared_part.as_ref().and_then(|id|record.recipe.parts.iter().find(|p|&p.id==id)).map(|p|&p.name)}))
     }).collect::<Result<Vec<_>,&'static str>>()?;
     Ok(serde_json::json!(lines))
 }

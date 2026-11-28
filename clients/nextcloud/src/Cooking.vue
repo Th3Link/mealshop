@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { unitLabel } from './unit-label'
 import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -273,7 +274,11 @@ const stateKeys = {
           <ul class="plain-list">
             <li v-for="(line, index) in detail.ingredients" :key="index">
               <span>{{ line.translations[locale]?.name ?? line.name }}</span><strong
-                >{{ exact(line.grams) }} g</strong
+                ><template v-if="line.grams !== null">{{ exact(line.grams) }} g</template
+                ><template v-else-if="line.unweighed_quantity"
+                  >{{ exact(line.unweighed_quantity.amount) }}
+                  {{ unitLabel(line.unweighed_quantity.unit) }}</template
+                ></strong
               >
               <small v-if="line.prepared_part_name"
                 >{{ t('homemade') }} · {{ line.prepared_part_name }}</small

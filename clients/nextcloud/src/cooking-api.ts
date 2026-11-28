@@ -189,8 +189,10 @@ export const cookingDetailSchema = z.object({
       ingredient_id: z.string(),
       name: z.string(),
       translations: z.record(z.string(), z.object({ name: z.string() })),
-      grams: z.string(),
+      grams: z.string().nullable(),
       original_quantity: quantitySchema.nullable(),
+      // The quantity for this serving count while the mass is unknown.
+      unweighed_quantity: quantitySchema.nullable().optional(),
       extensions: z.array(ingredientExtensionSchema).optional(),
       part_id: z.string().nullable(),
       prepared_part_name: z.string().nullable().optional(),

@@ -359,10 +359,16 @@ async function load() {
         prepared_part: l.prepared_part ?? null,
         extensions: structuredClone(toRaw(l.extensions ?? [])),
         ingredient_id: l.ingredient_id,
-        input: exact(l.quantity?.amount ?? l.grams),
+        input: exact(l.quantity?.amount ?? l.grams ?? null),
         unit: l.quantity?.unit ?? 'g',
         evidence: l.conversion ? structuredClone(toRaw(l.conversion)) : null,
-        mode: l.conversion ? (l.conversion.source_url ? 'saved' : 'own') : 'manual',
+        mode: l.conversion
+          ? l.conversion.source_url
+            ? 'saved'
+            : 'own'
+          : l.grams === undefined
+            ? 'own'
+            : 'manual',
         density: l.conversion ? exact(l.conversion.grams_per_base_unit) : '',
         estimated: l.conversion?.version.startsWith(estimateVersion) ?? false,
         spoon: l.conversion?.millilitres_per_spoon ? exact(l.conversion.millilitres_per_spoon) : '',
@@ -469,9 +475,21 @@ async function save() {
     }
     if (line.mode === 'own') {
       const weight = parseGrams(line.density)
-      if (!weight) {
+      if (!weight && line.density.trim()) {
         validation.value = t('ownWeightRequired')
         return
+      }
+      // No weight is not an error: the quantity is kept and nutrition says it is incomplete.
+      if (!weight) {
+        lines.push({
+          extensions: structuredClone(toRaw(line.extensions ?? [])),
+          id: line.id,
+          part_id: line.part_id,
+          prepared_part: line.prepared_part,
+          ingredient_id: line.ingredient_id,
+          quantity: { amount, unit: line.unit },
+        })
+        continue
       }
       lines.push({
         extensions: structuredClone(toRaw(line.extensions ?? [])),
@@ -583,7 +601,7 @@ async function scale() {
       z.object({
         nutrition: nutritionSchema,
         display_lines: displayLinesSchema,
-        lines: z.array(z.object({ ingredient_id: z.string(), grams: z.string() })),
+        lines: z.array(z.object({ ingredient_id: z.string(), grams: z.string().optional() })),
       }),
     )
     preview.value = result.nutrition

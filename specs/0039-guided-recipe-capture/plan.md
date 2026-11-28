@@ -21,12 +21,15 @@
 ## Slice 3 — AI structuring through Nextcloud Task Processing (decision F39-AI: A)
 - [ ] Learn which Task Processing types the customer's instance offers; the local test instance
   has no provider, so nothing can be verified here yet.
+- [ ] Design for small, low-cost models first (customer preference, 2026-11-28).
 - [ ] Text/speech/picture → suggestion, always through review; consent and provider shown.
 
 ## Slice 4 — nutrition calculation
-- [ ] Wider source-backed reference portions, including pieces, offered as labelled suggestions.
-- [ ] Carry rough estimates and household weights into nutrition as a visible warning.
-- [ ] Recipes saveable with unresolved quantities and explicitly incomplete nutrition.
-- [ ] Cooking yield/retention model (F02/F03 debt).
+- [x] Recipes saveable with unweighed quantities and explicitly incomplete nutrition (AC 16).
+- [x] Carry rough estimates and household weights into nutrition as a visible note (AC 17).
+- [x] Shopping, planning, cooking and the Flutter cooking view handle a missing mass (AC 18).
+- [ ] Wider source-backed reference portions, including pieces (AC 19). The retained USDA
+  snapshot has no further usable household portions; BLS has none. Needs a source decision.
+- [ ] Cooking yield/retention model (AC 19, F02/F03 debt). Needs retention-factor source data.
 
 Merge gate: remote CI must pass on the exact PR head.

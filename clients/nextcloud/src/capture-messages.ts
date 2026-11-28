@@ -49,8 +49,8 @@ export const captureEnglish = {
   ownWeight: 'Weight of 1',
   ownWeightUnit: 'in grams',
   ownWeightHelp:
-    'Nothing is guessed: weigh it once or enter your best value. It is saved as your own figure.',
-  ownWeightRequired: 'Enter what one unit of each highlighted ingredient weighs in grams.',
+    'Optional. Nothing is guessed: weigh it once or enter your best value. Left empty, the recipe still saves and its nutrition is marked incomplete.',
+  ownWeightRequired: 'The weight of one unit must be a number in grams, or empty.',
   ownWeightMode: 'My own weight',
   ownWeightOther: 'Use a source record instead',
   tileEnergy: 'Energy',
@@ -59,6 +59,12 @@ export const captureEnglish = {
   tileFat: 'Fat',
   tileFibre: 'Fibre',
   ownWeightNote: 'own weight',
+  weightUnknownNote: 'weight unknown',
+  nutritionUnweighed: 'Incomplete — no weight for:',
+  nutritionUnweighedHelp:
+    'These ingredients are left out, not counted as zero. Add a weight in the recipe to complete the values.',
+  nutritionRough: 'Includes rough estimates for:',
+  nutritionOwnWeight: 'Uses your own weights for:',
   estimateWeightUse: 'Use a rough estimate',
   estimateWeightNote: 'rough estimate',
   estimateWeightHelp:
@@ -147,8 +153,8 @@ export const captureGerman: Record<keyof typeof captureEnglish, string> = {
   ownWeight: 'Gewicht von 1',
   ownWeightUnit: 'in Gramm',
   ownWeightHelp:
-    'Hier wird nichts geraten: einmal nachwiegen oder deinen besten Wert eintragen. Er wird als deine eigene Angabe gespeichert.',
-  ownWeightRequired: 'Trag ein, wie viel Gramm eine Einheit der markierten Zutaten wiegt.',
+    'Freiwillig. Hier wird nichts geraten: einmal nachwiegen oder deinen besten Wert eintragen. Bleibt das Feld leer, wird das Rezept trotzdem gespeichert und die Nährwerte sind als unvollständig markiert.',
+  ownWeightRequired: 'Das Gewicht einer Einheit muss eine Zahl in Gramm sein oder leer bleiben.',
   ownWeightMode: 'Mein eigenes Gewicht',
   ownWeightOther: 'Stattdessen einen Quellbeleg verwenden',
   tileEnergy: 'Energie',
@@ -157,6 +163,12 @@ export const captureGerman: Record<keyof typeof captureEnglish, string> = {
   tileFat: 'Fett',
   tileFibre: 'Ballaststoffe',
   ownWeightNote: 'eigenes Gewicht',
+  weightUnknownNote: 'Gewicht unbekannt',
+  nutritionUnweighed: 'Unvollständig – kein Gewicht für:',
+  nutritionUnweighedHelp:
+    'Diese Zutaten fehlen in den Werten, sie zählen nicht als null. Trag im Rezept ein Gewicht ein, um die Werte zu vervollständigen.',
+  nutritionRough: 'Enthält grobe Schätzwerte für:',
+  nutritionOwnWeight: 'Nutzt deine eigenen Gewichte für:',
   estimateWeightUse: 'Groben Schätzwert übernehmen',
   estimateWeightNote: 'grober Schätzwert',
   estimateWeightHelp:

@@ -71,9 +71,26 @@ test('pasted recipe text is reviewed, saved with an own unit weight and rated', 
   await page.getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Review and save', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Remove 4', exact: true }).click()
-  await expect(page.getByLabel('Weight of 1 tbsp in grams', { exact: true })).toHaveAttribute(
-    'required',
-  )
+  // A spoon without a weight is not an obstacle: it saves and nutrition says what is missing.
+  const spoonWeight = page.getByLabel('Weight of 1 tbsp in grams', { exact: true })
+  await expect(spoonWeight).not.toHaveAttribute('required')
+  await expect(rows.nth(1)).toContainText('weight unknown')
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Synthetic capture bowl', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByText(/^0\.5\s+tbsp\s+· Oats/)).toContainText('weight unknown')
+  await expect(page.locator('.nutrition-basis')).toContainText('Incomplete — no weight for: Oats.')
+  await expect(page.locator('.nutrition-tiles li').first()).toContainText('incomplete')
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .include('.mealshop')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+        .analyze()
+    ).violations,
+  ).toEqual([])
+  await page.getByRole('link', { name: 'Edit recipe', exact: true }).click()
   await page.getByLabel('Weight of 1 tbsp in grams', { exact: true }).fill('7.5')
   const review = await new AxeBuilder({ page })
     .include('.mealshop')
@@ -85,6 +102,8 @@ test('pasted recipe text is reviewed, saved with an own unit weight and rated', 
     page.getByRole('heading', { name: 'Synthetic capture bowl', exact: true }),
   ).toBeVisible()
   await expect(page.getByText(/^3\.75 g · Oats/)).toContainText('own weight')
+  await expect(page.locator('.nutrition-basis')).toContainText('Uses your own weights for: Oats.')
+  await expect(page.locator('.nutrition-basis')).not.toContainText('Incomplete')
   await expect(page.locator('.nutrition-tiles li')).toHaveCount(5)
 
   await page.getByRole('button', { name: 'Cooked it? Rate it', exact: true }).click()
@@ -217,6 +236,7 @@ test('a suggestion handed in by a companion waits in the inbox and is saved as a
   await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Add recipe', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: /^Paste or dictate/ })).toBeVisible()
-  await expect(page.locator('.capture-inbox')).not.toContainText(sourced)
+  // The inbox section disappears entirely once nothing waits.
+  await expect(page.locator('.capture-inbox').getByText(sourced)).toHaveCount(0)
   expect(errors).toEqual([])
 })

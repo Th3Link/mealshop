@@ -6,7 +6,18 @@ import { rangeText, missingContribution, headline } from './nutrition-evidence'
 import { z } from 'zod'
 import { nutritionSchema } from './contracts'
 import { exact, compactExact, t, locale, nutrientLabel } from './i18n'
-defineProps<{ value: z.infer<typeof nutritionSchema> }>()
+import { unitLabel } from './unit-label'
+const props = defineProps<{ value: z.infer<typeof nutritionSchema> }>()
+/** Names of the ingredients whose mass has the given basis, each once. */
+function based(basis: z.infer<typeof nutritionSchema>['ingredients'][number]['mass_basis']) {
+  return [
+    ...new Set(
+      props.value.ingredients
+        .filter((i) => i.mass_basis === basis)
+        .map((i) => i.translations[locale.value]?.name ?? i.name),
+    ),
+  ].join(', ')
+}
 const tiles = [
   ['energy_kcal', 'tileEnergy'],
   ['protein', 'tileProtein'],
@@ -37,6 +48,21 @@ const tiles = [
       </li>
     </ul>
     <p class="muted">{{ t('nutritionPerServing') }} · {{ t('nutritionApprox') }}</p>
+    <ul
+      v-if="based('unknown') || based('rough_estimate') || based('household_weight')"
+      class="nutrition-basis"
+    >
+      <li v-if="based('unknown')" class="unknown">
+        <strong>{{ t('nutritionUnweighed') }}</strong> {{ based('unknown') }}.
+        {{ t('nutritionUnweighedHelp') }}
+      </li>
+      <li v-if="based('rough_estimate')">
+        <strong>{{ t('nutritionRough') }}</strong> {{ based('rough_estimate') }}.
+      </li>
+      <li v-if="based('household_weight')">
+        <strong>{{ t('nutritionOwnWeight') }}</strong> {{ based('household_weight') }}.
+      </li>
+    </ul>
     <details class="nutrition-details">
       <summary>{{ t('nutritionDetails') }}</summary>
       <p>{{ t('nutritionLimits') }}</p>
@@ -161,8 +187,13 @@ const tiles = [
         <div v-for="item in value.ingredients" :key="item.ingredient_id">
           <h3>{{ item.translations[locale]?.name ?? item.name }}</h3>
           <p>
-            {{ compactExact(item.grams) }} g · {{ item.source.name }} ·
-            {{ item.source.record_id }} · {{ item.source.version }} · {{ item.source.license }}
+            <template v-if="item.grams !== undefined">{{ compactExact(item.grams) }} g</template
+            ><template v-else-if="item.quantity"
+              >{{ compactExact(item.quantity.amount) }} {{ unitLabel(item.quantity.unit) }} ·
+              {{ t('weightUnknownNote') }}</template
+            >
+            · {{ item.source.name }} · {{ item.source.record_id }} · {{ item.source.version }} ·
+            {{ item.source.license }}
           </p>
           <p :lang="item.source.kind === 'primary' ? 'en' : undefined">{{ item.uncertainty }}</p>
           <a

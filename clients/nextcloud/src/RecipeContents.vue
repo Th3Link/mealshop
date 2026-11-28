@@ -59,7 +59,9 @@ function lineName(id: string) {
               .filter((e) => (record.recipe.lines[e.index]?.part_id ?? null) === part.id)"
             :key="entry.index"
           >
-            {{ compactExact(entry.line.amount) }} {{ entry.line.unit }} ·
+            {{ compactExact(entry.line.amount) }}
+            {{ entry.line.mass_basis === 'unknown' ? unitLabel(entry.line.unit) : entry.line.unit }}
+            ·
             {{ ingredient(entry.index)
             }}<EstimateBadge
               v-if="
@@ -67,7 +69,9 @@ function lineName(id: string) {
                 missingContribution(record.nutrition, entry.line.ingredient_id)
               "
               :unknown="missingContribution(record.nutrition, entry.line.ingredient_id)"
-            /><span
+            /><small v-if="entry.line.mass_basis === 'unknown'">
+              · {{ t('weightUnknownNote') }}</small
+            ><span
               v-for="extension in record.recipe.lines[entry.index]?.extensions ?? []"
               :key="extension.type"
               :title="t('ingredientTemperature')"

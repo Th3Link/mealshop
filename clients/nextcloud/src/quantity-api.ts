@@ -5,6 +5,14 @@ export const decimalSchema = z
   .regex(/^\d+(?:\.\d{1,6})?$/)
 export const unitSchema = z.enum(['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'piece'])
 export const quantitySchema = z.object({ amount: decimalSchema, unit: unitSchema })
+/** Where an ingredient's mass comes from; `unknown` means no mass and no nutrition share. */
+export const massBasisSchema = z.enum([
+  'weighed',
+  'source_portion',
+  'household_weight',
+  'rough_estimate',
+  'unknown',
+])
 export const evidenceSchema = z.object({
   ingredient_id: z.string(),
   form: z.string(),

@@ -401,9 +401,10 @@ fn load_recipe(store: &Store, p: &Plan) -> Result<Record, &'static str> {
 }
 fn masses(record: &Record, servings: u32) -> Result<BTreeMap<String, u128>, &'static str> {
     let mut result = BTreeMap::new();
+    // Lines without a known mass cannot enter mass arithmetic; they stay out, not zero.
     for line in record.recipe.input_lines() {
-        let atoms = line
-            .grams
+        let Some(grams) = &line.grams else { continue };
+        let atoms = grams
             .0
             .scaled(servings, record.recipe.servings)
             .map_err(|_| "scaled_quantity_out_of_range")?

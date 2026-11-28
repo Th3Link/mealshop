@@ -63,12 +63,26 @@ Slice 2 (suggestion inbox and accepted estimates; customer decisions F39-INBOX A
     silently, is stored and labelled as a rough estimate with its assumption, and typing a value
     replaces it. Pieces have no general weight and get no estimate.
 
+Slice 4 (nutrition gaps, first part; ADR 0039):
+16. A line in millilitres, litres, spoons or pieces may be saved without a weight. Nothing is
+    derived: the original quantity is kept, scaled and shown, the line is marked **weight
+    unknown**, and nutrition leaves it out. Every affected nutrient reports no total, keeps the
+    known part as "at least" and names the ingredient; the overview says in one sentence which
+    ingredients have no weight. A stated mass next to an unweighed quantity is rejected.
+17. Accepted rough estimates and household-declared weights are carried into nutrition: warning
+    codes `rough_mass_estimate` and `household_mass`, a `mass_basis` per ingredient, and one
+    sentence each in the overview naming the ingredients.
+18. An unweighed line reaches the shopping list in its own unit (millilitres, pieces; spoons as
+    millilitres of the metric 5/15 ml spoon) and never as grams. Meal-plan and inventory mass
+    arithmetic leave it out. Cooking shows its quantity for the chosen servings.
+
 Later slices (not implemented):
 15. AI structuring of text, speech and pictures through Nextcloud Task Processing into the same
-    review step, after the task types available on the customer's instance are known.
-16. Nutrition calculation gaps: wider source-backed reference portions (including pieces), cooking
-    yield/retention, estimates carried into nutrition as a visible warning, and unresolved
-    quantities that keep a recipe saveable with explicitly incomplete nutrition.
+    review step, after the task types available on the customer's instance are known. Small,
+    low-cost models are the target (customer preference, 2026-11-28): deterministic reading
+    first, short constrained tasks, a larger model only as an explicit fallback.
+19. Wider source-backed reference portions including pieces, and a cooking yield/retention
+    model. Both need additional primary source data that is not in the repository.
 
 ## Out of scope
 Server-side scraping of Instagram, automatic ingredient substitution, health claims, a redesign of

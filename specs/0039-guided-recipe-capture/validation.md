@@ -19,6 +19,18 @@ untouched), `nutrition-ranges`, `unified-preparation`, `visual-shopping` and two
 `feedback` tests passed on the same day. `unified-preparation` now walks to its planned week instead
 of assuming the run happens in it, and `feedback` rates by clicking the star.
 
+Slice 4, first part (2026-11-28, same instance):
+
+| AC | Evidence |
+|---|---|
+| 16 | `tests/recipes.rs::unweighed_quantities_save_and_leave_nutrition_explicitly_incomplete`; first test in `guided-capture.spec.ts` (save without weight, "weight unknown", incomplete note, axe, then complete it) |
+| 17 | `tests/recipes.rs::household_declared_unit_weight_needs_its_unit_but_no_source_url` (warning codes, `mass_basis`); own-weight note in `guided-capture.spec.ts` |
+| 18 | `tests/shopping.rs::unweighed_recipe_lines_are_bought_in_their_own_unit_without_a_derived_mass`; `flutter analyze` and `flutter test` for the cooking view |
+
+`cooking`, `compact-recipes`, `authoring-experience` and `nutrition-ranges` were rerun and passed.
+Not verified in a browser: an unweighed line on the shopping, meal-plan and cooking screens, and
+the Flutter app on a device.
+
 Not verified: real microphone dictation (AC 5), picture upload through the new screen in the
 browser suite (AC 4; the photo preview API itself is covered by `mobile-capture.spec.ts`),
 Firefox/Safari, the customer's production instance. Tests that need a second (reader) account,

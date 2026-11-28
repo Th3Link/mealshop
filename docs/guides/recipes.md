@@ -189,6 +189,14 @@ uncertainty text, and the line shows **own weight**. An empty `source_url` is re
 `input_unit`; **Use a source record instead** keeps the full evidence form. Nutrition and shopping
 masses for that line are only as accurate as your number.
 
+The weight is optional. Left empty, the line is saved with its original quantity and shows
+**weight unknown**. Nutrition then leaves that ingredient out instead of counting it as zero: the
+tiles read "at least … incomplete" and the overview names the ingredients without a weight.
+Shopping lists such a line in its own unit (millilitres or pieces; spoons as millilitres of the
+metric 5/15 ml spoon), meal-plan and inventory mass calculations leave it out, and scaling keeps
+the unit. Add a weight later through **Edit recipe** to complete the values. The overview also
+names ingredients whose weight is a rough estimate or your own figure.
+
 For `ml`, `l`, `tsp` and `tbsp` you can instead accept **Use a rough estimate**: the weight the
 unit would have if the ingredient weighed like water (1 ml = 1 g, metric 5/15 ml spoons). It is
 saved with `version: "household estimate <date>"`, names its assumption and shows **rough
