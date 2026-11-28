@@ -1,5 +1,18 @@
 # Family meal planning
 
+## Planning by sentence (Nextcloud client)
+
+Above the week, **What should go on the plan?** takes one typed or spoken sentence in German or
+English, for example "Chili on Friday evening for 4", "Lösche morgen das Abendessen", "suggest
+something for Sunday lunch" or "zeig nächsten Mittwoch". The answer repeats what was understood
+with the real date. Planning and removing open the planner with the review loaded; nothing changes
+until you acknowledge and apply. If several recipe titles fit, pick one of the offered buttons; if
+none fits, the words are quoted back. A weekday means its next occurrence including today, "next
+Friday" the Friday of the following week, and dinner is assumed when no meal is named. The
+sentence is read by fixed rules in your browser, without an AI model. The microphone uses the
+browser's speech recognition where available; depending on the browser its vendor processes the
+audio.
+
 Enable household access as described in household.md. The executable links recipes and protected
 planning automatically when `MEALSHOP_HOUSEHOLD_TOKEN` is configured. Embedding applications use
 `family_router`; separate standalone household builders have no recipe store and planning returns

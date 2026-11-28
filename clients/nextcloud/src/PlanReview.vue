@@ -26,6 +26,23 @@ const props = defineProps<{
 }>()
 const reviewed = defineModel<boolean>('reviewed', { required: true })
 defineEmits<{ apply: [] }>()
+/** Seconds as a cook would say them; the exact value stays in the tooltip. */
+function readable(seconds: number) {
+  const days = Math.floor(seconds / 86400),
+    hours = Math.floor((seconds % 86400) / 3600),
+    minutes = Math.floor((seconds % 3600) / 60),
+    rest = seconds % 60
+  return (
+    [
+      days ? `${days} ${t('cookDaysShort')}` : '',
+      hours ? `${hours} h` : '',
+      minutes ? `${minutes} min` : '',
+      rest && !days && !hours ? `${rest} s` : '',
+    ]
+      .filter(Boolean)
+      .join(' ') || '0 min'
+  )
+}
 function names(id: string) {
   const i = props.ingredients.find((i) => i.id === id)
   return i?.translations[locale.value]?.name ?? i?.name ?? id
@@ -63,15 +80,23 @@ function names(id: string) {
     </p>
     <template v-if="value.preview.timing"
       ><h3>{{ t('timingEstimate') }}</h3>
-      <dl>
+      <dl class="plan-timing">
+        <dt>{{ t('planTimeActive') }}</dt>
+        <dd :title="`${value.preview.timing.active_seconds} s`">
+          {{ readable(value.preview.timing.active_seconds) }}
+        </dd>
+        <dt>{{ t('planTimeTotal') }}</dt>
+        <dd :title="`${value.preview.timing.elapsed_seconds} s`">
+          {{ readable(value.preview.timing.elapsed_seconds) }}
+        </dd>
+        <template v-if="value.preview.timing.advance_preparation_seconds"
+          ><dt>{{ t('planTimeAhead') }}</dt>
+          <dd :title="`${value.preview.timing.advance_preparation_seconds} s`">
+            {{ readable(value.preview.timing.advance_preparation_seconds) }}
+          </dd></template
+        >
         <dt>{{ t('referenceServings') }}</dt>
         <dd>{{ value.preview.timing.reference_servings }}</dd>
-        <dt>{{ t('activeSeconds') }}</dt>
-        <dd>{{ value.preview.timing.active_seconds }}</dd>
-        <dt>{{ t('elapsedSeconds') }}</dt>
-        <dd>{{ value.preview.timing.elapsed_seconds }}</dd>
-        <dt>{{ t('advanceSeconds') }}</dt>
-        <dd>{{ value.preview.timing.advance_preparation_seconds }}</dd>
       </dl>
       <p>{{ t('timingWarning') }}</p></template
     >

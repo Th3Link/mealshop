@@ -2,6 +2,7 @@ import { peopleEnglish, peopleGerman, peopleExplanations } from './people-messag
 import { brewingEnglish, brewingGerman, brewingExplanations } from './brewing-messages'
 import { inventoryEnglish, inventoryGerman, inventoryExplanations } from './inventory-messages'
 import { captureEnglish, captureGerman } from './capture-messages'
+import { planEnglish, planGerman } from './plan-messages'
 import { importEnglish, importGerman, importExplanations } from './import-messages'
 import { mcpEnglish, mcpGerman, mcpExplanations } from './mcp-messages'
 import { feedbackEnglish, feedbackGerman, feedbackExplanations } from './feedback-messages'
@@ -74,6 +75,7 @@ const en = {
   ...mcpEnglish,
   ...importEnglish,
   ...captureEnglish,
+  ...planEnglish,
   ...inventoryEnglish,
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
@@ -421,6 +423,7 @@ const de: Record<keyof typeof en, string> = {
   ...mcpGerman,
   ...importGerman,
   ...captureGerman,
+  ...planGerman,
   ...inventoryGerman,
   ingredientTemperature: 'Temperatur (°C)',
   addTemperature: 'Temperatur ergänzen',
@@ -684,7 +687,7 @@ const de: Record<keyof typeof en, string> = {
   breakfast: 'Frühstück',
   lunch: 'Mittagessen',
   dinner: 'Abendessen',
-  snack: 'Zwischenmahlzeit',
+  snack: 'Snack',
   attendees: 'Mitessende',
   activeBudget: 'Verfügbare Arbeitszeit',
   elapsedBudget: 'Verfügbare Gesamtdauer',

@@ -101,6 +101,7 @@ const days = computed(() => {
     }
   })
 })
+const today = iso(new Date())
 const range = computed(() => `${days.value[0]?.label} – ${days.value[6]?.label}`)
 function move(offset: number) {
   const date = new Date(anchor.value)
@@ -135,14 +136,26 @@ function people(plan: Plan, present: boolean) {
         '--meal-day-tracks': (days[0]?.cells.length ?? 4) + 1,
       }"
     >
-      <section v-for="day in days" :key="day.iso" class="calendar-day" :aria-label="day.label">
+      <section
+        v-for="day in days"
+        :key="day.iso"
+        class="calendar-day"
+        :class="{ today: day.iso === today }"
+        :aria-label="day.label"
+        :aria-current="day.iso === today ? 'date' : undefined"
+      >
         <h3>
-          <time :datetime="day.iso">{{ day.label }}</time>
+          <time :datetime="day.iso">{{ day.label }}</time><span
+            v-if="day.iso === today"
+            class="today-mark"
+            >{{ t('planToday') }}</span
+          >
         </h3>
         <div
           v-for="cell in day.cells"
           :key="cell.slot"
           class="meal-slot"
+          :class="{ planned: Boolean(cell.plan) || cell.preparations.length > 0 }"
           :data-date="day.iso"
           :data-meal="cell.slot"
         >

@@ -193,9 +193,8 @@ test('household defaults, focused search, inline composites, private images, fav
   const slot = page.locator(`.meal-slot[data-date="${today}"][data-meal=lunch]`)
   await slot.getByRole('button').click()
   await expect(page.getByRole('heading', { name: 'Plan a meal', exact: true })).toBeFocused()
-  await page
-    .getByRole('combobox', { name: 'Recipes', exact: true })
-    .selectOption({ label: `${title} · Revision 1` })
+  await page.getByRole('combobox', { name: 'Recipes', exact: true }).fill(title)
+  await page.getByRole('option', { name: title, exact: true }).click()
   const attendance = page
     .getByRole('group', { name: 'Attendees', exact: true })
     .getByRole('checkbox')

@@ -2222,3 +2222,111 @@
 .mealshop .nutrition-basis li.unknown {
   border-inline-start-color: var(--color-warning);
 }
+/* Guided meal plan (F40): a command field, a calmer week and a planner that stays in view. */
+.mealshop .plan-command {
+  max-width: 820px;
+  margin-block: 8px 24px;
+  padding: 16px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-large, 12px);
+  background: var(--color-main-background);
+}
+.mealshop .plan-command > label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 17px;
+}
+.mealshop .plan-command-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.mealshop .plan-command-row input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+}
+.mealshop .plan-command p {
+  margin-block: 8px 0;
+}
+.mealshop .plan-command-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+.mealshop .plan-command-choices p {
+  flex-basis: 100%;
+  margin: 0;
+}
+.mealshop .calendar-day.today h3 {
+  background: var(--color-primary-element-light);
+  color: var(--color-primary-element-light-text);
+}
+.mealshop .today-mark {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+}
+.mealshop .meal-slot:not(.planned) {
+  min-height: 0;
+  padding-block: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.mealshop .meal-slot:not(.planned) h4 {
+  margin: 0;
+  font-weight: 400;
+}
+.mealshop .meal-slot.planned {
+  background: var(--color-background-hover);
+  border-inline-start: 3px solid var(--color-primary-element);
+}
+.mealshop .meal-slot.planned > strong {
+  display: block;
+  font-size: 15px;
+}
+@media (min-width: 601px) {
+  .mealshop .calendar-days {
+    grid-template-rows: auto repeat(var(--meal-slot-count, 4), minmax(48px, auto));
+  }
+  .mealshop .meal-slot:not(.planned) {
+    min-height: 48px;
+  }
+}
+.mealshop .mealplan-sidebar {
+  position: fixed;
+  inset-block: var(--header-height, 50px) 0;
+  inset-inline-end: 0;
+  z-index: 1500;
+  width: min(520px, 100%);
+  max-width: 100%;
+  height: auto;
+  overflow-y: auto;
+  border-inline-start: 1px solid var(--color-border);
+  background: var(--color-main-background);
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.18);
+}
+.mealshop .plan-timing {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin-block: 8px;
+}
+.mealshop .plan-timing dt {
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .plan-timing dd {
+  margin: 0;
+  font-weight: 600;
+}
+.mealshop .meal-slot:not(.planned) h4 {
+  overflow-wrap: normal;
+  hyphens: auto;
+  font-size: 13px;
+}

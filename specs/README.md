@@ -15,6 +15,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F18 | [Storage adapters, Nextcloud `ExApp` and Flutter](0018-storage-deployment/specification.md) | Must | M1 |
 | F35 | [Flutter mobile client and smartphone delivery](0035-flutter-mobile-client/specification.md) | Must | M1 |
 | F39 | [Guided recipe capture, ratings and readable nutrition](0039-guided-recipe-capture/specification.md) | Must | M2 |
+| F40 | [Guided meal plan with typed and spoken commands](0040-guided-meal-plan/specification.md) | Must | M2 |
 
 ## Draft
 
@@ -23,6 +24,7 @@ Features are grouped by status, then sorted by milestone and requirement ID.
 | F29 | [Cross-client localization and versioned content translations](0029-cross-client-localization/specification.md) | Must | M1 |
 | F30 | [Standalone Vue client and cross-client integration](0030-standalone-vue-client/specification.md) | Must | M1 |
 | F19 | [Hosted plans, paid app and recipe marketplace](0019-commercial-service/specification.md) | Could | M4 |
+| F41 | [Interdata: buffered recipe and ingredient intake service](0041-interdata-intake/specification.md) | Must | M4 |
 | F20 | [Federated recipe and meal-plan exchange](0020-federation/specification.md) | Could | M5 |
 
 ## Done
