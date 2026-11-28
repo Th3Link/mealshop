@@ -290,7 +290,7 @@ String summary(BuildContext context, Json manifest) {
       : bytes < 1048576
       ? '${(bytes + 1023) ~/ 1024} KiB'
       : '${(bytes + 1048575) ~/ 1048576} MiB';
-  return '${locale.formatCompactDate(date)} · ${locale.formatTimeOfDay(TimeOfDay.fromDateTime(date))}\n${context.t('households')}: ${manifest['households']} · ${context.t('backup_size')}: $size';
+  return '${locale.formatCompactDate(date)} · ${locale.formatTimeOfDay(TimeOfDay.fromDateTime(date))}\n${manifest['households'] == 1 ? '' : '${context.t('households')}: ${manifest['households']} · '}${context.t('backup_size')}: $size';
 }
 
 Future<String?> passwordDialog(

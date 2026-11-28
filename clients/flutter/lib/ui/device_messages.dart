@@ -27,8 +27,8 @@ const deviceMessages = <String, (String, String)>{
   ),
   'local_exit': ('Connection options', 'Verbindung auswählen'),
   'local_exit_body': (
-    'Saved local households remain on this device. Switching modes does not transfer them to a server. Unsaved drafts and pending actions will be cleared.',
-    'Gespeicherte lokale Haushalte bleiben auf diesem Gerät. Der Moduswechsel überträgt sie nicht auf einen Server. Ungespeicherte Entwürfe und ausstehende Aktionen werden entfernt.',
+    'Saved local data remains on this device. Switching modes does not transfer it to a server. Unsaved drafts and pending actions will be cleared.',
+    'Gespeicherte lokale Daten bleiben auf diesem Gerät. Der Moduswechsel überträgt sie nicht auf einen Server. Ungespeicherte Entwürfe und ausstehende Aktionen werden entfernt.',
   ),
   'local_privacy': (
     'Saved data stays in this app’s private storage. Backups contain saved local records and images, protected by your passphrase. Server credentials and unsaved drafts are excluded.',
@@ -72,8 +72,8 @@ const deviceMessages = <String, (String, String)>{
     "Verschlüsselte Dateien zum Aufbewahren und Wiederherstellen auf einem anderen Gerät.",
   ),
   "backup_intro": (
-    "Back up all saved local households, recipes, images and records. Unsaved drafts, server accounts and device reminder settings are excluded.",
-    "Sichere alle gespeicherten lokalen Haushalte, Rezepte, Bilder und Einträge. Ungespeicherte Entwürfe, Serverkonten und Geräteeinstellungen für Erinnerungen sind ausgenommen.",
+    "Back up all saved people, recipes, images and records. Unsaved drafts, server accounts and device reminder settings are excluded.",
+    "Sichere alle gespeicherten Personen, Rezepte, Bilder und Einträge. Ungespeicherte Entwürfe, Serverkonten und Geräteeinstellungen für Erinnerungen sind ausgenommen.",
   ),
   "backup_last": ("Last completed backup", "Letzte abgeschlossene Sicherung"),
   "backup_never": (
@@ -111,8 +111,8 @@ const deviceMessages = <String, (String, String)>{
   ),
   "backup_restore_preview": ("Backup verified", "Backup geprüft"),
   "backup_replace_body": (
-    "Replace all saved local data with this backup? This affects every local household. Unsaved drafts and pending actions will be discarded. Server data stays separate. Saved timer deadlines are retained; enable device reminders again afterwards.",
-    "Alle gespeicherten lokalen Daten durch dieses Backup ersetzen? Dies betrifft jeden lokalen Haushalt. Ungespeicherte Entwürfe und ausstehende Aktionen werden verworfen. Serverdaten bleiben separat. Gespeicherte Timer behalten ihre Fristen; Geräteerinnerungen musst du anschließend erneut aktivieren.",
+    "Replace all saved local data with this backup? This affects everything saved in on-device mode. Unsaved drafts and pending actions will be discarded. Server data stays separate. Saved timer deadlines are retained; enable device reminders again afterwards.",
+    "Alle gespeicherten lokalen Daten durch dieses Backup ersetzen? Dies betrifft alles, was im lokalen Modus gespeichert ist. Ungespeicherte Entwürfe und ausstehende Aktionen werden verworfen. Serverdaten bleiben separat. Gespeicherte Timer behalten ihre Fristen; Geräteerinnerungen musst du anschließend erneut aktivieren.",
   ),
   "backup_replace": ("Replace local data", "Lokale Daten ersetzen"),
   "backup_restoring": (
@@ -218,9 +218,10 @@ const deviceMessages = <String, (String, String)>{
 };
 
 const localMessageOverrides = <String, (String, String)>{
+  'no_home': ('Local data is not ready', 'Lokale Daten sind noch nicht bereit'),
   'no_home_body': (
-    'Create a household on this device to start planning, cooking and shopping.',
-    'Lege auf diesem Gerät einen Haushalt an, um zu planen, zu kochen und einzukaufen.',
+    'Mealshop could not prepare its local data. Nothing was deleted. Try again.',
+    'Mealshop konnte die lokalen Daten nicht vorbereiten. Es wurde nichts gelöscht. Versuch es noch einmal.',
   ),
   "synced": ("Saved on this device", "Auf diesem Gerät gespeichert"),
   "syncing": ("Reading local data…", "Lokale Daten werden gelesen …"),

@@ -151,3 +151,15 @@ N06–N10 apply; see [F37](../specs/0037-app-only-backups/specification.md).
 F38 refreshes reviewed Dart/native Rust licence identities before self-hosted Renovate commits
 Cargo/Pub updates. New or changed licence material retains explicit review and existing CI gates.
 N05/N08 apply; see [F38](../specs/0038-renovate-licence-inventories/specification.md).
+
+## F41/F42 Flutter guided start and capture
+
+F41 records the customer's request of 2026-11-28 for an on-device app without visible households,
+a skippable start assistant for people, goals and dislikes, a ranked dish calibration as the
+starting point for suggestions, and recorded consent for public recipe sharing. F42 records the
+guided Add-recipe assistant with on-device text recognition, handwriting and dictation using
+embeddable open models. Numbers F39/F40 are used by parallel Nextcloud work. Only F41 slice 1 is
+implemented; everything else is specified, not delivered. N01/N03/N04/N05/N06/N09 apply; see
+[F41](../specs/0041-flutter-guided-onboarding/specification.md) and
+[F42](../specs/0042-flutter-guided-capture/specification.md).
+
