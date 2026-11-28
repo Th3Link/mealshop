@@ -65,10 +65,13 @@ async function recipe(page: Page, name = title, ingredient = 'Oats') {
   return id
 }
 async function rate(page: Page, name: string, rating: string) {
-  await page
-    .getByRole('group', { name, exact: true })
-    .getByRole('radio', { name: `${rating} / 5`, exact: true })
-    .check({ force: true })
+  // The radios are visually hidden; a cook clicks the star, which is the label.
+  const group = page.getByRole('group', { name, exact: true })
+  await group
+    .locator('label')
+    .nth(Number(rating) - 1)
+    .click()
+  await expect(group.getByRole('radio', { name: `${rating} / 5`, exact: true })).toBeChecked()
 }
 async function beginRecord(page: Page, name = title, rating = '5') {
   await page.getByRole('link', { name: 'Cooking history', exact: true }).click()
