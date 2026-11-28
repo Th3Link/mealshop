@@ -19,9 +19,14 @@
 - [ ] Adapt the customer's `reelcatch` to emit JSON lines — customer-side, outside this repository.
 
 ## Slice 3 — AI structuring through Nextcloud Task Processing (decision F39-AI: A)
-- [ ] Learn which Task Processing types the customer's instance offers; the local test instance
-  has no provider, so nothing can be verified here yet.
-- [ ] Design for small, low-cost models first (customer preference, 2026-11-28).
+- [x] Task types on the customer's instance: text, speech-to-text, picture, handwriting
+  (customer, 2026-11-28).
+- [x] Small models first: the Assistant only transcribes; structuring stays deterministic.
+- [x] Server: capabilities, upload, schedule, poll and cleanup as the signed-in user (AC 20).
+- [x] Capture screen: record and transcribe, read printed text, read handwriting (AC 15).
+- [ ] Verify against a real provider on the customer's instance; the local test instance has
+  none, so the provider's answers are simulated in tests.
+- [ ] Model-based structuring as an explicit fallback (AC 21).
 - [ ] Text/speech/picture → suggestion, always through review; consent and provider shown.
 
 ## Slice 4 — nutrition calculation

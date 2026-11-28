@@ -70,3 +70,5 @@ A proposal is not customer acceptance of an unresolved choice.
 - [0038: Guided capture and household-declared unit weights](0038-guided-capture-and-household-unit-weights.md) — One reviewed entry for text, speech and pictures; own unit weights instead of evidence forms.
 
 - [0039: Recipe quantities without a known mass](0039-unweighed-recipe-quantities.md) — Optional line mass; unknown is carried explicitly through nutrition, shopping, planning and cooking.
+
+- [0040: Speech and picture transcription through Nextcloud Task Processing](0040-assistant-transcription.md) — The Assistant returns words only; structuring stays deterministic and reviewed.

@@ -31,6 +31,19 @@ Slice 4, first part (2026-11-28, same instance):
 Not verified in a browser: an unweighed line on the shopping, meal-plan and cooking screens, and
 the Flutter app on a device.
 
+Slice 3 (2026-11-28):
+
+| AC | Evidence |
+|---|---|
+| 15 | `clients/nextcloud/tests/assist.test.ts` (4 tests); third test in `guided-capture.spec.ts`: picture chosen, **Read printed text**, text arrives in the capture field and is read deterministically, incl. axe. The Assistant's three answers are simulated in the browser |
+| 20 | `exapp::assist_tests::transcription_runs_as_the_user_and_removes_its_temporary_file` against a simulated Nextcloud |
+
+Checked live against the local Nextcloud 35 (no provider): task-type list, file upload and
+delete with app authentication, `OC-FileId`, and the 412 answer when scheduling without a
+provider. Not verified: any real transcription (no provider locally), recording with a real
+microphone, handwriting quality, the customer's instance. The give-up rule after five failed
+status lookups has no unit test.
+
 Not verified: real microphone dictation (AC 5), picture upload through the new screen in the
 browser suite (AC 4; the photo preview API itself is covered by `mobile-capture.spec.ts`),
 Firefox/Safari, the customer's production instance. Tests that need a second (reader) account,

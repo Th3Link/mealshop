@@ -25,6 +25,13 @@ See [ADR 0038](../../docs/adr/0038-guided-capture-and-household-unit-weights.md)
 - **Instagram.** The server does not fetch reels (login walls, robots, terms). The customer's own
   pipeline (modelled on `reelcatch`: saved collection → download → local transcript → summary)
   pipes JSON lines into `scripts/suggest_recipe.py`. Mealshop ships no scraper.
+- **Assistant transcription (2026-11-28, ADR 0040).** The customer's instance offers text,
+  speech-to-text, picture and handwriting tasks. Mealshop requests words only
+  (`core:audio2text`, `core:image2text:ocr`, `core:analyze-images` for handwriting) and keeps
+  structuring deterministic. File inputs are Nextcloud file IDs, so a temporary copy lives in
+  `.mealshop-capture/` of the user's files while the task runs. Probed on the local Nextcloud
+  35: app authentication works for the OCS task routes and file, `OC-FileId` carries the
+  file ID, and scheduling without a provider answers 412.
 - **Low-cost models first (2026-11-28).** The customer prefers AI steps that work with small,
   cheap models and wants larger models only where needed. Deterministic reading stays the first
   step; AI tasks are to be short, constrained and structured, with a larger model as a fallback.

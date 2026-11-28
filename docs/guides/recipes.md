@@ -203,6 +203,13 @@ saved with `version: "household estimate <date>"`, names its assumption and show
 estimate** on the line. Powders such as flour are lighter, honey and syrups heavier; type your own value
 to replace it. Pieces have no general weight and never get an estimate.
 
+If your Nextcloud has an Assistant provider for the matching task, the capture screen also offers
+**Record and transcribe** (speech-to-text), **Read printed text** and **Read handwriting** for the
+chosen picture. The Assistant only returns words; they are added to the text field, where you
+correct them and the same reader structures them. The input goes to the provider your
+administrator chose; a temporary copy is placed in `.mealshop-capture/` in your files and removed
+when the reading ends. Buttons appear only for tasks your instance currently offers.
+
 Suggestions handed in by an assistant or your own tools (see the [MCP guide](mcp.md)) wait at the
 top of **Add recipe**. **Review** opens the same review as typed text; saving removes the
 suggestion, **Discard** needs a second click. A suggestion with a source URL is saved as an import

@@ -76,11 +76,23 @@ Slice 4 (nutrition gaps, first part; ADR 0039):
     millilitres of the metric 5/15 ml spoon) and never as grams. Meal-plan and inventory mass
     arithmetic leave it out. Cooking shows its quantity for the chosen servings.
 
+Slice 3 (Assistant transcription; ADR 0040; customer's instance offers text, speech-to-text,
+picture and handwriting tasks):
+15. Where the instance's Nextcloud Assistant offers them, the capture screen can record speech
+    and have it transcribed, and can read printed text or handwriting from the chosen picture.
+    The Assistant returns words only; they are appended to the capture text, structured by the
+    deterministic reader and reviewed like typed text. Controls appear only for task types that
+    currently have a provider. The screen says where the input goes and that a temporary copy is
+    placed in the user's files and removed afterwards. A failed or empty reading is said plainly
+    and changes nothing.
+20. The server runs each task as the signed-in user, never shows one account another's task,
+    limits input size and media types, removes the temporary file when the task ends and logs
+    nothing.
+
 Later slices (not implemented):
-15. AI structuring of text, speech and pictures through Nextcloud Task Processing into the same
-    review step, after the task types available on the customer's instance are known. Small,
-    low-cost models are the target (customer preference, 2026-11-28): deterministic reading
-    first, short constrained tasks, a larger model only as an explicit fallback.
+21. Model-based structuring through `core:text2text` as an explicit fallback when the
+    deterministic reader finds little, and free-form requests. Small, low-cost models are the
+    target (customer preference, 2026-11-28).
 19. Wider source-backed reference portions including pieces, and a cooking yield/retention
     model. Both need additional primary source data that is not in the repository.
 

@@ -71,6 +71,8 @@ struct App {
     catalogue: Router,
     client: reqwest::Client,
     cooking_worker: Mutex<Option<tokio::task::AbortHandle>>,
+    /// Transcription tasks whose temporary upload still has to be removed.
+    assist: Mutex<BTreeMap<u64, assist::Pending>>,
 }
 type Shared = Arc<App>;
 struct Failure(StatusCode, &'static str);
@@ -208,6 +210,7 @@ fn build_app(config: AppConfig) -> Result<Shared, String> {
         enabled: AtomicBool::new(false),
         catalogue: crate::router()?,
         cooking_worker: Mutex::new(None),
+        assist: Mutex::new(BTreeMap::new()),
         client: crate::http::client()?
             .redirect(reqwest::redirect::Policy::none())
             .timeout(std::time::Duration::from_secs(15))
@@ -258,6 +261,9 @@ fn app_routes(app: Shared) -> Router {
             "/api/households/{id}/members/{user}",
             put(change).delete(remove),
         )
+        .route("/api/assist", get(assist::capabilities))
+        .route("/api/assist/transcriptions", post(assist::start))
+        .route("/api/assist/transcriptions/{id}", get(assist::status))
         .fallback(dispatch)
         .layer(axum::extract::DefaultBodyLimit::max(131_072))
         .with_state(app)
@@ -711,6 +717,7 @@ async fn household_router(app: Shared, home_id: String) -> Result<Router, &'stat
         .map_err(|_| "household_storage_failed")
 }
 
+mod assist;
 mod cooking;
 mod library;
 mod sharing;
@@ -758,5 +765,7 @@ mod brewing_tests;
 #[cfg(test)]
 mod mobile_tests;
 
+#[cfg(test)]
+mod assist_tests;
 #[cfg(test)]
 mod people_tests;

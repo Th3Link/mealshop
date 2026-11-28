@@ -176,7 +176,9 @@ picture beside it, review once and save; spoons and pieces need only what one un
 without a weight the recipe still saves with nutrition marked incomplete (ADR 0039). Recipes
 show ratings from completed cooks and a rounded per-serving nutrition overview above the exact
 table. Assistants and your own tools can hand recipes in as suggestions that wait for review
-(`recipe_suggest`). No AI provider is integrated yet. [F39](specs/0039-guided-recipe-capture/specification.md).
+(`recipe_suggest`). Where the Nextcloud Assistant offers speech-to-text, OCR or image analysis,
+recordings and pictures can be transcribed into the capture text (ADR 0040); no model structures
+recipes and Mealshop holds no provider key. [F39](specs/0039-guided-recipe-capture/specification.md).
 
 F40 (in progress) lets you plan by sentence in the Nextcloud client: type or say "Chili on Friday
 evening for 4", check what was understood and confirm the usual review. No model is involved.

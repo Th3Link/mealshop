@@ -6,6 +6,9 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import {
   mdiCameraOutline,
+  mdiDraw,
+  mdiRecordCircleOutline,
+  mdiTextRecognition,
   mdiInboxArrowDown,
   mdiLinkVariant,
   mdiMicrophone,
@@ -48,6 +51,72 @@ async function loadSuggestions() {
   }
 }
 onMounted(loadSuggestions)
+// Transcription by the instance's Nextcloud Assistant; absent task types hide their buttons.
+const assist = ref<Assist>({ speech: false, picture: false, handwriting: false })
+onMounted(async () => {
+  assist.value = await loadAssist()
+})
+const assisting = ref<AssistKind>()
+const assistState = ref<'waiting' | 'running' | 'done' | 'failed'>('waiting')
+const assistFailed = ref(false)
+const photoFile = ref<File>()
+const recording = ref(false)
+const canRecord =
+  typeof MediaRecorder !== 'undefined' &&
+  Boolean(navigator.mediaDevices) &&
+  recordingType((type) => MediaRecorder.isTypeSupported(type)) !== null
+let recorder: MediaRecorder | undefined
+async function assistWith(kind: AssistKind, data: Blob) {
+  assisting.value = kind
+  assistState.value = 'waiting'
+  assistFailed.value = false
+  try {
+    const found = (
+      await transcribe(kind, data, {
+        onStatus: (status) => {
+          assistState.value = status
+        },
+      })
+    ).trim()
+    if (found) {
+      text.value += `${text.value && !text.value.endsWith('\n') ? '\n' : ''}${found}`
+      edited()
+    } else assistFailed.value = true
+  } catch {
+    assistFailed.value = true
+  } finally {
+    assisting.value = undefined
+  }
+}
+async function record() {
+  if (recording.value) {
+    recorder?.stop()
+    return
+  }
+  const type = recordingType((candidate) => MediaRecorder.isTypeSupported(candidate))
+  if (!type) return
+  assistFailed.value = false
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    const chunks: Blob[] = []
+    recorder = new MediaRecorder(stream, { mimeType: type })
+    recorder.ondataavailable = (event) => {
+      if (event.data.size) chunks.push(event.data)
+    }
+    recorder.onstop = () => {
+      recording.value = false
+      for (const track of stream.getTracks()) track.stop()
+      if (chunks.length) void assistWith('speech', new Blob(chunks, { type }))
+    }
+    recorder.start()
+    recording.value = true
+  } catch {
+    assistFailed.value = true
+  }
+}
+onBeforeUnmount(() => {
+  if (recorder?.state === 'recording') recorder.stop()
+})
 function received(suggestion: Suggestion) {
   return new Date(suggestion.received_at * 1000).toLocaleDateString(locale.value)
 }
@@ -89,6 +158,7 @@ function edited() {
 }
 
 import { recognitionClass, type Recognition } from './speech'
+import { loadAssist, recordingType, transcribe, type Assist, type AssistKind } from './assist-api'
 const canDictate = Boolean(recognitionClass())
 const listening = ref(false),
   dictationFailed = ref(false)
@@ -157,6 +227,7 @@ async function choosePhoto(event: Event) {
       },
     )
     imageId.value = result.id
+    photoFile.value = file
     edited()
   })
 }
@@ -301,6 +372,23 @@ async function proceed() {
             @change="choosePhoto"
         /></label>
         <p class="muted">{{ t('capturePhotoPrivate') }}</p>
+        <div v-if="assist.picture || assist.handwriting" class="actions capture-assist">
+          <NcButton
+            v-if="assist.picture"
+            :disabled="busy || !photoFile || Boolean(assisting)"
+            @click="photoFile && assistWith('picture', photoFile)"
+            ><template #icon><Icon :path="mdiTextRecognition" /></template
+            >{{ t('assistReadPicture') }}</NcButton
+          >
+          <NcButton
+            v-if="assist.handwriting"
+            :disabled="busy || !photoFile || Boolean(assisting)"
+            @click="photoFile && assistWith('handwriting', photoFile)"
+            ><template #icon><Icon :path="mdiDraw" /></template
+            >{{ t('assistReadHandwriting') }}</NcButton
+          >
+        </div>
+        <p v-if="assist.picture || assist.handwriting" class="muted">{{ t('assistPrivacy') }}</p>
       </div>
       <div class="capture-text">
         <label :for="textId">{{ t('captureTextLabel') }}</label>
@@ -320,7 +408,23 @@ async function proceed() {
             ><template #icon><Icon :path="listening ? mdiStop : mdiMicrophone" /></template
             >{{ t(listening ? 'captureDictateStop' : 'captureDictate') }}</NcButton
           >
+          <NcButton
+            v-if="assist.speech && canRecord"
+            :disabled="busy || listening || Boolean(assisting)"
+            :pressed="recording"
+            @click="record"
+            ><template #icon><Icon :path="recording ? mdiStop : mdiRecordCircleOutline" /></template
+            >{{ t(recording ? 'assistRecordStop' : 'assistRecord') }}</NcButton
+          >
         </div>
+        <p v-if="recording" class="muted" role="status">{{ t('assistRecording') }}</p>
+        <p v-if="assisting" class="capture-assist-state" role="status">
+          <NcLoadingIcon :size="20" />{{
+            t(assistState === 'running' ? 'assistRunning' : 'assistWaiting')
+          }}
+        </p>
+        <NcNoteCard v-if="assistFailed" type="warning">{{ t('assistFailed') }}</NcNoteCard>
+        <p v-if="assist.speech && canRecord" class="muted">{{ t('assistPrivacy') }}</p>
         <p v-if="listening" class="muted" role="status">{{ t('captureDictateHint') }}</p>
         <p v-if="canDictate" class="muted">{{ t('captureDictatePrivacy') }}</p>
         <p v-else class="muted">{{ t('captureDictateUnsupported') }}</p>

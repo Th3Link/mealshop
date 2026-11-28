@@ -2330,3 +2330,12 @@
   hyphens: auto;
   font-size: 13px;
 }
+.mealshop .capture-assist {
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.mealshop .capture-assist-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
