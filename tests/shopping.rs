@@ -655,3 +655,35 @@ async fn homemade_ingredients_purchase_only_inputs_and_keep_dietary_and_cooking_
     let (_, list) = request(&reopened, "GET", Value::Null, Some(OWNER)).await;
     assert_eq!(list["items"], synced["items"]);
 }
+
+#[tokio::test]
+async fn unweighed_recipe_lines_are_bought_in_their_own_unit_without_a_derived_mass() {
+    let dir = Directory::new();
+    let app = dir.app().unwrap();
+    let mut body = recipe_body("100");
+    let lines = body["lines"].as_array_mut().unwrap();
+    lines.push(json!({"ingredient_id":"oats","quantity":{"amount":"2","unit":"tbsp"}}));
+    lines.push(json!({"ingredient_id":"oats","quantity":{"amount":"0.5","unit":"l"}}));
+    lines.push(json!({"ingredient_id":"oats","quantity":{"amount":"3","unit":"piece"}}));
+    let (status, recipe) = request_path(&app, "POST", "/api/recipes", body, None).await;
+    assert_eq!(status, StatusCode::CREATED, "{recipe}");
+    let servings = recipe["recipe"]["servings"].as_u64().unwrap();
+    let list = command(
+        &app,
+        0,
+        json!({"operation":"add_recipe","recipe":{"recipe_id":recipe["id"],"revision":1,"servings":servings}}),
+    )
+    .await;
+    let remaining = |key: &str| {
+        list["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|item| item["key"] == key)
+            .map(|item| item["remaining"].clone())
+    };
+    assert_eq!(remaining("ingredient:oats:g"), Some(json!("100.000000")));
+    // Two metric tablespoons and half a litre are 530 ml of volume; no grams are invented.
+    assert_eq!(remaining("ingredient:oats:ml"), Some(json!("530.000000")));
+    assert_eq!(remaining("ingredient:oats:piece"), Some(json!("3.000000")));
+}

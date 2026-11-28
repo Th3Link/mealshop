@@ -225,8 +225,16 @@
                 "type": "string"
               },
               "source_url": {
-                "type": "string",
-                "format": "uri"
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": ""
+                  },
+                  {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                ]
               },
               "version": {
                 "type": "string"

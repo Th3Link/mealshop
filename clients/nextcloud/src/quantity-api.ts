@@ -5,10 +5,19 @@ export const decimalSchema = z
   .regex(/^\d+(?:\.\d{1,6})?$/)
 export const unitSchema = z.enum(['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'piece'])
 export const quantitySchema = z.object({ amount: decimalSchema, unit: unitSchema })
+/** Where an ingredient's mass comes from; `unknown` means no mass and no nutrition share. */
+export const massBasisSchema = z.enum([
+  'weighed',
+  'source_portion',
+  'household_weight',
+  'rough_estimate',
+  'unknown',
+])
 export const evidenceSchema = z.object({
   ingredient_id: z.string(),
   form: z.string(),
-  source_url: z.url().refine((s) => s.startsWith('https://')),
+  // Empty only for a household-declared weight of one input unit (see input_unit).
+  source_url: z.union([z.literal(''), z.url().refine((s) => s.startsWith('https://'))]),
   version: z.string(),
   uncertainty: z.string(),
   grams_per_base_unit: decimalSchema,
@@ -22,6 +31,7 @@ export const conversionsSchema = z.object({
     z.object({ id: z.string(), label: z.string(), unit: unitSchema, evidence: evidenceSchema }),
   ),
 })
+export type Conversions = z.infer<typeof conversionsSchema>
 export const ingredientExtensionSchema = z.discriminatedUnion('type', [
   z
     .object({
@@ -50,6 +60,16 @@ export type LineDraft = {
   evidence: Evidence | null
   mode: string
   density: string
+  /** The weight is the general water-density estimate the cook accepted, not a weighed value. */
+  estimated?: boolean
   spoon: string
   invalidFields: ('input' | 'density' | 'spoon' | 'temperature')[]
+}
+
+/** Version prefix marking an accepted general estimate instead of a household-weighed value. */
+export const estimateVersion = 'household estimate'
+/** Grams of one unit if the ingredient weighed like water, using metric 5/15 ml spoons.
+ * Pieces have no general weight and never get an estimate. */
+export function waterEstimate(unit: Unit): string | null {
+  return { ml: '1', l: '1000', tsp: '5', tbsp: '15', g: null, kg: null, piece: null }[unit]
 }

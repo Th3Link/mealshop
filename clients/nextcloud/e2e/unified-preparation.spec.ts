@@ -28,6 +28,7 @@ test('multipart mealprep keeps exact temperatures, one production, allocations a
     .fill(`Browser verification ${Date.now()}`)
   await page.getByRole('button', { name: 'Create household', exact: true }).click()
   await recordFixture(page, 'unified-preparation.spec.ts')
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Preparation acceptance recipe')
   await page.getByLabel('Servings', { exact: true }).fill('2')
@@ -116,10 +117,13 @@ test('multipart mealprep keeps exact temperatures, one production, allocations a
     page.getByRole('checkbox', { name: 'Oats · 100.000002 g', exact: true }),
   ).toHaveCount(1)
   await page.getByRole('link', { name: 'Meal plan', exact: true }).click()
-  await page
-    .locator('.meal-slot[data-date="2026-11-11"][data-meal="preparation"]')
-    .getByRole('button', { name: 'View details', exact: true })
-    .click()
+  // The plan reopens on the current week; walk to the planned one whenever this runs.
+  const prepared = page.locator('.meal-slot[data-date="2026-11-11"][data-meal="preparation"]')
+  const towards = new Date() < new Date('2026-11-11') ? 'Next week' : 'Previous week'
+  await expect(page.locator('.meal-slot').first()).toBeVisible()
+  for (let weeks = 0; weeks < 520 && !(await prepared.count()); weeks++)
+    await page.getByRole('button', { name: towards, exact: true }).click()
+  await prepared.getByRole('button', { name: 'View details', exact: true }).click()
   await page
     .locator('.mealplan-details')
     .getByRole('link', { name: 'Cooking & baking', exact: true })

@@ -24,7 +24,8 @@ test('direct ingredient creation, optional constituents and branched preparation
       }),
     )
     .toBe(true)
-  await page.getByText('Create recipe', { exact: true }).click()
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
+  await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Structured authoring verification')
   await page.getByLabel('Servings', { exact: true }).fill('2')
   await page.getByRole('button', { name: 'Add recipe part', exact: true }).click()

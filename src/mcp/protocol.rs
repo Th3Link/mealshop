@@ -277,6 +277,7 @@ fn tool_parameters(request: &Request) -> Result<(&str, Value), Fault> {
             | "recipe_get"
             | "recipe_preview_create"
             | "recipe_create"
+            | "recipe_suggest"
     ) {
         return Err(Fault::invalid());
     }
@@ -310,6 +311,7 @@ fn dispatch(
         .map_err(|_| unavailable())?;
     let ingredients = state.catalogue.lock().map_err(|_| unavailable())?;
     let mut store = state.mcp.lock().map_err(|_| unavailable())?;
+    let mut suggestions = state.suggestions.lock().map_err(|_| unavailable())?;
     let scope = store
         .scope(&actor.user, actor.role)
         .map_err(|_| unavailable())?;
@@ -362,6 +364,7 @@ fn dispatch(
                 scope,
                 store: &mut store,
                 recipes: &mut recipes,
+                suggestions: &mut suggestions,
                 catalogue: &catalogue,
                 ingredient_revision: ingredients.revision(),
                 images: &state.images,

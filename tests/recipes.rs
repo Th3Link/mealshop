@@ -929,3 +929,140 @@ async fn guarded_mobile_creation_cannot_duplicate_after_a_lost_response_and_rest
     assert_eq!(listing.1["recipes"].as_array().unwrap().len(), 1);
     assert_eq!(listing.1["recipes"][0]["id"], created.1["id"]);
 }
+
+#[tokio::test]
+async fn household_declared_unit_weight_needs_its_unit_but_no_source_url() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let catalogue: Value = serde_json::from_str(include_str!("../data/catalogue.json")).unwrap();
+    let form = catalogue["ingredients"][0]["form"].clone();
+    let mut input = recipe();
+    input["lines"] = json!([{"ingredient_id":"oats","quantity":{"amount":"2","unit":"tbsp"},"conversion":{"ingredient_id":"oats","form":form,"source_url":"","version":"household declaration 2026-11-27","uncertainty":"Weighed or estimated by the household; not a source record.","grams_per_base_unit":"7.5","input_unit":"tbsp","spoon_standard":null,"millilitres_per_spoon":null}}]);
+    let saved = request(&app, "POST", "/api/recipes", input.clone()).await;
+    assert_eq!(saved.0, StatusCode::CREATED);
+    assert_eq!(saved.1["recipe"]["lines"][0]["grams"], "15.000000");
+    assert_eq!(
+        saved.1["recipe"]["lines"][0]["conversion"]["source_url"],
+        ""
+    );
+    let codes = |body: &Value| {
+        body["nutrition"]["warning_codes"]
+            .as_array()
+            .unwrap()
+            .clone()
+    };
+    assert!(codes(&saved.1).contains(&json!("household_mass")));
+    assert!(!codes(&saved.1).contains(&json!("rough_mass_estimate")));
+    assert_eq!(
+        saved.1["nutrition"]["ingredients"][0]["mass_basis"],
+        "household_weight"
+    );
+    // An accepted general estimate is carried into nutrition as its own warning.
+    let mut rough = input.clone();
+    rough["lines"][0]["conversion"]["version"] = json!("household estimate 2026-11-28");
+    let rough = request(&app, "POST", "/api/recipes", rough).await;
+    assert_eq!(rough.0, StatusCode::CREATED);
+    assert!(codes(&rough.1).contains(&json!("rough_mass_estimate")));
+    assert_eq!(
+        rough.1["nutrition"]["ingredients"][0]["mass_basis"],
+        "rough_estimate"
+    );
+    input["lines"][0]["conversion"]
+        .as_object_mut()
+        .unwrap()
+        .remove("input_unit");
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", input.clone()).await.0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    input["lines"][0]["conversion"]["input_unit"] = json!("tbsp");
+    input["lines"][0]["conversion"]["source_url"] = json!("http://example.org/insecure");
+    assert_eq!(
+        request(&app, "POST", "/api/recipes", input).await.0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+}
+
+#[tokio::test]
+async fn unweighed_quantities_save_and_leave_nutrition_explicitly_incomplete() {
+    let dir = Directory::new();
+    let app = dir.app();
+    let mut input = recipe();
+    input["servings"] = json!(2);
+    input["lines"] = json!([
+        {"ingredient_id":"oats","grams":"100"},
+        {"ingredient_id":"chia","quantity":{"amount":"2","unit":"tbsp"}},
+        {"ingredient_id":"chia","quantity":{"amount":"1","unit":"piece"}}
+    ]);
+    let saved = request(&app, "POST", "/api/recipes", input.clone()).await;
+    assert_eq!(saved.0, StatusCode::CREATED, "{}", saved.1);
+    let line = &saved.1["recipe"]["lines"][1];
+    assert!(line.get("grams").is_none());
+    assert_eq!(line["quantity"], json!({"amount":"2","unit":"tbsp"}));
+    let nutrition = &saved.1["nutrition"];
+    assert!(
+        nutrition["warning_codes"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("unweighed_ingredients"))
+    );
+    let energy = nutrition["nutrients"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|n| n["id"] == "energy_kcal")
+        .unwrap();
+    // Oats alone are known; the total is not reported and the unweighed food is named once.
+    assert_eq!(energy["status"], "partial");
+    assert_eq!(energy["total"], Value::Null);
+    assert_eq!(energy["known_total"], "389.00");
+    assert_eq!(energy["missing_ingredients"], json!(["chia"]));
+    assert_eq!(nutrition["ingredients"][0]["mass_basis"], "weighed");
+    assert_eq!(nutrition["ingredients"][1]["mass_basis"], "unknown");
+    assert!(nutrition["ingredients"][1].get("grams").is_none());
+    assert_eq!(
+        saved.1["display_lines"][1],
+        json!({"ingredient_id":"chia","amount":"2","unit":"tbsp","mass_basis":"unknown",
+            "name":saved.1["display_lines"][1]["name"],"translations":saved.1["display_lines"][1]["translations"],
+            "nutrition_estimated":saved.1["display_lines"][1]["nutrition_estimated"]})
+    );
+    // Scaling keeps the original unit; no mass appears.
+    let id = saved.1["id"].as_str().unwrap();
+    let scaled = request(
+        &app,
+        "GET",
+        &format!("/api/recipes/{id}/scale?servings=4"),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(scaled.0, StatusCode::OK, "{}", scaled.1);
+    assert_eq!(scaled.1["lines"][0]["grams"], "200.000000");
+    assert_eq!(
+        scaled.1["lines"][1]["quantity"],
+        json!({"amount":"4.000000","unit":"tbsp"})
+    );
+    assert!(scaled.1["lines"][1].get("grams").is_none());
+    // A stated mass next to an unweighed quantity, a zero amount or a mass unit without
+    // grams is still refused.
+    for line in [
+        json!({"ingredient_id":"oats","grams":"10","quantity":{"amount":"2","unit":"tbsp"}}),
+        json!({"ingredient_id":"oats","quantity":{"amount":"0","unit":"piece"}}),
+    ] {
+        input["lines"] = json!([line]);
+        assert_eq!(
+            request(&app, "POST", "/api/recipes", input.clone()).await.0,
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+    // A recipe of only unweighed lines reports every nutrient as unknown, never zero.
+    input["lines"] = json!([{"ingredient_id":"oats","quantity":{"amount":"1","unit":"l"}}]);
+    let unknown = request(&app, "POST", "/api/recipes", input).await;
+    assert_eq!(unknown.0, StatusCode::CREATED);
+    assert!(
+        unknown.1["nutrition"]["nutrients"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|n| n["status"] == "unknown" && n["total"] == Value::Null)
+    );
+}

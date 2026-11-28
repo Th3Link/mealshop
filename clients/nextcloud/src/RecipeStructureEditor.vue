@@ -13,6 +13,8 @@ import type { LineDraft } from './quantity-api'
 import type { z } from 'zod'
 import { conversionsSchema } from './quantity-api'
 import { locale, t } from './i18n'
+import { applyReference, parseIngredientLine } from './recipe-text'
+import { foldSearch } from './ingredient-search'
 const recipe = defineModel<Recipe>('recipe', { required: true })
 const lines = defineModel<LineDraft[]>('lines', { required: true })
 const props = defineProps<{
@@ -53,6 +55,46 @@ const ingredientOptions = computed(() =>
       : [],
   ),
 )
+/** Candidates the cook can pick for an unresolved source line; never chosen automatically. */
+function suggestions(raw: string) {
+  const words = parseIngredientLine(raw, locale.value)
+    .name.split(/[,(]/)[0]
+    ?.split(/\s+/)
+    .map(foldSearch)
+    .filter((word) => word.length >= 3)
+  if (!words?.length) return []
+  return props.catalogue.ingredients
+    .filter((item) => !item.archived && !item.organization.is_group)
+    .map((item) => ({
+      id: item.id,
+      name: item.translations[locale.value]?.name ?? item.name,
+      favorite: item.favorite,
+      text: foldSearch(
+        [
+          item.name,
+          ...item.aliases,
+          ...Object.values(item.translations).flatMap((tr) => [tr.name, ...tr.aliases]),
+        ].join(' '),
+      ),
+    }))
+    .filter((item) => words.every((word) => item.text.includes(word)))
+    .sort(
+      (a, b) =>
+        Number(b.favorite) - Number(a.favorite) ||
+        a.name.length - b.name.length ||
+        a.name.localeCompare(b.name, locale.value),
+    )
+    .slice(0, 5)
+}
+function pick(index: number, id: string) {
+  const line = lines.value[index]
+  if (!line) return
+  line.ingredient_id = id
+  line.evidence = null
+  line.mode = 'manual'
+  applyReference(line, props.catalogue.ingredients, props.conversions)
+  emit('changed')
+}
 function addLine(partId: string | null = null, input = '1') {
   lines.value.push({
     id: `line-${crypto.randomUUID()}`,
@@ -242,6 +284,25 @@ function addStep(partId: string | null = null) {
         >
           <p v-if="entry.line.id && sourceLines?.[entry.line.id]" class="import-source-line">
             <strong>{{ t('importSourceIngredient') }}:</strong> {{ sourceLines[entry.line.id] }}
+          </p>
+          <p
+            v-if="
+              entry.line.id &&
+              sourceLines?.[entry.line.id] &&
+              !entry.line.ingredient_id &&
+              suggestions(sourceLines[entry.line.id] ?? '').length
+            "
+            class="ingredient-suggestions"
+          >
+            <span>{{ t('captureSuggestions') }}</span>
+            <button
+              v-for="item in suggestions(sourceLines[entry.line.id] ?? '')"
+              :key="item.id"
+              type="button"
+              @click="pick(entry.index, item.id)"
+            >
+              {{ item.name }}
+            </button>
           </p>
           <div class="recipe-ingredient-row">
             <RecipeQuantity

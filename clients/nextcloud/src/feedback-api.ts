@@ -86,3 +86,18 @@ export type HistoryDraft = {
 export function historyPath(id?: string) {
   return `/api/household/history${id ? `/${encodeURIComponent(id)}` : ''}`
 }
+export const recipeRatingsSchema = z.object({
+  revision: z.number().int(),
+  recipes: z.record(
+    z.string(),
+    z.object({
+      cooked: z.number().int().nonnegative(),
+      last_date: z.string(),
+      household_count: z.number().int().nonnegative(),
+      household_sum: z.number().int().nonnegative(),
+      person_count: z.number().int().nonnegative(),
+      person_sum: z.number().int().nonnegative(),
+    }),
+  ),
+})
+export type RecipeRatings = z.infer<typeof recipeRatingsSchema>['recipes']

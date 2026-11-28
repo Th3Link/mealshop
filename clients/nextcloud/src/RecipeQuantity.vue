@@ -12,8 +12,10 @@ import Icon from './Icon.vue'
 import { mdiPlus, mdiThermometer, mdiChefHat, mdiClose } from '@mdi/js'
 import { locale, exact, parseGrams, parseNonnegative, t } from './i18n'
 import type { Ingredient } from './contracts'
-import { conversionsSchema } from './quantity-api'
+import { conversionsSchema, waterEstimate } from './quantity-api'
 import type { LineDraft } from './quantity-api'
+import { applyReference } from './recipe-text'
+import { unitLabel } from './unit-label'
 const model = defineModel<LineDraft>({ required: true })
 const emit = defineEmits<{ changed: []; create: [name: string]; prepare: []; buy: [] }>()
 const props = defineProps<{
@@ -97,8 +99,18 @@ function reset() {
   model.value.evidence = null
   model.value.mode = 'manual'
   model.value.density = ''
+  model.value.estimated = false
   model.value.spoon = ''
   model.value.invalidFields = model.value.invalidFields.filter((key) => key === 'temperature')
+  applyReference(model.value, props.ingredients, props.conversions)
+}
+const estimate = computed(() => waterEstimate(model.value.unit))
+function useEstimate() {
+  if (!estimate.value) return
+  model.value.density = exact(estimate.value)
+  model.value.estimated = true
+  model.value.invalidFields = model.value.invalidFields.filter((key) => key !== 'density')
+  emit('changed')
 }
 function choose() {
   emit('changed')
@@ -107,6 +119,10 @@ function choose() {
     model.value.evidence = structuredClone(toRaw(evidence))
     model.value.density = exact(evidence.grams_per_base_unit)
     model.value.spoon = evidence.millilitres_per_spoon ? exact(evidence.millilitres_per_spoon) : ''
+  } else if (model.value.mode === 'own') {
+    model.value.evidence = null
+    model.value.density = ''
+    model.value.spoon = ''
   } else if (model.value.mode === 'manual') {
     model.value.evidence = {
       ingredient_id: model.value.ingredient_id,
@@ -165,8 +181,12 @@ watch(locale, (_, previous) => {
       /><label class="field"
         ><span class="visually-hidden">{{ t('unit') }}</span
         ><select v-model="model.unit" :aria-label="t('unit')" @change="reset">
-          <option v-for="u in ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'piece']" :key="u" :value="u">
-            {{ u }}
+          <option
+            v-for="u in ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'piece'] as const"
+            :key="u"
+            :value="u"
+          >
+            {{ unitLabel(u) }}
           </option>
         </select></label
       >
@@ -233,18 +253,44 @@ watch(locale, (_, previous) => {
       >{{ t('homemade') }} · {{ preparedName }}</a
     >
     <template v-if="!mass"
-      ><p class="muted">{{ t('conversionHelp') }}</p>
-      <label class="field"
-        >{{ t('conversion')
-        }}<select v-model="model.mode" :aria-label="t('conversion')" @change="choose">
-          <option value="manual">{{ t('manual') }}</option>
-          <option v-if="model.evidence && model.mode === 'saved'" value="saved">
-            {{ t('source') }}
-          </option>
-          <option v-for="option in options" :key="option.id" :value="option.id">
-            {{ option.label }}
-          </option>
-        </select></label
+      ><div v-if="model.mode === 'own'" class="own-weight">
+        <NcTextField
+          v-model="model.density"
+          :label="`${t('ownWeight')} ${unitLabel(model.unit)} ${t('ownWeightUnit')}`"
+          inputmode="decimal"
+          maxlength="32"
+          :error="invalid && !!model.density.trim() && !parseGrams(model.density)"
+          :helper-text="t(model.estimated ? 'estimateWeightHelp' : 'ownWeightHelp')"
+          @update:model-value="
+            ((model.estimated = false),
+            (model.invalidFields = model.invalidFields.filter((k) => k !== 'density')))
+          "
+        />
+        <NcButton v-if="estimate && !model.density" variant="secondary" @click="useEstimate"
+          >{{ t('estimateWeightUse') }}: {{ exact(estimate) }} g</NcButton
+        >
+        <span v-if="model.estimated" class="estimate-badge">{{ t('estimateWeightNote') }}</span>
+        <span v-else-if="!model.density.trim()" class="estimate-badge unknown">{{
+          t('weightUnknownNote')
+        }}</span>
+      </div>
+      <p v-else class="muted">{{ t('conversionHelp') }}</p>
+      <component :is="model.mode === 'own' ? 'details' : 'div'" class="conversion-more">
+        <summary v-if="model.mode === 'own'">{{ t('ownWeightOther') }}</summary>
+
+        <label class="field"
+          >{{ t('conversion')
+          }}<select v-model="model.mode" :aria-label="t('conversion')" @change="choose">
+            <option value="own">{{ t('ownWeightMode') }}</option>
+            <option value="manual">{{ t('manual') }}</option>
+            <option v-if="model.evidence && model.mode === 'saved'" value="saved">
+              {{ t('source') }}
+            </option>
+            <option v-for="option in options" :key="option.id" :value="option.id">
+              {{ option.label }}
+            </option>
+          </select></label
+        ></component
       >
       <template v-if="model.mode === 'manual'"
         ><NcTextField
@@ -284,7 +330,7 @@ watch(locale, (_, previous) => {
             maxlength="32"
             required /></template
       ></template>
-      <p v-else-if="model.evidence" lang="en">
+      <p v-else-if="model.mode !== 'own' && model.evidence" lang="en">
         {{ model.evidence.uncertainty }} · {{ model.evidence.version }} ·
         <a :href="model.evidence.source_url" target="_blank" rel="noopener noreferrer">{{
           t('source')

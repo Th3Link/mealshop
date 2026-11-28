@@ -99,7 +99,7 @@ try {
     "auto",
   );
   const listed = await direct.listTools();
-  assert.equal(listed.tools.length, 6);
+  assert.equal(listed.tools.length, 7);
   const preview = await direct.callTool({
     name: "recipe_preview_create",
     arguments: { recipe },
@@ -179,7 +179,7 @@ try {
       mode,
     );
     const tools = await c.listTools();
-    assert.equal(tools.tools.length, 6);
+    assert.equal(tools.tools.length, 7);
     const read = await c.callTool({
       name: "recipe_get",
       arguments: { id, revision: 1 },

@@ -22,7 +22,9 @@ pub(crate) struct RecipeLine {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) part_id: Option<String>,
     pub(crate) ingredient_id: String,
-    pub(crate) grams: Grams,
+    /// Absent while the cook has not said what a volume, spoon or piece quantity weighs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) grams: Option<Grams>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) quantity: Option<crate::quantities::Quantity>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -46,7 +48,16 @@ impl<'de> Deserialize<'de> for RecipeLine {
         let input = Input::deserialize(deserializer)?;
         crate::ingredient_extensions::validate(&input.extensions)
             .map_err(serde::de::Error::custom)?;
-        let grams = if let Some(q) = &input.quantity {
+        let unweighed = input.quantity.as_ref().is_some_and(|q| {
+            input.conversion.is_none() && q.unit.dimension() != crate::quantities::Dimension::Mass
+        });
+        let grams = if unweighed {
+            // Unknown stays unknown: the original quantity is kept and no mass is derived.
+            if input.grams.is_some() {
+                return Err(serde::de::Error::custom("quantity_grams_mismatch"));
+            }
+            None
+        } else if let Some(q) = &input.quantity {
             let result = q
                 .grams(&input.ingredient_id, input.conversion.as_ref())
                 .map_err(serde::de::Error::custom)?;
@@ -57,14 +68,16 @@ impl<'de> Deserialize<'de> for RecipeLine {
             {
                 return Err(serde::de::Error::custom("quantity_grams_mismatch"));
             }
-            result
+            Some(result)
         } else {
             if input.conversion.is_some() {
                 return Err(serde::de::Error::custom("conversion_without_quantity"));
             }
-            input
-                .grams
-                .ok_or_else(|| serde::de::Error::custom("quantity_required"))?
+            Some(
+                input
+                    .grams
+                    .ok_or_else(|| serde::de::Error::custom("quantity_required"))?,
+            )
         };
         Ok(Self {
             prepared_part: input.prepared_part,
@@ -76,6 +89,47 @@ impl<'de> Deserialize<'de> for RecipeLine {
             quantity: input.quantity,
             conversion: input.conversion,
         })
+    }
+}
+
+/// Where a line's mass comes from; anything but `Weighed` is shown to the cook.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum MassBasis {
+    Weighed,
+    SourcePortion,
+    HouseholdWeight,
+    RoughEstimate,
+    Unknown,
+}
+impl RecipeLine {
+    pub(crate) fn mass_basis(&self) -> MassBasis {
+        match (&self.grams, &self.conversion) {
+            (None, _) => MassBasis::Unknown,
+            (Some(_), None) => MassBasis::Weighed,
+            (Some(_), Some(e)) if !e.source_url.is_empty() => MassBasis::SourcePortion,
+            (Some(_), Some(e)) if e.version.starts_with("household estimate") => {
+                MassBasis::RoughEstimate
+            }
+            (Some(_), Some(_)) => MassBasis::HouseholdWeight,
+        }
+    }
+    /// The line for another serving count; an unweighed line scales its original quantity.
+    pub(crate) fn scaled(&self, target: u32, original: u32) -> Result<Self, String> {
+        let mut line = self.clone();
+        match &self.grams {
+            Some(grams) => {
+                line.grams = Some(Grams(grams.0.scaled(target, original)?));
+                line.quantity = None;
+                line.conversion = None;
+            }
+            None => {
+                if let Some(quantity) = &mut line.quantity {
+                    quantity.amount = quantity.amount.scaled(target, original)?;
+                }
+            }
+        }
+        Ok(line)
     }
 }
 
@@ -103,7 +157,11 @@ pub(crate) struct Contribution {
     name: String,
     form: String,
     basis: Basis,
-    grams: Grams,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    grams: Option<Grams>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    quantity: Option<crate::quantities::Quantity>,
+    mass_basis: MassBasis,
     source: Source,
     uncertainty: String,
     education: Vec<Education>,
@@ -123,6 +181,8 @@ pub(crate) struct NutrientResult {
     status: &'static str,
     missing_ingredients: Vec<String>,
     uncertainty: Vec<String>,
+    #[serde(skip)]
+    known_total_is_empty: bool,
 }
 
 #[derive(Serialize)]
@@ -142,7 +202,9 @@ pub(crate) fn validate_line<'a>(
     catalogue: &'a Catalogue,
     line: &RecipeLine,
 ) -> Result<&'a catalogue::Ingredient, String> {
-    if line.grams.0.atoms() == 0 {
+    if line.grams.as_ref().is_some_and(|g| g.0.atoms() == 0)
+        || (line.grams.is_none() && line.quantity.as_ref().is_none_or(|q| q.amount.atoms() == 0))
+    {
         return Err("Ingredient mass must be positive".to_owned());
     }
     let ingredient = catalogue
@@ -173,17 +235,25 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         );
     }
     let mut ingredients = Vec::with_capacity(recipe.lines.len());
+    let mut all = Vec::with_capacity(recipe.lines.len());
+    let mut unweighed = Vec::new();
     for line in &recipe.lines {
         let ingredient = validate_line(catalogue, line)?;
-        ingredients.push((ingredient, &line.grams));
+        all.push((ingredient, line));
+        match &line.grams {
+            Some(grams) => ingredients.push((ingredient, grams)),
+            None if !unweighed.contains(&ingredient.id) => unweighed.push(ingredient.id.clone()),
+            None => {}
+        }
     }
-    let nutrients = Nutrient::ALL
+    let mut nutrients = Nutrient::ALL
         .iter()
         .map(|&nutrient| calculate_nutrient(nutrient, &ingredients, recipe.servings, 1, 1))
         .collect::<Result<Vec<_>, _>>()?;
-    let contributions = ingredients
+    leave_unweighed_unknown(&mut nutrients, &unweighed);
+    let contributions = all
         .iter()
-        .map(|(i, grams)| Contribution {
+        .map(|(i, line)| Contribution {
             nutrition_estimates: i.nutrition_estimates.clone(),
             nutrient_ranges: i
                 .nutrients
@@ -194,7 +264,9 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
             name: i.name.clone(),
             form: i.form.clone(),
             basis: i.basis,
-            grams: (*grams).clone(),
+            grams: line.grams.clone(),
+            quantity: line.quantity.clone().filter(|_| line.grams.is_none()),
+            mass_basis: line.mass_basis(),
             source: i.source.clone(),
             uncertainty: i.uncertainty.clone(),
             education: i.education.clone(),
@@ -213,6 +285,7 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         warning_codes.push("conversion_estimate");
         warnings.push("Ingredient masses include source-based or user-declared conversion estimates; original quantities and evidence remain in the saved recipe revision.");
     }
+    mass_warnings(recipe, &unweighed, &mut warning_codes, &mut warnings);
     if matches!(recipe.preparation, Preparation::CookingUnmodelled) {
         warning_codes.push("cooking_unmodelled");
         warnings.push("Cooking is unmodelled: no nutrient retention, cooking-loss or water/yield correction has been applied. These are input-composition estimates, not measured cooked-food values.");
@@ -225,8 +298,12 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         warning_codes.push("carbohydrate_definitions");
         warnings.push("Sources use different carbohydrate definitions. By-difference and available carbohydrate totals stay separate and may be partial; no inferred conversion is applied.");
     }
+    let mut constituents = crate::constituents::calculate(&ingredients, recipe.servings, 1, 1)?;
+    for row in &mut constituents {
+        row.leave_unknown(&unweighed);
+    }
     Ok(Estimate {
-        constituents: crate::constituents::calculate(&ingredients, recipe.servings, 1, 1)?,
+        constituents,
         catalogue_version: catalogue.version.clone(),
         servings: recipe.servings,
         preparation: recipe.preparation,
@@ -236,6 +313,50 @@ pub(crate) fn calculate(catalogue: &Catalogue, recipe: &Calculation) -> Result<E
         warnings,
         warning_codes,
     })
+}
+
+/// Says where ingredient masses are estimated, household-declared or missing.
+fn mass_warnings(
+    recipe: &Calculation,
+    unweighed: &[String],
+    warning_codes: &mut Vec<&'static str>,
+    warnings: &mut Vec<&'static str>,
+) {
+    let basis = |wanted| recipe.lines.iter().any(|line| line.mass_basis() == wanted);
+    if basis(MassBasis::RoughEstimate) {
+        warning_codes.push("rough_mass_estimate");
+        warnings.push("Some ingredient masses are rough general estimates accepted by the household (as if the ingredient weighed like water), not weighed or source-backed values.");
+    }
+    if basis(MassBasis::HouseholdWeight) {
+        warning_codes.push("household_mass");
+        warnings.push("Some ingredient masses use a weight per unit declared by the household without an external source.");
+    }
+    if !unweighed.is_empty() {
+        warning_codes.push("unweighed_ingredients");
+        warnings.push("Nutrition is incomplete: some ingredients have a quantity but no known mass. Their contribution is unknown, not zero, and no total is reported.");
+    }
+}
+
+/// An ingredient without a known mass makes every total unknown; only the known part remains.
+fn leave_unweighed_unknown(nutrients: &mut [NutrientResult], unweighed: &[String]) {
+    if unweighed.is_empty() {
+        return;
+    }
+    for result in nutrients {
+        for id in unweighed {
+            if !result.missing_ingredients.contains(id) {
+                result.missing_ingredients.push(id.clone());
+            }
+        }
+        result.status = if result.status == "unknown" || result.known_total_is_empty {
+            "unknown"
+        } else {
+            "partial"
+        };
+        result.total = None;
+        result.per_serving = None;
+        result.range = None;
+    }
 }
 
 fn calculate_nutrient(
@@ -292,6 +413,7 @@ fn calculate_nutrient(
         },
         missing_ingredients: missing,
         uncertainty,
+        known_total_is_empty: known == 0,
     })
 }
 
@@ -305,25 +427,36 @@ pub(crate) fn scaled_nutrition(
     if target == 0 || target > 1_000_000 {
         return Err("Invalid serving count".to_owned());
     }
-    let ingredients = original
-        .lines
-        .iter()
-        .map(|line| {
-            catalogue
-                .find(&line.ingredient_id)
-                .map(|i| (i, &line.grams))
-                .ok_or_else(|| "Unknown ingredient".to_owned())
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+    let mut ingredients = Vec::new();
+    let mut unweighed = Vec::new();
+    for line in &original.lines {
+        let ingredient = catalogue
+            .find(&line.ingredient_id)
+            .ok_or_else(|| "Unknown ingredient".to_owned())?;
+        match &line.grams {
+            Some(grams) => ingredients.push((ingredient, grams)),
+            None if !unweighed.contains(&ingredient.id) => unweighed.push(ingredient.id.clone()),
+            None => {}
+        }
+    }
     result.nutrients = Nutrient::ALL
         .iter()
         .map(|&n| calculate_nutrient(n, &ingredients, target, target, original.servings))
         .collect::<Result<Vec<_>, _>>()?;
+    leave_unweighed_unknown(&mut result.nutrients, &unweighed);
     result.constituents =
         crate::constituents::calculate(&ingredients, target, target, original.servings)?;
+    for row in &mut result.constituents {
+        row.leave_unknown(&unweighed);
+    }
     result.servings = target;
     for ingredient in &mut result.ingredients {
-        ingredient.grams.0 = ingredient.grams.0.scaled(target, original.servings)?;
+        if let Some(grams) = &mut ingredient.grams {
+            grams.0 = grams.0.scaled(target, original.servings)?;
+        }
+        if let Some(quantity) = &mut ingredient.quantity {
+            quantity.amount = quantity.amount.scaled(target, original.servings)?;
+        }
     }
     Ok(result)
 }

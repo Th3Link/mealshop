@@ -1,6 +1,6 @@
 import type { Ingredient } from './contracts'
 import type { z } from 'zod'
-import { boundsSchema } from './contracts'
+import { boundsSchema, type nutritionSchema } from './contracts'
 import { compactExact, exact, t } from './i18n'
 export type Bounds = z.infer<typeof boundsSchema>
 
@@ -78,4 +78,25 @@ export function missingContribution(
         Boolean(row.range?.estimated_ingredients.includes(id)))
     )
   })
+}
+
+type Nutrient = z.infer<typeof nutritionSchema>['nutrients'][number]
+export type Headline = { text: string; state: 'exact' | 'range' | 'partial' | 'unknown' }
+/** A rounded reading aid for one nutrient per serving. It never replaces the exact table:
+ * partial sums are labelled as a lower bound and unknown values are not shown as zero. */
+export function headline(n: Nutrient, language: string): Headline {
+  const digits = n.unit === 'kcal' || n.unit === 'kJ' || n.unit === 'mg' ? 0 : 1
+  const round = (value: string) =>
+    new Intl.NumberFormat(language, { maximumFractionDigits: digits }).format(Number(value))
+  if (n.range?.status === 'complete') {
+    const { lower, upper } = n.range.per_serving
+    const low = round(lower),
+      high = round(upper)
+    return { text: low === high ? low : `${low}–${high}`, state: 'range' }
+  }
+  if (n.range) return { text: round(n.range.known_per_serving.lower), state: 'partial' }
+  if (n.per_serving !== null) return { text: round(n.per_serving), state: 'exact' }
+  return Number(n.known_per_serving) > 0
+    ? { text: round(n.known_per_serving), state: 'partial' }
+    : { text: '?', state: 'unknown' }
 }

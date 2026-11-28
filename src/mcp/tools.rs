@@ -109,6 +109,7 @@ pub(super) struct Context<'a> {
     pub(super) scope: Scope,
     pub(super) store: &'a mut Store,
     pub(super) recipes: &'a mut recipes::Store,
+    pub(super) suggestions: &'a mut crate::suggestions::Store,
     pub(super) catalogue: &'a Catalogue,
     pub(super) ingredient_revision: u64,
     pub(super) images: &'a std::path::Path,
@@ -192,6 +193,7 @@ pub(super) fn execute(ctx: &mut Context<'_>, name: &str, args: Value) -> Result<
         }
         "recipe_preview_create" => preview(ctx, args),
         "recipe_create" => create(ctx, args),
+        "recipe_suggest" => suggest(ctx, args),
         _ => Err("unknown_tool".into()),
     }
 }
@@ -270,4 +272,47 @@ fn create(ctx: &mut Context<'_>, args: Value) -> Result<Value, Error> {
     let record = ctx.recipes.save_created(recipe, ctx.catalogue, receipt)?;
     ctx.store.previews.remove(&id);
     Ok(json!({"replayed":false,"record":content(&record)?}))
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Suggest {
+    title: Option<String>,
+    language: Option<String>,
+    yield_text: Option<String>,
+    #[serde(default)]
+    ingredients: Vec<String>,
+    #[serde(default)]
+    steps: Vec<String>,
+    source_url: Option<String>,
+    note: Option<String>,
+}
+/// Hands unreviewed source text to the household inbox; a cook maps and saves it later.
+fn suggest(ctx: &mut Context<'_>, args: Value) -> Result<Value, Error> {
+    if ctx.scope != Scope::Create || ctx.actor.role == crate::membership::Role::Reader {
+        return Err("mcp_read_only".into());
+    }
+    let input: Suggest = parse(args)?;
+    let original = crate::imports::Candidate {
+        title: input.title,
+        language: input.language,
+        yield_text: input.yield_text,
+        ingredients: input.ingredients,
+        steps: input
+            .steps
+            .into_iter()
+            .map(|text| crate::imports::SourceStep {
+                text,
+                section: None,
+            })
+            .collect(),
+        ..crate::imports::Candidate::default()
+    };
+    let (id, replayed) = ctx.suggestions.add(
+        &ctx.actor.user,
+        ctx.now,
+        input.source_url,
+        input.note,
+        original,
+    )?;
+    Ok(json!({"suggestion_id":id,"replayed":replayed,"saved":false,"review_required":true}))
 }

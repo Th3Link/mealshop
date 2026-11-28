@@ -60,6 +60,9 @@ enum Input {
     Manual {
         url: String,
     },
+    Suggestion {
+        id: String,
+    },
     Photo {
         capture: crate::capture::Photo,
         original: Box<Candidate>,
@@ -100,6 +103,23 @@ async fn source(state: &Shared, actor: &str, input: Input) -> Result<PreviewData
                 return Err("capture_invalid");
             }
             Ok(data)
+        }
+        Input::Suggestion { id } => {
+            let suggestions = state
+                .suggestions
+                .lock()
+                .map_err(|_| "import_storage_failed")?;
+            let suggestion = suggestions.find(&id).ok_or("import_suggestion_missing")?;
+            // Only a suggestion that names its source is an import; others are the cook's own text.
+            let url = suggestion.source_url.clone().ok_or("import_url_invalid")?;
+            Ok(PreviewData {
+                capture: None,
+                requested_url: url,
+                final_url: None,
+                method: Method::Manual,
+                retrieved_at: None,
+                candidates: vec![suggestion.original.clone()],
+            })
         }
         Input::Manual { url } => {
             Origin::Imported {

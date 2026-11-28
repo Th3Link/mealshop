@@ -1,6 +1,7 @@
 import { peopleEnglish, peopleGerman, peopleExplanations } from './people-messages'
 import { brewingEnglish, brewingGerman, brewingExplanations } from './brewing-messages'
 import { inventoryEnglish, inventoryGerman, inventoryExplanations } from './inventory-messages'
+import { captureEnglish, captureGerman } from './capture-messages'
 import { importEnglish, importGerman, importExplanations } from './import-messages'
 import { mcpEnglish, mcpGerman, mcpExplanations } from './mcp-messages'
 import { feedbackEnglish, feedbackGerman, feedbackExplanations } from './feedback-messages'
@@ -72,6 +73,7 @@ const en = {
   ...feedbackEnglish,
   ...mcpEnglish,
   ...importEnglish,
+  ...captureEnglish,
   ...inventoryEnglish,
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
@@ -287,10 +289,11 @@ const en = {
   onePerLine: 'One entry per line',
   deleteProfile: 'Remove this dietary profile?',
   confirm: 'Confirm',
-  recipeIntro: 'Your household’s recipes, with precise quantities and pinned source records.',
+  recipeIntro: 'Everything your household likes to cook.',
   newRecipe: 'Create recipe',
   noRecipes: 'No recipes yet',
-  noRecipesText: 'Create the first recipe for your household.',
+  noRecipesText:
+    'Add your first recipe: paste it, dictate it, take a picture or fetch it from a website.',
   title: 'Recipe title',
   author: 'Author',
   servings: 'Servings',
@@ -417,6 +420,7 @@ const de: Record<keyof typeof en, string> = {
   ...feedbackGerman,
   ...mcpGerman,
   ...importGerman,
+  ...captureGerman,
   ...inventoryGerman,
   ingredientTemperature: 'Temperatur (°C)',
   addTemperature: 'Temperatur ergänzen',
@@ -642,11 +646,11 @@ const de: Record<keyof typeof en, string> = {
   onePerLine: 'Ein Eintrag je Zeile',
   deleteProfile: 'Dieses Ernährungsprofil entfernen?',
   confirm: 'Bestätigen',
-  recipeIntro:
-    'Die Rezepte deines Haushalts mit exakten Mengen und festgehaltenen Quelldatensätzen.',
+  recipeIntro: 'Alles, was euer Haushalt gern kocht.',
   newRecipe: 'Rezept erstellen',
   noRecipes: 'Noch keine Rezepte',
-  noRecipesText: 'Erstelle das erste Rezept für deinen Haushalt.',
+  noRecipesText:
+    'Füge dein erstes Rezept hinzu: einfügen, diktieren, fotografieren oder von einer Webseite holen.',
   title: 'Rezepttitel',
   author: 'Autor',
   servings: 'Portionen',

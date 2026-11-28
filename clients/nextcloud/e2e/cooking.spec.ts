@@ -20,6 +20,7 @@ test('native cooking timers, offline recovery and reviewed multiday schedules', 
     .fill(`Browser verification ${Date.now()}`)
   await page.getByRole('button', { name: 'Create household', exact: true }).click()
   await recordFixture(page, 'cooking.spec.ts')
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Cooking acceptance recipe')
   await page.getByLabel('Servings', { exact: true }).fill('2')

@@ -151,3 +151,13 @@ N06–N10 apply; see [F37](../specs/0037-app-only-backups/specification.md).
 F38 refreshes reviewed Dart/native Rust licence identities before self-hosted Renovate commits
 Cargo/Pub updates. New or changed licence material retains explicit review and existing CI gates.
 N05/N08 apply; see [F38](../specs/0038-renovate-licence-inventories/specification.md).
+
+F39 starts the customer's requested guided Nextcloud recipe entry (2026-11-27): one add-recipe
+entry for pasted/dictated text, pictures, links and the empty form; household-declared unit weights
+instead of evidence forms; recipe ratings from completed cooks; a readable nutrition overview.
+Customer decisions of 2026-11-28: assistants and a customer-operated Instagram companion hand
+recipes in through a reviewed suggestion inbox; general unit-weight estimates are allowed when
+clearly marked; AI structuring will use Nextcloud Task Processing and is not delivered yet. N03/N04/N06/N09/N10 apply; see
+[F39](../specs/0039-guided-recipe-capture/specification.md) and ADR 0038. Quantities may be saved
+without a known mass; nutrition then reports itself incomplete instead of guessing (ADR 0039). The
+customer prefers small, low-cost AI models, with larger ones only where needed (2026-11-28).

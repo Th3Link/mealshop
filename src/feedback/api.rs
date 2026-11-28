@@ -63,6 +63,7 @@ pub(crate) fn routes() -> Router<Shared> {
             get(detail).put(update).delete(remove),
         )
         .route("/api/household/learning", get(learning).put(configure))
+        .route("/api/household/recipe-ratings", get(recipe_ratings))
 }
 fn actor(value: Option<Extension<Actor>>) -> Actor {
     value.map_or_else(
@@ -191,6 +192,22 @@ async fn list(
         let total=matching.len();let entries=matching.into_iter().skip((page-1)*20).take(20).collect::<Vec<_>>();
         Ok(json!({"revision":store.data.revision,"page":page,"per_page":20,"total":total,"entries":entries}))
     }).await)
+}
+async fn recipe_ratings(State(state): State<Shared>, headers: HeaderMap) -> Response {
+    if !household::authorized(&state, &headers) {
+        return household::denied();
+    }
+    response(
+        StatusCode::OK,
+        tokio::task::spawn_blocking(move || {
+            let store = state
+                .feedback
+                .lock()
+                .map_err(|_| "history_storage_failed")?;
+            Ok(json!({"revision":store.data.revision,"recipes":store.recipe_ratings()}))
+        })
+        .await,
+    )
 }
 async fn detail(
     State(state): State<Shared>,

@@ -1794,3 +1794,431 @@
 .mealshop .brewing-page .cooking-timeline dt {
   text-align: start;
 }
+
+/* F39 guided recipe capture, cards, ratings and nutrition overview */
+.mealshop .recipe-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+.mealshop .recipe-cards li {
+  border: 0;
+}
+.mealshop .recipe-cards a {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-large, 12px);
+  background: var(--color-main-background);
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+.mealshop .recipe-cards a:hover {
+  background: var(--color-main-background);
+  box-shadow: 0 4px 16px var(--color-box-shadow);
+  transform: translateY(-2px);
+}
+.mealshop .recipe-cards a > div {
+  display: grid;
+  gap: 4px;
+  padding: 12px 16px 16px;
+}
+.mealshop .recipe-cards strong {
+  font-size: 17px;
+  line-height: 1.35;
+}
+.mealshop .recipe-card-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--color-background-dark);
+}
+.mealshop .recipe-card-image.placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .recipe-card-image.placeholder svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.6;
+}
+.mealshop .toolbar .recipe-sort {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+}
+.mealshop .star-average {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 1px;
+  color: var(--color-warning-text, #a36b00) !important;
+}
+.mealshop .star-average svg {
+  width: 18px;
+  height: 18px;
+}
+.mealshop .star-average > span {
+  display: inline !important;
+  margin-inline-start: 6px;
+  color: var(--color-text-maxcontrast) !important;
+  font-size: 14px;
+}
+.mealshop .recipe-rating-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.mealshop .star-rating {
+  min-width: 0;
+  padding: 0;
+  margin: 0 0 16px;
+  border: 0;
+}
+.mealshop .star-rating legend {
+  padding: 0;
+  margin-bottom: 4px;
+}
+.mealshop .star-rating .stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.mealshop .star-rating label {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--color-text-maxcontrast);
+  cursor: pointer;
+}
+.mealshop .star-rating label svg {
+  width: 30px;
+  height: 30px;
+}
+.mealshop .star-rating label.filled {
+  color: var(--color-warning-text, #a36b00);
+}
+.mealshop .star-rating label:hover {
+  background: var(--color-background-hover);
+}
+.mealshop .star-rating label:has(input:focus-visible) {
+  outline: 2px solid var(--color-main-text);
+}
+.mealshop .star-rating .star-clear {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 0 0 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .star-rating .muted {
+  margin-inline-start: 12px;
+}
+.mealshop .recipe-rate {
+  margin-block: 16px;
+}
+.mealshop .recipe-rate-form {
+  max-width: 520px;
+  padding: 20px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-large, 12px);
+}
+.mealshop .recipe-rate-form fieldset:not(.star-rating) {
+  padding: 0;
+  margin: 16px 0;
+  border: 0;
+}
+.mealshop .capture-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  padding: 0;
+  margin: 24px 0;
+  list-style: none;
+}
+.mealshop .capture-choices :is(a, button) {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-large, 12px);
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+  font: inherit;
+  font-weight: normal;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+.mealshop .capture-choices :is(a, button):hover {
+  border-color: var(--color-primary-element);
+  background: var(--color-background-hover);
+}
+.mealshop .capture-choices :is(a, button):focus-visible {
+  outline: 2px solid var(--color-main-text);
+  outline-offset: 3px;
+}
+.mealshop .capture-choices svg {
+  width: 32px;
+  height: 32px;
+  color: var(--color-primary-element);
+}
+.mealshop .capture-choices strong {
+  font-size: 17px;
+}
+.mealshop .capture-choices span {
+  color: var(--color-text-maxcontrast);
+  line-height: 1.5;
+}
+.mealshop .capture-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 32px;
+  align-items: start;
+}
+.mealshop .capture-workspace.with-photo {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1.5fr);
+}
+.mealshop .capture-text label {
+  display: block;
+  margin-bottom: 4px;
+}
+.mealshop .capture-text textarea {
+  display: block;
+  width: 100%;
+  min-height: 320px;
+  margin: 0 0 8px;
+  padding: 12px 14px;
+  font: inherit;
+  line-height: 1.6;
+  resize: vertical;
+}
+.mealshop .capture-photo img {
+  display: block;
+  width: 100%;
+  max-height: 70vh;
+  margin-bottom: 12px;
+  object-fit: contain;
+  border-radius: var(--border-radius);
+  background: var(--color-background-dark);
+}
+.mealshop .capture-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 12px;
+  padding: 8px 16px;
+  border-radius: var(--border-radius-element, 8px);
+  background: var(--color-primary-element-light);
+  color: var(--color-primary-element-light-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.mealshop .capture-file:has(input:focus-visible) {
+  outline: 2px solid var(--color-main-text);
+}
+.mealshop .capture-found {
+  padding: 20px 24px;
+  border-radius: var(--border-radius-large, 12px);
+  background: var(--color-background-hover);
+}
+.mealshop .capture-found h2 {
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+.mealshop .capture-found .plain-list li {
+  margin-block: 6px;
+}
+.mealshop .capture-amount {
+  font-weight: 600;
+}
+.mealshop .ingredient-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.mealshop .ingredient-suggestions span {
+  color: var(--color-text-maxcontrast);
+}
+.mealshop .ingredient-suggestions button {
+  min-height: 34px;
+  margin: 0;
+  padding: 4px 14px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: 999px;
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+  font: inherit;
+  font-weight: normal;
+}
+.mealshop .ingredient-suggestions button:hover {
+  border-color: var(--color-primary-element);
+  background: var(--color-background-hover);
+}
+.mealshop .nutrition-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  padding: 0;
+  margin: 0 0 12px;
+  list-style: none;
+}
+.mealshop .nutrition-tiles li {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: var(--border-radius-large, 12px);
+  background: var(--color-background-hover);
+}
+.mealshop .nutrition-tiles span {
+  color: var(--color-text-maxcontrast);
+  font-size: 14px;
+}
+.mealshop .nutrition-tiles strong {
+  font-size: 22px;
+  line-height: 1.3;
+}
+.mealshop .nutrition-tiles strong small {
+  font-size: 14px;
+  font-weight: normal;
+}
+.mealshop .nutrition-tiles em {
+  color: var(--color-text-maxcontrast);
+  font-size: 13px;
+  font-style: normal;
+}
+.mealshop .nutrition-tiles li:is(.partial, .unknown) {
+  outline: 1px dashed var(--color-border-dark);
+  background: none;
+}
+.mealshop .nutrition-details > summary {
+  min-height: 44px;
+  padding-block: 10px;
+  color: var(--color-primary-element);
+  cursor: pointer;
+}
+@media (max-width: 1024px) {
+  .mealshop .capture-workspace,
+  .mealshop .capture-workspace.with-photo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mealshop .recipe-cards {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mealshop .recipe-cards a {
+    transition: none;
+  }
+  .mealshop .recipe-cards a:hover {
+    transform: none;
+  }
+}
+.mealshop .nutrition-tiles li {
+  align-content: space-between;
+}
+.mealshop .own-weight {
+  max-width: 420px;
+}
+.mealshop .conversion-more > summary {
+  min-height: 32px;
+  color: var(--color-text-maxcontrast);
+  font-size: 14px;
+  cursor: pointer;
+}
+.mealshop .recipe-capture p a,
+.mealshop .recipe-rating-line a {
+  text-decoration: underline;
+}
+
+.mealshop .capture-inbox {
+  margin: 24px 0 0;
+  padding: 16px 20px;
+  border: 1px solid var(--color-primary-element);
+  border-radius: var(--border-radius-large, 12px);
+  border-inline-start-width: 4px;
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+}
+.mealshop .capture-inbox h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+.mealshop .capture-inbox .suggestion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.mealshop .capture-inbox .suggestion > div:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 260px;
+}
+.mealshop .capture-inbox .suggestion-note {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mealshop .suggestion-list {
+  padding: 0;
+  margin: 12px 0 0;
+  list-style: none;
+}
+.mealshop .capture-inbox .suggestion a {
+  text-decoration: underline;
+}
+.mealshop .nutrition-basis {
+  display: grid;
+  gap: 6px;
+  max-width: 720px;
+  padding: 0;
+  margin: 12px 0 16px;
+  list-style: none;
+}
+.mealshop .nutrition-basis li {
+  padding: 8px 12px;
+  border-inline-start: 3px solid var(--color-border-dark);
+  background: var(--color-background-hover);
+  border-radius: var(--border-radius, 4px);
+}
+.mealshop .nutrition-basis li.unknown {
+  border-inline-start-color: var(--color-warning);
+}

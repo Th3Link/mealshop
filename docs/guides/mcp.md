@@ -1,6 +1,6 @@
 # MCP recipe tools
 
-F17 supplies six household-scoped tools in the existing Nextcloud installation. It does not
+F17 and F39 supply seven household-scoped tools in the existing Nextcloud installation. It does not
 connect a model or send data until you configure and invoke your own MCP client. Access defaults
 to Disabled for every account. The local protected demo exposes the same contracts with its
 existing bearer token; this guide describes the delivered Nextcloud connection.
@@ -51,12 +51,15 @@ stdio bridge. Protocol support is MCP 2026-07-28 and legacy 2025-11-25, verified
 | `recipe_get` | Recipe `id`, optional pinned `revision` | Owned recipe with nutrition from its saved inputs, or original source URL only. |
 | `recipe_preview_create` | Structured `recipe` matching discovered schema | Canonical validation, normalized exact values, preview ID and expiry; saves nothing. |
 | `recipe_create` | `preview_id`, opaque `idempotency_key`, `confirmed: true` | First immutable recipe revision and replay status; creation scope required. |
+| `recipe_suggest` | Optional `title`, `language`, `yield_text`, `ingredients[]`, `steps[]`, HTTPS `source_url`, `note` | Unreviewed suggestion in the household inbox; saves no recipe; creation scope required. |
 
 The tool list contains machine-readable schemas. Use stable ingredient IDs and **decimal strings**,
 for example a line with `ingredient_id: "oats"` and `quantity: { amount: "0.100500", unit: "kg" }`.
 Canonical validation preserves the original quantity and normalizes it to `100.500000` grams.
-A floating-point number, unknown ingredient, invalid image reference, invalid recipe composition or
-implicit volume/mass conversion fails with a structured tool error, as in the regular recipe API.
+A floating-point number, unknown ingredient, invalid image reference or invalid recipe composition
+fails with a structured tool error, as in the regular recipe API. A volume, spoon or piece
+quantity without `conversion` is saved without a mass: no weight is derived, and nutrition reports
+that ingredient as missing (`unweighed_ingredients`) instead of a total.
 Unknown nutrition/allergens remain unknown. Tools never claim dietary safety.
 `ingredient_get.reference_conversions` contains only bundled portions matching that exact ingredient ID,
 form, source record and source URL, retaining version, licence and full conversion evidence. Copy the
@@ -124,3 +127,24 @@ The official MCP SDK is pinned as a development dependency only; the Rust runtim
 add no dependency. CI exercises modern direct HTTP and modern/legacy stdio with isolated synthetic data.
 Real-instance Playwright checks require the existing test credentials in protected environment variables
 and create only ledger-recorded synthetic households. Never use retained customer households as fixtures.
+
+## Suggestions instead of finished recipes
+
+When an assistant has recipe wording but should not map ingredients itself (a video transcript, a
+photographed page, dictation), it calls `recipe_suggest` with the original ingredient lines and
+steps. The suggestion waits under **Add recipe** until a household member reviews it; it is never
+calculated or shared. With a `source_url` it is saved as an import of that source, otherwise as
+the household's own recipe. At most 50 suggestions wait per household, and identical content is
+recognised instead of stored twice.
+
+Your own tools can submit suggestions without an MCP host. `scripts/suggest_recipe.py` reads one
+JSON object per line and uses the same protected environment as the bridge:
+
+```sh
+printf '%s\n' '{"title":"Reel pasta","ingredients":["2 tbsp olive oil","1 onion"],"steps":["Fry everything."],"source_url":"https://www.instagram.com/reel/example/"}' \
+  | python3 scripts/suggest_recipe.py
+```
+
+It prints `line<TAB>added|waiting|failed<TAB>id or error code` and exits non-zero if any line
+failed. It fetches nothing: downloading and transcribing saved videos stays in your own pipeline on
+your machine, under your own account and the source's terms.

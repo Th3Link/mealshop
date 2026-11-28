@@ -18,13 +18,19 @@ import {
 import type { Recipe } from './contracts'
 import { homes, useTask, loadCatalogue } from './state'
 import { servingCount, exact, locale, parseGrams, t } from './i18n'
-import { mdiPlus } from '@mdi/js'
+import { mdiInboxArrowDown, mdiPlus, mdiSilverwareForkKnife } from '@mdi/js'
 import Icon from './Icon.vue'
 import { foldSearch } from './ingredient-search'
 import { useUnsavedChanges } from './useUnsavedChanges'
 import Nutrition from './Nutrition.vue'
 import RecipeStructureEditor from './RecipeStructureEditor.vue'
 import ImportEntry from './ImportEntry.vue'
+import RecipeCapture from './RecipeCapture.vue'
+import { suggestionsSchema } from './suggestion-api'
+import RecipeRate from './RecipeRate.vue'
+import StarAverage from './StarAverage.vue'
+import { textLines, type TextRecipe } from './recipe-text'
+import { recipeRatingsSchema, type RecipeRatings } from './feedback-api'
 import ImportEvidence from './ImportEvidence.vue'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import {
@@ -37,12 +43,15 @@ import RecipeContents from './RecipeContents.vue'
 import RecipeOriginEditor from './RecipeOriginEditor.vue'
 import ShareControls from './ShareControls.vue'
 import IngredientEditor from './IngredientEditor.vue'
-import { conversionsSchema } from './quantity-api'
+import { conversionsSchema, estimateVersion } from './quantity-api'
 import type { LineDraft } from './quantity-api'
 const route = useRoute(),
   router = useRouter()
 const home = computed(() => String(route.params.home))
-const importing = computed(() => route.params.id === 'import')
+const capturing = computed(() => route.params.id === 'add')
+const importing = computed(
+  () => route.params.id === 'import' || (capturing.value && importReview.value !== undefined),
+)
 const importUrl = ref(''),
   importReview = ref<ImportReview>(),
   importReviewed = ref(false)
@@ -87,7 +96,81 @@ function reviewImport(preview: ImportPreview, candidate: number) {
   void nextTick(() => document.querySelector<HTMLElement>('.recipe-editor-header h1')?.focus())
 }
 
+const reviewedSuggestion = ref('')
+/** A saved suggestion leaves the inbox; failing to remove it never fails the save. */
+async function settleSuggestion() {
+  const id = reviewedSuggestion.value
+  reviewedSuggestion.value = ''
+  if (!id) return
+  try {
+    await api(request(`/api/household/suggestions/${id}`), z.object({ discarded: z.string() }), {
+      method: 'DELETE',
+    })
+  } catch {
+    // It stays in the inbox and can be discarded there.
+  }
+}
+function captured(recipe: TextRecipe, preview?: ImportPreview, suggestion?: string) {
+  reviewedSuggestion.value = suggestion ?? ''
+  const prepared = textLines(recipe, catalogue.value?.ingredients ?? [], conversions.value)
+  if (preview) importReview.value = { preview, candidate: 0, key: crypto.randomUUID() }
+  draft.value = {
+    title: recipe.title,
+    author: '',
+    language: locale.value,
+    servings: recipe.servings ?? 0,
+    preparation: 'as_recorded',
+    ...(preview?.capture
+      ? { origin: { kind: 'captured', source_image_id: preview.capture.image_id } }
+      : preview
+        ? { origin: { kind: 'imported', source_url: preview.requested_url } }
+        : {}),
+    lines: [],
+    parts: [],
+    steps: recipe.steps.map((instruction) => ({
+      part_id: null,
+      instruction,
+      active_seconds: 0,
+      passive_seconds: 0,
+      ingredient_line_ids: [],
+      prepared_parts: [],
+    })),
+  }
+  lineDrafts.value = prepared.lines
+  sourceLines.value = prepared.sourceLines
+  importReviewed.value = false
+  dirty.value = true
+  void nextTick(() => document.querySelector<HTMLElement>('.recipe-editor-header h1')?.focus())
+}
+const waiting = ref(0)
+async function refreshWaiting() {
+  try {
+    waiting.value = (
+      await api(domain(home.value, '/api/household/suggestions'), suggestionsSchema)
+    ).suggestions.length
+  } catch {
+    waiting.value = 0
+  }
+}
+const ratings = ref<RecipeRatings>({})
+async function refreshRatings() {
+  const generation = loadGeneration
+  try {
+    const rated = await api(request('/api/household/recipe-ratings'), recipeRatingsSchema)
+    if (generation === loadGeneration) ratings.value = rated.recipes
+  } catch {
+    /* Ratings are an optional overview; the recipe itself stays usable. */
+  }
+}
+const sort = ref<'title' | 'rating' | 'recent'>('title')
 const writable = computed(() => homes.value.some((h) => h.id === home.value && h.role !== 'reader'))
+watch(
+  [() => route.params.id, writable, home],
+  ([id, canWrite]) => {
+    if (!id && canWrite) void refreshWaiting()
+  },
+  { immediate: true },
+)
 const records = ref<z.infer<typeof recipesSchema>>()
 const selected = ref<z.infer<typeof recipeRecordSchema>>()
 const latestRevision = ref<number>()
@@ -122,7 +205,8 @@ async function ingredientCreated(id: string) {
 }
 const editing = computed(
   () =>
-    (route.params.id === 'new' || importing.value || route.query.edit === '1') && !historical.value,
+    (route.params.id === 'new' || capturing.value || importing.value || route.query.edit === '1') &&
+    !historical.value,
 )
 const dirty = ref(false),
   validation = ref(''),
@@ -164,15 +248,30 @@ const search = computed({
     void router.replace({ query: { ...route.query, q: q || undefined } })
   },
 })
-const matchingRecipes = computed(
-  () =>
+const average = (id: string) => {
+  const rated = ratings.value[id]
+  return rated?.household_count
+    ? rated.household_sum / rated.household_count
+    : rated?.person_count
+      ? rated.person_sum / rated.person_count
+      : 0
+}
+const matchingRecipes = computed(() => {
+  const found =
     records.value?.recipes.filter((record) =>
       search.value
         .trim()
         .split(/\s+/)
         .every((term) => foldSearch(record.title).includes(foldSearch(term))),
-    ) ?? [],
-)
+    ) ?? []
+  if (sort.value === 'title')
+    return [...found].sort((a, b) => a.title.localeCompare(b.title, locale.value))
+  return [...found].sort((a, b) =>
+    sort.value === 'rating'
+      ? average(b.id) - average(a.id)
+      : (ratings.value[b.id]?.last_date ?? '').localeCompare(ratings.value[a.id]?.last_date ?? ''),
+  )
+})
 const confirmDiscard = useUnsavedChanges(() => dirty.value && creatingIngredient.value === null)
 async function reload() {
   if (confirmDiscard()) await load()
@@ -200,9 +299,13 @@ async function load() {
     scaledLines.value = undefined
     const id = typeof route.params.id === 'string' ? route.params.id : ''
     if (!id) {
-      const list = await api(request('/api/recipes'), recipesSchema)
+      const [list, rated] = await Promise.all([
+        api(request('/api/recipes'), recipesSchema),
+        api(request('/api/household/recipe-ratings'), recipeRatingsSchema),
+      ])
       if (generation !== loadGeneration) return
       records.value = list
+      ratings.value = rated.recipes
       selected.value = undefined
       draft.value = undefined
       return
@@ -216,7 +319,7 @@ async function load() {
       catalogue.value = data[0]
       conversions.value = data[1]
     }
-    if (id === 'import') return
+    if (id === 'import' || id === 'add') return
     if (id === 'new') {
       draft.value = {
         title: '',
@@ -245,6 +348,7 @@ async function load() {
       if (generation !== loadGeneration) return
       latestRevision.value = current.revision
       selected.value = record
+      void refreshRatings()
       previewCount.value = selected.value.recipe.servings
       draft.value = structuredClone(toRaw(selected.value.recipe))
     }
@@ -255,11 +359,18 @@ async function load() {
         prepared_part: l.prepared_part ?? null,
         extensions: structuredClone(toRaw(l.extensions ?? [])),
         ingredient_id: l.ingredient_id,
-        input: exact(l.quantity?.amount ?? l.grams),
+        input: exact(l.quantity?.amount ?? l.grams ?? null),
         unit: l.quantity?.unit ?? 'g',
         evidence: l.conversion ? structuredClone(toRaw(l.conversion)) : null,
-        mode: l.conversion ? 'saved' : 'manual',
+        mode: l.conversion
+          ? l.conversion.source_url
+            ? 'saved'
+            : 'own'
+          : l.grams === undefined
+            ? 'own'
+            : 'manual',
         density: l.conversion ? exact(l.conversion.grams_per_base_unit) : '',
+        estimated: l.conversion?.version.startsWith(estimateVersion) ?? false,
         spoon: l.conversion?.millilitres_per_spoon ? exact(l.conversion.millilitres_per_spoon) : '',
         invalidFields: [],
       })) ?? []
@@ -317,6 +428,7 @@ async function sendImport() {
       if (generation !== loadGeneration) return
       dirty.value = false
       selected.value = result
+      await settleSuggestion()
       await router.push(`${path}/${result.id}`)
     } catch (error) {
       if (generation !== loadGeneration) return
@@ -358,6 +470,47 @@ async function save() {
         prepared_part: line.prepared_part,
         ingredient_id: line.ingredient_id,
         quantity: { amount, unit: line.unit },
+      })
+      continue
+    }
+    if (line.mode === 'own') {
+      const weight = parseGrams(line.density)
+      if (!weight && line.density.trim()) {
+        validation.value = t('ownWeightRequired')
+        return
+      }
+      // No weight is not an error: the quantity is kept and nutrition says it is incomplete.
+      if (!weight) {
+        lines.push({
+          extensions: structuredClone(toRaw(line.extensions ?? [])),
+          id: line.id,
+          part_id: line.part_id,
+          prepared_part: line.prepared_part,
+          ingredient_id: line.ingredient_id,
+          quantity: { amount, unit: line.unit },
+        })
+        continue
+      }
+      lines.push({
+        extensions: structuredClone(toRaw(line.extensions ?? [])),
+        id: line.id,
+        part_id: line.part_id,
+        prepared_part: line.prepared_part,
+        ingredient_id: line.ingredient_id,
+        quantity: { amount, unit: line.unit },
+        conversion: {
+          ingredient_id: line.ingredient_id,
+          form: catalogue.value?.ingredients.find((i) => i.id === line.ingredient_id)?.form ?? '',
+          source_url: '',
+          version: `${line.estimated ? estimateVersion : 'household declaration'} ${new Date().toISOString().slice(0, 10)}`,
+          uncertainty: line.estimated
+            ? 'General estimate accepted by the household: assumes water density (1 g per ml) and metric 5/15 ml spoons. Powders weigh less, syrups more; not a source record.'
+            : 'Weighed or estimated by the household; not a source record.',
+          grams_per_base_unit: weight,
+          input_unit: line.unit,
+          spoon_standard: null,
+          millilitres_per_spoon: null,
+        },
       })
       continue
     }
@@ -431,6 +584,7 @@ async function save() {
     )
     dirty.value = false
     selected.value = result
+    await settleSuggestion()
     await router.push({
       path: `${listPath.value}/${result.id}`,
       query: { q: search.value || undefined },
@@ -447,7 +601,7 @@ async function scale() {
       z.object({
         nutrition: nutritionSchema,
         display_lines: displayLinesSchema,
-        lines: z.array(z.object({ ingredient_id: z.string(), grams: z.string() })),
+        lines: z.array(z.object({ ingredient_id: z.string(), grams: z.string().optional() })),
       }),
     )
     preview.value = result.nutrition
@@ -456,7 +610,7 @@ async function scale() {
 }
 </script>
 <template>
-  <header v-if="route.params.id && !selected && !draft && !busy" class="page-header">
+  <header v-if="route.params.id && !capturing && !selected && !draft && !busy" class="page-header">
     <h1 tabindex="-1">{{ t(importing ? 'importRecipe' : 'recipes') }}</h1>
     <NcButton :to="listPath">{{ t('back') }}</NcButton>
   </header>
@@ -473,10 +627,13 @@ async function scale() {
         <h1 tabindex="-1">{{ t('recipes') }}</h1>
         <p>{{ t('recipeIntro') }}</p>
       </div>
-      <div v-if="writable" class="actions">
-        <NcButton :to="`${listPath}/import`">{{ t('importRecipe') }}</NcButton>
-        <NcButton variant="primary" :to="`${listPath}/new`"
-          ><template #icon><Icon :path="mdiPlus" /></template>{{ t('newRecipe') }}</NcButton
+      <div v-if="writable && (records?.recipes.length || waiting)" class="actions">
+        <NcButton v-if="waiting" :to="`${listPath}/add`" class="waiting-suggestions"
+          ><template #icon><Icon :path="mdiInboxArrowDown" /></template>{{ waiting }}
+          {{ t('suggestionWaiting') }}</NcButton
+        >
+        <NcButton v-if="records?.recipes.length" variant="primary" :to="`${listPath}/add`"
+          ><template #icon><Icon :path="mdiPlus" /></template>{{ t('addRecipe') }}</NcButton
         >
       </div>
     </header>
@@ -490,13 +647,27 @@ async function scale() {
         :trailing-button-label="t('clearSearch')"
         @trailing-button-click="search = ''"
       />
+      <label class="field recipe-sort"
+        >{{ t('sortRecipes')
+        }}<select v-model="sort">
+          <option value="title">{{ t('sortTitle') }}</option>
+          <option value="rating">{{ t('sortRating') }}</option>
+          <option value="recent">{{ t('sortRecent') }}</option>
+        </select></label
+      >
       <p role="status">{{ t('recipes') }}: {{ matchingRecipes.length }}</p>
     </div>
     <NcEmptyContent
       v-if="records && !records.recipes.length"
       :name="t('noRecipes')"
       :description="t('noRecipesText')"
-    />
+    >
+      <template v-if="writable" #action
+        ><NcButton variant="primary" :to="`${listPath}/add`">{{
+          t('addRecipe')
+        }}</NcButton></template
+      >
+    </NcEmptyContent>
     <NcEmptyContent
       v-if="records?.recipes.length && !matchingRecipes.length"
       :name="t('noResults')"
@@ -505,32 +676,48 @@ async function scale() {
         ><NcButton @click="search = ''">{{ t('clearSearch') }}</NcButton></template
       >
     </NcEmptyContent>
-    <ul v-if="records" class="record-list">
+    <ul v-if="records" class="record-list recipe-cards">
       <li v-for="record in matchingRecipes" :key="record.id">
         <RouterLink :to="{ path: `${listPath}/${record.id}`, query: route.query }"
           ><img
             v-if="record.image_id"
             :src="imageUrl(home, record.image_id)"
             alt=""
-            class="recipe-thumbnail"
+            class="recipe-card-image"
             loading="lazy"
-            width="64"
-            height="64"
-          />
+          /><span v-else class="recipe-card-image placeholder" aria-hidden="true"
+            ><Icon :path="mdiSilverwareForkKnife"
+          /></span>
           <div>
-            <strong :lang="record.language">{{ record.title }}</strong><span>{{
-              servingCount(record.servings)
-            }}</span
+            <strong :lang="record.language">{{ record.title }}</strong><StarAverage
+              v-if="ratings[record.id]?.household_count"
+              :sum="ratings[record.id]?.household_sum ?? 0"
+              :count="ratings[record.id]?.household_count ?? 0"
+            /><StarAverage
+              v-else-if="ratings[record.id]?.person_count"
+              :sum="ratings[record.id]?.person_sum ?? 0"
+              :count="ratings[record.id]?.person_count ?? 0"
+            /><span
+              >{{ servingCount(record.servings)
+              }}<template v-if="ratings[record.id]?.cooked">
+                · {{ t('cookedCount') }} {{ ratings[record.id]?.cooked }}×</template
+              ></span
             ><span v-if="record.language !== locale" class="muted"
               >{{ t('originalLanguage') }}:
               {{ record.language === 'de' ? 'Deutsch' : 'English' }}</span
             >
-          </div>
-          <span>{{ t('revision') }} {{ record.revision }}</span></RouterLink
+          </div></RouterLink
         >
       </li>
     </ul>
   </template>
+  <RecipeCapture
+    v-else-if="capturing && !draft && catalogue"
+    :home="home"
+    :list-path="listPath"
+    @captured="captured"
+    @changed="dirty = true"
+  />
   <ImportEntry
     v-else-if="importing && !draft"
     v-model="importUrl"
@@ -550,7 +737,15 @@ async function scale() {
     >
     <header class="page-header recipe-editor-header">
       <h1 tabindex="-1">
-        {{ importing ? t('importReviewTitle') : selected ? t('edit') : t('newRecipe') }}
+        {{
+          capturing
+            ? t('captureReviewTitle')
+            : importing
+              ? t('importReviewTitle')
+              : selected
+                ? t('edit')
+                : t('newRecipe')
+        }}
       </h1>
       <NcButton
         variant="primary"
@@ -568,7 +763,8 @@ async function scale() {
         }}</NcButton
       >
     </header>
-    <NcNoteCard v-if="importReview" type="info">{{ t('importReviewHelp') }}</NcNoteCard>
+    <NcNoteCard v-if="capturing" type="info">{{ t('captureReviewHelp') }}</NcNoteCard>
+    <NcNoteCard v-else-if="importReview" type="info">{{ t('importReviewHelp') }}</NcNoteCard>
     <NcNoteCard v-if="importSubmission" type="warning">{{ t('importFrozen') }}</NcNoteCard>
     <NcNoteCard v-if="validation" type="error" role="alert">{{ validation }}</NcNoteCard>
     <form
@@ -590,6 +786,7 @@ async function scale() {
               max="1000000"
               step="1"
               required
+              :helper-text="!Number(draft.servings) ? t('servingsQuestion') : undefined"
             /><label class="field"
               >{{ t('language')
               }}<select v-model="draft.language">
@@ -704,6 +901,19 @@ async function scale() {
           >{{ t('revision') }} {{ selected.revision }} ·
           {{ servingCount(selected.recipe.servings) }}
         </p>
+        <p v-if="ratings[selected.id]?.cooked" class="recipe-rating-line">
+          <StarAverage
+            v-if="ratings[selected.id]?.household_count"
+            :sum="ratings[selected.id]?.household_sum ?? 0"
+            :count="ratings[selected.id]?.household_count ?? 0"
+          /><StarAverage
+            v-else
+            :sum="ratings[selected.id]?.person_sum ?? 0"
+            :count="ratings[selected.id]?.person_count ?? 0"
+          /><RouterLink :to="{ path: `/h/${home}/history`, query: { q: selected.recipe.title } }"
+            >{{ t('cookedCount') }} {{ ratings[selected.id]?.cooked }}×</RouterLink
+          >
+        </p>
       </div>
       <div class="toolbar">
         <ShareControls
@@ -758,6 +968,12 @@ async function scale() {
         >{{ t('cookNew') }}</NcButton
       >
     </div>
+    <RecipeRate
+      v-if="writable && !historical"
+      :home="home"
+      :recipe="selected"
+      @saved="refreshRatings"
+    />
     <RecipeContents :record="selected" :lines="scaledLines ?? selected.display_lines" />
     <Nutrition :value="preview ?? selected.nutrition" />
     <ImportEvidence

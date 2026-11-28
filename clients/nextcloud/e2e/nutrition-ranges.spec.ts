@@ -17,6 +17,7 @@ test('comparison ranges cover complete recipes and explicit household ranges kee
     .fill(`Browser verification ${Date.now()}`)
   await page.getByRole('button', { name: 'Create household', exact: true }).click()
   await recordFixture(page, 'nutrition-ranges.spec.ts')
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Nutrition range acceptance')
   await page.getByLabel('Servings', { exact: true }).fill('2')
@@ -35,6 +36,7 @@ test('comparison ranges cover complete recipes and explicit household ranges kee
     page.getByRole('heading', { name: 'Nutrition range acceptance', exact: true }),
   ).toBeVisible()
   await expect(page.locator('.recipe-part-content .estimate-badge')).toHaveCount(1)
+  await page.getByText('All nutrients, sources and uncertainty', { exact: true }).click()
   const energy = page
     .locator('tr.estimated-row')
     .filter({ has: page.getByRole('rowheader').filter({ hasText: 'kcal' }) })

@@ -168,3 +168,50 @@ preserves everything. Removing its output asks the same question. Shared/nested 
 have dependencies resolved first. Removing an ordinary part still moves its contents to the main
 recipe. Save uses the existing immutable revision/conflict checks. Back up complete data before
 installation; rollback restores the matching prior image and data together (ADR 0018).
+
+## Guided capture, own unit weights and ratings (F39)
+
+**Add recipe** in the Nextcloud client offers four ways in: paste or dictate text, keep a photo or
+screenshot beside the text, fetch a website (F16), or the empty form. Text is read line by line:
+the first line is the title, `for 4 people` sets servings, lines starting with an amount become
+ingredients, headed (`Ingredients`, `Method`, `Zutaten`, `Zubereitung`) or numbered lines become
+steps. `1/2` and `1 3/4` are written as exact decimals; `1/3`, `1-2` and `1.500` in German (or
+`1,500` in English) stay as text for you to resolve. An ingredient is preselected only when one
+catalogue name or alias matches exactly; otherwise pick one of the offered candidates.
+Nothing is saved before **Review and save**. A picture makes the recipe a private `captured` source.
+Dictation uses the browser's speech recognition; depending on the browser its vendor processes the
+audio. Say "new line" / "neue Zeile" between ingredients and steps.
+
+For `ml`, `l`, `tsp`, `tbsp` and `piece` the editor attaches the bundled reference portion when
+exactly one fits. Otherwise enter what one unit weighs in grams. The saved conversion then has
+`input_unit`, an empty `source_url`, `version: "household declaration <date>"` and a fixed
+uncertainty text, and the line shows **own weight**. An empty `source_url` is rejected without
+`input_unit`; **Use a source record instead** keeps the full evidence form. Nutrition and shopping
+masses for that line are only as accurate as your number.
+
+The weight is optional. Left empty, the line is saved with its original quantity and shows
+**weight unknown**. Nutrition then leaves that ingredient out instead of counting it as zero: the
+tiles read "at least … incomplete" and the overview names the ingredients without a weight.
+Shopping lists such a line in its own unit (millilitres or pieces; spoons as millilitres of the
+metric 5/15 ml spoon), meal-plan and inventory mass calculations leave it out, and scaling keeps
+the unit. Add a weight later through **Edit recipe** to complete the values. The overview also
+names ingredients whose weight is a rough estimate or your own figure.
+
+For `ml`, `l`, `tsp` and `tbsp` you can instead accept **Use a rough estimate**: the weight the
+unit would have if the ingredient weighed like water (1 ml = 1 g, metric 5/15 ml spoons). It is
+saved with `version: "household estimate <date>"`, names its assumption and shows **rough
+estimate** on the line. Powders such as flour are lighter, honey and syrups heavier; type your own value
+to replace it. Pieces have no general weight and never get an estimate.
+
+Suggestions handed in by an assistant or your own tools (see the [MCP guide](mcp.md)) wait at the
+top of **Add recipe**. **Review** opens the same review as typed text; saving removes the
+suggestion, **Discard** needs a second click. A suggestion with a source URL is saved as an import
+of that source and is shared only as a link.
+
+`GET /api/household/recipe-ratings` returns, per recipe ID, `cooked`, `last_date` and count/sum of
+household and person ratings from all retained history entries, independent of learning. The
+recipe page's **Cooked it? Rate it** records a completed cook (date, who ate, household rating) in
+the history (F11); corrections and deletion happen there.
+
+The nutrition overview rounds five per-serving values for reading. "at least … incomplete" is a
+covered subtotal, "estimated" a comparison range (F34). Exact values are under the disclosure.

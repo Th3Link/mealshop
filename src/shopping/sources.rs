@@ -28,19 +28,37 @@ pub(crate) fn recipe(store: &Store, selection: &Selection) -> Result<Draft, &'st
     let record = store
         .get(&selection.recipe_id, Some(selection.revision))
         .map_err(|_| "recipe_revision_not_found")?;
-    let mut amounts: BTreeMap<String, u128> = BTreeMap::new();
+    let mut amounts: BTreeMap<(String, &'static str), (Unit, u128)> = BTreeMap::new();
     for line in record.recipe.input_lines() {
-        let atoms = line
-            .grams
-            .0
+        let line = line
             .scaled(selection.servings, record.recipe.servings)
-            .map_err(|_| "shopping_quantity_invalid")?
-            .atoms();
-        *amounts.entry(line.ingredient_id.clone()).or_default() += atoms;
+            .map_err(|_| "shopping_quantity_invalid")?;
+        // A line without a known mass is bought in its own unit. Spoons are listed as
+        // millilitres of the metric 5/15 ml spoon: a volume, never a derived mass.
+        let (unit, atoms) = match (&line.grams, &line.quantity) {
+            (Some(grams), _) => (Unit::G, grams.0.atoms()),
+            (None, Some(quantity)) => {
+                use crate::quantities::Unit as Input;
+                let (unit, factor) = match quantity.unit {
+                    Input::Ml => (Unit::Ml, 1),
+                    Input::L => (Unit::Ml, 1000),
+                    Input::Tsp => (Unit::Ml, 5),
+                    Input::Tbsp => (Unit::Ml, 15),
+                    Input::Piece => (Unit::Piece, 1),
+                    Input::G | Input::Kg => return Err("shopping_quantity_invalid"),
+                };
+                (unit, quantity.amount.atoms() * factor)
+            }
+            (None, None) => return Err("shopping_quantity_invalid"),
+        };
+        amounts
+            .entry((line.ingredient_id.clone(), unit.key()))
+            .or_insert((unit, 0))
+            .1 += atoms;
     }
     let requirements = amounts
         .into_iter()
-        .map(|(id, atoms)| {
+        .map(|((id, key), (unit, atoms))| {
             let ingredient = record
                 .catalogue
                 .ingredients
@@ -49,7 +67,7 @@ pub(crate) fn recipe(store: &Store, selection: &Selection) -> Result<Draft, &'st
                 .ok_or("unknown_ingredient")?;
             Ok(Requirement {
                 item: Item {
-                    key: format!("ingredient:{id}:g"),
+                    key: format!("ingredient:{id}:{key}"),
                     ingredient_id: Some(id),
                     name: ingredient.name.clone(),
                     translations: ingredient
@@ -57,7 +75,7 @@ pub(crate) fn recipe(store: &Store, selection: &Selection) -> Result<Draft, &'st
                         .iter()
                         .map(|(lang, tr)| (lang.clone(), tr.name.clone()))
                         .collect(),
-                    unit: Unit::G,
+                    unit,
                 },
                 amount: amount(atoms)?,
             })

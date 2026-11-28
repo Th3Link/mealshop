@@ -135,15 +135,25 @@ fn display_lines(
         lines
             .iter()
             .map(|line| {
-                let amount = match unit {
-                    DisplayUnit::G => String::from(line.grams.0.clone()),
-                    DisplayUnit::Kg => {
-                        let atoms = line.grams.0.atoms();
-                        format!("{}.{:09}", atoms / 1_000_000_000, atoms % 1_000_000_000)
-                    }
-                };
                 let ingredient = catalogue.find(&line.ingredient_id);
-                json!({"ingredient_id":line.ingredient_id,"amount":amount,"unit":unit,"name":ingredient.map(|i|&i.name),"translations":ingredient.map(|i|&i.translations),"nutrition_estimated":line.prepared_part.is_none() && ingredient.is_some_and(nutrition::estimates::is_estimated)})
+                // Without a known mass the original quantity is the only honest display.
+                let (amount, unit) = match (&line.grams, &line.quantity) {
+                    (Some(grams), _) => (
+                        match unit {
+                            DisplayUnit::G => String::from(grams.0.clone()),
+                            DisplayUnit::Kg => {
+                                let atoms = grams.0.atoms();
+                                format!("{}.{:09}", atoms / 1_000_000_000, atoms % 1_000_000_000)
+                            }
+                        },
+                        json!(unit),
+                    ),
+                    (None, Some(quantity)) => {
+                        (String::from(quantity.amount.clone()), json!(quantity.unit))
+                    }
+                    (None, None) => (String::new(), json!(null)),
+                };
+                json!({"ingredient_id":line.ingredient_id,"amount":amount,"unit":unit,"mass_basis":line.mass_basis(),"name":ingredient.map(|i|&i.name),"translations":ingredient.map(|i|&i.translations),"nutrition_estimated":line.prepared_part.is_none() && ingredient.is_some_and(nutrition::estimates::is_estimated)})
             })
             .collect::<Vec<_>>()
     )
@@ -284,16 +294,13 @@ async fn scale(
     }
     let record = blocking(state, move |store, _| store.get(&id, query.revision)).await?;
     let original = record.recipe.servings;
-    let mut lines = record.recipe.lines.clone();
-    for line in &mut lines {
-        line.grams.0 = line
-            .grams
-            .0
-            .scaled(query.servings, original)
-            .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
-        line.quantity = None;
-        line.conversion = None;
-    }
+    let lines = record
+        .recipe
+        .lines
+        .iter()
+        .map(|line| line.scaled(query.servings, original))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| ApiError(StatusCode::UNPROCESSABLE_ENTITY, "invalid_recipe", e))?;
     let nutrition = nutrition::scaled_nutrition(
         &record.catalogue,
         &record.recipe.calculation(),

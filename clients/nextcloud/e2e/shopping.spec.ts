@@ -22,6 +22,7 @@ test('shopping quantities, purchased provenance, recipe rescaling and selected p
   page.on('dialog', (dialog) => void dialog.accept())
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
+  await page.getByRole('link', { name: 'Add recipe', exact: true }).click()
   await page.getByRole('link', { name: 'Create recipe', exact: true }).click()
   await page.getByLabel('Recipe title', { exact: true }).fill('Shopping acceptance recipe')
   await page.getByLabel('Servings', { exact: true }).fill('2')

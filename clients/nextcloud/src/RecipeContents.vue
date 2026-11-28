@@ -5,6 +5,8 @@ import { computed } from 'vue'
 import type { z } from 'zod'
 import { recipeRecordSchema, displayLinesSchema } from './contracts'
 import { t, locale, compactExact, exact } from './i18n'
+import { unitLabel } from './unit-label'
+import { estimateVersion } from './quantity-api'
 const props = defineProps<{
   record: z.infer<typeof recipeRecordSchema>
   lines: z.infer<typeof displayLinesSchema>
@@ -57,7 +59,9 @@ function lineName(id: string) {
               .filter((e) => (record.recipe.lines[e.index]?.part_id ?? null) === part.id)"
             :key="entry.index"
           >
-            {{ compactExact(entry.line.amount) }} {{ entry.line.unit }} ·
+            {{ compactExact(entry.line.amount) }}
+            {{ entry.line.mass_basis === 'unknown' ? unitLabel(entry.line.unit) : entry.line.unit }}
+            ·
             {{ ingredient(entry.index)
             }}<EstimateBadge
               v-if="
@@ -65,7 +69,9 @@ function lineName(id: string) {
                 missingContribution(record.nutrition, entry.line.ingredient_id)
               "
               :unknown="missingContribution(record.nutrition, entry.line.ingredient_id)"
-            /><span
+            /><small v-if="entry.line.mass_basis === 'unknown'">
+              · {{ t('weightUnknownNote') }}</small
+            ><span
               v-for="extension in record.recipe.lines[entry.index]?.extensions ?? []"
               :key="extension.type"
               :title="t('ingredientTemperature')"
@@ -86,7 +92,19 @@ function lineName(id: string) {
             >
               · {{ t('originalInput') }}:
               {{ exact(record.recipe.lines[entry.index]?.quantity?.amount ?? null) }}
-              {{ record.recipe.lines[entry.index]?.quantity?.unit }}</small
+              {{ unitLabel(record.recipe.lines[entry.index]?.quantity?.unit ?? 'g')
+              }}<template v-if="record.recipe.lines[entry.index]?.conversion?.source_url === ''">
+                ·
+                {{
+                  t(
+                    record.recipe.lines[entry.index]?.conversion?.version.startsWith(
+                      estimateVersion,
+                    )
+                      ? 'estimateWeightNote'
+                      : 'ownWeightNote',
+                  )
+                }}</template
+              ></small
             >
           </li>
         </ul>

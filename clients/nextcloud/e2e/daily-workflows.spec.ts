@@ -139,7 +139,7 @@ test('household defaults, focused search, inline composites, private images, fav
   const thumbnail = page
     .locator('.record-list li')
     .filter({ has: page.getByText(title, { exact: true }) })
-    .locator('img.recipe-thumbnail')
+    .locator('img.recipe-card-image')
   await expect
     .poll(() =>
       thumbnail.evaluate((image) => image instanceof HTMLImageElement && image.naturalWidth > 0),

@@ -185,7 +185,10 @@ impl Quantity {
             || [&e.form, &e.version, &e.uncertainty]
                 .iter()
                 .any(|s| s.trim().is_empty() || s.len() > 4000)
-            || !e.source_url.starts_with("https://")
+            // A household may declare what one input unit weighs without an external record;
+            // that declaration has no URL and always names its unit. Sources stay HTTPS.
+            || !(e.source_url.starts_with("https://")
+                || (e.source_url.is_empty() && e.input_unit.is_some()))
             || e.source_url.len() > 4000
             || e.grams_per_base_unit.atoms() == 0
         {
