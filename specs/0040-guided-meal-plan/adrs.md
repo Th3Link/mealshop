@@ -24,7 +24,13 @@
 - **Planner placement.** The planner keeps `NcAppSidebar` and its fields, positioned as a fixed
   panel so that it is visible when it opens. The recipe `<select>` became a searchable `NcSelect`.
 
-## Open customer decisions
-- **F40-REVIEW.** Whether a plan whose review has nothing to flag may be applied with one button.
-- **F40-NOSTEPS.** Whether a recipe without timed steps may be planned with its duration shown
-  as unknown; today it is a hard conflict.
+## Customer decisions, 2026-11-28
+- **F40-REVIEW: A, one button when nothing is flagged.** The client decides from the preview and
+  sends `reviewed: true` with the click; the server contract is unchanged. The rule is
+  deliberately narrow: any allergy, intolerance, dietary rule, exclusion, dislike, unidentified
+  ingredient, conflict or warning keeps the explicit acknowledgement. The cook still sees the
+  summary, the shopping changes and the two general allergen notices before the button.
+- **F40-NOSTEPS: A, plannable with unknown duration.** `preparation_time_unknown` moved from
+  `conflicts` to a new `warnings` list in the preview and the `timing` object is omitted, so no
+  client can mistake an unknown duration for zero. Time budgets are not checked for such a
+  recipe. Clients that ignore `warnings` (Flutter today) plan it without the notice.

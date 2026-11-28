@@ -1,4 +1,4 @@
-import { openFixture } from './fixtures'
+import { openFixture, confirmPlan } from './fixtures'
 import { test, expect, type Dialog } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { crc32 } from 'node:zlib'
@@ -208,10 +208,7 @@ test('household defaults, focused search, inline composites, private images, fav
   }
   await page.getByLabel('Production servings', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
-  await page
-    .getByText('I reviewed the unknown dietary data and serving/time uncertainty.', { exact: true })
-    .click()
-  await page.getByRole('button', { name: 'Apply reviewed plan', exact: true }).click()
+  await confirmPlan(page)
   await expect(slot).toContainText(title)
   await expect(slot).toContainText('Skipping:')
   await expect(slot).toContainText(`Test skipper ${stamp}`)

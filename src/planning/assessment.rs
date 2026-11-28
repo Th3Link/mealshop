@@ -90,20 +90,23 @@ impl Assessment {
         if self.review["status"] == "blocked" {
             conflicts.push("dietary_exclusion");
         }
-        if !self.has_steps {
-            conflicts.push("preparation_time_unknown");
-        }
         if self.active > p.active_seconds {
             conflicts.push("active_time_exceeded");
         }
         if self.elapsed > p.elapsed_seconds + p.advance_seconds {
             conflicts.push("elapsed_time_exceeded");
         }
-        Ok(
-            json!({"review":self.review,"conflicts":conflicts,"feasible":conflicts.is_empty(),
+        let mut result = json!({"review":self.review,"conflicts":conflicts,"feasible":conflicts.is_empty(),
             "timing":{"reference_servings":self.reference_servings,"active_seconds":self.active,"elapsed_seconds":self.elapsed,
-            "advance_preparation_seconds":self.elapsed.saturating_sub(p.elapsed_seconds)}}),
-        )
+            "advance_preparation_seconds":self.elapsed.saturating_sub(p.elapsed_seconds)}});
+        // A recipe without steps can be planned, but its duration is unknown, not zero:
+        // no timing is reported and the time budgets were not checked.
+        if !self.has_steps {
+            let fields = result.as_object_mut().ok_or("mealplan_storage_failed")?;
+            fields.remove("timing");
+            fields.insert("warnings".to_owned(), json!(["preparation_time_unknown"]));
+        }
+        Ok(result)
     }
     pub(super) fn preview(
         &self,

@@ -1,15 +1,9 @@
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { recordFixture } from './fixtures'
+import { recordFixture, confirmPlan } from './fixtures'
 async function applyPlan(page: Page) {
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
-  const consent = page.getByText(
-    'I reviewed the unknown dietary data and serving/time uncertainty.',
-    { exact: true },
-  )
-  await expect(consent).toBeVisible()
-  await consent.click()
-  await page.getByRole('button', { name: 'Apply reviewed plan', exact: true }).click()
+  await confirmPlan(page)
   await expect(page.locator('.mealplan-details')).toHaveCount(0)
 }
 test('multipart mealprep keeps exact temperatures, one production, allocations and actual-action waiting timers', async ({

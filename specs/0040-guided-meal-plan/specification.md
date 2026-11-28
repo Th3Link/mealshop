@@ -8,7 +8,8 @@ Origin: Customer request, 2026-11-28.
 ## Objective
 Planning meals in the Nextcloud client is quick and guided: the cook says or types what should go
 on the plan and confirms the usual review. The week is calm to read and the planner stays in view.
-F10's planning rules, hard constraints and reviewed apply are unchanged.
+F10's hard constraints and revision-checked apply are unchanged; slice 2 changes when the
+acknowledgement is asked and how a missing duration is treated.
 
 Customer wording (German, summarized): the meal plan "is not yet easy to use" and should be
 reworked; "I would like voice control most of all". AI steps should work with small, low-cost
@@ -37,9 +38,18 @@ Slice 1 (this delivery):
 8. German/English, keyboard, axe (WCAG 2.2 AA tags), 390 px and 1440 px are verified in the
    embedded browser suite.
 
+Slice 2 (customer decisions of 2026-11-28):
+9. A review with nothing to flag is applied or removed with one button and no acknowledgement
+   (F40-REVIEW: A). "Nothing to flag" means: feasible, no conflict or warning, and for the people
+   eating no allergy, intolerance, allergen group, allergen match, dietary preset or exception,
+   exclusion, dislike or unidentified ingredient. The two general notices (incomplete allergen
+   coverage, cross-contamination not modelled) stay visible. Anything else keeps the
+   acknowledgement.
+10. A recipe without steps can be planned (F40-NOSTEPS: A). The preview then reports no timing,
+    lists `preparation_time_unknown` under `warnings`, does not check the time budgets, and the
+    review says the duration is unknown and requires the acknowledgement.
+
 Later slices (not implemented):
-9. Fewer steps to apply when the review has nothing to flag (needs customer decision F40-REVIEW).
-10. Planning recipes without timed steps (needs customer decision F40-NOSTEPS).
 11. Drag or move meals between slots, copy a week, voice confirmation, and free-form requests
     ("something quick with rice") through a small model via Nextcloud Task Processing.
 

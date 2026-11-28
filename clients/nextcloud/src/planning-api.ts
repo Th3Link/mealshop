@@ -33,6 +33,8 @@ export const previewSchema = z.object({
   profile_revision: z.number().int(),
   feasible: z.boolean(),
   conflicts: z.array(z.string()),
+  // Things the cook should know that do not block the plan, e.g. an unknown duration.
+  warnings: z.array(z.string()).default([]),
   shopping_delta: deltaSchema,
   nutrition: nutritionSchema.optional(),
   review: reviewSchema.optional(),

@@ -170,6 +170,10 @@ sentence is read deterministically without a model. N03/N04/N09/N10 apply; see
 F41 records the customer's request (2026-11-28) for a separate Rust REST service at
 `interdata.mealshop.luehr.dev` that buffers uploaded recipes and ingredients and publishes them
 only after half-automatic, AI-assisted checking; recipes carry tags and CDN image links instead
-of images. Draft only, nothing is implemented; condition-tag wording, content rights and the
-model provider are open. N03/N05/N06/N09 apply; see
+of images. Customer decisions of the same day: condition tags need no evidence and are
+plausibility-checked and labelled unverified; uploads are open to registered users without stored
+authorship, registration itself being separate and undecided; checks escalate from rules to a
+self-hosted micro model to a moderator-approved frontier model. Draft only, nothing is
+implemented; a fixed operator-configured upload secret admits uploads until registration exists.
+The content licence is open. N03/N05/N06/N09 apply; see
 [F41](../specs/0041-interdata-intake/specification.md).

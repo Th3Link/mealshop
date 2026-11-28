@@ -8,7 +8,9 @@ something for Sunday lunch" or "zeig nächsten Mittwoch". The answer repeats wha
 with the real date. Planning and removing open the planner with the review loaded; nothing changes
 until you acknowledge and apply. If several recipe titles fit, pick one of the offered buttons; if
 none fits, the words are quoted back. A weekday means its next occurrence including today, "next
-Friday" the Friday of the following week, and dinner is assumed when no meal is named. The
+Friday" the Friday of the following week, and dinner is assumed when no meal is named. When the review has nothing to flag for the people
+eating (no conflict or warning, no allergy, intolerance, dietary rule, exclusion, dislike or
+unidentified ingredient), one button applies it; otherwise you acknowledge first. The
 sentence is read by fixed rules in your browser, without an AI model. The microphone uses the
 browser's speech recognition where available; depending on the browser its vendor processes the
 audio.
@@ -61,7 +63,8 @@ POST `/api/household/mealplan/preview` accepts:
 `consent: true`. Explicit attendees override it. Targets are 1–1000000 integer servings.
 Active/meal-day elapsed budgets are 0–86400 seconds; advance lead is 0–2592000 seconds.
 Meal keys are lowercase ASCII letters/underscores, 1–40 bytes. Dates are validated, including
-month lengths/leap years. Empty steps yield `preparation_time_unknown`; totals are sequential
+month lengths/leap years. A recipe without steps can be planned: the preview then carries no `timing`, lists
+`preparation_time_unknown` under `warnings` and does not check the time budgets; totals are sequential
 recipe estimates and do not infer parallel work or batch-time scaling.
 
 Preview returns `plan`, `profile_revision`, `plan_revision`, resolved attendees/source/override,

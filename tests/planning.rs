@@ -478,13 +478,15 @@ async fn missing_timings_and_storage_failures_never_silently_apply() {
     let mut draft = recipe("oats");
     draft["steps"] = json!([]);
     let unknown = request(&app, "POST", "/api/recipes", draft, None).await.1;
+    // A recipe without steps can be planned; its duration is reported as unknown, not zero.
     let result = preview(&app, plan(&unknown)).await;
-    assert!(
-        result["conflicts"]
-            .as_array()
-            .unwrap()
-            .contains(&json!("preparation_time_unknown"))
-    );
+    assert_eq!(result["conflicts"], json!([]));
+    assert_eq!(result["feasible"], true);
+    assert_eq!(result["warnings"], json!(["preparation_time_unknown"]));
+    assert!(result.get("timing").is_none());
+    let timed = preview(&app, plan(&good)).await;
+    assert!(timed.get("warnings").is_none());
+    assert!(timed["timing"]["active_seconds"].is_u64());
     let mut too_late = plan(&good);
     too_late["advance_seconds"] = json!(0);
     assert!(

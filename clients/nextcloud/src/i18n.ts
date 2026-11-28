@@ -840,8 +840,8 @@ const explanations: Record<string, { en: string; de: string }> = {
     de: 'Für eine mitessende Person enthält dieses Rezept einen harten Ernährungsausschluss.',
   },
   preparation_time_unknown: {
-    en: 'This recipe has no preparation steps with known durations.',
-    de: 'Für dieses Rezept fehlen Zubereitungsschritte mit bekannten Zeiten.',
+    en: 'This recipe has no steps, so its preparation time is unknown and was not checked against your time limits.',
+    de: 'Dieses Rezept hat keine Schritte; die Zubereitungszeit ist daher unbekannt und wurde nicht gegen deine Zeitgrenzen geprüft.',
   },
   active_time_exceeded: {
     en: 'Active preparation exceeds the available time.',

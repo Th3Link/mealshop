@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { recordFixture } from './fixtures'
+import { recordFixture, confirmPlan } from './fixtures'
 
 test('typed plan sentences open the reviewed planner and never change the plan by themselves', async ({
   page,
@@ -31,10 +31,11 @@ test('typed plan sentences open the reviewed planner and never change the plan b
     await page.getByRole('combobox', { name: 'Choose ingredient', exact: true }).fill('Oats')
     await page.getByRole('option', { name: 'Oats', exact: true }).click()
     await page.getByLabel('Grams', { exact: true }).fill('100')
-    // Planning needs a known duration: a recipe without timed steps is a hard conflict.
-    await page.getByRole('button', { name: 'Add step', exact: true }).click()
-    await page.getByLabel('1. Instruction', { exact: true }).fill('Mix the synthetic fixture')
-    await page.getByLabel('Active work', { exact: true }).fill('10')
+    if (title !== 'Synthetic plan chili') {
+      await page.getByRole('button', { name: 'Add step', exact: true }).click()
+      await page.getByLabel('1. Instruction', { exact: true }).fill('Mix the synthetic fixture')
+      await page.getByLabel('Active work', { exact: true }).fill('10')
+    }
     await page.getByRole('button', { name: 'Save changes', exact: true }).click()
     await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
   }
@@ -102,10 +103,12 @@ test('typed plan sentences open the reviewed planner and never change the plan b
       animations: 'disabled',
     })
   }
-  await page
-    .getByText('I reviewed the unknown dietary data and serving/time uncertainty.', { exact: true })
-    .click()
-  await page.getByRole('button', { name: 'Apply reviewed plan', exact: true }).click()
+  // Nothing concerns the only attendee: one button applies, no acknowledgement is asked.
+  await expect(page.locator('.mealplan-sidebar')).toContainText(
+    'Nothing to flag for the people eating',
+  )
+  await expect(page.getByRole('button', { name: 'Add to plan', exact: true })).toBeVisible()
+  expect(await confirmPlan(page)).toBe('direct')
   await expect(slot).toContainText('Synthetic plan pasta bake')
   await expect(slot).toContainText('3 Servings')
 
@@ -114,18 +117,21 @@ test('typed plan sentences open the reviewed planner and never change the plan b
   await go.click()
   await expect(answer).toContainText('Understood: Remove')
   await expect(slot).toContainText('Synthetic plan pasta bake')
-  await page
-    .getByText('I reviewed the unknown dietary data and serving/time uncertainty.', { exact: true })
-    .click()
-  await page
-    .locator('.mealplan-sidebar')
-    .getByRole('button', { name: 'Remove', exact: true })
-    .last()
-    .click()
+  expect(await confirmPlan(page, true)).toBe('direct')
   await expect(slot).not.toContainText('Synthetic plan pasta bake')
   await command.fill('Lösche morgen das Abendessen')
   await go.click()
   await expect(answer).toContainText('Nothing is planned then')
+
+  // A recipe without steps can be planned; its unknown duration is flagged and must be
+  // acknowledged, so the one-button path is not offered.
+  await command.fill('synthetic chili tomorrow evening')
+  await go.click()
+  await expect(page.locator('.mealplan-sidebar')).toContainText('preparation time is unknown')
+  await expect(page.locator('.plan-timing')).toHaveCount(0)
+  await expect(page.locator('.plan-apply-direct')).toHaveCount(0)
+  expect(await confirmPlan(page)).toBe('reviewed')
+  await expect(slot).toContainText('Synthetic plan chili')
 
   await command.fill('suggest something for tomorrow lunch')
   await go.click()

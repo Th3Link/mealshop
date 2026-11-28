@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { PlanReview } from './planning-api'
 import type { Ingredient, Member } from './contracts'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -25,7 +26,43 @@ const props = defineProps<{
   busy: boolean
 }>()
 const reviewed = defineModel<boolean>('reviewed', { required: true })
-defineEmits<{ apply: [] }>()
+const emit = defineEmits<{ apply: [] }>()
+const generic = ['allergen_coverage_incomplete', 'cross_contamination_unmodelled']
+/** Nothing in this review concerns the people eating: no conflict, warning, allergy,
+ * intolerance, dietary rule, exclusion, dislike or unidentified ingredient. Only then may the
+ * plan be applied with one button; anything else keeps the explicit acknowledgement. */
+const clear = computed(() => {
+  const { preview } = props.value
+  const review = preview.review
+  // Taking a meal off the plan exposes nobody to anything.
+  if (props.value.remove) return preview.feasible && !preview.conflicts.length
+  return (
+    preview.feasible &&
+    !preview.conflicts.length &&
+    !preview.warnings.length &&
+    review?.status === 'review_required' &&
+    !review.allergen_matches.length &&
+    !review.excluded_ingredients.length &&
+    !review.disliked_ingredients.length &&
+    !review.unknown_ingredients.length &&
+    review.warning_codes.every((code) => generic.includes(code)) &&
+    review.review_notes.every(
+      (note) => !note.allergies.length && !note.intolerances.length && !note.allergen_ids.length,
+    ) &&
+    review.dietary_rules.every(
+      (rule) =>
+        rule.preset === 'unrestricted' &&
+        !rule.has_exceptions &&
+        !rule.exceptions.length &&
+        !rule.unknown_ingredients.length &&
+        !rule.excluded_ingredients.length,
+    )
+  )
+})
+function applyDirect() {
+  reviewed.value = true
+  emit('apply')
+}
 /** Seconds as a cook would say them; the exact value stays in the tooltip. */
 function readable(seconds: number) {
   const days = Math.floor(seconds / 86400),
@@ -107,9 +144,15 @@ function names(id: string) {
           {{ explanation(conflict) }}
         </li>
       </ul></NcNoteCard
+    ><NcNoteCard v-else-if="clear" type="success">{{ t('planClear') }}</NcNoteCard
     ><NcNoteCard v-else type="warning"
       >{{ t('reviewRequired') }} · {{ t('profileIntro') }}</NcNoteCard
     >
+    <NcNoteCard v-if="value.preview.warnings.length" type="warning">
+      <ul>
+        <li v-for="warning in value.preview.warnings" :key="warning">{{ explanation(warning) }}</li>
+      </ul>
+    </NcNoteCard>
     <section v-for="rule in value.preview.review?.dietary_rules ?? []" :key="rule.member_id">
       <h3>{{ profiles.find((p) => p.id === rule.member_id)?.name }}</h3>
       <p>
@@ -173,10 +216,18 @@ function names(id: string) {
         {{ names(line.ingredient_id) }}: {{ compactExact(line.grams_delta) }} g
       </li>
     </ul>
-    <NcCheckboxRadioSwitch v-model="reviewed">{{
+    <NcButton
+      v-if="clear && writable"
+      class="plan-apply-direct"
+      variant="primary"
+      :disabled="busy"
+      @click="applyDirect"
+      >{{ t(value.remove ? 'planRemoveDirect' : 'planApplyDirect') }}</NcButton
+    >
+    <NcCheckboxRadioSwitch v-if="!clear" v-model="reviewed">{{
       t('acknowledge')
     }}</NcCheckboxRadioSwitch><NcButton
-      v-if="writable"
+      v-if="writable && !clear"
       variant="primary"
       :disabled="busy || !reviewed || !value.preview.feasible"
       @click="$emit('apply')"

@@ -10,8 +10,12 @@
 - [ ] Real-microphone check in Chromium and Firefox — not testable headless.
 - [ ] Customer review on the customer's instance.
 
+## Slice 2 — customer decisions of 2026-11-28
+- [x] One-button apply/remove when the review has nothing to flag (AC 9).
+- [x] Recipes without steps plannable with an unknown-duration warning (AC 10).
+- [ ] Show the unknown-duration warning in the Flutter client.
+
 ## Later
-- [ ] F40-REVIEW and F40-NOSTEPS after the customer decides.
 - [ ] Move/copy meals, week templates.
 - [ ] Free-form requests through a small model via Nextcloud Task Processing, after the task
   types on the customer's instance are known.

@@ -23,6 +23,10 @@ export const planEnglish = {
   planSeveralPlanned: 'Several meals are planned that day. Say which one, for example “dinner”.',
   planNotUnderstood: 'I did not understand that. Try “Chili on Friday evening”.',
   planToday: 'Today',
+  planClear:
+    'Nothing to flag for the people eating. Product labels and cross-contamination are still yours to check.',
+  planApplyDirect: 'Add to plan',
+  planRemoveDirect: 'Remove from plan',
   planNeedsPeople:
     'Add at least one person under Household first: a meal needs someone who eats it.',
   planFindRecipe: 'Type to search your recipes',
@@ -57,6 +61,10 @@ export const planGerman: typeof planEnglish = {
     'An dem Tag sind mehrere Mahlzeiten geplant. Sag, welche du meinst, zum Beispiel „Abendessen“.',
   planNotUnderstood: 'Das habe ich nicht verstanden. Versuch es mit „Chili am Freitagabend“.',
   planToday: 'Heute',
+  planClear:
+    'Für die Mitessenden gibt es nichts zu beachten. Produktetiketten und Kreuzkontamination prüfst du weiterhin selbst.',
+  planApplyDirect: 'In den Plan übernehmen',
+  planRemoveDirect: 'Aus dem Plan entfernen',
   planNeedsPeople:
     'Lege zuerst unter Haushalt mindestens eine Person an: eine Mahlzeit braucht jemanden, der sie isst.',
   planFindRecipe: 'Tippe, um deine Rezepte zu durchsuchen',

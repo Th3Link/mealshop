@@ -1,4 +1,4 @@
-import { recordFixture, openFixture } from './fixtures'
+import { recordFixture, openFixture, confirmPlan } from './fixtures'
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 test.describe.configure({ mode: 'serial' })
@@ -70,10 +70,7 @@ test('native household, recipe, exact serving preview, profiles and plan review'
   await expect(
     page.getByRole('heading', { name: 'Shopping quantity changes', exact: true }),
   ).toBeVisible()
-  await page
-    .getByText('I reviewed the unknown dietary data and serving/time uncertainty.', { exact: true })
-    .click()
-  await page.getByRole('button', { name: 'Apply reviewed plan', exact: true }).click()
+  await confirmPlan(page)
   await expect(page.getByRole('button', { name: 'Plan a meal', exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Ingredients', exact: true }).click()
   await page.getByLabel('Search ingredients', { exact: true }).fill('oats')

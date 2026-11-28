@@ -1,6 +1,6 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { recordFixture } from './fixtures'
+import { recordFixture, confirmPlan } from './fixtures'
 const embedded = '/index.php/apps/app_api/embedded/mealshop/main'
 const attendee = 'History attendee'
 const title = 'Cooking history acceptance recipe'
@@ -347,16 +347,7 @@ test('learned suggestions retain hard constraints, discovery and reviewed planni
   await expect(rows.first()).toContainText(title)
   await expect(rows.filter({ hasText: good })).toHaveCount(0)
   await rows.first().getByRole('button', { name: 'Review meal', exact: true }).click()
-  await expect(
-    page.getByRole('button', { name: 'Apply reviewed plan', exact: true }),
-  ).toBeDisabled()
-  await check(
-    page.getByRole('checkbox', {
-      name: 'I reviewed the unknown dietary data and serving/time uncertainty.',
-      exact: true,
-    }),
-  )
-  await page.getByRole('button', { name: 'Apply reviewed plan', exact: true }).click()
+  await confirmPlan(page)
   await page.getByRole('link', { name: 'Cooking history', exact: true }).click()
   await expect(page.locator('.record-list li')).toHaveCount(2)
 })
