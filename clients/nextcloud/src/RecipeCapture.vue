@@ -88,29 +88,7 @@ function edited() {
   emit('changed')
 }
 
-type Recognition = {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  onresult:
-    | ((event: {
-        resultIndex: number
-        results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }>
-      }) => void)
-    | null
-  onerror: (() => void) | null
-  onend: (() => void) | null
-  start(): void
-  stop(): void
-}
-const recognitionSchema = z.custom<new () => Recognition>((value) => typeof value === 'function')
-function recognitionClass() {
-  const scope: Record<string, unknown> = window as unknown as Record<string, unknown>
-  const found = recognitionSchema.safeParse(
-    scope.SpeechRecognition ?? scope.webkitSpeechRecognition,
-  )
-  return found.success ? found.data : undefined
-}
+import { recognitionClass, type Recognition } from './speech'
 const canDictate = Boolean(recognitionClass())
 const listening = ref(false),
   dictationFailed = ref(false)

@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, toRaw, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, toRaw, useId, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { z } from 'zod'
 import NcButton from '@nextcloud/vue/components/NcButton'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
+import PlanCommand from './PlanCommand.vue'
+import type { PlanCommand as Command } from './plan-command'
 import CookingDuration from './CookingDuration.vue'
 import NcAppSidebar from '@nextcloud/vue/components/NcAppSidebar'
 import NcAppSidebarTab from '@nextcloud/vue/components/NcAppSidebarTab'
@@ -139,6 +142,52 @@ function selectSlot(date: string, meal: string, plan?: Plan) {
     initialDraft.value = JSON.stringify(draft.value)
   }
 }
+const commandNote = ref('')
+const recipeInputId = useId()
+/** Carries out what a typed or spoken sentence asked for, up to the review. Nothing is applied. */
+async function runCommand(command: Command) {
+  commandNote.value = ''
+  if (command.intent === 'show') {
+    if (command.date) calendarDate.value = command.date
+    return
+  }
+  const date = command.date ?? new Date().toLocaleDateString('en-CA')
+  const planned = (plans.value?.meals ?? []).filter(
+    (plan) => plan.date === date && (!command.meal || plan.meal === command.meal),
+  )
+  if (command.intent === 'remove') {
+    calendarDate.value = date
+    if (planned.length !== 1) {
+      commandNote.value = t(planned.length ? 'planSeveralPlanned' : 'planNothingPlanned')
+      return
+    }
+    if (!start(planned[0])) return
+    await preview(true)
+    return
+  }
+  // A meal needs someone who eats it; without people only preparation can be planned.
+  if (!profiles.value?.members.length) {
+    commandNote.value = t('planNeedsPeople')
+    return
+  }
+  const meal = command.meal ?? 'dinner'
+  const existing = plans.value?.meals.find((plan) => plan.date === date && plan.meal === meal)
+  if (!start(existing)) return
+  calendarDate.value = date
+  if (!draft.value) return
+  if (!existing) {
+    draft.value.date = date
+    draft.value.meal = meal
+    delete draft.value.allocations
+  }
+  if (command.servings) draft.value.servings = command.servings
+  const recipe = command.intent === 'plan' ? command.recipes[0] : undefined
+  if (recipe && command.recipes.length === 1)
+    draft.value.recipe = { id: recipe.id, revision: recipe.revision }
+  initialDraft.value = existing ? initialDraft.value : JSON.stringify(draft.value)
+  if (command.intent === 'suggest') await suggest()
+  else if (recipe && command.recipes.length === 1) await preview(false)
+}
 function cancelPlan() {
   if (!confirmDiscard()) return
   draft.value = undefined
@@ -147,12 +196,26 @@ function cancelPlan() {
   rejected.value = []
   void nextTick().then(() => document.getElementById('mealshop-calendar-title')?.focus())
 }
-function selectedRecipe(event: Event) {
-  if (event.target instanceof HTMLSelectElement && draft.value) {
-    const value = event.target.value
-    const r = recipeOptions.value.find((r) => `${r.id}@${r.revision}` === value)
-    if (r) draft.value.recipe = { id: r.id, revision: r.revision }
-  }
+const recipeChoices = computed(() => {
+  const latest = new Set((recipes.value?.recipes ?? []).map((r) => `${r.id}@${r.revision}`))
+  return recipeOptions.value.map((r) => ({
+    key: `${r.id}@${r.revision}`,
+    id: r.id,
+    revision: r.revision,
+    // An earlier, pinned revision says so; the current one is just its title.
+    label: latest.has(`${r.id}@${r.revision}`)
+      ? r.title
+      : `${r.title} · ${t('revision')} ${r.revision}`,
+  }))
+})
+const chosenRecipe = computed(
+  () =>
+    recipeChoices.value.find(
+      (r) => r.id === draft.value?.recipe.id && r.revision === draft.value?.recipe.revision,
+    ) ?? null,
+)
+function selectedRecipe(choice: { id: string; revision: number } | null) {
+  if (choice && draft.value) draft.value.recipe = { id: choice.id, revision: choice.revision }
 }
 function setCalendar(value: unknown) {
   if (!draft.value) return
@@ -298,6 +361,13 @@ onMounted(load)
       t(draft ? 'reloadSaved' : 'retry')
     }}</NcButton></NcNoteCard
   ><NcLoadingIcon v-if="busy" :aria-label="t('loading')" />
+  <PlanCommand
+    v-if="writable && plans && recipes?.recipes.length"
+    :recipes="recipes.recipes"
+    :disabled="busy"
+    :note="commandNote"
+    @run="runCommand"
+  />
   <NcNoteCard v-if="plans && profiles && recipes && !recipes.recipes.length" type="info">
     {{ t('planPrerequisites') }}
     <div class="actions">
@@ -308,7 +378,7 @@ onMounted(load)
     </div>
   </NcNoteCard>
   <NcEmptyContent
-    v-if="plans && !plans.meals.length && !draft"
+    v-if="plans && !plans.meals.length && !draft && !(writable && recipes?.recipes.length)"
     :name="t('emptyPlan')"
     :description="t('emptyPlanText')"
     ><template #action
@@ -398,23 +468,24 @@ onMounted(load)
                 </select></label
               >
             </div>
-            <label class="field"
-              >{{ t('recipes')
-              }}<select
-                :value="`${draft.recipe.id}@${draft.recipe.revision}`"
-                required
-                @change="selectedRecipe"
+            <div class="labeled-field">
+              <label :for="recipeInputId">{{ t('recipes') }}</label>
+              <NcSelect
+                :input-id="recipeInputId"
+                :model-value="chosenRecipe"
+                :options="recipeChoices"
+                label="label"
+                :input-label="t('recipes')"
+                label-outside
+                :placeholder="t('planFindRecipe')"
+                :clearable="false"
+                :disabled="busy"
+                @update:model-value="selectedRecipe"
+                ><template #option="choice"
+                  ><span>{{ choice.label }}</span></template
+                ><template #no-options>{{ t('noResults') }}</template></NcSelect
               >
-                <option value="" disabled>{{ t('recipes') }}</option>
-                <option
-                  v-for="r in recipeOptions"
-                  :key="`${r.id}@${r.revision}`"
-                  :value="`${r.id}@${r.revision}`"
-                >
-                  {{ r.title }} · {{ t('revision') }} {{ r.revision }}
-                </option>
-              </select></label
-            >
+            </div>
             <fieldset v-if="draft.attendees">
               <legend>{{ t('attendees') }}</legend>
               <p class="muted">{{ t('attendanceHelp') }}</p>

@@ -2,6 +2,7 @@ import { peopleEnglish, peopleGerman, peopleExplanations } from './people-messag
 import { brewingEnglish, brewingGerman, brewingExplanations } from './brewing-messages'
 import { inventoryEnglish, inventoryGerman, inventoryExplanations } from './inventory-messages'
 import { captureEnglish, captureGerman } from './capture-messages'
+import { planEnglish, planGerman } from './plan-messages'
 import { importEnglish, importGerman, importExplanations } from './import-messages'
 import { mcpEnglish, mcpGerman, mcpExplanations } from './mcp-messages'
 import { feedbackEnglish, feedbackGerman, feedbackExplanations } from './feedback-messages'
@@ -74,6 +75,7 @@ const en = {
   ...mcpEnglish,
   ...importEnglish,
   ...captureEnglish,
+  ...planEnglish,
   ...inventoryEnglish,
   searchRecipes: 'Search recipes',
   resetFilters: 'Reset filters',
@@ -421,6 +423,7 @@ const de: Record<keyof typeof en, string> = {
   ...mcpGerman,
   ...importGerman,
   ...captureGerman,
+  ...planGerman,
   ...inventoryGerman,
   ingredientTemperature: 'Temperatur (°C)',
   addTemperature: 'Temperatur ergänzen',
@@ -684,7 +687,7 @@ const de: Record<keyof typeof en, string> = {
   breakfast: 'Frühstück',
   lunch: 'Mittagessen',
   dinner: 'Abendessen',
-  snack: 'Zwischenmahlzeit',
+  snack: 'Snack',
   attendees: 'Mitessende',
   activeBudget: 'Verfügbare Arbeitszeit',
   elapsedBudget: 'Verfügbare Gesamtdauer',
@@ -837,8 +840,8 @@ const explanations: Record<string, { en: string; de: string }> = {
     de: 'Für eine mitessende Person enthält dieses Rezept einen harten Ernährungsausschluss.',
   },
   preparation_time_unknown: {
-    en: 'This recipe has no preparation steps with known durations.',
-    de: 'Für dieses Rezept fehlen Zubereitungsschritte mit bekannten Zeiten.',
+    en: 'This recipe has no steps, so its preparation time is unknown and was not checked against your time limits.',
+    de: 'Dieses Rezept hat keine Schritte; die Zubereitungszeit ist daher unbekannt und wurde nicht gegen deine Zeitgrenzen geprüft.',
   },
   active_time_exceeded: {
     en: 'Active preparation exceeds the available time.',

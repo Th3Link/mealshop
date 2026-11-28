@@ -161,3 +161,19 @@ clearly marked; AI structuring will use Nextcloud Task Processing and is not del
 [F39](../specs/0039-guided-recipe-capture/specification.md) and ADR 0038. Quantities may be saved
 without a known mass; nutrition then reports itself incomplete instead of guessing (ADR 0039). The
 customer prefers small, low-cost AI models, with larger ones only where needed (2026-11-28).
+
+F40 reworks the Nextcloud meal plan at the customer's request (2026-11-28): one typed or spoken
+sentence plans, removes, suggests or shows a meal and always stops at F10's reviewed apply; the
+sentence is read deterministically without a model. N03/N04/N09/N10 apply; see
+[F40](../specs/0040-guided-meal-plan/specification.md).
+
+F41 records the customer's request (2026-11-28) for a separate Rust REST service at
+`interdata.mealshop.luehr.dev` that buffers uploaded recipes and ingredients and publishes them
+only after half-automatic, AI-assisted checking; recipes carry tags and CDN image links instead
+of images. Customer decisions of the same day: condition tags need no evidence and are
+plausibility-checked and labelled unverified; uploads are open to registered users without stored
+authorship, registration itself being separate and undecided; checks escalate from rules to a
+self-hosted micro model to a moderator-approved frontier model. Draft only, nothing is
+implemented; a fixed operator-configured upload secret admits uploads until registration exists.
+The content licence is open. N03/N05/N06/N09 apply; see
+[F41](../specs/0041-interdata-intake/specification.md).

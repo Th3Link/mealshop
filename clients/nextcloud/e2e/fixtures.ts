@@ -42,3 +42,22 @@ export async function openFixture(page: Page, source: string) {
     `No recorded ${source} household exists. Run its setup test first; customer households are never test fixtures.`,
   )
 }
+const acknowledgement = 'I reviewed the unknown dietary data and serving/time uncertainty.'
+/** Applies the loaded plan review: one button when nothing is flagged for the people eating,
+ * otherwise the explicit acknowledgement first. Returns which path the review offered. */
+export async function confirmPlan(page: Page, removing = false): Promise<'direct' | 'reviewed'> {
+  await expect(page.locator('#mealshop-review-title')).toBeVisible()
+  const direct = page.locator('.plan-apply-direct')
+  if (await direct.count()) {
+    await expect(page.getByRole('checkbox', { name: acknowledgement, exact: true })).toHaveCount(0)
+    await direct.click()
+    return 'direct'
+  }
+  await page.getByText(acknowledgement, { exact: true }).click()
+  await page
+    .locator('.mealplan-sidebar')
+    .getByRole('button', { name: removing ? 'Remove' : 'Apply reviewed plan', exact: true })
+    .last()
+    .click()
+  return 'reviewed'
+}

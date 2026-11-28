@@ -177,3 +177,7 @@ without a weight the recipe still saves with nutrition marked incomplete (ADR 00
 show ratings from completed cooks and a rounded per-serving nutrition overview above the exact
 table. Assistants and your own tools can hand recipes in as suggestions that wait for review
 (`recipe_suggest`). No AI provider is integrated yet. [F39](specs/0039-guided-recipe-capture/specification.md).
+
+F40 (in progress) lets you plan by sentence in the Nextcloud client: type or say "Chili on Friday
+evening for 4", check what was understood and confirm the usual review. No model is involved.
+[F40](specs/0040-guided-meal-plan/specification.md).

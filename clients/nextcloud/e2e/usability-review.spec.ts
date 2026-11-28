@@ -98,11 +98,22 @@ test('profile and meal drafts survive rejected discard and household switching',
   }
   await expect(page.locator('#mealshop-review-title')).toBeFocused()
   await page.unroute('**/api/household/mealplan/preview')
+  // A review with nothing to flag offers one button; otherwise the acknowledgement is explicit
+  // and a changed preview clears it.
   const acknowledgement = 'I reviewed the unknown dietary data and serving/time uncertainty.'
-  await page.getByText(acknowledgement, { exact: true }).click()
-  await expect(page.getByRole('checkbox', { name: acknowledgement, exact: true })).toBeChecked()
-  await page.getByRole('button', { name: 'Review meal', exact: true }).click()
-  await expect(page.getByRole('checkbox', { name: acknowledgement, exact: true })).not.toBeChecked()
+  const direct = page.locator('.plan-apply-direct')
+  if (await direct.count()) {
+    await expect(page.getByRole('checkbox', { name: acknowledgement, exact: true })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Review meal', exact: true }).click()
+    await expect(direct).toBeVisible()
+  } else {
+    await page.getByText(acknowledgement, { exact: true }).click()
+    await expect(page.getByRole('checkbox', { name: acknowledgement, exact: true })).toBeChecked()
+    await page.getByRole('button', { name: 'Review meal', exact: true }).click()
+    await expect(
+      page.getByRole('checkbox', { name: acknowledgement, exact: true }),
+    ).not.toBeChecked()
+  }
   const axe = await new AxeBuilder({ page })
     .include('.mealshop')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])

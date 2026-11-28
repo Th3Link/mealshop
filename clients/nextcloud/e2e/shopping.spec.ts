@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { recordFixture } from './fixtures'
+import { recordFixture, confirmPlan } from './fixtures'
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/index.php/apps/app_api/embedded/mealshop/main/households')
@@ -96,10 +96,7 @@ test('shopping quantities, purchased provenance, recipe rescaling and selected p
   await page.getByRole('link', { name: 'Meal plan', exact: true }).click()
   await page.getByRole('button', { name: 'Plan a meal', exact: true }).click()
   await page.getByRole('button', { name: 'Review meal', exact: true }).click()
-  await page
-    .getByText('I reviewed the unknown dietary data and serving/time uncertainty.', { exact: true })
-    .click()
-  await page.getByRole('button', { name: 'Apply reviewed plan', exact: true }).click()
+  await confirmPlan(page)
   await expect(page.getByRole('button', { name: 'Plan a meal', exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Shopping list', exact: true }).click()
   await page.getByRole('button', { name: 'Manage list', exact: true }).click()
